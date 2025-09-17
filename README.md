@@ -6,3 +6,4 @@ Bienvenido/a a **Tripmates**! <br>
 ## Nuestro equipo
 - [Leticia Figueroa](https://github.com/leticiafrR)
 - [Anibal Fu](https://github.com/anibalfu)
+- [Francisco Infanti](https://github.com/FranInfanti)
