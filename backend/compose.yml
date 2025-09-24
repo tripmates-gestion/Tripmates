@@ -1,0 +1,43 @@
+services:
+  neo4j:
+    image: neo4j:5.23
+    container_name: tripmates-neo4j
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - tripmates-neo4j-data:/data
+      - tripmates-neo4j-logs:/logs
+    ports:
+      - "${NEO4J_BROWSER_PORT}:${NEO4J_BROWSER_PORT}" # HTTP Browser
+      - "${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT}" # Bolt protocol (springboot use it)
+    healthcheck:
+      test: [ "CMD-SHELL", "cypher-shell -u ${NEO4J_USER} -p ${NEO4J_PASSWORD} 'RETURN 1' || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  mongo:
+    image: mongo:6.0
+    container_name: tripmates-mongo
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - tripmates-mongo-data:/data/db
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    healthcheck:
+      test: [ "CMD-SHELL", "mongo --username ${MONGO_ROOT_USERNAME} --password ${MONGO_ROOT_PASSWORD} --eval \"db.adminCommand('ping')\" || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tripmates-neo4j-data:
+  tripmates-neo4j-logs:
+  tripmates-mongo-data:
