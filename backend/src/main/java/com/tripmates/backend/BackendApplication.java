@@ -1,13 +1,13 @@
-package com.gestion.tripmates_backend;
+package com.tripmates.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TripmatesBackendApplication {
+public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TripmatesBackendApplication.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 
 }
