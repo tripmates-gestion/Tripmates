@@ -7,3 +7,4 @@ Bienvenido/a a **Tripmates**! <br>
 - [Leticia Figueroa](https://github.com/leticiafrR)
 - [Anibal Fu](https://github.com/anibalfu)
 - [Francisco Infanti](https://github.com/FranInfanti)
+- [Andrea Figueroa](https://github.com/AndreaFigueroaR)
