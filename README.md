@@ -2,7 +2,7 @@
 
 Bienvenido/a a **Tripmates**! <br>
 <p align="center">
-    <img src="docs/assets/6-pinguinos.png" alt="Tripmates">
+    <img src="docs/assets/6-pinguinos (1).jpg" alt="Tripmates">
 </p>
 
 **Tripmates** es una plataforma social para la planificación y búsqueda de opciones para viajes creado como proyecto grupal para la materia Gestion del Desarrrollo de Sistemas Informáticos FIUBA, cátedra Fontela, 2025 2C.
