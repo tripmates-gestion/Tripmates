@@ -5,8 +5,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import com.tripmates.backend.common.UserCredentials;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.UserCredentials;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -33,12 +33,8 @@ public class User implements UserCredentials {
     }
 
     @Override
-    public String getRoleString() {
+    public String getRole() {
         return role.name();
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
 }
