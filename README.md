@@ -12,3 +12,9 @@ Bienvenido/a a **Tripmates**! <br>
 - [Leticia Figueroa](https://github.com/leticiafrR)
 - [Anibal Fu](https://github.com/anibalfu)
 - [Francisco Infanti](https://github.com/FranInfanti)
+
+## ¿Eres desarrollador?
+
+Quizás te interese ver los detalles técnicos de la API:
+
+- [backend](backend/README.md)
