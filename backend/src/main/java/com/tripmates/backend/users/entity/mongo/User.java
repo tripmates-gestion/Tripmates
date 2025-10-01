@@ -6,12 +6,13 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.users.entity.UserCredentials;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 @Document(collection = "users")
-public class User {
+public class User implements UserCredentials {
     @Id
     private String id;
 
@@ -26,4 +27,18 @@ public class User {
     @Field(targetType = FieldType.STRING)
     private Role role;
 
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String getRoleString() {
+        return role.name();
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
 }
