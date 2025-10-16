@@ -154,6 +154,7 @@ export default function Home() {
     return (
       <Box sx={{ bgcolor: 'background.default', py: 6, mx: 'calc(50% - 50vw)', mt: 8}}>
         <Container>
+        <Divider sx={{ my: 4 }} />
           <Grid container spacing={4}>
             <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
