@@ -8,3 +8,4 @@ Bienvenido/a a **Tripmates**! <br>
 - [Anibal Fu](https://github.com/anibalfu)
 - [Francisco Infanti](https://github.com/FranInfanti)
 - [Andrea Figueroa](https://github.com/AndreaFigueroaR)
+- [Weng Xu Marcos Tomás](https://github.com/wxmarcos)
