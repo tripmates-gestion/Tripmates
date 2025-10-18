@@ -15,7 +15,7 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        public static final String[] PUBLIC_ENDPOINTS = { "/users", "/actuator/health",
+        public static final String[] PUBLIC_ENDPOINTS = { "/users", "/auth/login", "/actuator/health",
                         "/api-docs/**", // Ruta que configuraste en application.properties
                         "/swagger-ui/**", // UI de Swagger
                         "/swagger-ui.html", // HTML de Swagger UI
