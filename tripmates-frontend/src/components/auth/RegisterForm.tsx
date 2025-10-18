@@ -1,4 +1,4 @@
-// src/components/auth/RegisterForm.tsx
+import * as React from 'react';
 import {
   Stack, TextField, IconButton, InputAdornment, FormControl, FormLabel,
   RadioGroup, FormControlLabel, Radio, Typography, Checkbox
@@ -13,11 +13,21 @@ type Props = {
   setAccountType: (t: AccountType) => void;
   showPass: boolean;
   setShowPass: (v: boolean) => void;
+  onDataChange: (data: { firstName: string; lastName: string; email: string }) => void;
 };
 
 export default function RegisterForm({
-  accountType, setAccountType, showPass, setShowPass,
+  accountType, setAccountType, showPass, setShowPass, onDataChange
 }: Props) {
+
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+
+  React.useEffect(() => {
+    onDataChange({ firstName, lastName, email });
+  }, [firstName, lastName, email, onDataChange]);
+
   return (
     <Stack spacing={2} sx={{ width: '100%', mt: 1 }}>
       {/* Tipo de cuenta */}
@@ -35,10 +45,26 @@ export default function RegisterForm({
 
       {/* Comunes */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField label="Nombre" fullWidth />
-        <TextField label="Apellido" fullWidth />
+        <TextField 
+          label="Nombre" 
+          fullWidth 
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+        />
+        <TextField 
+          label="Apellido" 
+          fullWidth 
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+        />
       </Stack>
-      <TextField label="Correo electrónico" type="email" fullWidth />
+      <TextField 
+        label="Correo electrónico" 
+        type="email" 
+        fullWidth 
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
       <TextField
         label="Contraseña"
         type={showPass ? 'text' : 'password'}

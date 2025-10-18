@@ -8,6 +8,7 @@ import type { AuthTab, AccountType } from '../../types/auth';
 import { AUTH_TEXT } from '../../constants/auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
+import type { AuthAction } from './AuthReducer';
 
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
@@ -16,10 +17,13 @@ import RegisterForm from './RegisterForm';
 // Muestra un formulario de login o registro según la pestaña seleccionada
 // Se encarga de manejar el estado de las pestañas y las propiedades de los formularios
 // Muestra un botón para cerrar el diálogo y un botón para enviar el formulario según la pestaña seleccionada
+type AuthDialogProps = { 
+  open: boolean; 
+  onClose: () => void; 
+  dispatch: React.Dispatch<AuthAction>;
+};
 
-type AuthDialogProps = { open: boolean; onClose: () => void; };
-
-export default function AuthDialog({ open, onClose }: AuthDialogProps) {
+export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps) {
   // Estado para manejar la pestaña seleccionada (login o register)
   const [tab, setTab] = React.useState<AuthTab>('login');
 
@@ -28,6 +32,33 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
   // Estado para manejar el tipo de cuenta en el formulario de registro
   const [accountType, setAccountType] = React.useState<AccountType>('user');
+
+  // Estado para almacenar los datos del formulario de registro
+  const [registerData, setRegisterData] = React.useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+
+  const handleRegister = () => {
+    // Crear el nombre de usuario a partir de los datos del formulario
+    const username = `${registerData.firstName} ${registerData.lastName}`;
+    
+    // Dispatch login con el username
+    dispatch({ type: 'login', username });
+    onClose();
+  };
+
+  const handleLogin = () => {
+    const username = 'Usuario Logueado'; // Esto vendría del formulario
+    dispatch({ type: 'login', username });
+    onClose();
+  };
+
+  // Callback para recibir los datos del formulario de registro
+  const handleRegisterDataChange = (data: { firstName: string; lastName: string; email: string }) => {
+    setRegisterData(data);
+  };
 
   // Textos de título y subtítulo según la pestaña seleccionada (login o register)
   const title = tab === 'login' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;
@@ -55,6 +86,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
             setAccountType={setAccountType}
             showPass={showPass}
             setShowPass={setShowPass}
+            onDataChange={handleRegisterDataChange}
           />
         )}
       </DialogContent>
@@ -66,9 +98,9 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
         {/* Botón para enviar el formulario según la pestaña seleccionada */}
         {tab === 'login' ? (
-          <Button variant="contained">Ingresar</Button> // Esto tendria q tener una accion
+          <Button variant="contained" onClick={handleLogin}>Ingresar</Button>
         ) : (
-          <Button variant="contained">Crear cuenta</Button> // Esto tendria q tener una accion
+          <Button variant="contained" onClick={handleRegister}>Crear cuenta</Button>
         )}
       </DialogActions>
     </Dialog>
