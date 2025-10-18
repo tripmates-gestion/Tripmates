@@ -10,6 +10,6 @@ export const AUTH_TEXT = {
   
 export const ACCOUNT_TYPES = {
   user: { label: 'Viajero' },
-  business: { label: 'Empresa' },
+  business: { label: 'Negocio' },
 } as const;
   
