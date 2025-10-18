@@ -15,12 +15,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/users")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
+    /**
+     * Endpoint para crear un usuario en el sistema.
+     *
+     * @param userCreationRequestDTO dto para parseo y validación de JSON.
+     * @return el usuario creado.
+     */
     @PostMapping
     public User createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
         return userService.createUser(userCreationRequestDTO);

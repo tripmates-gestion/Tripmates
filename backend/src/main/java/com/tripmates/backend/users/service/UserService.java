@@ -11,9 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Transactional
 public class UserService {
 
+    /**
+     * Manejador de queries sobre el documento de MongoDB.
+     */
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * Crea un nuevo usuario y lo persiste en el documento de MongoDB.
+     *
+     * @param userCreationRequestDTO dto para parseo y validación de JSON.
+     * @return el usuario persistido.
+     */
     public User createUser(UserCreationRequestDTO userCreationRequestDTO) {
         var user = new User();
         user.setEmail(userCreationRequestDTO.email());
