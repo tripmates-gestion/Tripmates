@@ -42,6 +42,7 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
 
   const handleRegister = () => {
     // Crear el nombre de usuario a partir de los datos del formulario
+    console.log('Formulario completado automáticamente:', registerData);
     const username = `${registerData.firstName} ${registerData.lastName}`;
     
     // Dispatch login con el username
@@ -59,6 +60,7 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
   const handleRegisterDataChange = (data: { firstName: string; lastName: string; email: string }) => {
     setRegisterData(data);
   };
+
 
   // Textos de título y subtítulo según la pestaña seleccionada (login o register)
   const title = tab === 'login' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;

@@ -13,7 +13,7 @@ type Props = {
   setAccountType: (t: AccountType) => void;
   showPass: boolean;
   setShowPass: (v: boolean) => void;
-  onDataChange: (data: { firstName: string; lastName: string; email: string }) => void;
+  onDataChange: (data: { firstName: string; lastName: string; email: string; password: string; accountType: AccountType }) => void;
 };
 
 export default function RegisterForm({
@@ -23,10 +23,12 @@ export default function RegisterForm({
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
   const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   React.useEffect(() => {
-    onDataChange({ firstName, lastName, email });
-  }, [firstName, lastName, email, onDataChange]);
+    // Solo enviamos los datos cuando cambien, sin llamar onFormComplete automáticamente
+    onDataChange({ firstName, lastName, email, password, accountType });
+  }, [firstName, lastName, email, password, accountType, onDataChange]);
 
   return (
     <Stack spacing={2} sx={{ width: '100%', mt: 1 }}>
@@ -69,7 +71,9 @@ export default function RegisterForm({
         label="Contraseña"
         type={showPass ? 'text' : 'password'}
         fullWidth
+        value={password}
         helperText="Mínimo 8 caracteres"
+        onChange={(e) => setPassword(e.target.value)}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
