@@ -1,6 +1,6 @@
 // src/pages/Search.tsx
 import { useMemo } from 'react';
-import {GridLegacy as Grid} from '@mui/material'; 
+import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import SearchBar from '../components/SearchBar';
@@ -94,13 +94,20 @@ export default function Search() {
       <SearchBar onSubmit={(next) => nav(`/search?q=${encodeURIComponent(next)}`)} />
 
       {/* Grilla responsiva con las tarjetas de los lugares */}
-      <Grid container spacing={2}>
+      <Box
+        display="grid"
+        gridTemplateColumns={{
+          xs: '1fr',          // 1 por fila en móviles
+          sm: 'repeat(2, 1fr)', // 2 por fila en tablets
+          md: 'repeat(3, 1fr)', // 3 por fila en escritorio
+        }}
+        gap={4} // espacio entre PlaceCards
+      >
         {items.map((p) => (
-          <Grid item key={p.id} xs={12} sm={6} md={4}>
-            <PlaceCard place={p} />
-          </Grid>
+          <PlaceCard key={p.id} place={p} />
         ))}
-      </Grid>
+      </Box>
+      
     </Stack>
   );
 }
