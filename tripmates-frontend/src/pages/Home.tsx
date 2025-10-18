@@ -1,5 +1,5 @@
 // src/pages/Home.tsx
-import { Box, Button, Container, Grid, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
+import { Box, Button, Container, GridLegacy as Grid, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
 import type { Place } from '../components/PlaceCard';
 import PlaceCard from '../components/PlaceCard';
 import FacebookIcon from '@mui/icons-material/Facebook';

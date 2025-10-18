@@ -1,6 +1,6 @@
 // src/pages/Search.tsx
 import { useMemo } from 'react';
-import Grid from '@mui/material/Grid'; 
+import {GridLegacy as Grid} from '@mui/material'; 
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import SearchBar from '../components/SearchBar';
