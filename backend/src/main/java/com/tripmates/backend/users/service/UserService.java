@@ -1,5 +1,8 @@
 package com.tripmates.backend.users.service;
 
+import com.tripmates.backend.config.security.jwt.JwtService;
+import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
+import com.tripmates.backend.users.dto.UserCreationResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
@@ -17,17 +20,33 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     /**
      * Crea un nuevo usuario y lo persiste en el documento de MongoDB.
      *
      * @param userCreationRequestDTO dto para parseo y validación de JSON.
      * @return el usuario persistido.
      */
-    public User createUser(UserCreationRequestDTO userCreationRequestDTO) {
+    public UserCreationResponseDTO createUser(UserCreationRequestDTO userCreationRequestDTO) {
         var user = new User();
         user.setEmail(userCreationRequestDTO.email());
         user.setPassword(userCreationRequestDTO.password());
         user.setRole(userCreationRequestDTO.role());
-        return userRepository.save(user);
+
+        var accessToken = this.jwtService.generateAccessToken(
+                new UserDetailFromJwt(user.getEmail(), user.getPassword())
+        );
+
+        var refreshToken = this.jwtService.generateRefreshToken(
+                new UserDetailFromJwt(user.getEmail(), user.getPassword())
+        );
+
+        user.setToken(refreshToken);
+
+        userRepository.save(user);
+
+        return new UserCreationResponseDTO(accessToken, refreshToken);
     }
 }

@@ -1,11 +1,11 @@
 package com.tripmates.backend.users.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 
@@ -28,7 +28,7 @@ public class UserController {
      * @return el usuario creado.
      */
     @PostMapping
-    public User createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
-        return userService.createUser(userCreationRequestDTO);
+    public ResponseEntity<?> createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
+        return ResponseEntity.ok(this.userService.createUser(userCreationRequestDTO));
     }
 }
