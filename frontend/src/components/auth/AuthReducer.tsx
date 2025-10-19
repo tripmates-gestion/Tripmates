@@ -1,4 +1,4 @@
-import type { User } from '..//../helpers/userCreation';
+import type { User } from '../../types/user';
 
 export interface AuthState {
   username: string;
@@ -25,7 +25,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
       return { 
         ...state, 
         user: action.user, 
-        username: `${action.user.firstName} ${action.user.lastName}`,
+        username: action.user.username,
         authOpen: false 
       };
     case 'logout':

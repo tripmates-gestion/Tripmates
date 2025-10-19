@@ -53,8 +53,7 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
       registerData.lastName
     ).then(newUser => {
       console.log('Usuario creado:', newUser);
-      const username = `${registerData.firstName} ${registerData.lastName}`;
-      dispatch({ type: 'login', username });
+      dispatch({ type: 'setUser', user: newUser });
       onClose();
     }
     )

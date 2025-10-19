@@ -11,8 +11,8 @@ import type { User } from '../../types/user';
 interface NavBarProps {
   mode: 'light' | 'dark';
   setMode: (m: 'light' | 'dark') => void;
-  user: User | null;                 // ✅ preferí pasar user y no username aparte
-  username?: string;                 // (transición) elimina esto cuando todo use user
+  user: User | null;              
+  username?: string;                
   onLogout?: () => void;
   openAuth: () => void;
   authOpen: boolean;
@@ -39,8 +39,8 @@ export default function NavBar({
   };
 
   return (
-    <AppBar position="sticky" color="default" elevation={0}>
-      <Toolbar>
+    <AppBar position="fixed" color="default" elevation={0} sx={{ top: 0 }}>
+    <Toolbar disableGutters sx={{ px: { xs: 2, md: 3 } }}>
         <BrandLink to={PAGES_ROUTE.root} />
 
         <Box sx={{ ml: 'auto' }} />

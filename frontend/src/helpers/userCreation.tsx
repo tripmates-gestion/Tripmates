@@ -1,11 +1,4 @@
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string; 
-  email: string;
-  password: string;
-  role: 'user' | 'business';
-}
+import type { User } from '../types/user';
 
 export function createUser(
   email: string,
@@ -41,12 +34,11 @@ export function createUser(
 
 function mapUser(data: any, firstName: string, lastName: string): User {
     return {
-        id: data.id,
-        firstName: firstName,
-        lastName: lastName,
+        id: typeof data.id === 'string' ? parseInt(data.id, 10) : data.id,
+        username: `${firstName} ${lastName}`,
         email: data.email,
-        password: data.password,
-        role: data.role,
+        fullName: `${firstName} ${lastName}`,
+        avatarUrl: data.avatarUrl ?? undefined,
+        createdAt: data.createdAt ?? undefined,
     };
 }
-

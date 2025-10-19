@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useReducer } from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import NavBar from './components/NavBar';
+import NavBar from './components/navbar/NavBar';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
@@ -10,6 +10,7 @@ import { authReducer } from './components/auth/AuthReducer';
 import type { AuthState } from './components/auth/AuthReducer';
 import type { AppProps } from './types/theme';
 import { PAGES_ROUTE } from './constants/Pages';
+import { Toolbar } from '@mui/material';
 
 const initialState: AuthState = {
   username: '',
@@ -19,10 +20,9 @@ const initialState: AuthState = {
   showPass: false,
 };
 
+
 export default function App({ mode, setMode }: AppProps) {
   const [state, dispatch] = useReducer(authReducer, initialState);
-
-  console.log('Usuario actual en App:', state.user);
 
   return (
     <Box>
@@ -37,13 +37,19 @@ export default function App({ mode, setMode }: AppProps) {
         onCloseAuth={() => dispatch({ type: 'closeAuth' })}
         dispatch={dispatch}
       />
-      <Container sx={{ py: 4 }}>
+      <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
+
+      {/* No quiero q tenga bordes limitad */}
+      <Routes>
+        <Route path={PAGES_ROUTE.profile} element={<Profile />} />
+      </Routes>
+
+      <Container disableGutters sx={{ py: 4, px: { xs: 2, md: 2 } }}>
         <Routes>
           <Route path={PAGES_ROUTE.root} element={<Home />} />
           <Route path={PAGES_ROUTE.search} element={<Search />} />
-          <Route path={PAGES_ROUTE.profile} element={<Profile />} />
         </Routes>
-      </Container>
+        </Container>
     </Box>
   );
 }
