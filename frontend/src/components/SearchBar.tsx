@@ -38,7 +38,6 @@ export default function SearchBar({
           sx={{ ml: 1, flex: 1 }}
           placeholder={placeholder}
         />
-  
         {/* Botón con ícono de búsqueda */}
         <IconButton type="submit" aria-label="buscar">
           <SearchIcon /> 

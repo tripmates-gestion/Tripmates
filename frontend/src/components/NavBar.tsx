@@ -7,6 +7,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import AuthDialog from './auth/AuthDialog';
 import { useNavigate } from 'react-router-dom';
 import type { AuthAction } from './auth/AuthReducer';
+import { PAGES_ROUTE } from '../constants/Pages';
 
 interface NavBarProps {
   mode: 'light' | 'dark';
@@ -34,7 +35,7 @@ export default function NavBar({
 
   const handleLogout = () => {
     if (onLogout) onLogout();
-    navigate('/');
+    navigate(PAGES_ROUTE.root);
   };
 
   // Simplemente calculamos si está logueado basado en username
@@ -47,7 +48,7 @@ export default function NavBar({
           {/* Logo y título */}
           <Box
             component={RouterLink}
-            to="/"
+            to={PAGES_ROUTE.root}
             sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'inherit', textDecoration: 'none' }}
             aria-label="Ir al inicio"
           >
@@ -57,8 +58,8 @@ export default function NavBar({
 
           {/* Botones a la derecha */}
           <Stack direction="row" spacing={1} sx={{ ml: 'auto' }} alignItems="center">
-            <Button color="inherit" component={RouterLink} to="/">Inicio</Button>
-            <Button color="inherit" component={RouterLink} to="/search">Buscar</Button>
+            <Button color="inherit" component={RouterLink} to={PAGES_ROUTE.root}>Inicio</Button>
+            <Button color="inherit" component={RouterLink} to={PAGES_ROUTE.search}>Buscar</Button>
 
             <IconButton color="inherit" onClick={() => setMode(mode === 'light' ? 'dark' : 'light')} aria-label="toggle theme">
               {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
@@ -66,7 +67,7 @@ export default function NavBar({
 
             {isLoggedIn ? (
               <>
-                <Button color="inherit" component={RouterLink} to="/profile">{username}</Button>
+                <Button color="inherit" component={RouterLink} to={PAGES_ROUTE.profile}>{username}</Button>
                 <Button color="secondary" variant="outlined" onClick={handleLogout}>Cerrar sesión</Button>
               </>
             ) : (

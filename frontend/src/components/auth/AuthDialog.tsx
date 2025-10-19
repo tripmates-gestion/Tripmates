@@ -5,7 +5,7 @@ import {
   Typography, Button
 } from '@mui/material';
 import type { AuthTab, AccountType } from '../../types/auth';
-import { AUTH_TEXT } from '../../constants/auth';
+import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import type { AuthAction } from './AuthReducer';

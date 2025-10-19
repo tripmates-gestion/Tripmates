@@ -1,6 +1,6 @@
 // src/pages/Home.tsx
 import { Box, Button, Container, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import type { Place } from '../components/PlaceCard';
 import PlaceCard from '../components/PlaceCard';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -119,7 +119,7 @@ export default function Home() {
           {/* Grilla de tarjetas con los destinos */}
           <Grid container spacing={4}>
             {MOCK.map((p) => (
-                        <Grid key={p.id} xs={12} sm={6} md={4}>
+                        <Grid key={p.id} xs={12} sm={6} md={4} item sx={{ mb: 3 }}>
                           <PlaceCard place={p} />
                         </Grid> 
             ))}
@@ -146,7 +146,7 @@ export default function Home() {
           {/* Tarjetas de pasos numerados */}
           <Grid container spacing={4} mt={4}>
             {steps.map((s, i) => (
-              <Grid xs={12} md={4} key={i}>
+              <Grid item xs={12} md={4} key={i} sx={{ mb: 3 }}>
                 <Card sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
                   <Typography variant="h6" fontWeight={700}>{i + 1}. {s.title}</Typography>
                   <Typography variant="body2" color="text.secondary" mt={1}>{s.text}</Typography>
@@ -166,7 +166,12 @@ export default function Home() {
         <Container>
         <Divider sx={{ my: 4 }} />
           <Grid container spacing={4}>
-            <Grid xs={12} sm={6} md={3}>
+            {/* Separador entre secciones */}
+            <Grid item xs={12}>
+              <Box sx={{ height: 1, bgcolor: 'divider' }} />
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Acerca de TripMates
               </Typography>
@@ -178,7 +183,7 @@ export default function Home() {
               </Stack>
             </Grid>
   
-            <Grid xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Explorar
               </Typography>
@@ -189,7 +194,7 @@ export default function Home() {
               </Stack>
             </Grid>
   
-            <Grid xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Negocios
               </Typography>
@@ -199,7 +204,7 @@ export default function Home() {
               </Stack>
             </Grid>
   
-            <Grid xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Seguinos
               </Typography>
