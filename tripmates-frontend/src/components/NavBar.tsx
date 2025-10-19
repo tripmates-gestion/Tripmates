@@ -1,4 +1,5 @@
 import React from 'react';
+import type { User } from '../helpers/userCreation';
 import { AppBar, Toolbar, Box, Typography, Stack, Button, IconButton } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
@@ -11,6 +12,7 @@ interface NavBarProps {
   mode: 'light' | 'dark';
   setMode: (m: 'light' | 'dark') => void;
   username: string;
+  user: User | null;
   onLogout?: () => void;
   openAuth: () => void;
   authOpen: boolean;

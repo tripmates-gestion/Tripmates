@@ -9,6 +9,7 @@ import { AUTH_TEXT } from '../../constants/auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import type { AuthAction } from './AuthReducer';
+import { createUser } from '../../helpers/userCreation';
 
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
@@ -37,17 +38,30 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
   const [registerData, setRegisterData] = React.useState({
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    password: '',
   });
 
   const handleRegister = () => {
     // Crear el nombre de usuario a partir de los datos del formulario
     console.log('Formulario completado automáticamente:', registerData);
-    const username = `${registerData.firstName} ${registerData.lastName}`;
-    
-    // Dispatch login con el username
-    dispatch({ type: 'login', username });
-    onClose();
+    createUser(
+      registerData.email, 
+      registerData.password,
+      accountType,
+      registerData.firstName,
+      registerData.lastName
+    ).then(newUser => {
+      console.log('Usuario creado:', newUser);
+      const username = `${registerData.firstName} ${registerData.lastName}`;
+      dispatch({ type: 'login', username });
+      onClose();
+    }
+    )
+    .catch(error => {
+      console.error('Error al crear usuario:', error);
+      alert('Error al crear la cuenta. Por favor intenta de nuevo.');
+    });
   };
 
   const handleLogin = () => {
@@ -57,7 +71,7 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
   };
 
   // Callback para recibir los datos del formulario de registro
-  const handleRegisterDataChange = (data: { firstName: string; lastName: string; email: string }) => {
+  const handleRegisterDataChange = (data: { firstName: string; lastName: string; email: string; password: string }) => {
     setRegisterData(data);
   };
 

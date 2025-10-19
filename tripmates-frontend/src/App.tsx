@@ -8,11 +8,11 @@ import NavBar from './components/NavBar';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import { authReducer } from './components/auth/AuthReducer';
-
 import type { AuthState } from './components/auth/AuthReducer';
 
 const initialState: AuthState = {
   username: '',
+  user: null, // Agregar user inicial
   authOpen: false,
   accountType: 'user',
   showPass: false,
@@ -28,9 +28,12 @@ export default function App() {
       mode: mode,
     },
     shape: {
-      borderRadius: 8, // aplica a todos los botones, cards, etc.
+      borderRadius: 8, 
     },
   });
+
+  // Función para acceder al usuario completo desde cualquier parte
+  console.log('Usuario actual en App:', state.user);
 
   return (
     <ThemeProvider theme={theme}>
@@ -40,6 +43,7 @@ export default function App() {
           mode={mode}
           setMode={setMode}
           username={state.username}
+          user={state.user} // Pasar usuario completo
           onLogout={() => dispatch({ type: 'logout' })}
           openAuth={() => dispatch({ type: 'openAuth' })}
           authOpen={state.authOpen}
