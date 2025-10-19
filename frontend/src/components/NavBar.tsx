@@ -1,77 +1,86 @@
-// src/components/NavBar.tsx
-import * as React from 'react';
-import {
-  AppBar, Toolbar, Typography, Stack, Button, IconButton, Box
-} from '@mui/material';
+import React from 'react';
+import type { User } from '..//helpers/userCreation';
+import { AppBar, Toolbar, Box, Typography, Stack, Button, IconButton } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { Link as RouterLink } from 'react-router-dom';
 import AuthDialog from './auth/AuthDialog';
+import { useNavigate } from 'react-router-dom';
+import type { AuthAction } from './auth/AuthReducer';
 
-// Barra de navegación superior (Navbar)
-export default function NavBar({
-  mode,        // modo actual (light/dark)
-  setMode,     // función para cambiar el modo
-}: {
+interface NavBarProps {
   mode: 'light' | 'dark';
   setMode: (m: 'light' | 'dark') => void;
-}) {
-  // Estado para abrir o cerrar el popup de inicio de sesión
-  const [authOpen, setAuthOpen] = React.useState(false);
+  username: string;
+  user: User | null;
+  onLogout?: () => void;
+  openAuth: () => void;
+  authOpen: boolean;
+  onCloseAuth: () => void;
+  dispatch: React.Dispatch<AuthAction>;
+}
+
+export default function NavBar({ 
+  mode, 
+  setMode, 
+  username, 
+  onLogout, 
+  openAuth, 
+  authOpen, 
+  onCloseAuth, 
+  dispatch 
+}: NavBarProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    if (onLogout) onLogout();
+    navigate('/');
+  };
+
+  // Simplemente calculamos si está logueado basado en username
+  const isLoggedIn = username !== '';
 
   return (
     <>
-      {/* AppBar es la barra superior fija */}
       <AppBar position="sticky" color="default" elevation={0}>
         <Toolbar>
-          {/* Título / Logo */}
+          {/* Logo y título */}
           <Box
             component={RouterLink}
             to="/"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: 'inherit', textDecoration: 'none' }}
             aria-label="Ir al inicio"
           >
-            <Box
-              component="img"
-              src={`logo.png`} // src/assets/logo.png
-              alt="TripMates"
-              sx={{ width: 42, height: 42, borderRadius: 1 }}
-            />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              TripMates
-            </Typography>
+            <Box component="img" src="logo.png" alt="TripMates" sx={{ width: 42, height: 42, borderRadius: 1 }} />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>TripMates</Typography>
           </Box>
 
-          {/* Botones alineados a la derecha */}
+          {/* Botones a la derecha */}
           <Stack direction="row" spacing={1} sx={{ ml: 'auto' }} alignItems="center">
             <Button color="inherit" component={RouterLink} to="/">Inicio</Button>
             <Button color="inherit" component={RouterLink} to="/search">Buscar</Button>
 
-            {/* Botón para cambiar entre modo claro/oscuro */}
-            <IconButton
-              color="inherit"
-              onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
-              aria-label="toggle theme"
-            >
+            <IconButton color="inherit" onClick={() => setMode(mode === 'light' ? 'dark' : 'light')} aria-label="toggle theme">
               {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
             </IconButton>
 
-            {/* Botón para abrir el modal de login */}
-            <Button variant="contained" onClick={() => setAuthOpen(true)}>
-              Ingresar
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button color="inherit" component={RouterLink} to="/profile">{username}</Button>
+                <Button color="secondary" variant="outlined" onClick={handleLogout}>Cerrar sesión</Button>
+              </>
+            ) : (
+              <Button variant="contained" onClick={openAuth}>Ingresar</Button>
+            )}
           </Stack>
         </Toolbar>
       </AppBar>
 
-      {/* Componente del popup de inicio de sesión / registro */}
-      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthDialog 
+        open={authOpen} 
+        onClose={onCloseAuth} 
+        dispatch={dispatch}
+      />
     </>
   );
 }
