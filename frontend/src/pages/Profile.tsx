@@ -15,15 +15,8 @@ import {
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
+import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
 
-type UserStats = { aportes: number; seguidores: number; siguiendo: number };
-type UserProfile = {
-  name: string;
-  username: string;
-  avatarUrl?: string;
-  coverUrl?: string;
-  stats: UserStats;
-};
 type ProfileProps = { user?: UserProfile };
 
 const MOCK: UserProfile = {
@@ -58,18 +51,19 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
 
 export default function Profile({ user = MOCK }: ProfileProps) {
   const [tab, setTab] = React.useState(0);
+  const [editOpen, setEditOpen] = React.useState(false);
+  const [profile, setProfile] = React.useState(user);
+
+  const handleSave = (updated: UserProfile) => setProfile(updated);
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-      {/* Banner full-bleed + alto de pantalla */}
+      {/* Banner */}
       <Box
         sx={{
-          // hace que se estire de borde a borde del viewport, incluso si tu layout centra contenido
-
           minHeight: { xs: '38vh', md: '30vh' },
           position: 'relative',
-          backgroundColor: 'grey.200',
-          backgroundImage: user.coverUrl ? `url(${user.coverUrl})` : 'none',
+          backgroundImage: profile.coverUrl ? `url(${profile.coverUrl})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -80,13 +74,14 @@ export default function Profile({ user = MOCK }: ProfileProps) {
             variant="contained"
             size="small"
             sx={{ borderRadius: 999 }}
+            onClick={() => setEditOpen(true)}
           >
             Cargar foto de portada
           </Button>
         </Stack>
       </Box>
 
-      {/* Tarjeta superpuesta */}
+      {/* Card */}
       <Box sx={{ position: 'relative' }}>
         <Card
           elevation={1}
@@ -94,77 +89,54 @@ export default function Profile({ user = MOCK }: ProfileProps) {
             maxWidth: 1180,
             width: '100%',
             mx: 'auto',
-            mt: { xs: -8, md: -10 }, // superposición sobre el banner
+            mt: { xs: -8, md: -10 },
             borderRadius: 2,
             overflow: 'visible',
           }}
         >
           <CardContent sx={{ pb: 1.5 }}>
-            {/* Cabecera */}
-            <Stack
-              direction="row"
-              spacing={2}
-              alignItems="center"
-              sx={{ px: { xs: 2, sm: 3, md: 4 } }}
-            >
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
               <Avatar
-                src={user.avatarUrl}
-                alt={user.name}
+                src={profile.avatarUrl}
+                alt={profile.name}
                 sx={{
                   width: 96,
                   height: 96,
-                  mt: { xs: -6, md: -8 }, // el avatar también se mete sobre el borde
+                  mt: { xs: -6, md: -8 },
                   border: (t) => `4px solid ${t.palette.background.paper}`,
                 }}
               />
-
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="h5" fontWeight={800}>
-                  {user.name}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {user.username}
-                </Typography>
+                <Typography variant="h5" fontWeight={800}>{profile.name}</Typography>
+                <Typography variant="body1" color="text.secondary">{profile.username}</Typography>
+                {profile.description && (
+                  <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
+                    {profile.description}
+                  </Typography>
+                )}
               </Box>
-
               <ButtonGroup variant="outlined" size="small">
-                <Button startIcon={<Edit />}>Editar perfil</Button>
+                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Editar perfil</Button>
                 <Button startIcon={<Settings />}>Configuración</Button>
               </ButtonGroup>
             </Stack>
 
-            {/* Métricas estilo TA: label arriba, número abajo */}
-            <Stack
-              direction="row"
-              spacing={4}
-              alignItems="center"
-              sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}
-            >
-              <Stat label="Aportes" value={user.stats.aportes} />
-              <Stat label="Seguidores" value={user.stats.seguidores} />
-              <Stat label="Siguiendo" value={user.stats.siguiendo} />
+            {/* Stats */}
+            <Stack direction="row" spacing={4} alignItems="center" sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}>
+              <Stat label="Aportes" value={profile.stats.aportes} />
+              <Stat label="Seguidores" value={profile.stats.seguidores} />
+              <Stat label="Siguiendo" value={profile.stats.siguiendo} />
             </Stack>
           </CardContent>
 
           <Divider />
-
-          {/* Tabs */}
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            variant="scrollable"
-            allowScrollButtonsMobile
-            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
-          >
+          <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
             <Tab label="Actividad" />
             <Tab label="Viajes" />
             <Tab label="Fotos" />
             <Tab label="Opiniones" />
           </Tabs>
-
           <Divider />
-
-          {/* Contenido */}
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {tab === 0 && <EmptyState title="Actualización de actividades" />}
             {tab === 1 && <EmptyState title="Viajes" />}
@@ -173,9 +145,18 @@ export default function Profile({ user = MOCK }: ProfileProps) {
           </Box>
         </Card>
       </Box>
+
+      {/* 🔧 Modal de edición */}
+      <EditProfileDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        user={profile}
+        onSave={handleSave}
+      />
     </Box>
   );
 }
+
 
 function EmptyState({ title }: { title: string }) {
   return (
