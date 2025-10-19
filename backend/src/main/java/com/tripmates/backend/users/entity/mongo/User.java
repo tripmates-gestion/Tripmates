@@ -57,6 +57,12 @@ public class User implements UserDetails {
     private Role role;
 
     /**
+     * Refresh token del usuario para mantener activa su sesión.
+     */
+    @Indexed(unique = true)
+    private String token;
+
+    /**
      * Devuelve la contraseña del usuario.
      *
      * @return contraseña del usuario.
