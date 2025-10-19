@@ -70,10 +70,12 @@ export default function AuthDialog({ open, onClose, dispatch }: AuthDialogProps)
   };
 
   // Callback para recibir los datos del formulario de registro
-  const handleRegisterDataChange = (data: { firstName: string; lastName: string; email: string; password: string }) => {
-    setRegisterData(data);
-  };
-
+  const handleRegisterDataChange = React.useCallback(
+    (data: { firstName: string; lastName: string; email: string; password: string }) => {
+      setRegisterData(data);
+    },
+    []
+  );
 
   // Textos de título y subtítulo según la pestaña seleccionada (login o register)
   const title = tab === 'login' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;

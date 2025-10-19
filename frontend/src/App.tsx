@@ -22,20 +22,20 @@ const initialState: AuthState = {
 
 
 export default function App({ mode, setMode }: AppProps) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [sessionState, sessionDispatch] = useReducer(authReducer, initialState);
 
   return (
     <Box>
       <NavBar
         mode={mode}
         setMode={setMode}
-        username={state.username}
-        user={state.user}
-        onLogout={() => dispatch({ type: 'logout' })}
-        openAuth={() => dispatch({ type: 'openAuth' })}
-        authOpen={state.authOpen}
-        onCloseAuth={() => dispatch({ type: 'closeAuth' })}
-        dispatch={dispatch}
+        username={sessionState.username}
+        user={sessionState.user}
+        onLogout={() => sessionDispatch({ type: 'logout' })}
+        openAuth={() => sessionDispatch({ type: 'openAuth' })}
+        authOpen={sessionState.authOpen}
+        onCloseAuth={() => sessionDispatch({ type: 'closeAuth' })}
+        dispatch={sessionDispatch}
       />
       <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
 
