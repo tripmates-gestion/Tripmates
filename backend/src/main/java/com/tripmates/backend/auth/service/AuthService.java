@@ -26,13 +26,9 @@ public class AuthService {
         User user = userRepository.findByEmail(authLoginRequestDTO.email())
                 .orElseThrow(() -> new UserNotFoundException("Invalid credentials"));
 
-        System.out.println("User: " + user);
-
         if (!user.getPassword().equals(authLoginRequestDTO.password())) {
             throw new IncorrectPasswordException("Invalid credentials");
         }
-
-        System.out.println("Password correct");
 
         var accessToken = this.jwtService.generateAccessToken(
                 new UserDetailFromJwt(user.getEmail(), user.getPassword())
@@ -45,6 +41,6 @@ public class AuthService {
         user.setToken(refreshToken);
         userRepository.save(user);
 
-        return new AuthLoginResponseDTO(accessToken);
+        return new AuthLoginResponseDTO(accessToken, refreshToken);
     }
 }
