@@ -1,41 +1,31 @@
 import { Routes, Route } from 'react-router-dom';
-import { useReducer } from 'react';
+import { useState } from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import NavBar from './components/navbar/NavBar';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
-import { authReducer } from './components/auth/AuthReducer';
-import type { AuthState } from './components/auth/AuthReducer';
 import type { AppProps } from './types/theme';
 import { PAGES_ROUTE } from './constants/Pages';
 import { Toolbar } from '@mui/material';
-
-const initialState: AuthState = {
-  username: '',
-  user: null, // Agregar user inicial
-  authOpen: false,
-  accountType: 'user',
-  showPass: false,
-};
-
+import { useAuth } from './context/AuthContext';
 
 export default function App({ mode, setMode }: AppProps) {
-  const [sessionState, sessionDispatch] = useReducer(authReducer, initialState);
+  // todo: revisar que realmente se esté guardadndo correctaemente el logout
+  const { user, logout } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <Box>
       <NavBar
         mode={mode}
         setMode={setMode}
-        username={sessionState.username}
-        user={sessionState.user}
-        onLogout={() => sessionDispatch({ type: 'logout' })}
-        openAuth={() => sessionDispatch({ type: 'openAuth' })}
-        authOpen={sessionState.authOpen}
-        onCloseAuth={() => sessionDispatch({ type: 'closeAuth' })}
-        dispatch={sessionDispatch}
+        user={user}
+        onLogout={logout}
+        openAuth={() => setAuthOpen(true)}
+        authOpen={authOpen}
+        onCloseAuth={() => setAuthOpen(false)}
       />
       <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
 

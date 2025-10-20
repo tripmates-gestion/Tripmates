@@ -5,6 +5,7 @@ import App from './App';
 import { makeTheme } from './theme';
 import { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { AuthProvider } from './context/AuthContext';
 
 function Root() {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
@@ -13,9 +14,11 @@ function Root() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <App mode={mode} setMode={setMode} />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <App mode={mode} setMode={setMode} />
+        </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

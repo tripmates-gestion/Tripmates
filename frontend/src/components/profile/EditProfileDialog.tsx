@@ -8,7 +8,6 @@ import {
   Stack,
   TextField,
   Typography,
-  Avatar,
   Box,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';

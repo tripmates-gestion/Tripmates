@@ -5,31 +5,26 @@ import { BrandLink } from './BrandLink';
 import { MainLinks } from './MainLinks';
 import { ThemeToggle } from './ThemeToggle';
 import { AuthControls } from './AuthControls';
-import type { AuthAction } from '../../components/auth/AuthReducer';
 import type { User } from '../../types/user';
 
 interface NavBarProps {
   mode: 'light' | 'dark';
   setMode: (m: 'light' | 'dark') => void;
   user: User | null;              
-  username?: string;                
   onLogout?: () => void;
   openAuth: () => void;
   authOpen: boolean;
   onCloseAuth: () => void;
-  dispatch: React.Dispatch<AuthAction>;
 }
 
 export default function NavBar({
   mode,
   setMode,
   user,
-  username,
   onLogout,
   openAuth,
   authOpen,
   onCloseAuth,
-  dispatch,
 }: NavBarProps) {
   const navigate = useNavigate();
 
@@ -49,12 +44,10 @@ export default function NavBar({
           <ThemeToggle mode={mode} setMode={setMode} />
           <AuthControls
             user={user}
-            username={username}
             onLogout={handleLogout}
             openAuth={openAuth}
             authOpen={authOpen}
             onCloseAuth={onCloseAuth}
-            dispatch={dispatch}
           />
         </Stack>
       </Toolbar>
