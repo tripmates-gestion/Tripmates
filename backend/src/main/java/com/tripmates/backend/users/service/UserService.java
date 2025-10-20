@@ -5,6 +5,7 @@ import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.users.dto.UserCreationResponseDTO;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.dto.UserProfileResponseDTO;
+import com.tripmates.backend.users.dto.DescriptionUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -69,6 +70,14 @@ public class UserService {
                 .orElseGet(() -> userRepository.findByUsername(emailOrUsername)
                         .orElseThrow(() -> new NoSuchElementException("User not found")));
 
+        return new UserProfileResponseDTO(user);
+    }
+    
+    public UserProfileResponseDTO updateDescription(String emailOrUsername, DescriptionUpdateRequestDTO dto) {
+        User user = userRepository.findByEmail(emailOrUsername)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+        user.setDescription(dto.description());
+        userRepository.save(user);
         return new UserProfileResponseDTO(user);
     }
 }

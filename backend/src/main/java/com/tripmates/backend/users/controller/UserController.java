@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.dto.UserProfileResponseDTO;
+import com.tripmates.backend.users.dto.DescriptionUpdateRequestDTO;
 import com.tripmates.backend.users.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,5 +43,12 @@ public class UserController {
     public ResponseEntity<UserProfileResponseDTO> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         var profile = userService.getProfile(userDetails.getUsername());
         return ResponseEntity.ok(profile);
+    }
+    
+    @PatchMapping("/me/description")
+    public ResponseEntity<UserProfileResponseDTO> updateDescription(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody DescriptionUpdateRequestDTO dto) {
+        return ResponseEntity.ok(userService.updateDescription(userDetails.getUsername(), dto));
     }
 }
