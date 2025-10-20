@@ -8,7 +8,9 @@ import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +24,14 @@ public class AuthService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
         User user = userRepository.findByEmail(authLoginRequestDTO.email())
                 .orElseThrow(() -> new UserNotFoundException("Invalid credentials"));
 
-        if (!user.getPassword().equals(authLoginRequestDTO.password())) {
+        if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
             throw new IncorrectPasswordException("Invalid credentials");
         }
 

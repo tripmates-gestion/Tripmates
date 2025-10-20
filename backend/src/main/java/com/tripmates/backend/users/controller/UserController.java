@@ -1,13 +1,13 @@
 package com.tripmates.backend.users.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 
-import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
+import com.tripmates.backend.users.dto.UserProfileResponseDTO;
+import com.tripmates.backend.users.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -25,10 +25,22 @@ public class UserController {
      * Endpoint para crear un usuario en el sistema.
      *
      * @param userCreationRequestDTO dto para parseo y validación de JSON.
-     * @return el usuario creado.
+     * @return los tokens generados (access y refresh).
      */
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
         return ResponseEntity.ok(this.userService.createUser(userCreationRequestDTO));
+    }
+
+    /**
+     * Endpoint para obtener el perfil del usuario autenticado.
+     *
+     * @param userDetails información del usuario obtenida desde el contexto de seguridad (JWT).
+     * @return el perfil del usuario.
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponseDTO> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        var profile = userService.getProfile(userDetails.getUsername());
+        return ResponseEntity.ok(profile);
     }
 }

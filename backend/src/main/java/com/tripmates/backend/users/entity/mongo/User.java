@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,67 +30,60 @@ import org.springframework.data.mongodb.core.index.Indexed;
 @Setter
 @Document(collection = "users")
 public class User implements UserDetails {
-    /**
-     * Identificador único del usuario.
-     */
+
     @Id
     private String id;
 
-    /**
-     * Email del usuario.
-     */
+    @NotNull
+    @Indexed(unique = true)
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    private String username;
+
     @NotNull
     @Indexed(unique = true)
     private String email;
 
-    /**
-     * Contraseña del usuario.
-     */
     @NotNull
     private String password;
 
-    /**
-     * Rol del usuario.
-     * Los tipos de roles pueden verse en {@link com.tripmates.backend.users.entity.Role Role}.
-     */
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
+
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
 
-    /**
-     * Refresh token del usuario para mantener activa su sesión.
-     */
-    @Indexed(unique = true)
+    // URL del avatar del usuario
+    @Size(max = 500, message = "Avatar URL cannot exceed 500 characters")
+    private String avatarURL;
+
+    // Token de sesión (no único)
     private String token;
 
-    /**
-     * Devuelve la contraseña del usuario.
-     *
-     * @return contraseña del usuario.
-     */
     @Override
     public String getPassword() {
         return this.password;
     }
 
-    /**
-     * Devuelve el nombre de usuario del usuario.
-     *
-     * @return email del usuario.
-     */
     @Override
     public String getUsername() {
-        return this.email;
+        return this.username;
     }
 
-    /**
-     * Devuelve las autoridades del usuario para Spring Security.
-     *
-     * @return las autoridades del usuario.
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }
