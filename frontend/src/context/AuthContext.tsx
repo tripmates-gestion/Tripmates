@@ -18,7 +18,7 @@ function mapUser(data: any): User {
   console.log(data);
   return {
       id: data.id,
-      username: data.name,
+      username: data.username,
       email: data.email,
       role: data.role,
       description: data.description,

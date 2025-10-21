@@ -16,8 +16,10 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
 import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
+import { updateDescription, updateUsername } from '../helpers/profileUpdates';
+import { useAuth } from '../context/AuthContext';
 
-type ProfileProps = { user?: UserProfile };
+type ProfileProps = { userProfile?: UserProfile };
 
 const MOCK: UserProfile = {
   name: 'Fu Anibal',
@@ -49,12 +51,37 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
   </Stack>
 );
 
-export default function Profile({ user = MOCK }: ProfileProps) {
+export default function Profile({ userProfile = MOCK}: ProfileProps) {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [profile, setProfile] = React.useState(user);
+  const [profile, setProfile] = React.useState(userProfile);
+  const { user, token, logout } = useAuth();
 
-  const handleSave = (updated: UserProfile) => setProfile(updated);
+  React.useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.username || user.name || profile.name,
+        username: user.username || profile.username,
+        description: user.description || profile.description,
+        avatarUrl: user.avatarURL || profile.avatarUrl,
+        coverUrl: profile.coverUrl, // Mantener coverUrl del mock/local
+        stats: profile.stats, // Mantener stats del mock/local
+      });
+    }
+  }, [user]);
+
+  const handleSave = (updated: UserProfile) => {
+    Promise.all(
+      [updateDescription(profile.description, updated.description || '', token), 
+        updateUsername(profile.username, updated.username, token)]
+    ).then(_ => {
+      setProfile(updated);
+      user.description = updated.description;
+      user.username = updated.username;
+    }).catch(error => {
+      console.error('Error updating profile:', error);
+    });
+  };
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
