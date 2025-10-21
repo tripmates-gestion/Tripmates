@@ -3,8 +3,8 @@ export async function createUserRemote(
   password: string,
   role: 'user' | 'business',
   userName: string,
-) {
-  const response = await fetch('http://localhost:8080/users', {
+): Promise<void> {
+  const response = await fetch('http://localhost:8080/auth/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -17,7 +17,10 @@ export async function createUserRemote(
     })
   });
   
-   await response.json();
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || 'Error al registrar el usuario');
+  }
 }
 
 
