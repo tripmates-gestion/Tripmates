@@ -47,10 +47,20 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     password: '',
   });
 
+  const formRef = React.useRef<HTMLFormElement>(null);
+
+
   const handleRegister = async () => {
     setError(null);
     setLoading(true);
     
+    if (formRef.current && !formRef.current.checkValidity()) {
+      console.log('Formulario de registro inválido');
+      formRef.current.reportValidity(); // Muestra mensajes de validación nativos
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log('Formulario completado automáticamente:', registerData);
       
@@ -127,22 +137,24 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
         {/* Renderizado del formulario de login o registro según la pestaña seleccionada */}
         {tab === 'login' ? (
-          <LoginForm 
-            showPass={showPass} 
-            setShowPass={setShowPass}
-            email={loginEmail}
-            setEmail={setLoginEmail}
-            password={loginPassword}
-            setPassword={setLoginPassword}
-          />
-        ) : (
-          <RegisterForm
-            accountType={accountType}
-            setAccountType={setAccountType}
-            showPass={showPass}
-            setShowPass={setShowPass}
-            onDataChange={handleRegisterDataChange}
-          />
+            <LoginForm 
+              showPass={showPass} 
+              setShowPass={setShowPass}
+              email={loginEmail}
+              setEmail={setLoginEmail}
+              password={loginPassword}
+              setPassword={setLoginPassword}
+            />
+          ) : (
+            <RegisterForm
+              accountType={accountType}
+              setAccountType={setAccountType}
+              showPass={showPass}
+              setShowPass={setShowPass}
+              onDataChange={handleRegisterDataChange}
+              onSubmit={handleRegister}
+              formRef={formRef}
+            />
         )}
       </DialogContent>
 
@@ -163,7 +175,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         ) : (
           <Button 
             variant="contained" 
-            onClick={handleRegister}
+            type="submit"
+            onClick={() => handleRegister()}
             disabled={loading}
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}

@@ -47,6 +47,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage = errorData?.message || 'Falla al iniciar sesión';
+        console.error("[AuthProvider] Login failed:", errorMessage);
+        throw new Error(errorMessage);
+      }
   
       const data = await res.json();
   
