@@ -38,8 +38,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));
     const [user, setUser] = useState<User | null>(null);
 
-    // TODO: manejar el url correct
+    // TODO: DEBERÍA DE MOSTRARSE UN MENSAJE DE ERRR CUANDO 
     const login = async (email: string, password: string) => {
+      console.log("[AuthProvider] LOGGING IN with:", email, password);
       //esto podría fallar
       const res = await fetch('http://localhost:8080/auth/login', {
         method: "POST",
@@ -54,6 +55,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   
       setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken);
+      console.log("[AuthProvider] LOGGING IN, Access token saved", data.accessToken);
+      console.log("[AuthProvider] LOGGING IN, Refresh token saved", data.refreshToken);
       //no actualizo info de usuario pq lo hace el useEffect
     };
 
@@ -63,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const res = await fetch('http://localhost:8080/auth/logout', {
         method: "POST",
         headers: { "Content-Type": "application/json" , "Authorization": `Bearer ${accessToken}` },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ email: user?.email }),
       });
   
       await res.json();
@@ -83,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const res = await fetch('http://localhost:8080/auth/refresh', {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` },
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ email: user?.email, refreshToken }),
       });
           //si el refresh token expiró logout
       if (!res.ok) return logout();

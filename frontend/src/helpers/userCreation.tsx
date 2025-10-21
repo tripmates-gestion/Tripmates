@@ -2,19 +2,20 @@ export async function createUserRemote(
   email: string,
   password: string,
   role: 'user' | 'business',
-  userName: string,
+  username: string,
 ): Promise<void> {
   const requestBody = {
+    username,
     email,
-    password: '[REDACTED]', // No exponer la contraseña en los logs
+    password,
+    description: '', 
     role: role.toUpperCase(),
-    userName,
+    avatarURL: '',
   };
 
   console.log('[User Creation] Sending request to: POST http://localhost:8080/auth/register');
   console.log('[User Creation] Request body:', {
-    ...requestBody,
-    password: '[REDACTED]' // Aseguramos que la contraseña no se muestre
+    ...requestBody
   });
 
   try {
@@ -23,27 +24,22 @@ export async function createUserRemote(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...requestBody,
-        password // La contraseña real solo se envía en la petición
-      })
+      body: JSON.stringify(requestBody)
     });
     
-    const responseData = await response.text();
-    
     if (!response.ok) {
-      console.error('[User Creation] Error response:', {
+      const responseData = await response.json();
+      console.error('[USER CREATION] Error response:', {
         status: response.status,
-        statusText: response.statusText,
         response: responseData
       });
-      throw new Error(responseData || 'Error al registrar el usuario');
+      throw new Error(responseData.title || 'Error al registrar el usuario');
     }
     
     console.log('[User Creation] Success! Response:', {
       status: response.status,
       statusText: response.statusText,
-      data: responseData || 'No data returned'
+      data: 'No data returned'
     });
     
   } catch (error) {
