@@ -45,8 +45,8 @@ public class UserController {
             )
     })
     @GetMapping("/me")
-    public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetailFromJwt userDetailsFromJwt) {
-        return ResponseEntity.ok(userService.getUser(userDetailsFromJwt.getUsername()));
+    public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(userService.getUser(userDetails.getUsername()));
     }
 
     @Operation(summary = "Updates profile description from a user in the system")
@@ -66,11 +66,11 @@ public class UserController {
     })
     @PatchMapping("/me/description")
     public ResponseEntity<?> updateDescription(
-            @AuthenticationPrincipal UserDetailFromJwt userDetailsFromJwt,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
     ) {
         return ResponseEntity.ok(userService.updateDescription(
-                userDetailsFromJwt.getUsername(),
+                userDetails.getUsername(),
                 userUpdateDescriptionRequestDTO
         ));
     }
@@ -92,11 +92,11 @@ public class UserController {
     })
     @PatchMapping("/me/username")
     public ResponseEntity<?> updateUsername(
-            @AuthenticationPrincipal UserDetailFromJwt userDetailFromJwt,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
     ) {
         return ResponseEntity.ok(userService.updateUsername(
-                userDetailFromJwt.getUsername(),
+                userDetails.getUsername(),
                 userUpdateUsernameRequestDTO
         ));
     }
