@@ -5,9 +5,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletException;
 
 import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 
@@ -15,27 +19,43 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        public static final String[] PUBLIC_ENDPOINTS = { "/users", "/actuator/health",
-                        "/api-docs/**", // Ruta que configuraste en application.properties
-                        "/swagger-ui/**", // UI de Swagger
-                        "/swagger-ui.html", // HTML de Swagger UI
-                        "/swagger-resources/**", // Recursos de Swagger
-                        "/webjars/**" };
+    public static final String[] PUBLIC_ENDPOINTS = { 
+        "/users", "/auth/login", "/auth/refresh", "/auth/logout", 
+        "/actuator/health",
+        "/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html",
+        "/swagger-resources/**",
+        "/webjars/**"
+    };
 
-        @Autowired
-        private JwtAuthenticationFilter authFilter;
+    @Autowired
+    private JwtAuthenticationFilter authFilter;
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-                http
-                                .csrf(csrf -> csrf.disable())
-                                .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                                                .anyRequest().authenticated())
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-                return http.build();
+  
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        for (String endpoint : PUBLIC_ENDPOINTS) {
+            if (path.matches(endpoint.replace("**", ".*"))) {
+                return true;
+            }
         }
+        return false;
+    }
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

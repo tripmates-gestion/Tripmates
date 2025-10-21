@@ -13,17 +13,31 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 
+/**
+ * Representa un usuario del sistema, y define el documento
+ * que sera persistido en MongoDB.
+ *
+ * @see com.tripmates.backend.users.entity.Role
+ * @see org.springframework.security.core.userdetails.UserDetails
+ */
 @Getter
 @Setter
 @Document(collection = "users")
 public class User implements UserDetails {
+
     @Id
     private String id;
+
+    @NotNull
+    @Indexed(unique = true)
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    private String username;
 
     @NotNull
     @Indexed(unique = true)
@@ -32,9 +46,19 @@ public class User implements UserDetails {
     @NotNull
     private String password;
 
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    private String description;
+
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
+
+    // URL del avatar del usuario
+    @Size(max = 500, message = "Avatar URL cannot exceed 500 characters")
+    private String avatarURL;
+
+    // Token de sesión (no único)
+    private String token;
 
     @Override
     public String getPassword() {
@@ -43,7 +67,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email;
+        return this.username;
     }
 
     @Override
@@ -51,4 +75,15 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
+    @Override
+    public boolean isAccountNonExpired() { return true; }
+
+    @Override
+    public boolean isAccountNonLocked() { return true; }
+
+    @Override
+    public boolean isCredentialsNonExpired() { return true; }
+
+    @Override
+    public boolean isEnabled() { return true; }
 }

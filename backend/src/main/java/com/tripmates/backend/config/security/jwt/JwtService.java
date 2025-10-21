@@ -23,15 +23,30 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(UserDetails userCredentials) {
+    public String generateAccessToken(UserDetails userCredentials) {
+        String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+
         return Jwts.builder()
                 .setSubject(userCredentials.getUsername())
-                .claim("role", userCredentials.getAuthorities().toArray())
+                .claim("role", role)  
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 5)) // 5 horas
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+    public String generateRefreshToken(UserDetails userCredentials) {
+        String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+
+        return Jwts.builder()
+                .setSubject(userCredentials.getUsername())
+                .claim("role", role)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) // 7 días
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
     public UserDetails extractUserDetails(String token) {
         Claims claims = Jwts.parserBuilder()
