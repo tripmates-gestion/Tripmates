@@ -8,7 +8,7 @@ import type { AuthTab, AccountType } from '../../types/auth';
 import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import { createUser } from '../../helpers/userCreation';
+import { createUserRemote } from '../../helpers/userCreation';
 import { useAuth } from '../../context/AuthContext';
 
 // Componente de diálogo de autenticación
@@ -53,14 +53,13 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     
     try {
       console.log('Formulario completado automáticamente:', registerData);
-      // TODO: Ya no llamar al createUser de GIU porque hace un fecth de register de fondo
-      const newUser = await createUser(
+      
+      await createUserRemote(
         registerData.email, 
         registerData.password,
         accountType,
         registerData.name,
       );
-      console.log('Usuario creado:', newUser);
       
       // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);

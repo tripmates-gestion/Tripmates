@@ -13,36 +13,33 @@ interface AuthContextType {
   refreshAccessToken: () => Promise<void>;
 }
 
+function mapUser(data: any): User {
+  return {
+      id: data.id,
+      username: data.name,
+      email: data.email,
+      role: data.role,
+      description: data.description,
+      avatarURL: data.avatarURL,
+  };
+}
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
-
+//OJO: Chequear que el login solo devuelve los tokens
 export function AuthProvider({ children }: AuthProviderProps) {
 
-    const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+    const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("token"));
     const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));
     const [user, setUser] = useState<User | null>(null);
-    
-    // TODO: manejar los datos de usuario si se crea
-    const register = async (email: string, password: string, name: string, role: string) => {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, role }),
-      });
-      const data = await res.json();
-      localStorage.setItem("token", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
-      setToken(data.accessToken);
-      setRefreshToken(data.refreshToken);
-      setUser({id: data.user.id, username: data.user.username, email: data.user.email, role: data.user.role});
-    };
 
     // TODO: manejar el url correct
     const login = async (email: string, password: string) => {
-      const res = await fetch("/api/login", {
+      //esto podría fallar
+      const res = await fetch('http://localhost:8080/auth/login', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -53,16 +50,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem("token", data.accessToken);
       localStorage.setItem("refreshToken", data.refreshToken);
   
-      setToken(data.accessToken);
+      setAccessToken(data.accessToken);
       setRefreshToken(data.refreshToken);
-      setUser({id: data.user.id, username: data.user.username, email: data.user.email, role: data.user.role});
+      //no actualizo info de usuario pq lo hace el useEffect
     };
 
     const navigate = useNavigate();
-    const logout = () => {
+
+    const logout = async () => {
+      const res = await fetch('http://localhost:8080/auth/logout', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" , "Authorization": `Bearer ${accessToken}` },
+        body: JSON.stringify({ refreshToken }),
+      });
+  
+      await res.json();
+
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
-      setToken(null);
+      setAccessToken(null);
       setRefreshToken(null);
       setUser(null);
       navigate(PAGES_ROUTE.root);
@@ -72,9 +78,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // cuando se usaría esto, cuando se dio cuenta que se trató de usar el access token y este expiró
     // se hace el fetch, se guarda el access token en localstorage y en caché
     const refreshAccessToken = async () => {
-      const res = await fetch("/api/refresh", {
+      const res = await fetch('http://localhost:8080/auth/refresh', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` },
         body: JSON.stringify({ refreshToken }),
       });
           //si el refresh token expiró logout
@@ -82,30 +88,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   
       const data = await res.json();
       localStorage.setItem("token", data.accessToken);
-      setToken(data.accessToken);
+      setAccessToken(data.accessToken);
     };
 
     //Detallamos qué pasa cuando hubo algún cambio en el token
     useEffect(() => {
     //comprueba si hay token, si es null no hay sesión inciiada y no se hace nada
-      if (token) {
-          // se vuelve a pedir la info del usuario autenticado
-        fetch("/api/me", {
-          headers: { Authorization: `Bearer ${token}` },
+      if (accessToken) {
+        fetch('http://localhost:8080/users/me', {
+          headers: { "Authorization": `Bearer ${accessToken}` },
         })
-          .then(res => {
-              // si la respuesta indica que expiró el access token-> se tiene que renovar el access token
-            if (res.status === 401) return refreshAccessToken(); // si expiró, renovar
-            return res.json();
-          })
-          // caso en que se renovó exitosamente el access token -> se vuelve a 
-          .then(setUser)//implícitamente se está enviándo como argumento lo que retornó el anterior then
-          .catch(() => logout());
+        .then(res => {
+            // si la respuesta indica que expiró el access token-> se tiene que renovar el access token
+          if (res.status === 401) return refreshAccessToken(); // si expiró, renovar
+          return res.json();
+        })
+        // caso en que se renovó exitosamente el access token -> se vuelve a 
+        .then((data)=>setUser(mapUser(data)))
+        .catch(() => logout());
       }
-    }, [token]);
+    }, [accessToken]);
   
     return (
-      <AuthContext.Provider value={{ token, refreshToken, user, login, logout, refreshAccessToken }}>
+      <AuthContext.Provider value={{ token: accessToken, refreshToken, user, login, logout, refreshAccessToken }}>
         {children}
       </AuthContext.Provider>
     );
