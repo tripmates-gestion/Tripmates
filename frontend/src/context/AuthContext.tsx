@@ -1,5 +1,8 @@
 import { createContext, useState, useEffect, useContext, type ReactNode } from "react";
 import type { User } from "../types/user";
+import { PAGES_ROUTE } from "../constants/Pages";
+import { useNavigate } from 'react-router-dom';
+
 
 interface AuthContextType {
   token: string | null;
@@ -21,8 +24,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
     const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));
     const [user, setUser] = useState<User | null>(null);
+    
+    // TODO: manejar los datos de usuario si se crea
+    const register = async (email: string, password: string, name: string, role: string) => {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role }),
+      });
+      const data = await res.json();
+      localStorage.setItem("token", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      setToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
+      setUser({id: data.user.id, username: data.user.username, email: data.user.email, role: data.user.role});
+    };
 
-    // por lo pronto puedo ir mokeandolo
+    // TODO: manejar el url correct
     const login = async (email: string, password: string) => {
       const res = await fetch("/api/login", {
         method: "POST",
@@ -37,14 +55,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   
       setToken(data.accessToken);
       setRefreshToken(data.refreshToken);
+      setUser({id: data.user.id, username: data.user.username, email: data.user.email, role: data.user.role});
     };
-  
+
+    const navigate = useNavigate();
     const logout = () => {
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       setToken(null);
       setRefreshToken(null);
       setUser(null);
+      navigate(PAGES_ROUTE.root);
     };
   
     // Renovar token si expira

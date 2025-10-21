@@ -4,8 +4,7 @@ export function createUser(
   email: string,
   password: string,
   role: 'user' | 'business',
-  firstName: string,
-  lastName: string
+  name: string,
 ): Promise<User> {
     return fetch(
         'http://localhost:8080/users',
@@ -17,7 +16,9 @@ export function createUser(
             body: JSON.stringify({
                 email,
                 password,
-                role: role.toUpperCase()
+                role: role.toUpperCase(),
+                name,
+                description: '',
             }),
         }
     ).then((response) => {
@@ -25,20 +26,19 @@ export function createUser(
     }).then(
         (data) => {
             console.log('Usuario recibido:', data);
-            const user: User = mapUser(data, firstName, lastName);
+            const user: User = mapUser(data);
             console.log('Usuario mapeado:', user);
+            // guardar el usuario en el contexto
             return user;
         }
     );
 }
 
-function mapUser(data: any, firstName: string, lastName: string): User {
+function mapUser(data: any): User {
     return {
-        id: typeof data.id === 'string' ? parseInt(data.id, 10) : data.id,
-        username: `${firstName} ${lastName}`,
+        id: data.id,
+        username: data.name,
         email: data.email,
-        fullName: `${firstName} ${lastName}`,
-        avatarUrl: data.avatarUrl ?? undefined,
-        createdAt: data.createdAt ?? undefined,
+        role: data.role,
     };
 }

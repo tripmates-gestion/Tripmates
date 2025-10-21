@@ -42,8 +42,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
   // Estado para almacenar los datos del formulario de registro
   const [registerData, setRegisterData] = React.useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
   });
@@ -54,12 +53,12 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     
     try {
       console.log('Formulario completado automáticamente:', registerData);
+      // TODO: Ya no llamar al createUser de GIU porque hace un fecth de register de fondo
       const newUser = await createUser(
         registerData.email, 
         registerData.password,
         accountType,
-        registerData.firstName,
-        registerData.lastName
+        registerData.name,
       );
       console.log('Usuario creado:', newUser);
       
@@ -94,12 +93,15 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
   // Callback para recibir los datos del formulario de registro
   const handleRegisterDataChange = React.useCallback(
-    (data: { firstName: string; lastName: string; email: string; password: string }) => {
+    (data: { name: string; email: string; password: string }) => {
       setRegisterData(data);
     },
     []
   );
-
+  const closeDialog=()=>{
+    onClose();
+    setError(null);
+  }
   // Textos de título y subtítulo según la pestaña seleccionada (login o register)
   const title = tab === 'login' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;
   const subtitle = tab === 'login' ? AUTH_TEXT.loginSubtitle : AUTH_TEXT.registerSubtitle;
@@ -147,7 +149,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
       {/* Panel de acciones del diálogo */}
       <DialogActions sx={{ px: 3, py: 2 }}>
         {/* Botón para cerrar el diálogo */}
-        <Button onClick={onClose} variant="text">Cerrar</Button>
+        <Button onClick={closeDialog} variant="text">Cerrar</Button>
 
         {/* Botón para enviar el formulario según la pestaña seleccionada */}
         {tab === 'login' ? (

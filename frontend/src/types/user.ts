@@ -1,9 +1,7 @@
+//información básica de un usuario
 export interface User {
-    id: number;
+    id: string;
     username: string;
     email: string;
-    avatarUrl?: string;
-    fullName?: string;
-    createdAt?: string;
-  }
-  
+    role: string;
+}

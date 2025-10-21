@@ -13,22 +13,21 @@ type Props = {
   setAccountType: (t: AccountType) => void;
   showPass: boolean;
   setShowPass: (v: boolean) => void;
-  onDataChange: (data: { firstName: string; lastName: string; email: string; password: string; accountType: AccountType }) => void;
+  onDataChange: (data: { name: string; email: string; password: string; accountType: AccountType }) => void;
 };
 
 export default function RegisterForm({
   accountType, setAccountType, showPass, setShowPass, onDataChange
 }: Props) {
 
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
+  const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
   React.useEffect(() => {
     // Solo enviamos los datos cuando cambien, sin llamar onFormComplete automáticamente
-    onDataChange({ firstName, lastName, email, password, accountType });
-  }, [firstName, lastName, email, password, accountType, onDataChange]);
+    onDataChange({ name, email, password, accountType });
+  }, [name, email, password, accountType, onDataChange]);
 
   return (
     <Stack spacing={2} sx={{ width: '100%', mt: 1 }}>
@@ -44,22 +43,27 @@ export default function RegisterForm({
           <FormControlLabel value="business" control={<Radio />} label={ACCOUNT_TYPES.business.label} />
         </RadioGroup>
       </FormControl>
+      {accountType === 'business' && (
+        <>
+          <TextField 
+            label="Nombre de la empresa" 
+            fullWidth 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </>
+      )}
+      {accountType === 'user' && (
+        <>
+          <TextField 
+            label="Nombre" 
+            fullWidth 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </>
+      )}
 
-      {/* Comunes */}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField 
-          label="Nombre" 
-          fullWidth 
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-        />
-        <TextField 
-          label="Apellido" 
-          fullWidth 
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-        />
-      </Stack>
       <TextField 
         label="Correo electrónico" 
         type="email" 
@@ -88,7 +92,6 @@ export default function RegisterForm({
       {/* Solo empresa */}
       {accountType === 'business' && (
         <>
-          <TextField label="Nombre de la empresa" fullWidth />
           <TextField label="CUIT / NIF" fullWidth />
           <TextField label="Dirección comercial" fullWidth />
         </>
