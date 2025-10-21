@@ -14,6 +14,8 @@ interface AuthContextType {
 }
 
 function mapUser(data: any): User {
+  console.log("[Auth] Mapping user data (returned by the back):", data);
+  console.log(data);
   return {
       id: data.id,
       username: data.name,
@@ -91,24 +93,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setAccessToken(data.accessToken);
     };
 
-    //Detallamos qué pasa cuando hubo algún cambio en el token
+    // Detallamos qué pasa cuando hubo algún cambio en el token
     useEffect(() => {
-    //comprueba si hay token, si es null no hay sesión inciiada y no se hace nada
+      // Comprobamos si hay token, si es null no hay sesión iniciada y no se hace nada
       if (accessToken) {
+        console.log('[Auth] Fetching user information with access token...');
+        
         fetch('http://localhost:8080/users/me', {
           headers: { "Authorization": `Bearer ${accessToken}` },
         })
         .then(res => {
-            // si la respuesta indica que expiró el access token-> se tiene que renovar el access token
-          if (res.status === 401) return refreshAccessToken(); // si expiró, renovar
+          console.log(`[Auth] User info response status: ${res.status} ${res.statusText}`);
+          
+          // Si la respuesta indica que expiró el access token -> se tiene que renovar el access token
+          if (res.status === 401) {
+            console.log('[Auth] Access token expired, attempting to refresh...');
+            return refreshAccessToken();
+          }
+          
+          if (!res.ok) {
+            console.error('[Auth] Failed to fetch user information:', {
+              status: res.status,
+              statusText: res.statusText
+            });
+            throw new Error('Failed to fetch user information');
+          }
+          
           return res.json();
         })
-        // caso en que se renovó exitosamente el access token -> se vuelve a 
-        .then((data)=>setUser(mapUser(data)))
-        .catch(() => logout());
+        .then((data) => {
+          if (data) {
+            console.log('[Auth] User information retrieved successfully');
+            const user = mapUser(data);
+            setUser(user);
+          }
+        })
+        .catch(error => {
+          console.error('[Auth] Error in user authentication flow:', error);
+          logout();
+        });
       }
     }, [accessToken]);
-  
+
     return (
       <AuthContext.Provider value={{ token: accessToken, refreshToken, user, login, logout, refreshAccessToken }}>
         {children}
