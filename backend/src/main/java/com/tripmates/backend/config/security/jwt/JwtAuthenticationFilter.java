@@ -62,9 +62,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
         UserDetails userDetails = parseToken(jwt, response);
-        if (userDetails == null)
-            return;
+        if (userDetails == null) return;
+
         Authentication authToken = new UsernamePasswordAuthenticationToken(
         userDetails,
         null,          
@@ -77,7 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
+        String path = request.getServletPath();
 
         for (String pattern : SecurityConfig.PUBLIC_ENDPOINTS) {
             if (new AntPathMatcher().match(path, pattern)) {
