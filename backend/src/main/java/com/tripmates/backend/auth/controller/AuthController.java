@@ -6,18 +6,22 @@ import com.tripmates.backend.auth.dto.AuthRefreshRequestDTO;
 import com.tripmates.backend.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("auth/")
+@RequestMapping("/auth")
 @Tag(name = "Auth", description = "Auth management endpoints")
 public class AuthController {
 
     private final AuthService authService;
 
-    public AuthController(AuthService authService) { this.authService = authService; }
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     /**
      * Endpoint para login de usuario
