@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public record AuthLoginRequestErrorDTO(
+public record AuthErrorDTO(
         @Schema(description = "Error's type") @NotBlank(message = "Error's type cannot be empty")
         String type,
 
