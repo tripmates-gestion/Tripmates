@@ -18,10 +18,8 @@ public interface UserRepository extends MongoRepository<User, String> {
     /**
      * Devuelve el usuario asociado al email.
      *
-     * @param email del usuario.
-     * @return usuario asociado a dicho email o null si no existe.
+     * @param email email del usuario.
+     * @return {@link com.tripmates.backend.users.entity.mongo.User User} o Null.
      */
     Optional<User> findByEmail(String email);
-    Optional<User> findByUsername(String username);
-
 }

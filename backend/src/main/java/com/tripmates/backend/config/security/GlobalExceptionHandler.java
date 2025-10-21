@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
         @ExceptionHandler(UserAlreadyExistingException.class)
-        public ResponseEntity<AuthErrorDTO> handleUserAlreadyExistingException(UserAlreadyExistingException e) {
+        public ResponseEntity<AuthErrorDTO> handleUserAlreadyExistsException(UserAlreadyExistingException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new AuthErrorDTO(
                                                 "about:blank",
-                                                "User already existing",
+                                                "User already ",
                                                 HttpStatus.BAD_REQUEST.value(),
                                                 e.getMessage(),
                                                 "auth/register"));

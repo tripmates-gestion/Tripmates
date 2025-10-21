@@ -1,14 +1,15 @@
 package com.tripmates.backend.users.service;
 
-import com.tripmates.backend.users.dto.UserProfileResponseDTO;
-import com.tripmates.backend.users.dto.DescriptionUpdateRequestDTO;
-import com.tripmates.backend.users.dto.UsernameUpdateRequestDTO;
+import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO;
+import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
+import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -18,32 +19,65 @@ public class UserService {
     private UserRepository userRepository;
 
     /**
-     * Obtiene el perfil de un usuario a partir de su email o nombre de usuario.
+     * Retorna un usuario
      *
-     * @param emailOrUsername Email o nombre de usuario.
-     * @return DTO con la información del perfil.
+     * @param email email del usuario
+     * @return {@link com.tripmates.backend.users.entity.mongo.User User}
      */
-    public UserProfileResponseDTO getProfile(String emailOrUsername) {
-        var user = userRepository.findByEmail(emailOrUsername)
-                .orElseGet(() -> userRepository.findByUsername(emailOrUsername)
-                        .orElseThrow(() -> new NoSuchElementException("User not found")));
-
-        return new UserProfileResponseDTO(user);
+    public User getUser(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    public UserProfileResponseDTO updateDescription(String emailOrUsername, DescriptionUpdateRequestDTO dto) {
-        User user = userRepository.findByEmail(emailOrUsername)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-        user.setDescription(dto.description());
+    /**
+     * Actualiza la descripción de un ususario
+     *
+     * @param email email del usuario
+     * @param userUpdateDescriptionRequestDTO dto con argumentos del request
+     * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
+     */
+    public UserUpdateProfileResponseDTO updateDescription(
+            String email,
+            UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
+    ) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user.setDescription(userUpdateDescriptionRequestDTO.description());
         userRepository.save(user);
-        return new UserProfileResponseDTO(user);
+
+        return new UserUpdateProfileResponseDTO(
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getDescription(),
+                user.getAvatarURL()
+        );
     }
 
-    public UserProfileResponseDTO updateUsername(String emailOrUsername, UsernameUpdateRequestDTO dto) {
-        User user = userRepository.findByEmail(emailOrUsername)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
-        user.setUsername(dto.username());
+    /**
+     * Actualiza el nombre de usuario de un ususario
+     *
+     * @param email email del usuario
+     * @param userUpdateUsernameRequestDTO dto con argumentos del request
+     * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
+     */
+    public UserUpdateProfileResponseDTO updateUsername(
+            String email,
+            UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
+    ) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user.setUsername(userUpdateUsernameRequestDTO.username());
         userRepository.save(user);
-        return new UserProfileResponseDTO(user);
+
+        return new UserUpdateProfileResponseDTO(
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getDescription(),
+                user.getAvatarURL()
+        );
     }
 }

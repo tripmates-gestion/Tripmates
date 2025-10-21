@@ -8,8 +8,6 @@ import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
-import com.tripmates.backend.users.dto.UserCreationResponseDTO;
-import com.tripmates.backend.users.dto.UserProfileResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -32,24 +30,25 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Crea un nuevo usuario y lo persiste en la base de datos MongoDB.
+     * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
      *
-     * @param userCreationRequestDTO dto con los datos del nuevo usuario.
-     * @return DTO con los tokens generados para el usuario.
+     * @param userCreationRequestDTO contiene los datos del nuevo usuario
      */
     public void createUser(UserCreationRequestDTO userCreationRequestDTO) {
-        var user = new User();
+        User user = new User();
+
         if (userRepository.findByEmail(userCreationRequestDTO.email()).isPresent()) {
-            throw new UserAlreadyExistingException("Email already in use");
+            throw new UserAlreadyExistingException("Email is already in use");
         }
+
         user.setUsername(userCreationRequestDTO.username());
         user.setEmail(userCreationRequestDTO.email());
         user.setPassword(passwordEncoder.encode(userCreationRequestDTO.password()));
         user.setRole(userCreationRequestDTO.role());
         user.setDescription(userCreationRequestDTO.description());
         user.setAvatarURL(userCreationRequestDTO.avatarURL());
-        userRepository.save(user);
 
+        userRepository.save(user);
     }
 
     /**
@@ -85,17 +84,13 @@ public class AuthService {
      * del usuario
      *
      * @param authLogoutRequestDTO contiene email
-     * @return {@link com.tripmates.backend.auth.dto.AuthLogoutRequestDTO
-     *         AuthLogoutRequestDTO}
      */
-    public AuthLogoutResponseDTO logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
+    public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
         User user = userRepository.findByEmail(authLogoutRequestDTO.email())
                 .orElseThrow(() -> new UserNotFoundException("Invalid credentials"));
 
         user.setToken(null);
         userRepository.save(user);
-
-        return new AuthLogoutResponseDTO();
     }
 
     /**
