@@ -9,6 +9,7 @@ import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.dto.UserCreationResponseDTO;
+import com.tripmates.backend.users.dto.UserProfileResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -36,7 +37,7 @@ public class AuthService {
      * @param userCreationRequestDTO dto con los datos del nuevo usuario.
      * @return DTO con los tokens generados para el usuario.
      */
-    public UserCreationResponseDTO createUser(UserCreationRequestDTO userCreationRequestDTO) {
+    public void createUser(UserCreationRequestDTO userCreationRequestDTO) {
         var user = new User();
         if (userRepository.findByEmail(userCreationRequestDTO.email()).isPresent()) {
             throw new UserAlreadyExistingException("Email already in use");
@@ -47,17 +48,8 @@ public class AuthService {
         user.setRole(userCreationRequestDTO.role());
         user.setDescription(userCreationRequestDTO.description());
         user.setAvatarURL(userCreationRequestDTO.avatarURL());
-
-        var accessToken = jwtService.generateAccessToken(
-                new UserDetailFromJwt(user.getEmail(), user.getPassword()));
-
-        var refreshToken = jwtService.generateRefreshToken(
-                new UserDetailFromJwt(user.getEmail(), user.getPassword()));
-
-        user.setToken(refreshToken);
         userRepository.save(user);
 
-        return new UserCreationResponseDTO(accessToken, refreshToken);
     }
 
     /**

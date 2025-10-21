@@ -37,7 +37,8 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<?> createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
-        return ResponseEntity.ok(this.authService.createUser(userCreationRequestDTO));
+        this.authService.createUser(userCreationRequestDTO);
+        return ResponseEntity.ok().build();
     }
 
     /**
