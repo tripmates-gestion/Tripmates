@@ -53,11 +53,9 @@ public class User implements UserDetails {
     @Field(targetType = FieldType.STRING)
     private Role role;
 
-    // URL del avatar del usuario
     @Size(max = 500, message = "Avatar URL cannot exceed 500 characters")
     private String avatarURL;
 
-    // Token de sesión (no único)
     private String token;
 
     @Override
@@ -76,14 +74,23 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() {
+        return true;
+    }
+
 }
