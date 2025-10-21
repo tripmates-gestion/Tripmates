@@ -25,20 +25,10 @@ public class UserController {
     }
 
     /**
-     * Endpoint para crear un usuario en el sistema.
-     *
-     * @param userCreationRequestDTO dto para parseo y validación de JSON.
-     * @return los tokens generados (access y refresh).
-     */
-    @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
-        return ResponseEntity.ok(this.userService.createUser(userCreationRequestDTO));
-    }
-
-    /**
      * Endpoint para obtener el perfil del usuario autenticado.
      *
-     * @param userDetails información del usuario obtenida desde el contexto de seguridad (JWT).
+     * @param userDetails información del usuario obtenida desde el contexto de
+     *                    seguridad (JWT).
      * @return el perfil del usuario.
      */
     @GetMapping("/me")
@@ -46,13 +36,14 @@ public class UserController {
         var profile = userService.getProfile(userDetails.getUsername());
         return ResponseEntity.ok(profile);
     }
-    
+
     @PatchMapping("/me/description")
     public ResponseEntity<UserProfileResponseDTO> updateDescription(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody DescriptionUpdateRequestDTO dto) {
         return ResponseEntity.ok(userService.updateDescription(userDetails.getUsername(), dto));
     }
+
     @PatchMapping("/me/username")
     public ResponseEntity<UserProfileResponseDTO> updateUsername(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -60,4 +51,3 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUsername(userDetails.getUsername(), dto));
     }
 }
-

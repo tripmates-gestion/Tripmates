@@ -19,20 +19,19 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    public static final String[] PUBLIC_ENDPOINTS = { 
-        "/users", "/auth/login", "/auth/refresh", "/auth/logout", 
-        "/actuator/health",
-        "/api-docs/**",
-        "/swagger-ui/**",
-        "/swagger-ui.html",
-        "/swagger-resources/**",
-        "/webjars/**"
+    public static final String[] PUBLIC_ENDPOINTS = {
+            "/users", "/auth/login", "/auth/refresh", "/auth/logout", "/auth/register",
+            "/actuator/health",
+            "/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**"
     };
 
     @Autowired
     private JwtAuthenticationFilter authFilter;
 
-  
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
         for (String endpoint : PUBLIC_ENDPOINTS) {
@@ -46,15 +45,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
