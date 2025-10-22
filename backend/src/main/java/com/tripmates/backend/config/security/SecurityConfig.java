@@ -17,12 +17,13 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     public static final String[] PUBLIC_ENDPOINTS = {
+            "/users", "/auth/login", "/auth/refresh", "/auth/logout", "/auth/register",
+            "/actuator/health",
             "/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/swagger-resources",
             "/webjars/**",
-            "/auth/**",
-            "/actuator/health"
     };
 
     @Autowired

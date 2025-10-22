@@ -2,13 +2,16 @@ package com.tripmates.backend.config.security.jwt;
 
 import com.tripmates.backend.config.security.SecurityConfig;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.PathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -18,8 +21,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.RequiredArgsConstructor;
 import java.io.IOException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 
 @Component
 @RequiredArgsConstructor
@@ -73,18 +74,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
         filterChain.doFilter(request, response);
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-
-        for (String pattern : SecurityConfig.PUBLIC_ENDPOINTS) {
-            if (new AntPathMatcher().match(path, pattern)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
