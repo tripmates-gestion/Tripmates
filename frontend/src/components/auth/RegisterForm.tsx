@@ -53,7 +53,6 @@ export default function RegisterForm({
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            error={name.trim() === ''}
             helperText={name.trim() === '' ? 'El nombre de empresa es obligatorio' : ''}
           />
         )}

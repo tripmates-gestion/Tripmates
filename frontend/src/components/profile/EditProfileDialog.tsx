@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
   Box,
+  Alert
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
@@ -102,6 +103,7 @@ function ImageUploader({
 
 export default function EditProfileDialog({ open, onClose, user, onSave }: Props) {
   const [form, setForm] = React.useState(user);
+  const [error, setError] = React.useState<string | null>(null);
   React.useEffect(() => setForm(user), [user]);
 
   const handleChange = (field: keyof UserProfile) =>
@@ -109,6 +111,15 @@ export default function EditProfileDialog({ open, onClose, user, onSave }: Props
       setForm({ ...form, [field]: e.target.value });
 
   const handleSave = () => {
+    if (form.username && form.username.length > 50) {
+      setError('El nombre de usuario debe tener como máximo 50 caracteres.');
+      return;
+    }
+    if (form.description && form.description.length > 300) {
+      setError('La descripción debe tener como máximo 300 caracteres.');
+      return;
+    }
+    setError(null);
     onSave(form);
     onClose();
   };
@@ -118,6 +129,12 @@ export default function EditProfileDialog({ open, onClose, user, onSave }: Props
       <DialogTitle>Editar perfil</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={3} sx={{ mt: 1 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
+            {error}
+            </Alert>
+          )}
+
           {/* Nombre y username */}
           { /*
           <TextField
