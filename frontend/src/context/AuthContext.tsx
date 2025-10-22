@@ -70,14 +70,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const navigate = useNavigate();
 
     const logout = async () => {
+      console.log("Deslogeado")
       const res = await fetch('http://localhost:8080/auth/logout', {
         method: "POST",
         headers: { "Content-Type": "application/json" , "Authorization": `Bearer ${accessToken}` },
         body: JSON.stringify({ email: user?.email }),
       });
   
-      await res.json();
-
+      // no intentes parsear JSON si no lo hay
+      if (!res.ok) {
+        console.error("Logout failed:", res.status);
+      } else {
+        console.log("Logout success:", res.status);
+      }
+      
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       setAccessToken(null);
