@@ -134,8 +134,9 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
                 }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="h5" fontWeight={800}>{profile.name}</Typography>
-                <Typography variant="body1" color="text.secondary">{profile.username}</Typography>
+                {/* <Typography variant="h5" fontWeight={800}>{profile.name}</Typography> 
+                <Typography variant="body1" color="text.secondary">{profile.username}</Typography> */}
+                <Typography variant="h5" fontWeight={800}>{profile.username}</Typography>
                 {profile.description && (
                   <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
                     {profile.description}
@@ -173,7 +174,7 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
         </Card>
       </Box>
 
-      {/* 🔧 Modal de edición */}
+      {/* Modal de edición */}
       <EditProfileDialog
         open={editOpen}
         onClose={() => setEditOpen(false)}

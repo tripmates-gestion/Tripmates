@@ -119,12 +119,13 @@ export default function EditProfileDialog({ open, onClose, user, onSave }: Props
       <DialogContent dividers>
         <Stack spacing={3} sx={{ mt: 1 }}>
           {/* Nombre y username */}
+          { /*
           <TextField
             label="Nombre"
             value={form.name}
             onChange={handleChange('name')}
             fullWidth
-          />
+          /> */}
           <TextField
             label="Nombre de usuario"
             value={form.username}
