@@ -1,5 +1,6 @@
 package com.tripmates.backend.users.service;
 
+import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
 import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
@@ -25,7 +26,7 @@ public class UserService {
      */
     public User getUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
     }
 
     /**
@@ -40,7 +41,7 @@ public class UserService {
             UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
         user.setDescription(userUpdateDescriptionRequestDTO.description());
         userRepository.save(user);
@@ -66,7 +67,7 @@ public class UserService {
             UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
         user.setUsername(userUpdateUsernameRequestDTO.username());
         userRepository.save(user);
