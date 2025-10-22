@@ -22,6 +22,4 @@ public interface UserRepository extends MongoRepository<User, String> {
      * @return usuario asociado a dicho email o null si no existe.
      */
     Optional<User> findByEmail(String email);
-    Optional<User> findByUsername(String username);
-
 }

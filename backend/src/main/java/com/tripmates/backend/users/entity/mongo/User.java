@@ -36,12 +36,11 @@ public class User implements UserDetails {
 
     @NotNull
     @Indexed(unique = true)
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
-    private String username;
+    private String email;
 
     @NotNull
-    @Indexed(unique = true)
-    private String email;
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
+    private String username;
 
     @NotNull
     private String password;
