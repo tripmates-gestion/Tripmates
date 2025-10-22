@@ -21,40 +21,28 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // OJO: si querés exponer /users/* al público, agregá "/users/*".
-    // Si NO, dejalo autenticado. CORS igual debe responder a OPTIONS.
     public static final String[] PUBLIC_ENDPOINTS = {
-        "/auth/login",
-        "/auth/refresh",
-        "/auth/logout",
-        "/auth/register",
-        "/actuator/health",
-        "/v3/api-docs/**",      // springdoc moderno
-        "/swagger-ui/**",
-        "/swagger-ui.html",
-        "/swagger-resources/**",
-        "/webjars/**"
+            "/auth/**",
+            "/actuator/health",
+            "/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
     };
 
-    private final JwtAuthenticationFilter authFilter;
-
-    public SecurityConfig(JwtAuthenticationFilter authFilter) {
-        this.authFilter = authFilter;
-    }
+    @Autowired
+    private JwtAuthenticationFilter authFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            // HABILITAR CORS en la cadena de filtros de Spring Security
             .cors(Customizer.withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Permitir SIEMPRE la preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Públicos reales
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                // Resto autenticado
                 .anyRequest().authenticated()
             )
             .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
@@ -65,17 +53,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        // dominio del front en dev
         cfg.setAllowedOrigins(List.of("http://localhost:5173"));
-        // métodos que vas a usar
         cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        // headers que puede mandar el cliente (¡incluí Authorization!)
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-        // si usás cookies o credentials en fetch
         cfg.setAllowCredentials(true);
-        // opcional: exponer headers al cliente
-        // cfg.setExposedHeaders(List.of("Location"));
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
