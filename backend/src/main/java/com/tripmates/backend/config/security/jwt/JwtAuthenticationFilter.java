@@ -1,24 +1,27 @@
 package com.tripmates.backend.config.security.jwt;
 
-import org.springframework.web.filter.OncePerRequestFilter;
+import com.tripmates.backend.config.security.SecurityConfig;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
-import java.io.IOException;
-
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import lombok.RequiredArgsConstructor;
+import java.io.IOException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 @Component
 @RequiredArgsConstructor
@@ -51,22 +54,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    protected void doFilterInternal(
+            HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
+            FilterChain filterChain
+    ) throws ServletException, IOException {
         final String jwt = getJwtFromRequest(request);
         if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
+
         UserDetails userDetails = parseToken(jwt, response);
         if (userDetails == null)
             return;
+
         Authentication authToken = new UsernamePasswordAuthenticationToken(
-        userDetails,
-        null,          
-        userDetails.getAuthorities()
+                userDetails,
+                null,
+                userDetails.getAuthorities()
         );
 
         SecurityContextHolder.getContext().setAuthentication(authToken);

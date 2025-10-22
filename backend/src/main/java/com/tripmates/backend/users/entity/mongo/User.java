@@ -36,24 +36,23 @@ public class User implements UserDetails {
 
     @NotNull
     @Indexed(unique = true)
+    private String email;
+
+    @NotNull
     @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
     @NotNull
-    @Indexed(unique = true)
-    private String email;
-
-    @NotNull
     private String password;
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @Size(max = 500, message = "User's description cannot exceed 500 characters")
     private String description;
 
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
 
-    @Size(max = 500, message = "Avatar URL cannot exceed 500 characters")
+    @Size(max = 500, message = "User's avatar URL cannot exceed 500 characters")
     private String avatarURL;
 
     private String token;
@@ -84,13 +83,10 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
     public boolean isEnabled() {
         return true;
     }
-
 }

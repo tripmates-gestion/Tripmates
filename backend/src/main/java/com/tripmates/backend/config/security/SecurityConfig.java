@@ -10,9 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.ServletException;
-
 import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 
 @Configuration
@@ -20,37 +17,29 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     public static final String[] PUBLIC_ENDPOINTS = {
-            "/users", "/auth/login", "/auth/refresh", "/auth/logout", "/auth/register",
+            "/users", "/auth/**",
             "/actuator/health",
             "/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/swagger-resources/**",
-            "/webjars/**"
+            "/swagger-resources",
+            "/webjars/**",
     };
 
     @Autowired
     private JwtAuthenticationFilter authFilter;
 
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getRequestURI();
-        for (String endpoint : PUBLIC_ENDPOINTS) {
-            if (path.matches(endpoint.replace("**", ".*"))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session ->
+                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

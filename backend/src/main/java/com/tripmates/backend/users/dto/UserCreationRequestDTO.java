@@ -1,5 +1,6 @@
 package com.tripmates.backend.users.dto;
 
+import org.hibernate.validator.constraints.URL;
 import org.springframework.validation.annotation.Validated;
 
 import com.tripmates.backend.users.entity.Role;
@@ -45,5 +46,6 @@ public record UserCreationRequestDTO(
         Role role,
 
         @Schema(description = "User's avatar URL (optional)")
+        @URL
         String avatarURL
 ) { }
