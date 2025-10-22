@@ -6,42 +6,56 @@ import {
   ButtonGroup,
   Card,
   CardContent,
+  Chip,
   Divider,
   Stack,
   Tab,
   Tabs,
   Typography,
 } from '@mui/material';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
 import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
-import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { useAuth } from '../context/AuthContext';
+import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 
-type ProfileProps = { userProfile?: UserProfile };
 
-const MOCK: UserProfile = {
-  name: 'Fu Anibal',
-  username: '@54fua',
-  avatarUrl:
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS6qyXg2AdweutivMZTTbquH6Ed11xM4T63Q&s',
-  coverUrl:
-    'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg',
-  stats: { aportes: 2, seguidores: 11, siguiendo: 11 },
+// ----- defaults hardcodeados cuando el back no los provee -----
+const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 };
+const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
+const DEFAULT_AVATAR_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS6qyXg2AdweutivMZTTbquH6Ed11xM4T63Q&s';
+
+// ----- tipo User que viene del back (como lo describiste) -----
+type BackendUser = {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  description: string;
+  avatarURL: string | null;
 };
+
+// ----- util: mapea User (back) -> UserProfile (UI) -----
+function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
+  return {
+    name: u?.username ?? prev?.name ?? '',
+    username: u?.username ?? prev?.username ?? '',
+    description: u?.description ?? prev?.description ?? '',
+    avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
+      ? u.avatarURL 
+      : (prev?.avatarUrl ?? DEFAULT_AVATAR_URL),
+    coverUrl: prev?.coverUrl ?? DEFAULT_COVER_URL,
+    stats: prev?.stats ?? DEFAULT_STATS,
+  };
+}
+
 
 // Label arriba en mayúsculas, número abajo (como TripAdvisor)
 const Stat = ({ label, value }: { label: string; value: number }) => (
   <Stack spacing={0.25} alignItems="center" minWidth={96}>
     <Typography
       variant="caption"
-      sx={{
-        textTransform: 'uppercase',
-        letterSpacing: 0.6,
-        fontWeight: 700,
-        color: 'text.secondary',
-      }}
+      sx={{ textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: 'text.secondary' }}
     >
       {label}
     </Typography>
@@ -51,36 +65,49 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
   </Stack>
 );
 
-export default function Profile({ userProfile = MOCK}: ProfileProps) {
+
+
+function roleChipColor(role?: string): 'default' | 'success' | 'warning' | 'info' {
+  switch ((role ?? '').toUpperCase()) {
+    case 'MOD': return 'success';
+    case 'BUSINESS': return 'warning';
+    case 'USER': return 'info';
+    default: return 'default';
+  }
+}
+
+export default function Profile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [profile, setProfile] = React.useState(userProfile);
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth(); // user: BackendUser | null
 
+  // estado local de perfil (UI)
+  const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
+
+  // sincroniza cuando cambie el usuario autenticado
   React.useEffect(() => {
-    if (user) {
-      setProfile({
-        name: user.username || user.name || profile.name,
-        username: user.username || profile.username,
-        description: user.description || profile.description,
-        avatarUrl: user.avatarURL || profile.avatarUrl,
-        coverUrl: profile.coverUrl, // Mantener coverUrl del mock/local
-        stats: profile.stats, // Mantener stats del mock/local
-      });
-    }
+    setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
   }, [user]);
 
-  const handleSave = (updated: UserProfile) => {
-    Promise.all(
-      [updateDescription(profile.description, updated.description || '', token), 
-        updateUsername(profile.username, updated.username, token)]
-    ).then(_ => {
+  // REINTEGRADO: persistencia al back como antes
+  const handleSaveUserData = (updated: UserProfile) => {
+    if (!token) {
+      console.error('No auth token available; skipping remote update');
       setProfile(updated);
-      user.description = updated.description;
-      user.username = updated.username;
-    }).catch(error => {
-      console.error('Error updating profile:', error);
-    });
+      return;
+    }
+
+    Promise.all([
+      updateDescription(profile.description || '', updated.description || '', token),
+      updateUsername(profile.username, updated.username, token),
+    ])
+      .then(() => {
+        setProfile(updated);
+      })
+      .catch((error) => {
+        console.error('Error updating profile:', error);
+        // si querés, mostrar un toast/alert acá
+      });
   };
 
   return (
@@ -94,31 +121,15 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
-      >
-        <Stack direction="row" justifyContent="flex-end" sx={{ p: 2 }}>
-          <Button
-            startIcon={<PhotoCamera />}
-            variant="contained"
-            size="small"
-            sx={{ borderRadius: 999 }}
-            onClick={() => setEditOpen(true)}
-          >
-            Cargar foto de portada
-          </Button>
-        </Stack>
-      </Box>
+      />
 
       {/* Card */}
       <Box sx={{ position: 'relative' }}>
         <Card
           elevation={1}
           sx={{
-            maxWidth: 1180,
-            width: '100%',
-            mx: 'auto',
-            mt: { xs: -8, md: -10 },
-            borderRadius: 2,
-            overflow: 'visible',
+            maxWidth: 1180, width: '100%', mx: 'auto',
+            mt: { xs: -8, md: -10 }, borderRadius: 2, overflow: 'visible',
           }}
         >
           <CardContent sx={{ pb: 1.5 }}>
@@ -127,22 +138,31 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
                 src={profile.avatarUrl}
                 alt={profile.name}
                 sx={{
-                  width: 96,
-                  height: 96,
-                  mt: { xs: -6, md: -8 },
+                  width: 96, height: 96, mt: { xs: -6, md: -8 },
                   border: (t) => `4px solid ${t.palette.background.paper}`,
                 }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                {/* <Typography variant="h5" fontWeight={800}>{profile.name}</Typography> 
-                <Typography variant="body1" color="text.secondary">{profile.username}</Typography> */}
-                <Typography variant="h5" fontWeight={800}>{profile.username}</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h5" fontWeight={800}>{profile.username}</Typography>
+                  {!!(user as BackendUser | null)?.role && (
+                    <Chip
+                      size="small"
+                      label={(user as BackendUser).role}
+                      color={roleChipColor((user as BackendUser).role)}
+                      variant="outlined"
+                      sx={{ ml: 0.5 }}
+                    />
+                  )}
+                </Stack>
+
                 {profile.description && (
                   <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
                     {profile.description}
                   </Typography>
                 )}
               </Box>
+
               <ButtonGroup variant="outlined" size="small">
                 <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Editar perfil</Button>
                 <Button startIcon={<Settings />}>Configuración</Button>
@@ -158,13 +178,20 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
           </CardContent>
 
           <Divider />
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            allowScrollButtonsMobile
+            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+          >
             <Tab label="Actividad" />
             <Tab label="Viajes" />
             <Tab label="Fotos" />
             <Tab label="Opiniones" />
           </Tabs>
           <Divider />
+
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {tab === 0 && <EmptyState title="Actualización de actividades" />}
             {tab === 1 && <EmptyState title="Viajes" />}
@@ -179,7 +206,7 @@ export default function Profile({ userProfile = MOCK}: ProfileProps) {
         open={editOpen}
         onClose={() => setEditOpen(false)}
         user={profile}
-        onSave={handleSave}
+        onSave={handleSaveUserData}
       />
     </Box>
   );

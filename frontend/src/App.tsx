@@ -26,6 +26,7 @@ export default function App({ mode, setMode }: AppProps) {
         mode={mode}
         setMode={setMode}
       />
+      
       <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
 
       <Routes>
