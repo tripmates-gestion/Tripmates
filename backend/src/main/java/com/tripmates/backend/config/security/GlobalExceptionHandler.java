@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new AuthErrorDTO(
                                                 "about:blank",
-                                                "User already existing",
+                                                "User already ",
                                                 HttpStatus.BAD_REQUEST.value(),
                                                 e.getMessage(),
                                                 "auth/register"));

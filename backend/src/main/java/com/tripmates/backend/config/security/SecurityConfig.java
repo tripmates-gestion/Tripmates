@@ -22,8 +22,8 @@ public class SecurityConfig {
             "/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
-            "/swagger-resources/**",
-            "/webjars/**"
+            "/swagger-resources",
+            "/webjars/**",
     };
 
     @Autowired
@@ -35,9 +35,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session ->
+                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

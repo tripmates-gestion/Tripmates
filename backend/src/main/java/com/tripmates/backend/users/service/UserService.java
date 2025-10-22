@@ -5,10 +5,10 @@ import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.NoSuchElementException;
 
 @Service
 @Transactional

@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
     private final UserService userService;
@@ -47,7 +48,7 @@ public class UserController {
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
     }
-
+  
     @PatchMapping("/me/description")
     @Operation(summary = "Updates profile description from a user in the system")
     @ApiResponses(value = {
