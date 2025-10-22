@@ -2,6 +2,8 @@ package com.tripmates.backend.config.security.jwt;
 
 import com.tripmates.backend.config.security.SecurityConfig;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -68,9 +70,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(
-        userDetails,
-        null,          
-        userDetails.getAuthorities()
+                userDetails,
+                null,
+                userDetails.getAuthorities()
         );
 
         SecurityContextHolder.getContext().setAuthentication(authToken);

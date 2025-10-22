@@ -39,7 +39,7 @@ public class User implements UserDetails {
     private String email;
 
     @NotNull
-    @Size(min = 10, max = 50, message = "User's username must be between 3 and 50 characters")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
     @NotNull

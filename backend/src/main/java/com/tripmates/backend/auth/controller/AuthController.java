@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Auth", description = "Authorization management endpoints")
 public class AuthController {
 
@@ -25,21 +24,22 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @PostMapping("/register")
     @Operation(summary = "Registers a new user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User created successfully",
-                content = { @Content(
-                        mediaType = "application/json",
-                        schema = @Schema(implementation = void.class))
-                }
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = void.class))
+                    }
             )
     })
-    @PostMapping("/register")
-    public ResponseEntity<?> createUser(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
-        authService.createUser(userCreationRequestDTO);
+    public ResponseEntity<?> register(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
+        authService.register(userCreationRequestDTO);
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/login")
     @Operation(summary = "Logins an already existing user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User logins successfully",
@@ -61,11 +61,11 @@ public class AuthController {
                     }
             )
     })
-    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthLoginRequestDTO authLoginRequestDTO) {
         return ResponseEntity.ok(authService.login(authLoginRequestDTO));
     }
 
+    @PostMapping("/logout")
     @Operation(summary = "Logout user from the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User logouts successfully",
@@ -81,12 +81,12 @@ public class AuthController {
                     }
             )
     })
-    @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestBody AuthLogoutRequestDTO authLogoutRequestDTO) {
         authService.logout(authLogoutRequestDTO);
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/refresh")
     @Operation(summary = "Refresh access token from user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Refresh access token done successfully",
@@ -108,7 +108,6 @@ public class AuthController {
                     }
             )
     })
-    @PostMapping("/refresh")
     public ResponseEntity<?> refresh(@RequestBody AuthRefreshRequestDTO authRefreshRequestDTO) {
         return ResponseEntity.ok(authService.refresh(authRefreshRequestDTO));
     }

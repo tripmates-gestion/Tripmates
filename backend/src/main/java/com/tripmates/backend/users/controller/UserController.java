@@ -1,6 +1,6 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
+import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO;
 import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
 import com.tripmates.backend.users.service.UserService;
@@ -30,6 +29,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/me")
     @Operation(summary = "Obtains a user from the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User obtained successfully",
@@ -45,17 +45,17 @@ public class UserController {
                     }
             )
     })
-    @GetMapping("/me")
-    public ResponseEntity<?> getUser(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(userService.getUser(userDetails.getUsername()));
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
     }
-
+  
+    @PatchMapping("/me/description")
     @Operation(summary = "Updates profile description from a user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Profile description updated successfully",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserUpdateProfileResponseDTO.class))
+                            schema = @Schema(implementation = UserUpdateResponseDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "404", description = "User not found",
@@ -65,23 +65,22 @@ public class UserController {
                     }
             )
     })
-    @PatchMapping("/me/description")
     public ResponseEntity<?> updateDescription(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
     ) {
-        return ResponseEntity.ok(userService.updateDescription(
-                userDetails.getUsername(),
-                userUpdateDescriptionRequestDTO
-        ));
+        return ResponseEntity.ok().body(
+                userService.updateDescription(userDetails.getUsername(), userUpdateDescriptionRequestDTO)
+        );
     }
 
+    @PatchMapping("/me/username")
     @Operation(summary = "Updates profile username from a user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Profile username updated successfully",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserUpdateProfileResponseDTO.class))
+                            schema = @Schema(implementation = UserUpdateResponseDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "404", description = "User not found",
@@ -91,14 +90,12 @@ public class UserController {
                     }
             )
     })
-    @PatchMapping("/me/username")
     public ResponseEntity<?> updateUsername(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
+            @RequestBody UserUpdateUsernameRequestDTO userUpdateDescriptionRequestDTO
     ) {
-        return ResponseEntity.ok(userService.updateUsername(
-                userDetails.getUsername(),
-                userUpdateUsernameRequestDTO
-        ));
+        return ResponseEntity.ok().body(
+                userService.updateUsername(userDetails.getUsername(), userUpdateDescriptionRequestDTO)
+        );
     }
 }

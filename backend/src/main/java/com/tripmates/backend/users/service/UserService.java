@@ -1,7 +1,6 @@
 package com.tripmates.backend.users.service;
 
-import com.tripmates.backend.auth.exception.UserNotFoundException;
-import com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO;
+import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
 import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
@@ -26,7 +25,7 @@ public class UserService {
      */
     public User getUser(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
     }
 
     /**
@@ -36,22 +35,22 @@ public class UserService {
      * @param userUpdateDescriptionRequestDTO dto con argumentos del request
      * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
      */
-    public UserUpdateProfileResponseDTO updateDescription(
+    public UserUpdateResponseDTO updateDescription(
             String email,
             UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
 
         user.setDescription(userUpdateDescriptionRequestDTO.description());
         userRepository.save(user);
 
-        return new UserUpdateProfileResponseDTO(
+        return new UserUpdateResponseDTO(
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole(),
                 user.getDescription(),
-                user.getAvatarURL()
+                user.getUsername()
         );
     }
 
@@ -62,22 +61,22 @@ public class UserService {
      * @param userUpdateUsernameRequestDTO dto con argumentos del request
      * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
      */
-    public UserUpdateProfileResponseDTO updateUsername(
+    public UserUpdateResponseDTO updateUsername(
             String email,
             UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
 
         user.setUsername(userUpdateUsernameRequestDTO.username());
         userRepository.save(user);
 
-        return new UserUpdateProfileResponseDTO(
+        return new UserUpdateResponseDTO(
                 user.getUsername(),
                 user.getEmail(),
                 user.getRole(),
                 user.getDescription(),
-                user.getAvatarURL()
+                user.getUsername()
         );
     }
 }

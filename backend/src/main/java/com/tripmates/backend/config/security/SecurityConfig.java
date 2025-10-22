@@ -17,7 +17,7 @@ import com.tripmates.backend.config.security.jwt.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     public static final String[] PUBLIC_ENDPOINTS = {
-            "/users", "/auth/login", "/auth/refresh", "/auth/logout", "/auth/register",
+            "/users", "/auth/**",
             "/actuator/health",
             "/api-docs/**",
             "/swagger-ui/**",

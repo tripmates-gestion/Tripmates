@@ -3,7 +3,7 @@ package com.tripmates.backend.config.security;
 import com.tripmates.backend.auth.dto.AuthErrorDTO;
 import com.tripmates.backend.auth.exception.IncorrectPasswordException;
 import com.tripmates.backend.auth.exception.IncorrectTokenException;
-import com.tripmates.backend.auth.exception.UserAlreadyExistingException;
+import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 
 import org.springframework.http.HttpStatus;
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-        @ExceptionHandler(UserAlreadyExistingException.class)
-        public ResponseEntity<AuthErrorDTO> handleUserAlreadyExistsException(UserAlreadyExistingException e) {
+        @ExceptionHandler(UserAlreadyExistsException.class)
+        public ResponseEntity<AuthErrorDTO> handleUserAlreadyExistingException(UserAlreadyExistsException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new AuthErrorDTO(
                                                 "about:blank",
