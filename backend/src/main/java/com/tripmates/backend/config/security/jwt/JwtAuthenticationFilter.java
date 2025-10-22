@@ -2,16 +2,13 @@ package com.tripmates.backend.config.security.jwt;
 
 import com.tripmates.backend.config.security.SecurityConfig;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.util.AntPathMatcher;
+import org.springframework.util.PathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -21,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.RequiredArgsConstructor;
 import java.io.IOException;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 
 @Component
 @RequiredArgsConstructor
@@ -63,9 +62,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
         UserDetails userDetails = parseToken(jwt, response);
         if (userDetails == null)
             return;
+
         Authentication authToken = new UsernamePasswordAuthenticationToken(
         userDetails,
         null,          
