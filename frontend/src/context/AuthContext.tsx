@@ -13,6 +13,9 @@ interface AuthContextType {
   refreshAccessToken: () => Promise<void>;
 }
 
+// Es solo un MOCK
+const DEFAULT_AVATAR_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS6qyXg2AdweutivMZTTbquH6Ed11xM4T63Q&s';
+
 function mapUser(data: any): User {
   console.log("[Auth] Mapping user data (returned by the back):", data);
   console.log(data);
@@ -22,7 +25,7 @@ function mapUser(data: any): User {
       email: data.email,
       role: data.role,
       description: data.description,
-      avatarURL: data.avatarURL,
+      avatarURL: data.avatarURL !== '' ? data.avatarURL: DEFAULT_AVATAR_URL,
   };
 }
 

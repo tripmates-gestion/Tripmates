@@ -18,12 +18,13 @@ import Edit from '@mui/icons-material/Edit';
 import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
 import { useAuth } from '../context/AuthContext';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
+import { ACCOUNT_TYPES } from '../constants/Rol'
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
 const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 };
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
-const DEFAULT_AVATAR_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTS6qyXg2AdweutivMZTTbquH6Ed11xM4T63Q&s';
+
 
 // ----- tipo User que viene del back (como lo describiste) -----
 type BackendUser = {
@@ -43,7 +44,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
     description: u?.description ?? prev?.description ?? '',
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
-      : (prev?.avatarUrl ?? DEFAULT_AVATAR_URL),
+      : (prev?.avatarUrl),
     coverUrl: prev?.coverUrl ?? DEFAULT_COVER_URL,
     stats: prev?.stats ?? DEFAULT_STATS,
   };
@@ -67,11 +68,10 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
 
 
 
-function roleChipColor(role?: string): 'default' | 'success' | 'warning' | 'info' {
+function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
   switch ((role ?? '').toUpperCase()) {
-    case 'MOD': return 'success';
-    case 'BUSINESS': return 'warning';
-    case 'USER': return 'info';
+    case ACCOUNT_TYPES.business: return 'warning';
+    case ACCOUNT_TYPES.user: return 'info';
     default: return 'default';
   }
 }
