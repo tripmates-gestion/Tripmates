@@ -9,6 +9,8 @@ import type { AppProps } from './types/theme';
 import { PAGES_ROUTE } from './constants/Pages';
 import { Toolbar } from '@mui/material';
 import { Outlet } from "react-router-dom";
+import BusinessPostsPage from "./components/publish/Publish"
+import {RequireBusiness} from "./components/publish/RequireBusiness"
 
 function DefaultLayout() {
   return (
@@ -36,6 +38,14 @@ export default function App({ mode, setMode }: AppProps) {
         <Route element={<DefaultLayout />}>
           <Route path={PAGES_ROUTE.root} element={<Home />} />
           <Route path={PAGES_ROUTE.search} element={<Search />} />
+          <Route
+            path={PAGES_ROUTE.businessPosts}
+            element={
+              <RequireBusiness>
+                <BusinessPostsPage/>
+              </RequireBusiness>
+            }
+          />
         </Route>
       </Routes>
     </Box>

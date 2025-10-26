@@ -1,335 +1,323 @@
-import React from "react";
+import { useMemo, useState } from 'react'
 import {
   Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
-  ImageList,
-  ImageListItem,
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
-  Alert,
   Snackbar,
+  Alert,
   Card,
-  CardHeader,
-  CardContent,
-  Avatar,
-  LinearProgress,
-} from "@mui/material";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
-import CloseIcon from "@mui/icons-material/Close";
+  CardMedia,
+  Grid2 as Grid,
+} from '@mui/material'
+import ImageUploader from '../../components/ui/ImageUploader'
 import { ACCOUNT_TYPES } from '../../constants/Rol'
+import {useAuth} from "../../context/AuthContext"
+import PlaceCard from './PlaceCard'
+import { useEffect } from 'react'
 
+type BusinessType = 'alojamiento' | 'servicio'
 
+type BusinessPost = {
+  id: string
+  title: string
+  type: BusinessType
+  description: string
+  hours: string
+  contact: string
+  location: string
+  photos: string[]
+  createdAt: string
+}
 
-// ==== Tipos ====
-export type Role = typeof ACCOUNT_TYPES[keyof typeof ACCOUNT_TYPES]
-
-export type MediaKind = "image" | "video";
-
-export type MediaItem = {
-  id: string;
-  kind: MediaKind;
-  name: string;
-  size: number;
-  url: string;
-};
-
-export type BusinessPost = {
-  id: string;
-  title?: string;
-  description: string;
-  media: MediaItem[];
-  createdAt: string;
-};
-
-// ==== Mock API ====
-const mockLatency = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function mockPublishPost(input: Omit<BusinessPost, "id" | "createdAt">): Promise<BusinessPost> {
-  await mockLatency(700);
+async function saveBusinessPostMock(post: Omit<BusinessPost, 'id' | 'createdAt'>): Promise<BusinessPost> {
+  await new Promise((r) => setTimeout(r, 500))
   return {
+    ...post,
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
-    ...input,
-  };
+  }
 }
 
-// ==== Hook de estado local para publicaciones ====
-export function useBusinessPosts(initial: BusinessPost[] = []) {
-  const [posts, setPosts] = React.useState<BusinessPost[]>(initial);
-  const addPost = React.useCallback((p: BusinessPost) => setPosts((prev) => [p, ...prev]), []);
-  return { posts, addPost };
+function usePostValidation() {
+  return (draft: Partial<BusinessPost>) => {
+    const errors: Record<string, string> = {}
+    if (!draft.title?.trim()) errors.title = 'El título es obligatorio'
+    if (!draft.type) errors.type = 'Seleccioná un tipo'
+    if (!draft.description?.trim()) errors.description = 'La descripción es obligatoria'
+    if (!draft.hours?.trim()) errors.hours = 'El horario es obligatorio'
+    if (!draft.contact?.trim()) errors.contact = 'La información de contacto es obligatoria'
+    if (!draft.location?.trim()) errors.location = 'La ubicación es obligatoria'
+    return errors
+  }
 }
 
-// ==== Uploader de media ====
-const ACCEPT_IMAGES = "image/*";
-const ACCEPT_VIDEOS = "video/*";
-const MAX_IMAGE_MB = 5;
-const MAX_VIDEO_MB = 30;
-const MAX_TOTAL_FILES = 10;
-
-function fileToMediaItem(file: File): Promise<MediaItem> {
-  return new Promise((resolve) => {
-    const url = URL.createObjectURL(file);
-    const kind: MediaKind = file.type.startsWith("video/") ? "video" : "image";
-    resolve({ id: crypto.randomUUID(), kind, name: file.name, size: file.size, url });
-  });
+type FormState = {
+  title: string
+  type: BusinessType | ''
+  description: string
+  hours: string
+  contact: string
+  location: string
+  photos: string[]
 }
 
-export function MediaUploader({ value, onChange }: { value: MediaItem[]; onChange: (v: MediaItem[]) => void; }) {
-  const inputRef = React.useRef<HTMLInputElement | null>(null);
-  const [error, setError] = React.useState<string | null>(null);
-  const [uploading, setUploading] = React.useState(false);
-
-  const handlePick = () => inputRef.current?.click();
-
-  const validate = (files: FileList) => {
-    if (files.length + value.length > MAX_TOTAL_FILES) return `Máximo ${MAX_TOTAL_FILES} archivos`;
-    for (const f of Array.from(files)) {
-      if (!(f.type.startsWith("image/") || f.type.startsWith("video/"))) return `Formato no permitido: ${f.type}`;
-      const sizeMB = f.size / (1024 * 1024);
-      if (f.type.startsWith("image/") && sizeMB > MAX_IMAGE_MB) return `Imagen supera ${MAX_IMAGE_MB}MB: ${f.name}`;
-      if (f.type.startsWith("video/") && sizeMB > MAX_VIDEO_MB) return `Video supera ${MAX_VIDEO_MB}MB: ${f.name}`;
-    }
-    return null;
-  };
-
-  const onFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const v = validate(files);
-    if (v) {
-      setError(v);
-      e.target.value = "";
-      return;
-    }
-    setUploading(true);
-    const items = await Promise.all(Array.from(files).map(fileToMediaItem));
-    onChange([...items, ...value]);
-    setUploading(false);
-    e.target.value = "";
-  };
-
-  const remove = (id: string) => onChange(value.filter((m) => m.id !== id));
-
-  return (
-    <Stack spacing={1.5}>
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Button variant="outlined" startIcon={<AddPhotoAlternateIcon />} onClick={handlePick}>
-          Agregar fotos
-        </Button>
-        <Button variant="outlined" startIcon={<VideoLibraryIcon />} onClick={handlePick}>
-          Agregar videos
-        </Button>
-        <Typography variant="caption" sx={{ ml: 1 }}>
-          JPG/PNG hasta {MAX_IMAGE_MB}MB • MP4 hasta {MAX_VIDEO_MB}MB
-        </Typography>
-      </Stack>
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept={`${ACCEPT_IMAGES},${ACCEPT_VIDEOS}`}
-        multiple
-        hidden
-        onChange={onFiles}
-      />
-
-      {uploading && <LinearProgress />}
-
-      {value.length > 0 && (
-        <ImageList cols={4} gap={8} sx={{ m: 0 }}>
-          {value.map((m) => (
-            <ImageListItem key={m.id}>
-              {m.kind === "image" ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={m.url} alt={m.name} loading="lazy" style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }} />
-              ) : (
-                <video src={m.url} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }} />
-              )}
-              <Chip
-                label={m.kind === "image" ? "Foto" : "Video"}
-                size="small"
-                sx={{ position: "absolute", top: 6, left: 6, bgcolor: "background.paper" }}
-              />
-              <IconButton
-                size="small"
-                onClick={() => remove(m.id)}
-                sx={{ position: "absolute", top: 6, right: 6, bgcolor: "background.paper" }}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </ImageListItem>
-          ))}
-        </ImageList>
-      )}
-
-      <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError(null)}>
-        <Alert severity="warning" variant="filled">{error}</Alert>
-      </Snackbar>
-    </Stack>
-  );
+const initialForm: FormState = {
+  title: '',
+  type: '',
+  description: '',
+  hours: '',
+  contact: '',
+  location: '',
+  photos: [],
 }
 
-// ==== Formulario de publicación ====
-export type PostFormValues = {
-  title?: string;
-  description: string;
-  media: MediaItem[];
-};
+function NewPostDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (post: BusinessPost) => void }) {
+  const [form, setForm] = useState<FormState>(initialForm)
+  const [submitting, setSubmitting] = useState(false)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const validate = usePostValidation()
+  const errors = useMemo(() => validate(form as any), [form])
 
-export function PostFormDialog({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: (p: BusinessPost) => void; }) {
-  const [values, setValues] = React.useState<PostFormValues>({ title: "", description: "", media: [] });
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const hasError = (k: keyof FormState) => Boolean(touched[k] && (errors as any)[k])
+  const helper = (k: keyof FormState) => (touched[k] ? (errors as any)[k] : '')
 
-  const canSubmit = values.description.trim().length > 0 && !submitting;
+  const addPhoto = (b64: string) => {
+    setForm((f) => ({ ...f, photos: [...f.photos, b64] }))
+  }
 
-  const handlePublish = async () => {
-    if (!canSubmit) {
-      setError("Faltan campos obligatorios: descripción");
-      return;
-    }
-    setSubmitting(true);
+  const removePhotoAt = (idx: number) => {
+    setForm((f) => ({ ...f, photos: f.photos.filter((_, i) => i !== idx) }))
+  }
+
+  const onSubmit = async () => {
+    setTouched({ title: true, type: true, description: true, hours: true, contact: true, location: true })
+    if (Object.keys(errors).length) return
+    setSubmitting(true)
     try {
-      const created = await mockPublishPost({ description: values.description.trim(), title: values.title?.trim() || undefined, media: values.media });
-      onSuccess(created);
-      setValues({ title: "", description: "", media: [] });
-      onClose();
-    } catch (e) {
-      setError("No se pudo publicar. Intenta de nuevo.");
+      const saved = await saveBusinessPostMock({
+        title: form.title.trim(),
+        type: form.type as BusinessType,
+        description: form.description.trim(),
+        hours: form.hours.trim(),
+        contact: form.contact.trim(),
+        location: form.location.trim(),
+        photos: form.photos,
+      })
+      onCreated(saved)
+      setForm(initialForm)
+      onClose()
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
+
+  useEffect(() => {
+    if (open) setTouched({})
+  }, [open])
+  
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Nueva publicación</DialogTitle>
-      <DialogContent dividers>
-        <Stack spacing={2.5} sx={{ mt: 0.5 }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle>Nueva publicación de negocio</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ pt: 1 }}>
           <TextField
-            label="Título (opcional)"
-            value={values.title}
-            onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
-            inputProps={{ maxLength: 120 }}
-            fullWidth
+            label="Título"
+            value={form.title}
+            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+            onBlur={() => setTouched((t) => ({ ...t, title: true }))}
+            error={hasError('title')}
+            helperText={helper('title')}
+            required
           />
+
+          <FormControl error={hasError('type')} required>
+            <InputLabel id="bp-type">Tipo de publicación</InputLabel>
+            <Select
+              labelId="bp-type"
+              label="Tipo de publicación"
+              value={form.type}
+              onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as BusinessType }))}
+              onBlur={() => setTouched((t) => ({ ...t, type: true }))}
+            >
+              <MenuItem value={'alojamiento'}>Alojamiento</MenuItem>
+              <MenuItem value={'servicio'}>Servicio</MenuItem>
+            </Select>
+            <FormHelperText>{helper('type')}</FormHelperText>
+          </FormControl>
+
           <TextField
             label="Descripción / Detalles"
-            value={values.description}
-            onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
-            required
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            onBlur={() => setTouched((t) => ({ ...t, description: true }))}
+            error={hasError('description')}
+            helperText={helper('description')}
             multiline
             minRows={4}
-            fullWidth
-            helperText="Campo obligatorio"
-            error={values.description.trim().length === 0 && !!values.description}
+            required
           />
-          <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>Fotos y videos</Typography>
-            <MediaUploader value={values.media} onChange={(media) => setValues((v) => ({ ...v, media }))} />
-          </Box>
-          {error && <Alert severity="error">{error}</Alert>}
+
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Horario de atención"
+                placeholder="Ej: Lun a Vie 9:00–18:00"
+                value={form.hours}
+                onChange={(e) => setForm((f) => ({ ...f, hours: e.target.value }))}
+                onBlur={() => setTouched((t) => ({ ...t, hours: true }))}
+                error={hasError('hours')}
+                helperText={helper('hours')}
+                required
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                label="Información de contacto"
+                placeholder="Teléfono, email o sitio web"
+                value={form.contact}
+                onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))}
+                onBlur={() => setTouched((t) => ({ ...t, contact: true }))}
+                error={hasError('contact')}
+                helperText={helper('contact')}
+                required
+              />
+            </Grid>
+          </Grid>
+
+          <TextField
+            label="Ubicación"
+            placeholder="Ciudad, provincia / Dirección"
+            value={form.location}
+            onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+            onBlur={() => setTouched((t) => ({ ...t, location: true }))}
+            error={hasError('location')}
+            helperText={helper('location')}
+            required
+          />
+
+          <Divider />
+
+          <Stack spacing={1}>
+            <Typography variant="subtitle1" fontWeight={700}>Fotos (opcional)</Typography>
+            <Typography variant="body2" color="text.secondary">Hasta 6 imágenes. Formato: JPG/PNG/WebP.</Typography>
+            <Grid container spacing={2}>
+              {form.photos.map((p, i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card variant="outlined">
+                    <CardMedia component="img" image={p} height={160} />
+                    <CardActionsX>
+                      <Button size="small" onClick={() => removePhotoAt(i)}>Quitar</Button>
+                    </CardActionsX>
+                  </Card>
+                </Grid>
+              ))}
+              {form.photos.length < 6 && (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Box sx={{ p: 1 }}>
+                    <ImageUploader label="Agregar imagen" onChange={addPhoto} variant="rectangular" />
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          </Stack>
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={submitting}>Cancelar</Button>
-        <Button variant="contained" onClick={handlePublish} disabled={!canSubmit}>
-          {submitting ? "Publicando..." : "Publicar"}
-        </Button>
+        <Button variant="contained" onClick={onSubmit} disabled={submitting}>Publicar</Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }
 
-// ==== Lista de publicaciones del negocio ====
-export function BusinessPostsList({ items }: { items: BusinessPost[] }) {
-  if (items.length === 0) return <Alert severity="info">Todavía no hay publicaciones.</Alert>;
+function CardActionsX({ children }: { children: React.ReactNode }) {
   return (
-    <Stack spacing={2}>
-      {items.map((p) => (
-        <Card key={p.id} variant="outlined">
-          <CardHeader
-            avatar={<Avatar>{p.title?.[0]?.toUpperCase() || "P"}</Avatar>}
-            title={p.title || "Publicación"}
-            subheader={new Date(p.createdAt).toLocaleString()}
-          />
-          <CardContent>
-            <Typography sx={{ mb: 1.5 }}>{p.description}</Typography>
-            {p.media.length > 0 && (
-              <ImageList cols={3} gap={8} sx={{ m: 0 }}>
-                {p.media.map((m) => (
-                  <ImageListItem key={m.id}>
-                    {m.kind === "image" ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.url} alt={m.name} loading="lazy" style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }} />
-                    ) : (
-                      <video src={m.url} style={{ width: "100%", height: 140, objectFit: "cover", borderRadius: 8 }} />
-                    )}
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            )}
-          </CardContent>
-        </Card>
-      ))}
-    </Stack>
-  );
+    <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+      {children}
+    </Box>
+  )
 }
 
-// ==== Botón de acción condicional por rol ====
-export function PublishActionButton({ role, onClick }: { role: String; onClick: () => void }) {
-  if (role == "USER") return null;
-  return (
-    <Button variant="contained" onClick={onClick} sx={{ borderRadius: 2 }}>
-      Publicar servicio / alojamiento
-    </Button>
-  );
-}
+function BusinessOnly({ children }: { children: React.ReactNode}) {
+  const {user} = useAuth()
 
-// ==== Componente demo listo para integrar ====
-export default function BusinessPublishingDemo({ role = "BUSINESS" as Role }: { role?: Role }) {
-  const { posts, addPost } = useBusinessPosts([
-    {
-      id: crypto.randomUUID(),
-      title: "City Tour Histórico",
-      description: "Recorrido guiado por el casco histórico, 2 horas, con snacks incluidos.",
-      media: [],
-      createdAt: new Date(Date.now() - 3600_000).toISOString(),
-    },
-  ]);
-
-  const [open, setOpen] = React.useState(false);
-  const [toast, setToast] = React.useState<string | null>(null);
-
-  const handleSuccess = (p: BusinessPost) => {
-    addPost(p);
-    setToast("¡Publicación creada!");
-  };
-
-  return (
-    <Stack spacing={2}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="h6" fontWeight={800}>Panel de negocio — Publicaciones</Typography>
-        <PublishActionButton role={role} onClick={() => setOpen(true)} />
+  if (user?.role !== ACCOUNT_TYPES.business) {
+    return (
+      <Stack spacing={2} alignItems="center" textAlign="center" sx={{ py: 6 }}>
+        <Typography variant="h5" fontWeight={800}>Función exclusiva para cuentas de negocio</Typography>
+        <Typography color="text.secondary" maxWidth={560}>
+          Para crear publicaciones de negocio, convertí tu cuenta a <strong>BUSINESS</strong>.
+        </Typography>
       </Stack>
-      <Divider />
-      <BusinessPostsList items={posts} />
+    )
+  }
+  return <>{children}</>
+}
 
-      <PostFormDialog open={open} onClose={() => setOpen(false)} onSuccess={handleSuccess} />
+export default function BusinessPostsPage() {
+  const [posts, setPosts] = useState<BusinessPost[]>([])
+  const [open, setOpen] = useState(false)
+  const [toast, setToast] = useState<{ open: boolean; msg: string; sev: 'success' | 'error' }>({ open: false, msg: '', sev: 'success' })
 
-      <Snackbar open={!!toast} autoHideDuration={3000} onClose={() => setToast(null)}>
-        <Alert severity="success" variant="filled">{toast}</Alert>
+  const handleCreated = (post: BusinessPost) => {
+    setPosts((p) => [post, ...p])
+    setToast({ open: true, msg: '¡Publicación creada!', sev: 'success' })
+  }
+
+  return (
+    <BusinessOnly>
+      <Stack spacing={3}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography variant="h5" fontWeight={800}>Publicaciones de tu negocio</Typography>
+          <Button variant="contained" onClick={() => setOpen(true)}>Crear publicación</Button>
+        </Stack>
+
+        {posts.length === 0 ? (
+          <Box sx={{ p: 4, border: '1px dashed', borderColor: 'divider', borderRadius: 2, textAlign: 'center' }}>
+            <Typography color="text.secondary">Aún no tenés publicaciones. Creá la primera.</Typography>
+          </Box>
+        ) : (
+          <Box
+          display="grid"
+          gridTemplateColumns={{
+            xs: '1fr',          // 1 por fila en móviles
+            sm: 'repeat(2, 1fr)', // 2 por fila en tablets
+            md: 'repeat(3, 1fr)', // 3 por fila en escritorio
+          }}
+          gap={4} // espacio entre PlaceCards
+        >
+            {posts.map((p) => (
+              <Grid key={p.id} size={{ xs: 12, md: 6 }}>
+                <PlaceCard post={p} />
+              </Grid>
+            ))}
+          </Box>
+        )}
+      </Stack>
+
+      <NewPostDialog open={open} onClose={() => setOpen(false)} onCreated={handleCreated} />
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={2500}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity={toast.sev} variant="filled">{toast.msg}</Alert>
       </Snackbar>
-    </Stack>
-  );
+    </BusinessOnly>
+  )
 }

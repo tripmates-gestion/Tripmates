@@ -19,6 +19,7 @@ import EditProfileDialog, { type UserProfile } from '../components/profile/EditP
 import { useAuth } from '../context/AuthContext';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { ACCOUNT_TYPES } from '../constants/Rol'
+import { type AccountType } from '../types/user'
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
@@ -31,7 +32,7 @@ type BackendUser = {
   id: string;
   username: string;
   email: string;
-  role: string;
+  role: AccountType;
   description: string;
   avatarURL: string | null;
 };
