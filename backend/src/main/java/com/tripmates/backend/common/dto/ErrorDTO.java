@@ -1,11 +1,11 @@
-package com.tripmates.backend.auth.dto;
+package com.tripmates.backend.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public record AuthErrorDTO(
+public record ErrorDTO(
         @Schema(description = "Error's type") @NotBlank(message = "Error's type cannot be empty")
         String type,
 

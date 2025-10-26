@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
 import com.tripmates.backend.users.service.UserService;
@@ -41,7 +42,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
@@ -86,7 +87,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
