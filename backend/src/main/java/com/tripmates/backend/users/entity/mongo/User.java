@@ -13,7 +13,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,20 +38,17 @@ public class User implements UserDetails {
     private String email;
 
     @NotNull
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
     @NotNull
     private String password;
 
-    @Size(max = 500, message = "User's description cannot exceed 500 characters")
     private String description;
 
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
 
-    @Size(max = 500, message = "User's avatar URL cannot exceed 500 characters")
     private String avatarURL;
 
     private String token;

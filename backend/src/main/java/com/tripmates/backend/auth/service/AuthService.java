@@ -44,8 +44,6 @@ public class AuthService {
         user.setEmail(userCreationRequestDTO.email());
         user.setPassword(passwordEncoder.encode(userCreationRequestDTO.password()));
         user.setRole(userCreationRequestDTO.role());
-        user.setDescription(userCreationRequestDTO.description());
-        user.setAvatarURL(userCreationRequestDTO.avatarURL());
 
         userRepository.save(user);
     }
