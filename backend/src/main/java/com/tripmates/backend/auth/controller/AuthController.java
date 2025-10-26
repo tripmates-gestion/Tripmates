@@ -30,9 +30,12 @@ public class AuthController {
     @Operation(summary = "Registers a new user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User created successfully",
+                    content = { @Content()}
+            ),
+            @ApiResponse(responseCode = "400", description = "User already exists",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             )
     })
@@ -53,13 +56,13 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             )
     })
@@ -79,7 +82,7 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             )
     })
@@ -100,13 +103,13 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = AuthErrorDTO.class))
                     }
             )
     })
