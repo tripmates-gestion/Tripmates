@@ -27,7 +27,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
  */
 @Getter
 @Setter
-@Document(collection = "users")
+@Document(collection = "users") // users and business (maybe rename)
 public class User implements UserDetails {
 
     @Id
@@ -60,7 +60,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email; // just beacuse username is not unique
     }
 
     @Override
