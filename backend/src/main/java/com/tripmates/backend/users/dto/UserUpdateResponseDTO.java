@@ -1,8 +1,6 @@
 package com.tripmates.backend.users.dto;
 
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "User profile response DTO")
