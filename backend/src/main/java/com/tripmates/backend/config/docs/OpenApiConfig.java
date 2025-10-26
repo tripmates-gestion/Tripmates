@@ -12,11 +12,11 @@ import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
+  
 
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
-        final String apiTitle = "Tripmates API";
         
         return new OpenAPI()
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
