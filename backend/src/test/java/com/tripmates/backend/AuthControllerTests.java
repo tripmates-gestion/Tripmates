@@ -39,9 +39,7 @@ public class AuthControllerTests {
                 "fran",
                 "fran@example.com",
                 "123456",
-                "I hate testing",
-                Role.USER,
-                "https://example.com/avatar.png"
+                Role.USER
         );
 
         HttpHeaders headers = new HttpHeaders();
