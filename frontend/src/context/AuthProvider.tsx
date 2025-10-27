@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
 import { type CommonUsersInformation } from "../types/user";
-import { login, logoutApi, refreshAccessToken } from "../services/authService";
+import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";
 
@@ -20,7 +20,7 @@ interface AuthProviderProps {
   
       const loginHandler = async (email: string, password: string) => {
         console.log("[AuthProvider] LOGGING IN with:", email, password);
-        const data = await login(email, password);
+        const data = await loginApi(email, password);
         console.log("[AuthProvider] LOGGING IN, Access token antes", localStorage.getItem("token"));
         console.log("[AuthProvider] LOGGING IN, Refresh token antes", localStorage.getItem("refreshToken"));
         localStorage.setItem("token", data.accessToken);
@@ -57,7 +57,7 @@ interface AuthProviderProps {
       const refreshAccessTokenHandler = useCallback(async () => {
         if (!accessToken || !refreshToken) return;
         try {
-            const data = await refreshAccessToken(accessToken, refreshToken, user?.email);
+            const data = await refreshAccessTokenApi(accessToken, refreshToken, user?.email);
             localStorage.setItem('token', data.accessToken);
             setAccessToken(data.accessToken);
         } catch {

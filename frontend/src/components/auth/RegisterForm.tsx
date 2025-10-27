@@ -46,7 +46,7 @@ export default function RegisterForm({
           </RadioGroup>
         </FormControl>
 
-        {accountType === 'business' && (
+        {accountType === 'BUSINESS' && (
           <TextField 
             label="Nombre de la empresa" 
             fullWidth 
@@ -57,7 +57,7 @@ export default function RegisterForm({
           />
         )}
 
-        {accountType === 'user' && (
+        {accountType === 'USER' && (
           <TextField 
             label="Nombre" 
             fullWidth 
@@ -99,7 +99,7 @@ export default function RegisterForm({
         />
 
         {/* Solo empresa */}
-        {accountType === 'business' && (
+        {accountType === 'BUSINESS' && (
           <>
             <TextField label="CUIT / NIF" fullWidth />
             <TextField label="Dirección comercial" fullWidth />

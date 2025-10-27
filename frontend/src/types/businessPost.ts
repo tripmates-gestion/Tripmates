@@ -1,4 +1,4 @@
-export type BusinessType = 'alojamiento' | 'servicio'
+import type { BusinessType } from "./businessType";
 
 export type BusinessPost = {
   id: string
