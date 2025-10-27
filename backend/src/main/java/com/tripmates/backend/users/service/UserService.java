@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @Transactional
 public class UserService {
@@ -25,8 +23,8 @@ public class UserService {
      * @param email email del usuario
      * @return {@link com.tripmates.backend.users.entity.mongo.User User}
      */
-    public User getUser(String email) {
-        var user = userRepository.findByEmail(email)
+    public UserResumeResponseDTO getUser(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         return UserResumeResponseDTO.fromUser(user);
     }

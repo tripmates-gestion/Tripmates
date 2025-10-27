@@ -17,8 +17,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
+import com.tripmates.backend.common.types.AttentionSchedule;
 
-import com.tripmates.backend.publications.entity.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 

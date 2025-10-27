@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
-import com.tripmates.backend.publications.entity.AttentionSchedule;
+import com.tripmates.backend.common.types.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 

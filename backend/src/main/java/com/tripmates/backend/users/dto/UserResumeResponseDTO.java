@@ -2,11 +2,11 @@ package com.tripmates.backend.users.dto;
 
 import com.tripmates.backend.users.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.tripmates.backend.publications.entity.mongo.User;
 import java.util.List;
-import com.tripmates.backend.publications.entity.AttentionSchedule;
+import com.tripmates.backend.common.types.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import com.tripmates.backend.users.entity.mongo.User;
 
 @Schema(description = "User profile response DTO")
 public record UserResumeResponseDTO(
@@ -46,7 +46,7 @@ public record UserResumeResponseDTO(
         @Schema(description = "User's profile image URLs")
         List<String> profileImageUrls
 ) { 
-        static UserResumeResponseDTO fromUser(User user) {
+        public static UserResumeResponseDTO fromUser(User user) {
             return new UserResumeResponseDTO(
                     user.getName(),
                     user.getEmail(),
