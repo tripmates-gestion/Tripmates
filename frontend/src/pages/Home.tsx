@@ -74,11 +74,11 @@ export function Hero() {
         </Typography>
 
         <Typography variant="h3" fontWeight={800} lineHeight={1.2} gutterBottom>
-          Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y vive una nueva y completa vida
+          Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y conecta con otros viajeros
         </Typography>
 
         <Typography variant="body1" color="text.secondary" sx={{ mt: 3 }}>
-          Descubre experiencias únicas y lugares inolvidables. Deja que TripMates te inspire en tu próxima aventura.
+          Descubre experiencias lugares y personas inolvidables. Deja que TripMates te inspire en tu próxima aventura.
         </Typography>
 
         <Stack direction="row" spacing={2} mt={4}>
