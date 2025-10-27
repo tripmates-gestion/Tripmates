@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import com.tripmates.backend.publications.entity.BusinessPublicationType;
+import com.tripmates.backend.publications.entity.BusinessType;
 import com.tripmates.backend.publications.entity.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -20,7 +20,7 @@ public class Publication {
     private String id;
 
     private String title;
-    private BusinessPublicationType type; //esto no deberia estar aca
+    private BusinessType type; //esto no deberia estar aca
     private String description;
     private List<DayOfWeek> openingDays;
     private AttentionSchedule attentionSchedule;
@@ -41,7 +41,7 @@ public class Publication {
 
     public Publication(
         String title,
-        BusinessPublicationType type,
+        BusinessType type,
         String description,
         List<DayOfWeek> openingDays,
         AttentionSchedule attentionSchedule,

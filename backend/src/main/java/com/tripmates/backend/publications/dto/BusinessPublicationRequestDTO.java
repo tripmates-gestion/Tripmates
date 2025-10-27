@@ -3,11 +3,10 @@ package com.tripmates.backend.publications.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 import com.tripmates.backend.publications.entity.AttentionSchedule;
-import com.tripmates.backend.publications.entity.BusinessPublicationType;
+import com.tripmates.backend.publications.entity.BusinessType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -18,7 +17,7 @@ public record BusinessPublicationRequestDTO(
 
     @Schema(description = "Publication type")
     @NotBlank(message = "The type cannot be empty to create a business publication.")
-    BusinessPublicationType type, // esto no deberia estar aca
+    BusinessType type, // esto no deberia estar aca
 
     @Schema(description = "Service/host description text")
     @NotBlank(message = "The description cannot be empty to create a business publication.")
