@@ -2,9 +2,8 @@ import { Button, Stack, Avatar } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { PAGES_ROUTE } from '../../constants/Pages';
 import AuthDialog from '../../components/auth/AuthDialog';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useState } from 'react';
-
 
 
 export function AuthControls() {

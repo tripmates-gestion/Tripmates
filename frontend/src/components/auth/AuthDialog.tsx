@@ -9,7 +9,7 @@ import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { createUserRemote } from '../../helpers/userCreation';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
