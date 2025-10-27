@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Date;
 
-
 @Document(collection = "publications")
 @Getter
 @Setter
@@ -35,8 +34,7 @@ public class Publication {
 
     private Date createdAt = new Date();
 
-    public Publication() {
-    }
+    public Publication() {}
 
     public Publication(
         String title,
@@ -50,7 +48,8 @@ public class Publication {
         List<String> imageUrls,
         String ownerId, String ownerUsername,
         String ownerAvatarUrl,
-        Date createdAt) {
+        Date createdAt
+    ) {
             this.title = title;
             this.description = description;
             this.openingDays = openingDays;

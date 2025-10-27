@@ -1,4 +1,5 @@
 package com.tripmates.backend.publications.controller;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import java.util.List;
 import com.tripmates.backend.common.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+
 @RestController
 @RequestMapping("/publications")
 @Tag(name = "Publications", description = "Publication management endpoints (services, hostings, etc.)")
@@ -54,11 +56,11 @@ public class PublicationController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal UserDetails userDetails
     ){
-      try{
-        BusinessPublicationRequestDTO publication = mapper.readValue(data, BusinessPublicationRequestDTO.class);
-        return ResponseEntity.ok().body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
-      }catch(Exception e){
-        throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
+      try {
+            BusinessPublicationRequestDTO publication = mapper.readValue(data, BusinessPublicationRequestDTO.class);
+            return ResponseEntity.ok().body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
+      } catch(Exception e) {
+          throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
       }
     }
 

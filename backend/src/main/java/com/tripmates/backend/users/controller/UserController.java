@@ -1,6 +1,5 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,30 +48,6 @@ public class UserController {
         return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
     }
 
-
-
-
-
-  
-    @PatchMapping("/me")
-    @Operation(summary = "Updates user profile information in the system")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User profile updated successfully",
-                    content = { @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserResumeResponseDTO.class))
-                    }
-            ),
-            @ApiResponse(responseCode = "404", description = "User not found",
-                    content = { @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))
-                    }
-            )
-    })
-
-
-    
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "User update data",
         content = @Content(

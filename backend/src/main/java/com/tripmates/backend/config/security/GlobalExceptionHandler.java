@@ -17,18 +17,18 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
         @ExceptionHandler(UserAlreadyExistsException.class)
-        public ResponseEntity<ErrorDTO> handleUserAlreadyExistingException(UserAlreadyExistsException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+        public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(
                                 new ErrorDTO(
                                                 "about:blank",
-                                                "User already ",
-                                                HttpStatus.BAD_REQUEST.value(),
+                                                "User already exists",
+                                                HttpStatus.CONFLICT.value(),
                                                 e.getMessage(),
                                                 "auth/register"));
         }
 
         @ExceptionHandler(UserNotFoundException.class)
-        public ResponseEntity<ErrorDTO> handleUserNotFoundException(UserNotFoundException e) {
+        public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException e) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                                 new ErrorDTO(
                                                 "about:blank",
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler(BadRequestException.class)
-        public ResponseEntity<ErrorDTO> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
+        public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                                 new ErrorDTO(
                                                 "about:blank",
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler(IncorrectPasswordException.class)
-        public ResponseEntity<ErrorDTO> handleIncorrectPasswordException(IncorrectPasswordException e) {
+        public ResponseEntity<?> handleIncorrectPasswordException(IncorrectPasswordException e) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                                 new ErrorDTO(
                                                 "about:blank",
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler(FileUploadException.class)
-        public ResponseEntity<ErrorDTO> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
+        public ResponseEntity<?> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                                 new ErrorDTO(
                                                 "about:blank",
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         }
 
         @ExceptionHandler(IncorrectTokenException.class)
-        public ResponseEntity<ErrorDTO> handleIncorrectTokenException(IncorrectTokenException e) {
+        public ResponseEntity<?> handleIncorrectTokenException(IncorrectTokenException e) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                                 new ErrorDTO(
                                                 "about:blank",

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,8 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Registers a new user in the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User created successfully",
-                    content = { @Content()}
+            @ApiResponse(responseCode = "201", description = "User created successfully",
+                    content = { @Content() }
             ),
             @ApiResponse(responseCode = "400", description = "User already exists",
                     content = { @Content(
@@ -41,7 +42,7 @@ public class AuthController {
     })
     public ResponseEntity<?> register(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
         authService.register(userCreationRequestDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/login")
@@ -73,7 +74,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout user from the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User logouts successfully",
+            @ApiResponse(responseCode = "204", description = "User logouts successfully",
                     content = { @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = void.class))
@@ -88,7 +89,7 @@ public class AuthController {
     })
     public ResponseEntity<?> logout(@RequestBody AuthLogoutRequestDTO authLogoutRequestDTO) {
         authService.logout(authLogoutRequestDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/refresh")

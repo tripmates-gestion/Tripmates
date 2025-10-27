@@ -111,6 +111,7 @@ public class AuthService {
 
         return new AuthRefreshResponseDTO(accessToken);
     }
+
     private void setBusinessType(UserCreationRequestDTO userCreationRequestDTO, User user) {
         if ((userCreationRequestDTO.role().toString().equals("BUSINESS"))) {
 
