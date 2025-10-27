@@ -18,7 +18,7 @@ public record BusinessPublicationRequestDTO(
 
     @Schema(description = "Publication type")
     @NotBlank(message = "The type cannot be empty to create a business publication.")
-    BusinessPublicationType type,
+    BusinessPublicationType type, // esto no deberia estar aca
 
     @Schema(description = "Service/host description text")
     @NotBlank(message = "The description cannot be empty to create a business publication.")
