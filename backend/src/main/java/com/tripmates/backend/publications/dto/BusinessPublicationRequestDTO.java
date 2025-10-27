@@ -32,15 +32,12 @@ public record BusinessPublicationRequestDTO(
     String email,
 
     @Schema(description = "service/host location")
-    @NotBlank(message = "The location cannot be empty to create a business publication.")
     String location,
 
     @Schema(description = "Service/host opening days")
-    @NotNull(message = "The opening days cannot be empty to create a business publication.")
-    List<DayOfWeek> openingDays,
+    List<DayOfWeek> openingDays,//quizás una lista de tuplas de horario con día
 
     @Schema(description = "Service/host opening hours")
-    @NotNull(message = "The opening hours cannot be empty to create a business publication.")
     AttentionSchedule attentionSchedule,
 
     @Schema(description = "Service/host exceptional closing days")
