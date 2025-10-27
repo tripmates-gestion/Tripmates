@@ -119,8 +119,6 @@ public class AuthService {
             }
             
             user.setBusinessType(userCreationRequestDTO.businessType());
-        } else {
-            user.setBusinessType(BusinessType.UNDEFINED);
         }
     }
 }
