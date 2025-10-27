@@ -20,7 +20,7 @@ public class Publication {
     private String id;
 
     private String title;
-    private BusinessPublicationType type;
+    private BusinessPublicationType type; //esto no deberia estar aca
     private String description;
     private List<DayOfWeek> openingDays;
     private AttentionSchedule attentionSchedule;
