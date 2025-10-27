@@ -1,4 +1,4 @@
-package com.tripmates.backend.publications.entity;
+package com.tripmates.backend.common.types;
 
 import java.time.LocalTime;
 

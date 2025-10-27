@@ -4,6 +4,7 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.service.UserService;
+import com.tripmates.backend.utils.PublicactionBuilder;
 import com.tripmates.backend.users.entity.mongo.User;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import com.tripmates.backend.publications.utils.PublicactionBuilder;
+
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 @Component
 @Transactional

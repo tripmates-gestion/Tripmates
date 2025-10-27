@@ -1,4 +1,4 @@
-package com.tripmates.backend.publications.utils;
+package com.tripmates.backend.utils;
 
 import java.util.ArrayList;
 import java.util.Date;

@@ -3,8 +3,10 @@ package com.tripmates.backend.publications.dto;
 import java.util.List;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import com.tripmates.backend.publications.entity.AttentionSchedule;
-import com.tripmates.backend.publications.entity.BusinessType;
+
+import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.BusinessType;
+
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 

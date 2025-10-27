@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
-import com.tripmates.backend.publications.entity.AttentionSchedule;
-import com.tripmates.backend.publications.entity.BusinessType;
+
+import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.BusinessType;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
