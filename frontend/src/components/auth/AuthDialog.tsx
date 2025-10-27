@@ -10,7 +10,8 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { registerUserApi } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
-// import type { BusinessType } from '../../types/businessType';
+import type { BusinessType } from '../../types/businessType';
+
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
 // Recibe una prop "onClose" para manejar el cierre del diálogo
@@ -39,8 +40,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
 
   // Estado para manejar el tipo de cuenta en el formulario de registro
   const [accountType, setAccountType] = React.useState<AccountType>('USER');
-  // Estado para almacenar el tipo de negocio (si lo es)
-  // const [businessType, setBusinessType] = React.useState<BusinessType | null>(null);
+  // Estado para manejar el tipo de negocio en el formulario de registro
+  const [businessType, setBusinessType] = React.useState<BusinessType | null>(null); 
 
   // Estado para almacenar los datos del formulario de registro
   const [registerData, setRegisterData] = React.useState({
@@ -70,7 +71,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         registerData.email, 
         registerData.password,
         accountType,
-        accountType === 'BUSINESS' ? 'RESTAURANT' : null
+        accountType === 'BUSINESS' ? businessType : null
       );      
       // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);
@@ -151,6 +152,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
             <RegisterForm
               accountType={accountType}
               setAccountType={setAccountType}
+              businessType={businessType}
+              setBusinessType={setBusinessType}
               showPass={showPass}
               setShowPass={setShowPass}
               onDataChange={handleRegisterDataChange}
