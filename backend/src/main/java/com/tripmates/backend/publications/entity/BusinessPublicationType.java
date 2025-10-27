@@ -1,6 +1,7 @@
 package com.tripmates.backend.publications.entity;
 
 public enum BusinessPublicationType {
-    SERVICE,
-    HOSTING
+    RESTAURANT,
+    HOSTING,
+    TOURISM
 }
