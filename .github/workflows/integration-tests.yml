@@ -1,0 +1,114 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+env:
+  # MongoDB
+  MONGO_INITDB_ROOT_USERNAME: mongo-user
+  MONGO_INITDB_ROOT_PASSWORD: mongo-password
+  MONGO_PORT: 27017
+  MONGO_INITDB_DATABASE: tripmates
+
+  # Neo4j (solo si no excluyes autoconfig en test)
+  NEO4J_USER: neo4j
+  NEO4J_PASSWORD: neo-password
+  NEO4J_BOLT_PORT: 7687
+
+  # Backend
+  BACKEND_PORT: 8080
+  JWT_SECRET: test-jwt-secret
+  SPRING_PROFILES_ACTIVE: test
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Start MongoDB
+        run: |
+          docker run -d -p 27017:27017 --name mongo-test \
+            -e MONGO_INITDB_ROOT_USERNAME=${{ env.MONGO_INITDB_ROOT_USERNAME }} \
+            -e MONGO_INITDB_ROOT_PASSWORD=${{ env.MONGO_INITDB_ROOT_PASSWORD }} \
+            -e MONGO_INITDB_DATABASE=${{ env.MONGO_INITDB_DATABASE }} \
+            mongo:6.0
+
+      # Opcional: Solo si no excluyes Neo4j en tests
+      - name: Start Neo4j
+        run: |
+          docker run -d -p 7474:7474 -p 7687:7687 --name neo4j-test \
+            -e NEO4J_AUTH=${{ env.NEO4J_USER }}/${{ env.NEO4J_PASSWORD }} \
+            -e NEO4J_PLUGINS='["apoc"]' \
+            -e NEO4J_ACCEPT_LICENSE_AGREEMENT=yes \
+            neo4j:5.12
+
+      - name: Wait for MongoDB
+        run: |
+          timeout 60 bash -c '
+            until docker exec mongo-test mongosh -u ${{ env.MONGO_INITDB_ROOT_USERNAME }} -p ${{ env.MONGO_INITDB_ROOT_PASSWORD }} --eval "db.adminCommand(\"ping\")" | grep -q "ok"; do
+              echo "Waiting for MongoDB..."
+              sleep 5
+            done
+          '
+
+      # Opcional: Solo si no excluyes Neo4j en tests
+      - name: Wait for Neo4j
+        run: |
+          timeout 90 bash -c '
+            until docker exec neo4j-test cypher-shell -u ${{ env.NEO4J_USER }} -p ${{ env.NEO4J_PASSWORD }} "RETURN 1;" 2>/dev/null; do
+              echo "Waiting for Neo4j..."
+              sleep 10
+            done
+          '
+
+      - name: Make mvnw executable
+        run: chmod +x ./backend/mvnw
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          # Spring props para apuntar a los contenedores
+          SPRING_PROFILES_ACTIVE: ${{ env.SPRING_PROFILES_ACTIVE }}
+          SPRING_DATA_MONGODB_URI: mongodb://${{ env.MONGO_INITDB_ROOT_USERNAME }}:${{ env.MONGO_INITDB_ROOT_PASSWORD }}@localhost:${{ env.MONGO_PORT }}/${{ env.MONGO_INITDB_DATABASE }}?authSource=admin
+          SPRING_NEO4J_URI: bolt://localhost:${{ env.NEO4J_BOLT_PORT }}
+          SPRING_NEO4J_AUTHENTICATION_USERNAME: ${{ env.NEO4J_USER }}
+          SPRING_NEO4J_AUTHENTICATION_PASSWORD: ${{ env.NEO4J_PASSWORD }}
+          # Backend
+          BACKEND_PORT: ${{ env.BACKEND_PORT }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          # Cloudinary secrets
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          ./mvnw -B test -Dspring.profiles.active=test
+
+      - name: Upload test reports on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop mongo-test neo4j-test || true
+          docker rm mongo-test neo4j-test || true
