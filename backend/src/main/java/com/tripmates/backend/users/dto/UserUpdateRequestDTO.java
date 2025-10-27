@@ -12,4 +12,13 @@ public record UserUpdateRequestDTO(
 
         @Schema(description = "User's avatar URL")
         String avatarURL
+
+        //BusinessType
+        // List<DayOfWeek> openingDays,
+        // AttentionSchedule attentionSchedule,
+        // List<LocalDate> exceptionalClosingDays,
+        // String phoneNumber,
+        // String location,
+        // List<String> profileImageUrls,
+
 ) { }
