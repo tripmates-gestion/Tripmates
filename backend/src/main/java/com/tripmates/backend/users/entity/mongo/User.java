@@ -18,7 +18,7 @@ import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 import com.tripmates.backend.common.types.AttentionSchedule;
-
+import com.tripmates.backend.common.types.BusinessType;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -41,8 +41,9 @@ public class User implements UserDetails {
     private String password;
 
     private String description;
-
-    private String businessType;
+    
+    @NotNull
+    private BusinessType businessType;
 
     @NotNull
     @Field(targetType = FieldType.STRING)

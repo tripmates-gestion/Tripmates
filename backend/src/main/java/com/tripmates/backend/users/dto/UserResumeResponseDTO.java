@@ -7,6 +7,7 @@ import com.tripmates.backend.common.types.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.common.types.BusinessType;
 
 @Schema(description = "User profile response DTO")
 public record UserResumeResponseDTO(
@@ -26,7 +27,7 @@ public record UserResumeResponseDTO(
         String avatarURL,
 
         @Schema(description = "User's business type")
-        String businessType,
+        BusinessType businessType,
 
         @Schema(description = "User's opening days")
         List<DayOfWeek> openingDays,
