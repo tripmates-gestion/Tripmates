@@ -1,4 +1,4 @@
-import {useAuth} from "../../context/AuthContext"
+import {useAuth} from "../../hooks/useAuth"
 import { ACCOUNT_TYPES } from "../../constants/Rol"
 import { Navigate } from 'react-router-dom';
 import { Alert } from '@mui/material';

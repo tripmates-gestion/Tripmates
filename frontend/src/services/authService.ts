@@ -10,11 +10,12 @@ export async function login(email: string, password: string) {
 }
 
 
-export async function logout(token: string, email: string) {
+export async function logout(accesstoken: string, refreshtoken: string, email: string) {
+  console.log("[AUTHSERVICE] LOGGING OUT with:", email, refreshtoken);
   return apiFetch(ENDPOINTS.LOGOUT, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ email }),
+    headers: { Authorization: `Bearer ${accesstoken}` },
+    body: JSON.stringify({ email, refreshtoken }),
   });
 }
 

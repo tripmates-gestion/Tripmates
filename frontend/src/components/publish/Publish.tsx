@@ -23,7 +23,7 @@ import {
 } from '@mui/material'
 import ImageUploader from '../../components/ui/ImageUploader'
 import { ACCOUNT_TYPES } from '../../constants/Rol'
-import {useAuth} from "../../context/AuthContext"
+import {useAuth} from "../../hooks/useAuth"
 import PlaceCard from './PlaceCard'
 import { useEffect } from 'react'
 
