@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
 import { type CommonUsersInformation } from "../types/user";
-import { login, logout, refreshAccessToken } from "../services/authService";
+import { login, logoutApi, refreshAccessToken } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";
 
@@ -21,13 +21,15 @@ interface AuthProviderProps {
       const loginHandler = async (email: string, password: string) => {
         console.log("[AuthProvider] LOGGING IN with:", email, password);
         const data = await login(email, password);
+        console.log("[AuthProvider] LOGGING IN, Access token antes", localStorage.getItem("token"));
+        console.log("[AuthProvider] LOGGING IN, Refresh token antes", localStorage.getItem("refreshToken"));
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
         setAccessToken(data.accessToken);
         setRefreshToken(data.refreshToken);
         //no actualizo info de usuario pq lo hace el useEffect
-        console.log("[AuthProvider] LOGGING IN, Access token saved", data.accessToken);
-        console.log("[AuthProvider] LOGGING IN, Refresh token saved", data.refreshToken);
+        console.log("[AuthProvider] LOGGING IN, Access token despues", data.accessToken);
+        console.log("[AuthProvider] LOGGING IN, Refresh token despues", data.refreshToken);
       };
       const navigate = useNavigate();
 
@@ -36,11 +38,14 @@ interface AuthProviderProps {
         console.log("Deslogeando");
         if (accessToken && refreshToken) {
           try{
-            await logout(accessToken, refreshToken, user?.email ?? 'NO HAY EMAIL');
+            await logoutApi(accessToken, refreshToken, user?.email);
+
           } catch {
-            console.log("[AUTHPROVIDER] Error al deslogear (porque el token expiró");
+            console.log("[AUTHPROVIDER] Error al deslogear (porque el token expiró aaaaaaaaaaaaaaaaaaaaaaa");
+
           }
         }
+
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         setAccessToken(null);

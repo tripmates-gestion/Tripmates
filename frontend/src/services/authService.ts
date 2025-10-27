@@ -10,13 +10,17 @@ export async function login(email: string, password: string) {
 }
 
 
-export async function logout(accesstoken: string, refreshtoken: string, email: string) {
-  console.log("[AUTHSERVICE] LOGGING OUT with:", email, refreshtoken);
+export async function logoutApi(accesstoken: string, refreshToken: string, email: string | undefined) {
+  console.log("[AUTHSERVICE] LOGGING OUT with:", email, refreshToken);
+  console.log("Accesstoken: ", accesstoken)
+  console.log("RefreshToken: ", refreshToken)
+
   return apiFetch(ENDPOINTS.LOGOUT, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${accesstoken}` },
-    body: JSON.stringify({ email, refreshtoken }),
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accesstoken}` },
+    body: JSON.stringify({ email }),
   });
+
 }
 
 export async function refreshAccessToken(token: string, refreshToken: string, email?: string) {
