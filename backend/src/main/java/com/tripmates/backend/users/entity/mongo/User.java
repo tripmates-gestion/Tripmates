@@ -17,17 +17,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
+import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.BusinessType;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
-/**
- * Representa un usuario del sistema, y define el documento
- * que sera persistido en MongoDB.
- *
- * @see com.tripmates.backend.users.entity.Role
- * @see org.springframework.security.core.userdetails.UserDetails
- */
 @Getter
 @Setter
-@Document(collection = "users") // users and business (maybe rename)
+@Document(collection = "users")
 public class User implements UserDetails {
 
     @Id
@@ -38,12 +35,15 @@ public class User implements UserDetails {
     private String email;
 
     @NotNull
-    private String username;
+    private String name;
 
     @NotNull
     private String password;
 
     private String description;
+    
+    @NotNull
+    private BusinessType businessType;
 
     @NotNull
     @Field(targetType = FieldType.STRING)
@@ -53,6 +53,13 @@ public class User implements UserDetails {
 
     private String token;
 
+    private List<DayOfWeek> openingDays;
+    private AttentionSchedule attentionSchedule;
+    private List<LocalDate> exceptionalClosingDays;
+    private String phoneNumber;
+    private String location;
+    private List<String> profileImageUrls;
+
     @Override
     public String getPassword() {
         return this.password;
@@ -60,7 +67,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email; // just beacuse username is not unique
+        return this.email; 
     }
 
     @Override
@@ -79,7 +86,9 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
 
     @Override
     public boolean isEnabled() {

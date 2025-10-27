@@ -5,12 +5,13 @@ import com.tripmates.backend.users.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import com.tripmates.backend.common.types.BusinessType;
 
 /**
  * Data Transfer Object (DTO) utilizado para recibir los datos en formato JSON,
  * necesarios para crear un nuevo usuario.
  *
- * @param username nombre de usuario
+ * @param name nombre de usuario
  * @param email email del usuario
  * @param password contraseña del usuario
  * @param description descripción o biografía del usuario
@@ -21,7 +22,7 @@ import jakarta.validation.constraints.NotBlank;
 public record UserCreationRequestDTO(
         @Schema(description = "User's username")
         @NotBlank(message = "The username cannot be empty to register a user.")
-        String username,
+        String name,
 
         @Schema(description = "User's email")
         @NotBlank(message = "The user's email cannot be empty to register a user.")
@@ -34,6 +35,9 @@ public record UserCreationRequestDTO(
 
         @Schema(description = "User's role")
         @NotBlank(message = "The user role cannot be empty to register a user.")
-        Role role
+        Role role,
 
+        @Schema(description = "User's business type (Just for business users)")
+        BusinessType businessType
+        
 ) { }

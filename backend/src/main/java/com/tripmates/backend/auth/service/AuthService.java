@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tripmates.backend.common.exception.BadRequestException;
 
 @Service
 @Transactional
@@ -40,11 +41,11 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email no esta disponible");
         }
 
-        user.setUsername(userCreationRequestDTO.username());
+        user.setName(userCreationRequestDTO.name());
         user.setEmail(userCreationRequestDTO.email());
         user.setPassword(passwordEncoder.encode(userCreationRequestDTO.password()));
         user.setRole(userCreationRequestDTO.role());
-
+        setBusinessType(userCreationRequestDTO, user);
         userRepository.save(user);
     }
 
@@ -109,5 +110,15 @@ public class AuthService {
                 new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
         return new AuthRefreshResponseDTO(accessToken);
+    }
+    private void setBusinessType(UserCreationRequestDTO userCreationRequestDTO, User user) {
+        if ((userCreationRequestDTO.role().toString().equals("BUSINESS"))) {
+
+            if (userCreationRequestDTO.businessType() == null) {
+                throw new BadRequestException("Business type is required for business users");
+            }
+            
+            user.setBusinessType(userCreationRequestDTO.businessType());
+        }
     }
 }

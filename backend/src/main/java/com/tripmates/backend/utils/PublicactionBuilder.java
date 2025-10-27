@@ -1,4 +1,4 @@
-package com.tripmates.backend.publications.utils;
+package com.tripmates.backend.utils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,7 +46,6 @@ public class PublicactionBuilder {
 
         return new Publication(
             businessPublicationDTO.title(),
-            businessPublicationDTO.type(),
             businessPublicationDTO.description(),
             businessPublicationDTO.openingDays(),
             businessPublicationDTO.attentionSchedule(),
@@ -56,7 +55,7 @@ public class PublicactionBuilder {
             businessPublicationDTO.location(),
             imageUrls,
             owner.getId(),
-            owner.getUsername(),
+            owner.getName(),
             owner.getAvatarURL(),
             new Date()
         );

@@ -1,9 +1,10 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
+import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/users")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
     private final UserService userService;
@@ -48,6 +48,11 @@ public class UserController {
     public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
     }
+
+
+
+
+
   
     @PatchMapping("/me")
     @Operation(summary = "Updates user profile information in the system")
@@ -55,7 +60,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User profile updated successfully",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserUpdateResponseDTO.class))
+                            schema = @Schema(implementation = UserResumeResponseDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "404", description = "User not found",
@@ -65,6 +70,37 @@ public class UserController {
                     }
             )
     })
+
+
+    
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        description = "User update data",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = UserUpdateRequestDTO.class),
+            examples = {
+                @ExampleObject(
+                    name = "Business user update",
+                    summary = "Example for business user update",
+                    value = """
+                    {
+                        "name": "Business Name",
+                        "description": "Business description",
+                        "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+                        "attentionSchedule": {
+                            "openingTime": "09:00",
+                            "closingTime": "18:00"
+                        },
+                        "exceptionalClosingDays": ["2025-12-25", "2026-01-01"],
+                        "phoneNumber": "+1234567890",
+                        "location": "Business Address 123",
+                        "profileImageUrls": ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+                    }
+                    """
+                )
+            }
+        )
+    )
     public ResponseEntity<?> updateProfile(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody UserUpdateRequestDTO userUpdateRequestDTO
