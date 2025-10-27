@@ -46,7 +46,6 @@ public class PublicactionBuilder {
 
         return new Publication(
             businessPublicationDTO.title(),
-            businessPublicationDTO.type(),
             businessPublicationDTO.description(),
             businessPublicationDTO.openingDays(),
             businessPublicationDTO.attentionSchedule(),
