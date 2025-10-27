@@ -2,7 +2,6 @@ package com.tripmates.backend;
 
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.Role;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -39,9 +38,8 @@ public class AuthControllerTests {
                 "fran",
                 "fran@example.com",
                 "123456",
-                "I hate testing",
                 Role.USER,
-                "https://example.com/avatar.png"
+                null
         );
 
         HttpHeaders headers = new HttpHeaders();

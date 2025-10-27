@@ -1,9 +1,8 @@
 package com.tripmates.backend.users.service;
 
 import com.tripmates.backend.auth.exception.UserNotFoundException;
-import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
-import com.tripmates.backend.users.dto.UserUpdateDescriptionRequestDTO;
-import com.tripmates.backend.users.dto.UserUpdateUsernameRequestDTO;
+import com.tripmates.backend.users.dto.UserResumeResponseDTO;
+import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -24,60 +23,63 @@ public class UserService {
      * @param email email del usuario
      * @return {@link com.tripmates.backend.users.entity.mongo.User User}
      */
-    public User getUser(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+    public UserResumeResponseDTO getUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return UserResumeResponseDTO.fromUser(user);
     }
 
-    /**
-     * Actualiza la descripción de un ususario
-     *
-     * @param email email del usuario
-     * @param userUpdateDescriptionRequestDTO dto con argumentos del request
-     * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
-     */
-    public UserUpdateResponseDTO updateDescription(
+    public UserResumeResponseDTO updateUser(
             String email,
-            UserUpdateDescriptionRequestDTO userUpdateDescriptionRequestDTO
+            UserUpdateRequestDTO userUpdateRequestDTO
     ) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        user.setDescription(userUpdateDescriptionRequestDTO.description());
+        if (userUpdateRequestDTO.name() != null) {
+            user.setName(userUpdateRequestDTO.name());
+        }
+        if (userUpdateRequestDTO.description() != null) {
+            user.setDescription(userUpdateRequestDTO.description());
+        }
+        if (userUpdateRequestDTO.avatarURL() != null) {
+            user.setAvatarURL(userUpdateRequestDTO.avatarURL());
+        }
+
+        if (userUpdateRequestDTO.openingDays() != null) {
+            user.setOpeningDays(userUpdateRequestDTO.openingDays());
+        }
+        if (userUpdateRequestDTO.attentionSchedule() != null) {
+            user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
+        }
+        if (userUpdateRequestDTO.exceptionalClosingDays() != null) {
+            user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
+        }
+        if (userUpdateRequestDTO.phoneNumber() != null) {
+            user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
+        }
+        if (userUpdateRequestDTO.location() != null) {
+            user.setLocation(userUpdateRequestDTO.location());
+        }
+        if (userUpdateRequestDTO.profileImageUrls() != null) {
+            user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
+        }
+
         userRepository.save(user);
-
-        return new UserUpdateResponseDTO(
-                user.getUsername(),
+        
+        return new UserResumeResponseDTO(
+                user.getName(),
                 user.getEmail(),
                 user.getRole(),
                 user.getDescription(),
-                user.getUsername()
-        );
-    }
-
-    /**
-     * Actualiza el nombre de usuario de un ususario
-     *
-     * @param email email del usuario
-     * @param userUpdateUsernameRequestDTO dto con argumentos del request
-     * @return {@link com.tripmates.backend.users.dto.UserUpdateProfileResponseDTO UserUpdateProfileResponseDTO}
-     */
-    public UserUpdateResponseDTO updateUsername(
-            String email,
-            UserUpdateUsernameRequestDTO userUpdateUsernameRequestDTO
-    ) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
-
-        user.setUsername(userUpdateUsernameRequestDTO.username());
-        userRepository.save(user);
-
-        return new UserUpdateResponseDTO(
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole(),
-                user.getDescription(),
-                user.getUsername()
+                user.getAvatarURL(),
+                user.getBusinessType(),
+                user.getOpeningDays(),
+                user.getAttentionSchedule(),
+                user.getExceptionalClosingDays(),
+                user.getPhoneNumber(),
+                user.getLocation(),
+                user.getProfileImageUrls()
         );
     }
 }

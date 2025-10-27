@@ -13,19 +13,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
+import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.BusinessType;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
-/**
- * Representa un usuario del sistema, y define el documento
- * que sera persistido en MongoDB.
- *
- * @see com.tripmates.backend.users.entity.Role
- * @see org.springframework.security.core.userdetails.UserDetails
- */
 @Getter
 @Setter
 @Document(collection = "users")
@@ -39,23 +35,30 @@ public class User implements UserDetails {
     private String email;
 
     @NotNull
-    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
-    private String username;
+    private String name;
 
     @NotNull
     private String password;
 
-    @Size(max = 500, message = "User's description cannot exceed 500 characters")
     private String description;
+    
+    @NotNull
+    private BusinessType businessType;
 
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
 
-    @Size(max = 500, message = "User's avatar URL cannot exceed 500 characters")
     private String avatarURL;
 
     private String token;
+
+    private List<DayOfWeek> openingDays;
+    private AttentionSchedule attentionSchedule;
+    private List<LocalDate> exceptionalClosingDays;
+    private String phoneNumber;
+    private String location;
+    private List<String> profileImageUrls;
 
     @Override
     public String getPassword() {
@@ -64,7 +67,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email; 
     }
 
     @Override
@@ -83,7 +86,9 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
 
     @Override
     public boolean isEnabled() {

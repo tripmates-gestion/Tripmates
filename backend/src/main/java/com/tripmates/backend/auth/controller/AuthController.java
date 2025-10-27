@@ -2,6 +2,7 @@ package com.tripmates.backend.auth.controller;
 
 import com.tripmates.backend.auth.dto.*;
 import com.tripmates.backend.auth.service.AuthService;
+import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5173")
 @Tag(name = "Auth", description = "Authorization management endpoints")
 public class AuthController {
 
@@ -30,9 +30,12 @@ public class AuthController {
     @Operation(summary = "Registers a new user in the system")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User created successfully",
+                    content = { @Content()}
+            ),
+            @ApiResponse(responseCode = "400", description = "User already exists",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
@@ -53,13 +56,13 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
@@ -79,7 +82,7 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
@@ -100,13 +103,13 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "User not found",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "401", description = "Invalid credentials",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))
+                            schema = @Schema(implementation = ErrorDTO.class))
                     }
             )
     })
