@@ -29,6 +29,8 @@ public class UserController {
         this.userService = userService;
     }
 
+
+    
     @GetMapping("/me")
     @Operation(summary = "Obtains a user from the system")
     @ApiResponses(value = {
@@ -70,9 +72,6 @@ public class UserController {
                     }
             )
     })
-
-
-    
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
         description = "User update data",
         content = @Content(
