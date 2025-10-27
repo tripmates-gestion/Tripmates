@@ -1,6 +1,6 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.users.dto.UserUpdateResponseDTO;
+import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -55,7 +55,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User profile updated successfully",
                     content = { @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserUpdateResponseDTO.class))
+                            schema = @Schema(implementation = UserResumeResponseDTO.class))
                     }
             ),
             @ApiResponse(responseCode = "404", description = "User not found",

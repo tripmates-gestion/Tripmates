@@ -18,16 +18,13 @@ import lombok.Setter;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 
-/**
- * Representa un usuario del sistema, y define el documento
- * que sera persistido en MongoDB.
- *
- * @see com.tripmates.backend.users.entity.Role
- * @see org.springframework.security.core.userdetails.UserDetails
- */
+import com.tripmates.backend.publications.entity.AttentionSchedule;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+
 @Getter
 @Setter
-@Document(collection = "users") // users and business (maybe rename)
+@Document(collection = "users")
 public class User implements UserDetails {
 
     @Id
@@ -45,6 +42,8 @@ public class User implements UserDetails {
 
     private String description;
 
+    private String businessType;
+
     @NotNull
     @Field(targetType = FieldType.STRING)
     private Role role;
@@ -53,6 +52,13 @@ public class User implements UserDetails {
 
     private String token;
 
+    private List<DayOfWeek> openingDays;
+    private AttentionSchedule attentionSchedule;
+    private List<LocalDate> exceptionalClosingDays;
+    private String phoneNumber;
+    private String location;
+    private List<String> profileImageUrls;
+
     @Override
     public String getPassword() {
         return this.password;
@@ -60,7 +66,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email; // just beacuse username is not unique
+        return this.email; 
     }
 
     @Override
@@ -79,7 +85,9 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
 
     @Override
     public boolean isEnabled() {
