@@ -4,10 +4,9 @@ import { BrandLink } from './BrandLink';
 import { MainLinks } from './MainLinks';
 import { ThemeToggle } from './ThemeToggle';
 import { AuthControls } from './AuthControls';
-import {useAuth} from '../../context/AuthContext'
+import {useAuth} from '../../hooks/useAuth'
 import { ACCOUNT_TYPES } from '../../constants/Rol';
 import { Link, useLocation } from 'react-router-dom'
-import {} from "../../constants/Pages";
 
 interface NavBarProps {
   mode: 'light' | 'dark';
