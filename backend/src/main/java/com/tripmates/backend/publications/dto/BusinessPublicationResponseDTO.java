@@ -4,13 +4,13 @@ import java.util.List;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import com.tripmates.backend.publications.entity.AttentionSchedule;
-import com.tripmates.backend.publications.entity.BusinessPublicationType;
+import com.tripmates.backend.publications.entity.BusinessType;
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 
 public record BusinessPublicationResponseDTO (
     String title,
-    BusinessPublicationType type, // esto se obtiene a partir del User no de la Publication
+    BusinessType type, // esto se obtiene a partir del User no de la Publication
     String description,
     List<DayOfWeek> openingDays,
     AttentionSchedule attentionSchedule,
