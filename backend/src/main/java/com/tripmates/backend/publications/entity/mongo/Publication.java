@@ -4,8 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import com.tripmates.backend.publications.entity.BusinessType;
-import com.tripmates.backend.publications.entity.AttentionSchedule;
+
+import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.BusinessType;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +20,7 @@ import java.util.Date;
 public class Publication {
     @Id
     private String id;
-
     private String title;
-    private BusinessType type; //esto no deberia estar aca
     private String description;
     private List<DayOfWeek> openingDays;
     private AttentionSchedule attentionSchedule;
@@ -33,6 +33,8 @@ public class Publication {
     private String ownerId; //Datos embebidos de la cuenta de negocio (para evitar hacer joins)
     private String ownerUsername;
     private String ownerAvatarUrl;
+    private BusinessType type;//en caso de ser de negocio
+
 
     private Date createdAt = new Date();
 
@@ -41,7 +43,7 @@ public class Publication {
 
     public Publication(
         String title,
-        BusinessType type,
+        // BusinessType type,
         String description,
         List<DayOfWeek> openingDays,
         AttentionSchedule attentionSchedule,

@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import com.tripmates.backend.publications.utils.PublicactionBuilder;
+
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
+import com.tripmates.backend.utils.PublicactionBuilder;
 @Component
 @Transactional
 @Service
