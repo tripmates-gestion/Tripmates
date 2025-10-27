@@ -2,7 +2,7 @@ name: Integration Tests
 
 on:
   push:
-    branches: [main, dev, dev-back, mweng/tri-77-github-actions]
+    branches: [main, dev]
   pull_request:
     branches: [main]
 
