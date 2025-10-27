@@ -40,7 +40,7 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email no esta disponible");
         }
 
-        user.setUsername(userCreationRequestDTO.username());
+        user.setName(userCreationRequestDTO.name());
         user.setEmail(userCreationRequestDTO.email());
         user.setPassword(passwordEncoder.encode(userCreationRequestDTO.password()));
         user.setRole(userCreationRequestDTO.role());

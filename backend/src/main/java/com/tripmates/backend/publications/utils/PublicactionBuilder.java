@@ -56,7 +56,7 @@ public class PublicactionBuilder {
             businessPublicationDTO.location(),
             imageUrls,
             owner.getId(),
-            owner.getUsername(),
+            owner.getName(),
             owner.getAvatarURL(),
             new Date()
         );

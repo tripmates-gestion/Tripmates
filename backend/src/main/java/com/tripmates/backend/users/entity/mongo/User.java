@@ -38,7 +38,7 @@ public class User implements UserDetails {
     private String email;
 
     @NotNull
-    private String username;
+    private String name;
 
     @NotNull
     private String password;

@@ -35,8 +35,8 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (userUpdateRequestDTO.username() != null) {
-            user.setUsername(userUpdateRequestDTO.username());
+        if (userUpdateRequestDTO.name() != null) {
+            user.setName(userUpdateRequestDTO.name());
         }
         if (userUpdateRequestDTO.description() != null) {
             user.setDescription(userUpdateRequestDTO.description());
@@ -46,9 +46,8 @@ public class UserService {
         }
 
         userRepository.save(user);
-
         return new UserUpdateResponseDTO(
-                user.getUsername(),
+                user.getName(),
                 user.getEmail(),
                 user.getRole(),
                 user.getDescription(),

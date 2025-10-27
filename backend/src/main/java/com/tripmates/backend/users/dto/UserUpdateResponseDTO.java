@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "User profile response DTO")
 public record UserUpdateResponseDTO(
         @Schema(description = "User's username")
-        String username,
+        String name,
 
         @Schema(description = "User's email")
         String email,

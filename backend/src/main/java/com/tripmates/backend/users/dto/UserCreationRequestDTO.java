@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
  * Data Transfer Object (DTO) utilizado para recibir los datos en formato JSON,
  * necesarios para crear un nuevo usuario.
  *
- * @param username nombre de usuario
+ * @param name nombre de usuario
  * @param email email del usuario
  * @param password contraseña del usuario
  * @param description descripción o biografía del usuario
@@ -21,7 +21,7 @@ import jakarta.validation.constraints.NotBlank;
 public record UserCreationRequestDTO(
         @Schema(description = "User's username")
         @NotBlank(message = "The username cannot be empty to register a user.")
-        String username,
+        String name,
 
         @Schema(description = "User's email")
         @NotBlank(message = "The user's email cannot be empty to register a user.")

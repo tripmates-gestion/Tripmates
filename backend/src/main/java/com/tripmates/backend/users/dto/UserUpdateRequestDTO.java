@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "User update request DTO")
 public record UserUpdateRequestDTO(
         @Schema(description = "User's username")
-        String username,
+        String name,
 
         @Schema(description = "User's description or bio")
         String description,
