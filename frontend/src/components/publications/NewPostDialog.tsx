@@ -24,7 +24,7 @@ import Grid from '@mui/material/Grid2'
 import ImageUploader from '../ui/ImageUploader'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
-import { createBusinessPublication } from './businessPublications'
+import { createBusinessPublication } from '../../services/businessPublications'
 import { dataURLtoFile, validateFile } from './utils/imageHelpers'
 import type {
   BusinessType,

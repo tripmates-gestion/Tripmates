@@ -1,23 +1,40 @@
-const API_BASE_URL = 'http://localhost:8080';
-const CODE_403 = 403;//no tiene body. 
+// api/core.ts
+const API_BASE_URL = "http://localhost:8080";
+const CODE_403 = 403;
 
-//devuelve el body (la data) y si no devuelve null
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  });
+  const { headers = {}, body } = options as { headers?: Record<string, string>, body?: any };
 
-  console.log(response)
-  if (!response.ok) {
-      if (response.status !== CODE_403) {
-          const errorData = await response.json();
-          const errorMessage = errorData?.title || 'Falla en request (no title included)';
-          throw new Error(errorMessage);
-      }
-      throw new Error('Falla por autenticación, token expiró.');
+  const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+
+  // headers por defecto: solo agregar Content-Type si NO es FormData y no lo pasaron
+  const baseHeaders: Record<string, string> = {};
+  if (!isForm && !("Content-Type" in headers)) {
+    baseHeaders["Content-Type"] = "application/json";
   }
 
-  const text = await response.text();
-  return text?.length ? JSON.parse(text) : null;
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers: { ...baseHeaders, ...headers },
+  });
+
+  // leer respuesta como texto (puede ser vacío)
+  const raw = await response.text().catch(() => "");
+  let payload: any = null;
+  try { payload = raw ? JSON.parse(raw) : null; } catch { /* texto plano */ }
+
+  if (!response.ok) {
+    if (response.status !== CODE_403) {
+      // priorizar título/detalle si vienen del back
+      const msg =
+        (payload && (payload.title || payload.detail || payload.message || payload.error)) ||
+        raw ||
+        `Falla en request (HTTP ${response.status})`;
+      throw new Error(msg);
+    }
+    throw new Error("Falla por autenticación, token expiró.");
+  }
+
+  // devolver JSON si hay, si no null o texto
+  return payload ?? (raw || null);
 }

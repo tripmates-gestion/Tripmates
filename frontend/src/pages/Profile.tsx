@@ -20,6 +20,11 @@ import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { ACCOUNT_TYPES } from '../constants/Rol'
 import { type AccountType } from '../types/user'
+import { Alert, Grid, Skeleton } from "@mui/material";
+import type { BusinessPublicationResponseDTO } from "../types/business";
+import { getBusinessPublications, deleteBusinessPublication} from "../services/businessPublications";
+import PublicationGrid from "../components/publications/PublicationGrid";
+
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
@@ -80,15 +85,29 @@ function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
 export default function Profile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token } = useAuth(); // user: BackendUser | null
+  const { user, token } = useAuth();
 
-  // estado local de perfil (UI)
+  const isBusiness = (user?.role ?? '').toUpperCase() === ACCOUNT_TYPES.business;
+
   const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
-
-  // sincroniza cuando cambie el usuario autenticado
   React.useEffect(() => {
     setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
   }, [user]);
+
+  // tabs dinámicos: agregamos "Publicaciones" sólo si es business
+  const tabs = React.useMemo(
+    () => ([
+      { key: 'actividad', label: 'Actividad' },
+      { key: 'viajes', label: 'Viajes' },
+      { key: 'fotos', label: 'Fotos' },
+      { key: 'opiniones', label: 'Opiniones' },
+      ...(isBusiness ? [{ key: 'publicaciones', label: 'Publicaciones' as const }] : []),
+    ]),
+    [isBusiness]
+  );
+
+  // ayuda para saber si el tab actual es "publicaciones"
+  const currentTabKey = tabs[tab]?.key;
 
   // REINTEGRADO: persistencia al back como antes
   const handleSaveUserData = (updated: UserProfile) => {
@@ -179,25 +198,25 @@ export default function Profile() {
           </CardContent>
 
           <Divider />
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            variant="scrollable"
-            allowScrollButtonsMobile
-            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
-          >
-            <Tab label="Actividad" />
-            <Tab label="Viajes" />
-            <Tab label="Fotos" />
-            <Tab label="Opiniones" />
-          </Tabs>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              variant="scrollable"
+              allowScrollButtonsMobile
+              sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+            >
+              {tabs.map((t) => <Tab key={t.key} label={t.label} />)}
+            </Tabs>
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {tab === 0 && <EmptyState title="Actualización de actividades" />}
-            {tab === 1 && <EmptyState title="Viajes" />}
-            {tab === 2 && <EmptyState title="Fotos" />}
-            {tab === 3 && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
+            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
+            {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
+            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'publicaciones' && (
+              <BusinessPublicationsTab token={token} />
+            )}
           </Box>
         </Card>
       </Box>
@@ -225,4 +244,82 @@ function EmptyState({ title }: { title: string }) {
       </Typography>
     </Stack>
   );
+}
+
+function GridSkeleton() {
+  return (
+    <Grid container spacing={3}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Grid item xs={12} sm={6} md={4} key={i}>
+          <Card variant="outlined">
+            <Skeleton variant="rectangular" height={160} />
+            <CardContent>
+              <Skeleton width="60%" />
+              <Skeleton width="90%" />
+              <Skeleton width="40%" />
+            </CardContent>
+          </Card>
+        </Grid>
+      ))}
+    </Grid>
+  );
+}
+
+export function BusinessPublicationsTab({ token }: { token: string | null }) {
+  const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([])
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const fetchAll = React.useCallback(async () => {
+    if (!token) {
+      setError("No estás autenticado.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    try {
+      const res = await getBusinessPublications(token);
+      console.log("[BusinessPublicationsTab] Publicaciones obtenidas:", res);
+      setItems(res ?? []);
+    } catch (e: any) {
+      setError(e?.message || "Error al obtener publicaciones");
+    } finally {
+      setLoading(false);
+    }
+    return () => controller.abort();
+  }, [token]);
+
+  React.useEffect(() => { fetchAll() }, [])
+
+  // ✅ Handler de eliminación
+  const handleDelete = async (id: string) => {
+    if (!token) return
+    if (!confirm("¿Seguro que querés eliminar esta publicación?")) return
+
+    try {
+      await deleteBusinessPublication(token, id)
+      setItems(prev => prev.filter(p => p.id !== id))
+    } catch (e: any) {
+      alert(e.message || "Error al eliminar publicación")
+    }
+  }
+
+  if (loading) return <p>Cargando publicaciones...</p>
+  if (error) {
+    return (
+      <Stack spacing={2}>
+        <Alert severity="error">{error}</Alert>
+        <Button onClick={fetchAll}>Reintentar</Button>
+      </Stack>
+    )
+  }
+
+  return (
+    <Box>
+      <PublicationGrid publications={items ?? []} onDelete={handleDelete} />
+    </Box>
+  )
 }

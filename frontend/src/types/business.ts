@@ -36,6 +36,7 @@ export type BusinessPublicationRequestDTO = {
 
 // ---------------------- Contrato del backend (response) ----------------------
 export type BusinessPublicationResponseDTO = {
+  id: string
   title: string
   description: string
   openingDays: DayOfWeek[]
