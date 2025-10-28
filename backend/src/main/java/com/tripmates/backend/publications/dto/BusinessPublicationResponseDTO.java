@@ -9,6 +9,7 @@ import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 
 public record BusinessPublicationResponseDTO (
+    String id,
     String title,
     String description,
     List<DayOfWeek> openingDays,
@@ -27,6 +28,7 @@ public record BusinessPublicationResponseDTO (
 ) {
   public static BusinessPublicationResponseDTO fromPublication(Publication publication) {
     return new BusinessPublicationResponseDTO(
+        publication.getId(),
         publication.getTitle(),
         publication.getDescription(),
         publication.getOpeningDays(),

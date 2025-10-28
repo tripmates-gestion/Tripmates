@@ -61,5 +61,83 @@ public class PublicationController {
         throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
       }
     }
+    @GetMapping("/mine")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "List my publications",
+        description = "Devuelve todas las publicaciones del usuario autenticado."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
+    })
+    public ResponseEntity<?> listMyPublications(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(publicationService.listMyPublications(userDetails.getUsername()));
+    }
+
+    @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Update a publication",
+        description = "Actualiza una publicación existente con datos en JSON e imágenes opcionales.\n\n"
+                    + "Estructura de la petición multipart:\n"
+                    + "- `data`: (obligatorio) JSON con los campos a modificar.\n"
+                    + "- `files`: (opcional) Imágenes para la publicación (JPG, PNG, etc.).\n\n"
+                    + "Ejemplo de JSON para el campo 'data':\n"
+                    + "```json\n"
+                    + "{\n"
+                    + "  \"title\": \"Nuevo título\",\n"
+                    + "  \"description\": \"Descripción actualizada\",\n"
+                    + "  \"phoneNumber\": \"+541112345678\",\n"
+                    + "  \"email\": \"contacto@hostal.com\",\n"
+                    + "  \"location\": \"Dirección 123, Ciudad\",\n"
+                    + "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n"
+                    + "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
+                    + "  \"exceptionalClosingDays\": [\"2025-12-25\"]\n"
+                    + "}\n"
+                    + "```"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Publicación actualizada correctamente",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO.class)
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Solicitud inválida")
+    })
+    public ResponseEntity<?> updateBusinessPublication(
+            @PathVariable("id") String id,
+            @RequestPart("data") String data,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @AuthenticationPrincipal UserDetails userDetails
+    ){
+      try{
+        BusinessPublicationRequestDTO dto = mapper.readValue(data, BusinessPublicationRequestDTO.class);
+        return ResponseEntity.ok().body(
+            publicationService.updatePublication(id, dto, files, userDetails.getUsername())
+        );
+      }catch(Exception e){
+        throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
+      }
+    }
+
+    @GetMapping("/{id}")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Get my publication",
+        description = "Obtiene una publicación por id, solo si pertenece al usuario autenticado."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Publicación obtenida correctamente",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO.class)
+            )
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "No existe o no pertenece al usuario")
+    })
+    public ResponseEntity<?> getMyPublication(
+        @PathVariable("id") String id,
+        @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(publicationService.getMyPublication(id, userDetails.getUsername()));
+    }
 
 }

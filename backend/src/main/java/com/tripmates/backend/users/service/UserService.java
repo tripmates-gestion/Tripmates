@@ -93,6 +93,9 @@ public class UserService {
                 urls.add(url);
             }
             user.setProfileImageUrls(urls);
+            if (user.getAvatarURL() == null && !urls.isEmpty()) {
+                user.setAvatarURL(urls.get(0));
+            }
         } else if (userUpdateRequestDTO.profileImageUrls() != null) {
             user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
         }
