@@ -5,7 +5,7 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
-import com.tripmates.backend.utils.PublicactionBuilder;
+import com.tripmates.backend.utils.PublicationBuilder;
 import com.tripmates.backend.users.entity.mongo.User;
 
 import org.springframework.stereotype.Component;
@@ -40,7 +40,7 @@ public class PublicationService {
 		User user = userRepository.findByEmail(authenticatedUserEmail)
 			.orElseThrow(() -> new UserNotFoundException("User not found"));
 
-		var publicationConstructor = new PublicactionBuilder(storageService).publicationDetails(businessPublicationDTO)
+		var publicationConstructor = new PublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
 			.owner(user);
 
 		if (imageFiles != null) {
