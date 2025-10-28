@@ -30,8 +30,9 @@ public class PublicactionBuilder {
             if (imageFile != null && !imageFile.isEmpty()) {
                 String imageUrl = storageService.uploadFile(imageFile);
                 imageUrls.add(imageUrl);
-            }else{
-                throw new BadRequestException("Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
+            } else {
+                throw new BadRequestException(
+                        "Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
             }
         }
         return this;
@@ -45,19 +46,19 @@ public class PublicactionBuilder {
     public Publication build() {
 
         return new Publication(
-            businessPublicationDTO.title(),
-            businessPublicationDTO.description(),
-            businessPublicationDTO.openingDays(),
-            businessPublicationDTO.attentionSchedule(),
-            businessPublicationDTO.exceptionalClosingDays(),
-            businessPublicationDTO.phoneNumber(),
-            businessPublicationDTO.email(),
-            businessPublicationDTO.location(),
-            imageUrls,
-            owner.getId(),
-            owner.getName(),
-            owner.getAvatarURL(),
-            new Date()
-        );
+                businessPublicationDTO.title(),
+                businessPublicationDTO.description(),
+                businessPublicationDTO.openingDays(),
+                businessPublicationDTO.attentionSchedule(),
+                businessPublicationDTO.exceptionalClosingDays(),
+                businessPublicationDTO.phoneNumber(),
+                businessPublicationDTO.email(),
+                businessPublicationDTO.location(),
+                businessPublicationDTO.tags(),
+                imageUrls,
+                owner.getId(),
+                owner.getName(),
+                owner.getAvatarURL(),
+                new Date());
     }
 }
