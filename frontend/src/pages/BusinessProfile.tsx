@@ -20,10 +20,11 @@ import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { ACCOUNT_TYPES } from '../constants/Rol'
 import { type AccountType } from '../types/user'
+import { Stat } from '../components/profile/stats';
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 };
+const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 }; //esto ahora estaría en el archivo con la componente oara stats
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 
 
@@ -51,24 +52,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
   };
 }
 
-
-// Label arriba en mayúsculas, número abajo (como TripAdvisor)
-const Stat = ({ label, value }: { label: string; value: number }) => (
-  <Stack spacing={0.25} alignItems="center" minWidth={96}>
-    <Typography
-      variant="caption"
-      sx={{ textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: 'text.secondary' }}
-    >
-      {label}
-    </Typography>
-    <Typography variant="h6" fontWeight={800} lineHeight={1.1}>
-      {value}
-    </Typography>
-  </Stack>
-);
-
-
-
+//se puede definir como una constante en cada profile 
 function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
   switch ((role ?? '').toUpperCase()) {
     case ACCOUNT_TYPES.business: return 'warning';
@@ -77,12 +61,15 @@ function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
   }
 }
 
-export default function Profile() {
+export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
   const { user, token } = useAuth(); // user: BackendUser | null
 
   // estado local de perfil (UI)
+  //creo que esto debería ser un contexto 
+  //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
+
   const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
 
   // sincroniza cuando cambie el usuario autenticado

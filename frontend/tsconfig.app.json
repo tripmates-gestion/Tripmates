@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "routes/RoleBasedRoute.tsx", "src/constants/Pages.ts"]
 }
