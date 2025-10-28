@@ -18,6 +18,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     headers: { ...baseHeaders, ...headers },
   });
 
+  console.log(response)
   // leer respuesta como texto (puede ser vacío)
   const raw = await response.text().catch(() => "");
   let payload: any = null;

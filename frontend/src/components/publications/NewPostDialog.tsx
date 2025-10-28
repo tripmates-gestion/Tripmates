@@ -15,8 +15,6 @@ import {
   Stack,
   TextField,
   Typography,
-  Snackbar,
-  Alert,
   Card,
   CardMedia,
 } from '@mui/material'
@@ -34,6 +32,7 @@ import type {
 } from '../../types/business'
 import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/business'
 import { type AttentionSchedule } from '../../types/business'
+import { useSnackbar } from 'notistack';
 
 // ---------------------- Props ----------------------
 type NewPostDialogProps = {
@@ -64,15 +63,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   const [form, setForm] = useState<FormState>(initialFormState)
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [toast, setToast] = useState<{
-    open: boolean
-    msg: string
-    sev: 'success' | 'error'
-  }>({
-    open: false,
-    msg: '',
-    sev: 'success',
-  })
+  const { enqueueSnackbar } = useSnackbar();
 
   const validate = usePostValidation()
   const errors = useMemo(() => validate(form), [form, validate])
@@ -126,11 +117,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
     // Validar
     if (Object.keys(errors).length > 0) {
-      setToast({
-        open: true,
-        msg: 'Completá correctamente los campos.',
-        sev: 'error',
-      })
+      enqueueSnackbar('Completá correctamente los campos.', { variant: 'error' });
       return
     }
 
@@ -146,6 +133,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         openingDays: DEFAULT_OPENING_DAYS,
         attentionSchedule: parseHours(form.hours),
         exceptionalClosingDays: [],
+        tags: []
       }
 
       // Convertir base64 a Files
@@ -173,25 +161,21 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         location: response.location,
         photos: response.imageUrls ?? [],
         createdAt: response.createdAt,
+
       }
 
       console.log('Publicación creada:', savedPost)
 
       // Notificar éxito
       if (mountedRef.current) {
-        setToast({ open: true, msg: '¡Publicación creada!', sev: 'success' })
+        enqueueSnackbar('¡Publicación creada!', { variant: 'success' });
         onCreated()
         handleClose()
       }
     } catch (error: any) {
       console.error('Error al crear publicación:', error)
-      if (mountedRef.current) {
-        setToast({
-          open: true,
-          msg: error.message || 'Error al publicar. Intentá nuevamente.',
-          sev: 'error',
-        })
-      }
+      enqueueSnackbar('Error al publicar. Intentá nuevamente.', { variant: 'error' });
+      
     } finally {
       if (mountedRef.current) {
         setSubmitting(false)
@@ -347,17 +331,6 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         </DialogActions>
       </Dialog>
 
-                {/* Toast de notificación */}
-                <Snackbar
-            open={toast.open}
-            autoHideDuration={2500}
-            onClose={() => setToast((prev) => ({ ...prev, open: false }))}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          >
-            <Alert severity={toast.sev} variant="filled">
-              {toast.msg}
-            </Alert>
-          </Snackbar>
     </>
   )
 }

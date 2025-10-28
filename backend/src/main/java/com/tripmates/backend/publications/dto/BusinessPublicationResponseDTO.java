@@ -8,7 +8,7 @@ import com.tripmates.backend.common.types.AttentionSchedule;
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 
-public record BusinessPublicationResponseDTO (
+public record BusinessPublicationResponseDTO(
     String id,
     String title,
     String description,
@@ -19,13 +19,13 @@ public record BusinessPublicationResponseDTO (
     String email,
     String location,
     List<String> imageUrls,
+    List<String> tags,
 
     String ownerId,
     String ownerUsername,
     String ownerAvatarUrl,
 
-    Date createdAt
-) {
+    Date createdAt) {
   public static BusinessPublicationResponseDTO fromPublication(Publication publication) {
     return new BusinessPublicationResponseDTO(
         publication.getId(),
@@ -38,10 +38,10 @@ public record BusinessPublicationResponseDTO (
         publication.getEmail(),
         publication.getLocation(),
         publication.getImageUrls(),
+        publication.getTags(),
         publication.getOwnerId(),
         publication.getOwnerUsername(),
         publication.getOwnerAvatarUrl(),
-        publication.getCreatedAt()
-    );
+        publication.getCreatedAt());
   }
 }

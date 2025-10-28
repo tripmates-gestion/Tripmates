@@ -32,6 +32,7 @@ export type BusinessPublicationRequestDTO = {
   openingDays: DayOfWeek[]
   attentionSchedule: AttentionSchedule
   exceptionalClosingDays?: string[]
+  tags: []
 }
 
 // ---------------------- Contrato del backend (response) ----------------------
