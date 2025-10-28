@@ -7,7 +7,6 @@ import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
-import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -35,7 +34,7 @@ public class AuthService {
      *
      * @param userCreationRequestDTO contiene los datos del nuevo usuario
      */
-    public void register(UserCreationRequestDTO userCreationRequestDTO) {
+    public void register(AuthRegisterRequestDTO userCreationRequestDTO) {
         User user = new User();
         if (userRepository.findByEmail(userCreationRequestDTO.email()).isPresent()) {
             throw new UserAlreadyExistsException("Email no esta disponible");
@@ -111,13 +110,14 @@ public class AuthService {
 
         return new AuthRefreshResponseDTO(accessToken);
     }
-    private void setBusinessType(UserCreationRequestDTO userCreationRequestDTO, User user) {
+
+    private void setBusinessType(AuthRegisterRequestDTO userCreationRequestDTO, User user) {
         if ((userCreationRequestDTO.role().toString().equals("BUSINESS"))) {
 
             if (userCreationRequestDTO.businessType() == null) {
                 throw new BadRequestException("Business type is required for business users");
             }
-            
+
             user.setBusinessType(userCreationRequestDTO.businessType());
         }
     }
