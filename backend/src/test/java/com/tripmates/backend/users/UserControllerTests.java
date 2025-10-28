@@ -10,24 +10,18 @@ import com.tripmates.backend.users.repository.mongo.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -50,7 +44,12 @@ public class UserControllerTests {
 	}
 
 	@BeforeEach
-	void cleanDb() {
+	void beforeEach() {
+		userRepository.deleteAll();
+	}
+
+	@AfterAll
+	void afterAll() {
 		userRepository.deleteAll();
 	}
 
@@ -60,17 +59,83 @@ public class UserControllerTests {
 
 	@Test
 	void searchWithZeroUsersShouldReturnNothing() {
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(
-				baseUrl() + "/users/search", HttpMethod.GET, null,
-				new ParameterizedTypeReference<PageResponse<UserResumeResponseDTO>>() {
+		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate
+			.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+			});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<UserResumeResponseDTO> page = response.getBody();
+
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(0, page.totalElements());
+		Assertions.assertTrue(page.content().isEmpty());
+	}
+
+	@Test
+	void searchWithNoFiltersShouldReturnAllUsers() {
+		User fran = new User();
+		fran.setEmail("fran@fi.uba.ar");
+		fran.setName("FranInfanti");
+		fran.setPassword("1234");
+		fran.setRole(Role.USER);
+
+		userRepository.saveAll(List.of(fran));
+
+		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate
+			.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+			});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<UserResumeResponseDTO> page = response.getBody();
+
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(fran)), page.content());
+	}
+
+	@Test
+	void filterByUserTypeWorksAsExpected() {
+		User fran = new User();
+		fran.setEmail("fran@fi.uba.ar");
+		fran.setName("FranInfanti");
+		fran.setPassword("1234");
+		fran.setRole(Role.USER);
+
+		User oli = new User();
+		oli.setEmail("oli@gmail.com");
+		oli.setName("Oli123");
+		oli.setPassword("987456");
+		oli.setRole(Role.USER);
+
+		User billGates = new User();
+		billGates.setEmail("billGates@microsoft.com");
+		billGates.setName("TheBill's Gates");
+		billGates.setPassword("Windows11:)");
+		billGates.setRole(Role.BUSINESS);
+
+		userRepository.saveAll(List.of(fran, oli, billGates));
+
+		String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
+			.queryParam("role", "USER")
+			.toUriString();
+
+		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
 		PageResponse<UserResumeResponseDTO> page = response.getBody();
+
 		Assertions.assertNotNull(page);
-		Assertions.assertEquals(0, page.totalElements());
-		Assertions.assertTrue(page.content().isEmpty());
+		Assertions.assertEquals(2, page.totalElements());
+
+		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(fran),
+				UserResumeResponseDTO.fromUser(oli));
+
+		Assertions.assertEquals(userResumeResponseDTOList, page.content());
 	}
-    
+
 }
