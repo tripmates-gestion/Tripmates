@@ -88,4 +88,5 @@ public class UserController {
                         throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
                 }
         }
+
 }
