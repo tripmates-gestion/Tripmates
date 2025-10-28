@@ -32,7 +32,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
         `Falla en request (HTTP ${response.status})`;
       throw new Error(msg);
     }
-    throw new Error("Falla por autenticación, token expiró.");
+    throw new Error("[Api Fetch]: Falla por autenticación, token expiró.");
   }
 
   // devolver JSON si hay, si no null o texto
