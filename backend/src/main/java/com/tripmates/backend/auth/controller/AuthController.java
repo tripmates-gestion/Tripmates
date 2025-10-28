@@ -3,13 +3,14 @@ package com.tripmates.backend.auth.controller;
 import com.tripmates.backend.auth.dto.*;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.dto.ErrorDTO;
-import com.tripmates.backend.users.dto.UserCreationRequestDTO;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +32,8 @@ public class AuthController {
 			@ApiResponse(responseCode = "204", description = "User created successfully", content = { @Content() }),
 			@ApiResponse(responseCode = "400", description = "User already exists", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-	public ResponseEntity<?> register(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
-		authService.register(userCreationRequestDTO);
+	public ResponseEntity<?> register(@RequestBody AuthRegisterRequestDTO authRegisterRequestDTO) {
+		authService.register(authRegisterRequestDTO);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
