@@ -61,6 +61,7 @@ export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
 
+  //Quiero que no se use la información de autenticación para mostrar el perfil 
   const { user, token } = useAuth();
 
   // estado local de perfil (UI)
@@ -105,7 +106,7 @@ export default function BusinessProfile() {
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-      {/* Banner */}
+      {/* Banner de fondo */}
       <Box
         sx={{
           minHeight: { xs: '38vh', md: '30vh' },
@@ -157,7 +158,7 @@ export default function BusinessProfile() {
               </Box>
 
               <ButtonGroup variant="outlined" size="small">
-                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Editar perfil</Button>
+                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Completá los datos de tu negocio!</Button>
                 <Button startIcon={<Settings />}>Configuración</Button>
               </ButtonGroup>
             </Stack>
@@ -183,11 +184,9 @@ export default function BusinessProfile() {
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
-            {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
-            {currentTabKey === 'publicaciones' && (
+            {currentTabKey === 'mi presentacion'  && <EmptyState title="Presentación de mi negocio" />}
+            {currentTabKey === 'fotos'            && <EmptyState title="Fotos" />}
+            {currentTabKey === 'publicaciones'    && (
               <BusinessPublicationsTab token={token} />
             )}
           </Box>
@@ -272,8 +271,11 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
   }
 
   return (
-    <Box>
-      <PublicationGrid publications={items ?? []} onDelete={handleDelete} />
-    </Box>
+    <>
+      {items.length === 0 && <EmptyState title="No hay publicaciones" />}
+      <Box>
+        <PublicationGrid publications={items ?? []} onDelete={handleDelete} />
+      </Box>
+    </>
   )
 }
