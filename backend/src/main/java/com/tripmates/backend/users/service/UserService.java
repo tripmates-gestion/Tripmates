@@ -5,10 +5,14 @@ import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.common.service.storage.StorageService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -16,6 +20,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StorageService storageService;
 
     /**
      * Retorna un usuario
@@ -32,6 +39,23 @@ public class UserService {
     public UserResumeResponseDTO updateUser(
             String email,
             UserUpdateRequestDTO userUpdateRequestDTO
+    ) {
+        return updateUser(email, userUpdateRequestDTO, null, null);
+    }
+
+    public UserResumeResponseDTO updateUser(
+            String email,
+            UserUpdateRequestDTO userUpdateRequestDTO,
+            List<MultipartFile> imageFiles
+    ) {
+        return updateUser(email, userUpdateRequestDTO, imageFiles, null);
+    }
+
+    public UserResumeResponseDTO updateUser(
+            String email,
+            UserUpdateRequestDTO userUpdateRequestDTO,
+            List<MultipartFile> imageFiles,
+            MultipartFile avatar
     ) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -61,8 +85,21 @@ public class UserService {
         if (userUpdateRequestDTO.location() != null) {
             user.setLocation(userUpdateRequestDTO.location());
         }
-        if (userUpdateRequestDTO.profileImageUrls() != null) {
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> urls = new ArrayList<>();
+            for (MultipartFile file : imageFiles) {
+                String url = storageService.uploadFile(file);
+                urls.add(url);
+            }
+            user.setProfileImageUrls(urls);
+        } else if (userUpdateRequestDTO.profileImageUrls() != null) {
             user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+            String avatarUrl = storageService.uploadFile(avatar);
+            user.setAvatarURL(avatarUrl);
         }
 
         userRepository.save(user);
