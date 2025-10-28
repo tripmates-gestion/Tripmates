@@ -1,8 +1,8 @@
 // src/pages/Home.tsx
 import { Box, Button, Container, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import type { Place } from '../components/publish/PlaceCard';
-import PlaceCard from '../components/publish/PlaceCard';
+import type { Place } from '../components/ui/PlaceCard';
+import PlaceCard from '../components/ui/PlaceCard';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';

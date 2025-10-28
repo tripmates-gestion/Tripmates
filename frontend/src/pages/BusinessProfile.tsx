@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react';
 import {
   Avatar,
@@ -18,14 +19,18 @@ import Edit from '@mui/icons-material/Edit';
 import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
 import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
-import { ACCOUNT_TYPES } from '../constants/Rol'
+import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/user'
+import { Alert } from "@mui/material";
+import type { BusinessPublicationResponseDTO } from "../types/business";
+import { getBusinessPublications, deleteBusinessPublication} from "../services/businessPublications";
+import PublicationGrid from "../components/publications/PublicationGrid";
+import { Stat } from '../components/profile/stats';
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 };
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
-
+const businessRoleChipColor = 'warning';
 
 // ----- tipo User que viene del back (como lo describiste) -----
 type BackendUser = {
@@ -52,43 +57,30 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
 }
 
 
-// Label arriba en mayúsculas, número abajo (como TripAdvisor)
-const Stat = ({ label, value }: { label: string; value: number }) => (
-  <Stack spacing={0.25} alignItems="center" minWidth={96}>
-    <Typography
-      variant="caption"
-      sx={{ textTransform: 'uppercase', letterSpacing: 0.6, fontWeight: 700, color: 'text.secondary' }}
-    >
-      {label}
-    </Typography>
-    <Typography variant="h6" fontWeight={800} lineHeight={1.1}>
-      {value}
-    </Typography>
-  </Stack>
-);
-
-
-
-function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
-  switch ((role ?? '').toUpperCase()) {
-    case ACCOUNT_TYPES.business: return 'warning';
-    case ACCOUNT_TYPES.user: return 'info';
-    default: return 'default';
-  }
-}
-
-export default function Profile() {
+export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token } = useAuth(); // user: BackendUser | null
+
+  const { user, token } = useAuth();
 
   // estado local de perfil (UI)
+  //creo que esto debería ser un contexto 
+  //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
   const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
 
-  // sincroniza cuando cambie el usuario autenticado
   React.useEffect(() => {
     setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
   }, [user]);
+
+  // tabs con "Publicaciones" (perfil de business)
+  const tabs = [
+      { key: 'mi presentacion', label: 'Mi Presentación' },
+      {key: 'publicaciones', label: 'Publicaciones'},
+      { key: 'fotos', label: 'Fotos' },
+    ];
+
+  // ayuda para saber si el tab actual es "publicaciones"
+  const currentTabKey = tabs[tab]?.key;
 
   // REINTEGRADO: persistencia al back como antes
   const handleSaveUserData = (updated: UserProfile) => {
@@ -150,7 +142,7 @@ export default function Profile() {
                     <Chip
                       size="small"
                       label={(user as BackendUser).role}
-                      color={roleChipColor((user as BackendUser).role)}
+                      color={businessRoleChipColor}
                       variant="outlined"
                       sx={{ ml: 0.5 }}
                     />
@@ -179,25 +171,25 @@ export default function Profile() {
           </CardContent>
 
           <Divider />
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            variant="scrollable"
-            allowScrollButtonsMobile
-            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
-          >
-            <Tab label="Actividad" />
-            <Tab label="Viajes" />
-            <Tab label="Fotos" />
-            <Tab label="Opiniones" />
-          </Tabs>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              variant="scrollable"
+              allowScrollButtonsMobile
+              sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+            >
+              {tabs.map((t) => <Tab key={t.key} label={t.label} />)}
+            </Tabs>
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {tab === 0 && <EmptyState title="Actualización de actividades" />}
-            {tab === 1 && <EmptyState title="Viajes" />}
-            {tab === 2 && <EmptyState title="Fotos" />}
-            {tab === 3 && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
+            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
+            {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
+            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'publicaciones' && (
+              <BusinessPublicationsTab token={token} />
+            )}
           </Box>
         </Card>
       </Box>
@@ -225,4 +217,63 @@ function EmptyState({ title }: { title: string }) {
       </Typography>
     </Stack>
   );
+}
+
+export function BusinessPublicationsTab({ token }: { token: string | null }) {
+  const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([])
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const fetchAll = React.useCallback(async () => {
+    if (!token) {
+      setError("No estás autenticado.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const controller = new AbortController();
+    try {
+      const res = await getBusinessPublications(token);
+      console.log("[BusinessPublicationsTab] Publicaciones obtenidas:", res);
+      setItems(res ?? []);
+    } catch (e: any) {
+      setError(e?.message || "Error al obtener publicaciones");
+    } finally {
+      setLoading(false);
+    }
+    return () => controller.abort();
+  }, [token]);
+
+  React.useEffect(() => { fetchAll() }, [])
+
+  // ✅ Handler de eliminación
+  const handleDelete = async (id: string) => {
+    if (!token) return
+    if (!confirm("¿Seguro que querés eliminar esta publicación?")) return
+
+    try {
+      await deleteBusinessPublication(token, id)
+      setItems(prev => prev.filter(p => p.id !== id))
+    } catch (e: any) {
+      alert(e.message || "Error al eliminar publicación")
+    }
+  }
+
+  if (loading) return <p>Cargando publicaciones...</p>
+  if (error) {
+    return (
+      <Stack spacing={2}>
+        <Alert severity="error">{error}</Alert>
+        <Button onClick={fetchAll}>Reintentar</Button>
+      </Stack>
+    )
+  }
+
+  return (
+    <Box>
+      <PublicationGrid publications={items ?? []} onDelete={handleDelete} />
+    </Box>
+  )
 }
