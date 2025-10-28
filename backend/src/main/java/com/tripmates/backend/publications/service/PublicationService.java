@@ -53,6 +53,24 @@ public class PublicationService {
         return BusinessPublicationResponseDTO.fromPublication(publication);
     }
 
+    public void deletePublication(String id, String authenticatedUserEmail) {
+        Publication publication = publicationRepository.findById(id)
+            .orElseThrow(() -> new BadRequestException("Publication not found"));
+        User user = userRepository.findByEmail(authenticatedUserEmail)
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
+            throw new BadRequestException("You are not allowed to delete this publication");
+        }
+        if (publication.getImageUrls() != null) {
+            for (String url : publication.getImageUrls()) {
+                if (url != null && !url.isBlank()) {
+                    storageService.deleteByUrl(url);
+                }
+            }
+        }
+        publicationRepository.deleteById(id);
+    }
+
     public java.util.List<BusinessPublicationResponseDTO> listMyPublications(String authenticatedUserEmail) {
         User user = userRepository.findByEmail(authenticatedUserEmail)
             .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -101,6 +119,14 @@ public class PublicationService {
         if (dto.exceptionalClosingDays() != null) publication.setExceptionalClosingDays(dto.exceptionalClosingDays());
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
+            // delete previous images if any
+            if (publication.getImageUrls() != null) {
+                for (String oldUrl : publication.getImageUrls()) {
+                    if (oldUrl != null && !oldUrl.isBlank()) {
+                        storageService.deleteByUrl(oldUrl);
+                    }
+                }
+            }
             ArrayList<String> urls = new ArrayList<>();
             for (MultipartFile file : imageFiles) {
                 String url = storageService.uploadFile(file);
@@ -108,7 +134,7 @@ public class PublicationService {
             }
             publication.setImageUrls(urls);
         }
-
+        
         publicationRepository.save(publication);
         return BusinessPublicationResponseDTO.fromPublication(publication);
     }
