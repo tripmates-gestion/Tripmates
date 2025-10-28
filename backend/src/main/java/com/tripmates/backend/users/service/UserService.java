@@ -67,7 +67,12 @@ public class UserService {
             user.setDescription(userUpdateRequestDTO.description());
         }
         if (userUpdateRequestDTO.avatarURL() != null) {
-            user.setAvatarURL(userUpdateRequestDTO.avatarURL());
+            String previous = user.getAvatarURL();
+            String next = userUpdateRequestDTO.avatarURL();
+            if (previous != null && !previous.isBlank() && (next == null || !previous.equals(next))) {
+                storageService.deleteByUrl(previous);
+            }
+            user.setAvatarURL(next);
         }
 
         if (userUpdateRequestDTO.openingDays() != null) {
@@ -87,6 +92,13 @@ public class UserService {
         }
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
+            if (user.getProfileImageUrls() != null) {
+                for (String oldUrl : user.getProfileImageUrls()) {
+                    if (oldUrl != null && !oldUrl.isBlank()) {
+                        storageService.deleteByUrl(oldUrl);
+                    }
+                }
+            }
             List<String> urls = new ArrayList<>();
             for (MultipartFile file : imageFiles) {
                 String url = storageService.uploadFile(file);
@@ -97,10 +109,21 @@ public class UserService {
                 user.setAvatarURL(urls.get(0));
             }
         } else if (userUpdateRequestDTO.profileImageUrls() != null) {
+            if (user.getProfileImageUrls() != null) {
+                for (String oldUrl : user.getProfileImageUrls()) {
+                    if (oldUrl != null && !oldUrl.isBlank()) {
+                        storageService.deleteByUrl(oldUrl);
+                    }
+                }
+            }
             user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
         }
 
         if (avatar != null && !avatar.isEmpty()) {
+            String previous = user.getAvatarURL();
+            if (previous != null && !previous.isBlank()) {
+                storageService.deleteByUrl(previous);
+            }
             String avatarUrl = storageService.uploadFile(avatar);
             user.setAvatarURL(avatarUrl);
         }
