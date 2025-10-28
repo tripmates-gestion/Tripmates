@@ -6,6 +6,7 @@ export async function getCurrentUser(token: string) {
         headers: { Authorization: `Bearer ${token}` },
     });
 }
+
 // TODO: falta migrar a este modelo de capas la modificación de un perfil
 // además se tiene que considerar que ahora solo se pegaría a un endpoint PATCH /users/me
  

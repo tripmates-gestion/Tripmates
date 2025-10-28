@@ -2,7 +2,7 @@ import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 
 export async function loginApi(email: string, password: string) {
-    console.log("[AuthProvider] LOGGING IN with:", email, password);
+    console.log("[AuthService] LOGGING IN with:", email, password);
   return apiFetch(ENDPOINTS.LOGIN, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
@@ -10,7 +10,7 @@ export async function loginApi(email: string, password: string) {
 }
 
 export async function logoutApi(accesstoken: string, refreshToken: string, email: string | undefined) {
-  console.log("[AUTHSERVICE] LOGGING OUT with:", email, refreshToken);
+  console.log("[AuthService] LOGGING OUT with:", email, refreshToken);
   console.log("Accesstoken: ", accesstoken)
   console.log("RefreshToken: ", refreshToken)
 
