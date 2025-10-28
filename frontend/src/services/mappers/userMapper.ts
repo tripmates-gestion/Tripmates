@@ -7,11 +7,11 @@ export function mapUser(data: any): CommonUsersInformation {
   if (!data || typeof data !== 'object') {
     throw new Error('Invalid user data');
   }
-
+  console.log("[UserMapper] Mapping user recived from GET user/me", data);
   return {
     id: data.id,
-    username: data.username,
     email: data.email,
+    username: data.name,
     role: data.role,
     description: data.description || '',
     avatarURL: data.avatarURL || DEFAULT_AVATAR_URL,

@@ -12,8 +12,6 @@ interface AuthProviderProps {
   }
   //OJO: Chequear que el login solo devuelve los tokens
   export function AuthProvider({ children }: AuthProviderProps) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
       const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("token"));
       const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));
       const [user, setUser] = useState<CommonUsersInformation | null>(null);
@@ -67,7 +65,7 @@ interface AuthProviderProps {
       }, [accessToken, refreshToken, user?.email, logoutHandler]);
 
       useEffect(() => {
-        //siempre que haya un token seteado se está saliendo
+        //siempre que no haya un token seteado se está saliendo
         if (!accessToken) return;
 
         console.log("[ACTUALIZACIÓN EN ACCESS TOKEN]")
