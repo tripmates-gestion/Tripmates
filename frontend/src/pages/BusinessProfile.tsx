@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react';
 import {
   Avatar,
@@ -21,16 +20,18 @@ import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/user'
-import { Alert } from "@mui/material";
-import type { BusinessPublicationResponseDTO } from "../types/business";
-import { getBusinessPublications, deleteBusinessPublication} from "../services/businessPublications";
-import PublicationGrid from "../components/publications/PublicationGrid";
+import {BusinessPublicationsTab} from '../components/profile/businessProfile/businessPublicationTab';
 import { Stat } from '../components/profile/stats';
-
+import { EmptyState } from '../components/profile/EmptyState';
 
 // ----- defaults hardcodeados cuando el back no los provee -----
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 const businessRoleChipColor = 'warning';
+const tabs = [
+  { key: 'mi presentacion', label: 'Mi Presentación' },
+  {key: 'publicaciones', label: 'Publicaciones'},
+  { key: 'fotos', label: 'Fotos' },
+];
 
 // ----- tipo User que viene del back (como lo describiste) -----
 type BackendUser = {
@@ -60,25 +61,14 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
 export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-
-  //Quiero que no se use la información de autenticación para mostrar el perfil 
   const { user, token } = useAuth();
 
-  // estado local de perfil (UI)
-  //creo que esto debería ser un contexto 
-  //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
+  // estado local de perfil (UI) (basado en la información común de autenticación)
   const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
 
   React.useEffect(() => {
     setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
   }, [user]);
-
-  // tabs con "Publicaciones" (perfil de business)
-  const tabs = [
-      { key: 'mi presentacion', label: 'Mi Presentación' },
-      {key: 'publicaciones', label: 'Publicaciones'},
-      { key: 'fotos', label: 'Fotos' },
-    ];
 
   // ayuda para saber si el tab actual es "publicaciones"
   const currentTabKey = tabs[tab]?.key;
@@ -205,77 +195,4 @@ export default function BusinessProfile() {
 }
 
 
-function EmptyState({ title }: { title: string }) {
-  return (
-    <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
-      <Typography variant="h6" fontWeight={800}>
-        {title}
-      </Typography>
-      <Typography variant="body1" color="text.secondary">
-        No hay contenido por ahora.
-      </Typography>
-    </Stack>
-  );
-}
 
-export function BusinessPublicationsTab({ token }: { token: string | null }) {
-  const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([])
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const fetchAll = React.useCallback(async () => {
-    if (!token) {
-      setError("No estás autenticado.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    const controller = new AbortController();
-    try {
-      const res = await getBusinessPublications(token);
-      console.log("[BusinessPublicationsTab] Publicaciones obtenidas:", res);
-      setItems(res ?? []);
-    } catch (e: any) {
-      setError(e?.message || "Error al obtener publicaciones");
-    } finally {
-      setLoading(false);
-    }
-    return () => controller.abort();
-  }, [token]);
-
-  React.useEffect(() => { fetchAll() }, [])
-
-  // ✅ Handler de eliminación
-  const handleDelete = async (id: string) => {
-    if (!token) return
-    if (!confirm("¿Seguro que querés eliminar esta publicación?")) return
-
-    try {
-      await deleteBusinessPublication(token, id)
-      setItems(prev => prev.filter(p => p.id !== id))
-    } catch (e: any) {
-      alert(e.message || "Error al eliminar publicación")
-    }
-  }
-
-  if (loading) return <p>Cargando publicaciones...</p>
-  if (error) {
-    return (
-      <Stack spacing={2}>
-        <Alert severity="error">{error}</Alert>
-        <Button onClick={fetchAll}>Reintentar</Button>
-      </Stack>
-    )
-  }
-
-  return (
-    <>
-      {items.length === 0 && <EmptyState title="No hay publicaciones" />}
-      <Box>
-        <PublicationGrid publications={items ?? []} onDelete={handleDelete} />
-      </Box>
-    </>
-  )
-}

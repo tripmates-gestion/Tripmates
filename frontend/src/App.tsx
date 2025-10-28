@@ -10,7 +10,7 @@ import type { AppProps } from './types/theme';
 import { PAGES_ROUTE } from './constants/Pages';
 import { Toolbar } from '@mui/material';
 import { Outlet } from "react-router-dom";
-import RoleBasedRoute from '../routes/RoleBasedRoute';
+import RoleBasedRoute from './routes/RoleBasedRoute';
 import { ACCOUNT_TYPES } from './constants/Rol';
 
 function DefaultLayout() {
