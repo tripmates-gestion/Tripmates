@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react';
 import {
   Avatar,
@@ -18,20 +19,18 @@ import Edit from '@mui/icons-material/Edit';
 import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
 import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
-import { ACCOUNT_TYPES } from '../constants/Rol'
+import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/user'
-import { Alert, Grid, Skeleton } from "@mui/material";
+import { Alert } from "@mui/material";
 import type { BusinessPublicationResponseDTO } from "../types/business";
 import { getBusinessPublications, deleteBusinessPublication} from "../services/businessPublications";
 import PublicationGrid from "../components/publications/PublicationGrid";
-
 import { Stat } from '../components/profile/stats';
 
 
 // ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_STATS = { aportes: 0, seguidores: 0, siguiendo: 0 };
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
-
+const businessRoleChipColor = 'warning';
 
 // ----- tipo User que viene del back (como lo describiste) -----
 type BackendUser = {
@@ -57,42 +56,28 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
   };
 }
 
-//se puede definir como una constante en cada profile 
-function roleChipColor(role?: string): 'default' | 'warning' | 'info' {
-  switch ((role ?? '').toUpperCase()) {
-    case ACCOUNT_TYPES.business: return 'warning';
-    case ACCOUNT_TYPES.user: return 'info';
-    default: return 'default';
-  }
-}
 
-export default function UserProfile() {
+export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token } = useAuth();
 
-  const isBusiness = (user?.role ?? '').toUpperCase() === ACCOUNT_TYPES.business;
+  const { user, token } = useAuth();
 
   // estado local de perfil (UI)
   //creo que esto debería ser un contexto 
   //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
-
   const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
+
   React.useEffect(() => {
     setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
   }, [user]);
 
-  // tabs dinámicos: agregamos "Publicaciones" sólo si es business
-  const tabs = React.useMemo(
-    () => ([
-      { key: 'actividad', label: 'Actividad' },
-      { key: 'viajes', label: 'Viajes' },
+  // tabs con "Publicaciones" (perfil de business)
+  const tabs = [
+      { key: 'mi presentacion', label: 'Mi Presentación' },
+      {key: 'publicaciones', label: 'Publicaciones'},
       { key: 'fotos', label: 'Fotos' },
-      { key: 'opiniones', label: 'Opiniones' },
-      ...(isBusiness ? [{ key: 'publicaciones', label: 'Publicaciones' as const }] : []),
-    ]),
-    [isBusiness]
-  );
+    ];
 
   // ayuda para saber si el tab actual es "publicaciones"
   const currentTabKey = tabs[tab]?.key;
@@ -157,7 +142,7 @@ export default function UserProfile() {
                     <Chip
                       size="small"
                       label={(user as BackendUser).role}
-                      color={roleChipColor((user as BackendUser).role)}
+                      color={businessRoleChipColor}
                       variant="outlined"
                       sx={{ ml: 0.5 }}
                     />
@@ -231,25 +216,6 @@ function EmptyState({ title }: { title: string }) {
         No hay contenido por ahora.
       </Typography>
     </Stack>
-  );
-}
-
-function GridSkeleton() {
-  return (
-    <Grid container spacing={3}>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <Grid item xs={12} sm={6} md={4} key={i}>
-          <Card variant="outlined">
-            <Skeleton variant="rectangular" height={160} />
-            <CardContent>
-              <Skeleton width="60%" />
-              <Skeleton width="90%" />
-              <Skeleton width="40%" />
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
   );
 }
 

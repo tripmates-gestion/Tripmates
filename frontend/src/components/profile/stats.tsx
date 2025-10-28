@@ -1,4 +1,5 @@
 import { Stack, Typography } from '@mui/material';
+
 // Label arriba en mayúsculas, número abajo (como TripAdvisor)
 export const Stat = ({ label, value }: { label: string; value: number }) => (
   <Stack spacing={0.25} alignItems="center" minWidth={96}>
