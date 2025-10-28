@@ -1,59 +1,57 @@
 package com.tripmates.backend.config.security.jwt;
 
-import java.security.Key;
-import java.sql.Date;
-
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.nio.charset.StandardCharsets;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.sql.Date;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
 public class JwtService {
-    private final String secret = "your-secret-key-should-be-long-and-secure";
-    private final Key key;
 
-    public JwtService() {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
+	private final String secret = "your-secret-key-should-be-long-and-secure";
 
-    public String generateAccessToken(UserDetails userCredentials) {
-        String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+	private final Key key;
 
-        return Jwts.builder()
-                .setSubject(userCredentials.getUsername())
-                .claim("role", role)  
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 5)) // 5 horas
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-    }
+	public JwtService() {
+		this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+	}
 
-    public String generateRefreshToken(UserDetails userCredentials) {
-        String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+	public String generateAccessToken(UserDetails userCredentials) {
+		String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
 
-        return Jwts.builder()
-                .setSubject(userCredentials.getUsername())
-                .claim("role", role)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) // 7 días
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-    }
+		return Jwts.builder()
+			.setSubject(userCredentials.getUsername())
+			.claim("role", role)
+			.setIssuedAt(new Date(System.currentTimeMillis()))
+			.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 5)) // 5
+																						// horas
+			.signWith(key, SignatureAlgorithm.HS256)
+			.compact();
+	}
 
+	public String generateRefreshToken(UserDetails userCredentials) {
+		String role = userCredentials.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
 
-    public UserDetails extractUserDetails(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return new UserDetailFromJwt(claims.getSubject(), claims.get("role", String.class));
-    }
+		return Jwts.builder()
+			.setSubject(userCredentials.getUsername())
+			.claim("role", role)
+			.setIssuedAt(new Date(System.currentTimeMillis()))
+			.setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) // 7
+																							// días
+			.signWith(key, SignatureAlgorithm.HS256)
+			.compact();
+	}
+
+	public UserDetails extractUserDetails(String token) {
+		Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+		return new UserDetailFromJwt(claims.getSubject(), claims.get("role", String.class));
+	}
+
 }

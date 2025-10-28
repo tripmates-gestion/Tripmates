@@ -7,6 +7,8 @@ import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
+import com.tripmates.backend.users.dto.UserCreationRequestDTO;
+import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -20,105 +22,97 @@ import com.tripmates.backend.common.exception.BadRequestException;
 @Transactional
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    @Autowired
-    private JwtService jwtService;
+	@Autowired
+	private JwtService jwtService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    /**
-     * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
-     *
-     * @param userCreationRequestDTO contiene los datos del nuevo usuario
-     */
-    public void register(AuthRegisterRequestDTO userCreationRequestDTO) {
-        User user = new User();
-        if (userRepository.findByEmail(userCreationRequestDTO.email()).isPresent()) {
-            throw new UserAlreadyExistsException("Email no esta disponible");
-        }
+	/**
+	 * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
+	 * @param authRegisterRequestDTO contiene los datos del nuevo usuario
+	 */
+	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
+		User user = new User();
+		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(u -> {
+			throw new UserAlreadyExistsException("Email no está disponible");
+		});
 
-        user.setName(userCreationRequestDTO.name());
-        user.setEmail(userCreationRequestDTO.email());
-        user.setPassword(passwordEncoder.encode(userCreationRequestDTO.password()));
-        user.setRole(userCreationRequestDTO.role());
-        setBusinessType(userCreationRequestDTO, user);
-        userRepository.save(user);
-    }
+		user.setName(authRegisterRequestDTO.name());
+		user.setEmail(authRegisterRequestDTO.email());
+		user.setPassword(passwordEncoder.encode(authRegisterRequestDTO.password()));
+		user.setRole(authRegisterRequestDTO.role());
+		setBusinessType(authRegisterRequestDTO, user);
 
-    /**
-     * Genera un access y refresh token para el usuario,
-     * persiste en la base de datos el refresh token generado
-     *
-     * @param authLoginRequestDTO contiene email y password
-     * @return {@link com.tripmates.backend.auth.dto.AuthLoginResponseDTO
-     *         AuthLoginResponseDTO}
-     */
-    public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
-        User user = userRepository.findByEmail(authLoginRequestDTO.email())
-                .orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		userRepository.save(user);
+	}
 
-        if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
-            throw new IncorrectPasswordException("Credenciales invalidas");
-        }
+	/**
+	 * Genera un access y refresh token para el usuario, persiste en la base de datos el
+	 * refresh token generado
+	 * @param authLoginRequestDTO contiene email y password
+	 * @return {@link AuthLoginResponseDTO AuthLoginResponseDTO}
+	 */
+	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
+		User user = userRepository.findByEmail(authLoginRequestDTO.email())
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
-        var accessToken = this.jwtService.generateAccessToken(
-                new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword()))
+			throw new IncorrectPasswordException("Credenciales invalidas");
 
-        var refreshToken = this.jwtService.generateRefreshToken(
-                new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+		var accessToken = this.jwtService
+			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
-        user.setToken(refreshToken);
-        userRepository.save(user);
+		var refreshToken = this.jwtService
+			.generateRefreshToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
-        return new AuthLoginResponseDTO(accessToken, refreshToken);
-    }
+		user.setToken(refreshToken);
+		userRepository.save(user);
 
-    /**
-     * Elimina el refresh token persistido en la base de datos,
-     * del usuario
-     *
-     * @param authLogoutRequestDTO contiene email
-     */
-    public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
-        User user = userRepository.findByEmail(authLogoutRequestDTO.email())
-                .orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		return new AuthLoginResponseDTO(accessToken, refreshToken);
+	}
 
-        user.setToken(null);
-        userRepository.save(user);
-    }
+	/**
+	 * Elimina el refresh token persistido en la base de datos, del usuario
+	 * @param authLogoutRequestDTO contiene email
+	 */
+	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
+		User user = userRepository.findByEmail(authLogoutRequestDTO.email())
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
-    /**
-     * Retorna un nuevo access token para el usuario
-     *
-     * @param authRefreshRequestDTO contiene email y refresh token
-     * @return {@link com.tripmates.backend.auth.dto.AuthRefreshResponseDTO
-     *         AuthRefreshResponseDTO}
-     */
-    public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
-        User user = userRepository.findByEmail(authRefreshRequestDTO.email())
-                .orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		user.setToken(null);
+		userRepository.save(user);
+	}
 
-        if (!user.getToken().equals(authRefreshRequestDTO.refreshToken())) {
-            throw new IncorrectTokenException("Credenciales invalidas");
-        }
+	/**
+	 * Retorna un nuevo access token para el usuario
+	 * @param authRefreshRequestDTO contiene email y refresh token
+	 * @return {@link AuthRefreshResponseDTO AuthRefreshResponseDTO}
+	 */
+	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
+		User user = userRepository.findByEmail(authRefreshRequestDTO.email())
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
-        var accessToken = this.jwtService.generateAccessToken(
-                new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))
+			throw new IncorrectTokenException("Credenciales invalidas");
 
-        return new AuthRefreshResponseDTO(accessToken);
-    }
+		var accessToken = this.jwtService
+			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
-    private void setBusinessType(AuthRegisterRequestDTO userCreationRequestDTO, User user) {
-        if ((userCreationRequestDTO.role().toString().equals("BUSINESS"))) {
+		return new AuthRefreshResponseDTO(accessToken);
+	}
 
-            if (userCreationRequestDTO.businessType() == null) {
-                throw new BadRequestException("Business type is required for business users");
-            }
+	private void setBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO, User user) {
+		if (authRegisterRequestDTO.role() == Role.USER)
+			return;
 
-            user.setBusinessType(userCreationRequestDTO.businessType());
-        }
-    }
+		if (authRegisterRequestDTO.businessType() == null)
+			throw new BadRequestException("Tipo de negocio es requerido para una cuenta de negocio");
+
+		user.setBusinessType(authRegisterRequestDTO.businessType());
+	}
+
 }
