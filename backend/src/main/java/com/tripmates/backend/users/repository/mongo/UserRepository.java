@@ -14,7 +14,7 @@ import java.util.Optional;
  * @see org.springframework.data.mongodb.repository.MongoRepository
  * @see com.tripmates.backend.users.entity.mongo.User
  */
-public interface UserRepository extends MongoRepository<User, String> {
+public interface UserRepository extends MongoRepository<User, String>, UserRepositoryCustom {
     /**
      * Devuelve el usuario asociado al email.
      *
