@@ -30,7 +30,7 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Registers a new user in the system")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully",
+            @ApiResponse(responseCode = "204", description = "User created successfully",
                     content = { @Content() }
             ),
             @ApiResponse(responseCode = "400", description = "User already exists",
@@ -42,7 +42,7 @@ public class AuthController {
     })
     public ResponseEntity<?> register(@RequestBody UserCreationRequestDTO userCreationRequestDTO) {
         authService.register(userCreationRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PostMapping("/login")
