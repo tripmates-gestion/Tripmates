@@ -1,90 +1,135 @@
 package com.tripmates.backend.users.service;
 
 import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-    /**
-     * Retorna un usuario
-     *
-     * @param email email del usuario
-     * @return {@link com.tripmates.backend.users.entity.mongo.User User}
-     */
-    public UserResumeResponseDTO getUser(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+	@Autowired
+	private StorageService storageService;
 
-        return UserResumeResponseDTO.fromUser(user);
-    }
+	/**
+	 * Retorna un usuario
+	 * @param email email del usuario
+	 * @return {@link com.tripmates.backend.users.entity.mongo.User User}
+	 */
+	public UserResumeResponseDTO getUser(String email) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-    /**
-     *
-     * @param email
-     * @param userUpdateRequestDTO
-     * @return
-     */
-    public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+		return UserResumeResponseDTO.fromUser(user);
+	}
 
-        if (userUpdateRequestDTO.name() != null)
-            user.setName(userUpdateRequestDTO.name());
+	public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
+			List<MultipartFile> imageFiles, MultipartFile avatar) {
+		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (userUpdateRequestDTO.description() != null)
-            user.setDescription(userUpdateRequestDTO.description());
+		if (userUpdateRequestDTO.name() != null)
+			user.setName(userUpdateRequestDTO.name());
 
-        if (userUpdateRequestDTO.avatarURL() != null)
-            user.setAvatarURL(userUpdateRequestDTO.avatarURL());
+		if (userUpdateRequestDTO.description() != null)
+			user.setDescription(userUpdateRequestDTO.description());
 
-        if (userUpdateRequestDTO.openingDays() != null)
-            user.setOpeningDays(userUpdateRequestDTO.openingDays());
+		if (userUpdateRequestDTO.avatarURL() != null) {
+			String previous = user.getAvatarURL();
+			String next = userUpdateRequestDTO.avatarURL();
 
-        if (userUpdateRequestDTO.attentionSchedule() != null)
-            user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
+			if (previous != null && !previous.isBlank() && (!previous.equals(next)))
+				storageService.deleteByUrl(previous);
 
-        if (userUpdateRequestDTO.exceptionalClosingDays() != null)
-            user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
+			user.setAvatarURL(next);
+		}
 
-        if (userUpdateRequestDTO.phoneNumber() != null)
-            user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
+		if (userUpdateRequestDTO.openingDays() != null)
+			user.setOpeningDays(userUpdateRequestDTO.openingDays());
 
-        if (userUpdateRequestDTO.location() != null)
-            user.setLocation(userUpdateRequestDTO.location());
+		if (userUpdateRequestDTO.attentionSchedule() != null)
+			user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
 
-        if (userUpdateRequestDTO.profileImageUrls() != null)
-            user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
+		if (userUpdateRequestDTO.exceptionalClosingDays() != null)
+			user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
 
-        return UserResumeResponseDTO.fromUser(userRepository.save(user));
-    }
+		if (userUpdateRequestDTO.phoneNumber() != null)
+			user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
 
-    /**
-     *
-     * @param userSearchRequestDTO
-     * @param pageable
-     * @return
-     */
-    public Page<UserResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
-        return userRepository.searchUsers(
-                userSearchRequestDTO.role(),
-                userSearchRequestDTO.location(),
-                userSearchRequestDTO.businessType(),
-                pageable
-        ).map(UserResumeResponseDTO::fromUser);
-    }
+		if (userUpdateRequestDTO.location() != null)
+			user.setLocation(userUpdateRequestDTO.location());
+
+		if (imageFiles != null && !imageFiles.isEmpty()) {
+			if (user.getProfileImageUrls() != null) {
+				for (String oldUrl : user.getProfileImageUrls()) {
+					if (oldUrl != null && !oldUrl.isBlank())
+						storageService.deleteByUrl(oldUrl);
+				}
+			}
+
+			List<String> urls = new ArrayList<>();
+			for (MultipartFile file : imageFiles) {
+				String url = storageService.uploadFile(file);
+				urls.add(url);
+			}
+
+			user.setProfileImageUrls(urls);
+
+			if (user.getAvatarURL() == null && !urls.isEmpty())
+				user.setAvatarURL(urls.getFirst());
+
+		}
+		else if (userUpdateRequestDTO.profileImageUrls() != null) {
+			if (user.getProfileImageUrls() != null) {
+				for (String oldUrl : user.getProfileImageUrls()) {
+					if (oldUrl != null && !oldUrl.isBlank())
+						storageService.deleteByUrl(oldUrl);
+				}
+			}
+
+			user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
+		}
+
+		if (avatar != null && !avatar.isEmpty()) {
+			String previous = user.getAvatarURL();
+			if (previous != null && !previous.isBlank())
+				storageService.deleteByUrl(previous);
+
+			String avatarUrl = storageService.uploadFile(avatar);
+			user.setAvatarURL(avatarUrl);
+		}
+
+		userRepository.save(user);
+
+		return new UserResumeResponseDTO(user.getName(), user.getEmail(), user.getRole(), user.getDescription(),
+				user.getAvatarURL(), user.getBusinessType(), user.getOpeningDays(), user.getAttentionSchedule(),
+				user.getExceptionalClosingDays(), user.getPhoneNumber(), user.getLocation(),
+				user.getProfileImageUrls());
+	}
+
+	/**
+	 * @param userSearchRequestDTO
+	 * @param pageable
+	 * @return
+	 */
+	public Page<UserResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
+		return userRepository
+			.searchUsers(userSearchRequestDTO.role(), userSearchRequestDTO.location(),
+					userSearchRequestDTO.businessType(), pageable)
+			.map(UserResumeResponseDTO::fromUser);
+	}
+
 }

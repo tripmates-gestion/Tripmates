@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public record AuthLogoutRequestDTO(
-        @Schema(description = "User's email") @NotBlank(message = "The user's email cannot be empty to register a user.")
-        @Email(message = "The provided email is not valid.")
-        String email
-) { }
+public record AuthLogoutRequestDTO(@Schema(description = "User's email") @NotBlank(
+		message = "The user's email cannot be empty to register a user.") @Email(
+				message = "The provided email is not valid.") String email) {
+}

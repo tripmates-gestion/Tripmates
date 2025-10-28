@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public record AuthRefreshResponseDTO(
-        @Schema(description = "User's access token") @NotBlank(message = "The user's access token cannot be empty.")
-        String accessToken
-) { }
+public record AuthRefreshResponseDTO(@Schema(description = "User's access token") @NotBlank(
+		message = "The user's access token cannot be empty.") String accessToken) {
+}
