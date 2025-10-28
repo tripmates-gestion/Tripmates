@@ -1,10 +1,11 @@
-package com.tripmates.backend;
+package com.tripmates.backend.auth;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
@@ -25,7 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(TestCloudinaryConfig.class)
+@Import({ TestCloudinaryConfig.class, TestSecurityConfig.class })
 public class AuthControllerTests {
 
 	@LocalServerPort
@@ -42,12 +43,14 @@ public class AuthControllerTests {
 	@BeforeAll
 	void setUp() {
 		baseUrl = "http://localhost:" + port;
+
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 	}
 
 	@Test
-	void registerUserTest() {
+	void registerAValidUserShouldReturnNoContent() {
 		when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
-		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
 		UserCreationRequestDTO requestDTO = new UserCreationRequestDTO("fran", "fran@example.com", "123456", Role.USER,
 				null);
 
@@ -58,7 +61,7 @@ public class AuthControllerTests {
 
 		ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/auth/register", request, String.class);
 
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 	}
 
 }
