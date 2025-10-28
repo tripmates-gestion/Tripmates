@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import SearchBar from '../components/SearchBar';
-import PlaceCard, { type Place } from '../components/publish/PlaceCard';
+import PlaceCard, { type Place } from '../components/ui/PlaceCard';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 // Esto deberia ir en la BDD xD, las fotos son elegidas de forma random
