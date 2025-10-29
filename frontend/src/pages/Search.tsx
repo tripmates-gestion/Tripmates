@@ -1,18 +1,18 @@
 // src/pages/Search.tsx
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
+//import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 //import PlaceCard, { type Place } from '../components/publish/PlaceCard';
 import { useLocation, useNavigate } from 'react-router-dom';
-import React from 'react'
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
+// import React from 'react'
+// import LocationOnIcon from '@mui/icons-material/LocationOn';
+// import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+// import InputAdornment from '@mui/material/InputAdornment';
+// import TextField from '@mui/material/TextField';
+// import SearchIcon from '@mui/icons-material/Search';
 import { useState } from 'react';
 import { SearchBarHotel } from '../components/search/SearchBarHotel';
 import { SearchBarRestaurant } from '../components/search/SearchBarRestaurant';
