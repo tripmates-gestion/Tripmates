@@ -1,6 +1,7 @@
 package com.tripmates.backend.auth.controller;
 
 import com.tripmates.backend.auth.dto.*;
+import jakarta.validation.Valid;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.dto.ErrorDTO;
 
@@ -32,7 +33,7 @@ public class AuthController {
 			@ApiResponse(responseCode = "204", description = "User created successfully", content = { @Content() }),
 			@ApiResponse(responseCode = "400", description = "User already exists", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-	public ResponseEntity<?> register(@RequestBody AuthRegisterRequestDTO authRegisterRequestDTO) {
+	public ResponseEntity<?> register(@RequestBody @Valid AuthRegisterRequestDTO authRegisterRequestDTO) {
 		authService.register(authRegisterRequestDTO);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
