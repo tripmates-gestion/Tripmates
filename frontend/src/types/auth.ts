@@ -1,2 +1,2 @@
-export type AuthTab = 'login' | 'register';
-export type AccountType = 'user' | 'business';
+export type AuthTab = 'LOGIN' | 'REGISTER';
+export type AccountType = 'USER' | 'BUSINESS';

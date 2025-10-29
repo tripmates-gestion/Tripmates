@@ -21,13 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.*;
-
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
-
-import org.springframework.http.HttpHeaders;
-
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.hamcrest.Matchers;

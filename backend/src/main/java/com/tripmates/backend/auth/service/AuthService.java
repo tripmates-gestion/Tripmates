@@ -61,8 +61,9 @@ public class AuthService {
 		User user = userRepository.findByEmail(authLoginRequestDTO.email())
 			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
-		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword()))
+		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
 			throw new IncorrectPasswordException("Credenciales invalidas");
+		}
 
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
@@ -97,8 +98,9 @@ public class AuthService {
 		User user = userRepository.findByEmail(authRefreshRequestDTO.email())
 			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
-		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))
+		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken())) {
 			throw new IncorrectTokenException("Credenciales invalidas");
+		}
 
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));

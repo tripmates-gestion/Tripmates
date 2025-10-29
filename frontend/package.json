@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "tripmates-frontend",
   "private": true,
   "version": "0.0.0",
@@ -14,6 +15,7 @@
     "@emotion/styled": "11.14.1",
     "@mui/icons-material": "6.5.0",
     "@mui/material": "6.5.0",
+    "notistack": "^3.0.2",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-router-dom": "7.9.4"

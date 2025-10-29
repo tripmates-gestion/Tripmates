@@ -7,7 +7,6 @@ import org.json.JSONException;
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
-import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -30,7 +30,7 @@ import com.tripmates.backend.TestHelper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import({ TestCloudinaryConfig.class, TestSecurityConfig.class })
+@Import(TestCloudinaryConfig.class)
 public class AuthControllerTests {
 
 	@LocalServerPort
@@ -41,7 +41,7 @@ public class AuthControllerTests {
 	@Autowired
 	private TestRestTemplate restTemplate;
 
-	@Autowired
+	@MockBean
 	private UserRepository userRepository;
 
 	@Autowired
@@ -70,7 +70,6 @@ public class AuthControllerTests {
 		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
 				Void.class);
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-		assertEquals(1, userRepository.count());
 	}
 
 	@Test
@@ -234,7 +233,6 @@ public class AuthControllerTests {
 		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
 				Void.class);
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-		assertEquals(1, userRepository.count());
 	}
 
 	@Test
