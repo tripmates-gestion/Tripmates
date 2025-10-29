@@ -5,6 +5,8 @@ import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -29,7 +31,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 			criteriaList.add(Criteria.where("role").is(role));
 
 		if (location != null)
-			criteriaList.add(Criteria.where("location").is(location));
+			criteriaList.add(Criteria.where("location").regex(Pattern.quote(location.trim()), "i"));
 
 		if (businessType != null)
 			criteriaList.add(Criteria.where("businessType").is(businessType));

@@ -1,11 +1,12 @@
 package com.tripmates.backend.publications.dto;
 
-import com.tripmates.backend.common.types.AttentionSchedule;
-import com.tripmates.backend.publications.entity.mongo.Publication;
+import java.util.List;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+
+import com.tripmates.backend.common.types.AttentionSchedule;
 import java.util.Date;
-import java.util.List;
+import com.tripmates.backend.publications.entity.mongo.Publication;
 
 public record BusinessPublicationResponseDTO(String id, String title, String description, List<DayOfWeek> openingDays,
 		AttentionSchedule attentionSchedule, List<LocalDate> exceptionalClosingDays, String phoneNumber, String email,
