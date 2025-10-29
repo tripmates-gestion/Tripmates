@@ -7,7 +7,8 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-<<<<<<< HEAD
+<<<<<<<HEAD
+
 public record BusinessPublicationResponseDTO(String id, String title, String description, List<DayOfWeek> openingDays,
 		AttentionSchedule attentionSchedule, List<LocalDate> exceptionalClosingDays, String phoneNumber, String email,
 		String location, List<String> imageUrls, String ownerId, String ownerUsername, String ownerAvatarUrl,
@@ -18,27 +19,16 @@ public record BusinessPublicationResponseDTO(String id, String title, String des
 				publication.getExceptionalClosingDays(), publication.getPhoneNumber(), publication.getEmail(),
 				publication.getLocation(), publication.getImageUrls(), publication.getOwnerId(),
 				publication.getOwnerUsername(), publication.getOwnerAvatarUrl(), publication.getCreatedAt());
-	}
-=======
-public record BusinessPublicationResponseDTO(
-    String id,
-    String title,
-    String description,
-    List<DayOfWeek> openingDays,
-    AttentionSchedule attentionSchedule,
-    List<LocalDate> exceptionalClosingDays,
-    String phoneNumber,
-    String email,
-    String location,
-    List<String> imageUrls,
-    List<String> tags,
+	}=======
 
-    String ownerId,
-    String ownerUsername,
-    String ownerAvatarUrl,
+	public record BusinessPublicationResponseDTO(String id, String title, String description,
+			List<DayOfWeek> openingDays, AttentionSchedule attentionSchedule, List<LocalDate> exceptionalClosingDays,
+			String phoneNumber, String email, String location, List<String> imageUrls, List<String> tags,
 
-    Date createdAt) {
-  public static BusinessPublicationResponseDTO fromPublication(Publication publication) {
+			String ownerId, String ownerUsername, String ownerAvatarUrl,
+
+			Date createdAt) {
+	public static BusinessPublicationResponseDTO fromPublication(Publication publication) {
     return new BusinessPublicationResponseDTO(
         publication.getId(),
         publication.getTitle(),
@@ -55,6 +45,5 @@ public record BusinessPublicationResponseDTO(
         publication.getOwnerUsername(),
         publication.getOwnerAvatarUrl(),
         publication.getCreatedAt());
-  }
->>>>>>> origin/dev-front
+  }>>>>>>>origin/dev-front
 }

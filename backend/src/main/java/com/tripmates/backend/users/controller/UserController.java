@@ -28,15 +28,17 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/users")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
-<<<<<<< HEAD
-=======
-        private final UserService userService;
-        private final ObjectMapper mapper;
->>>>>>> origin/dev-front
+
+	<<<<<<<HEAD=======
+	private final UserService userService;
+
+	private final ObjectMapper mapper;
+
+	>>>>>>>origin/dev-front
 
 	private final UserService userService;
 
-<<<<<<< HEAD
+	<<<<<<<HEAD
 	private final ObjectMapper mapper;
 
 	public UserController(UserService userService, ObjectMapper mapper) {
@@ -112,30 +114,21 @@ public class UserController {
 		}
 	}
 
-=======
+	=======
 
-    
-    @GetMapping("/me")
-    @Operation(summary = "Obtains a user from the system")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User obtained successfully",
-                    content = { @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = User.class))
-                    }
-            ),
-            @ApiResponse(responseCode = "404", description = "User not found",
-                    content = { @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))
-                    }
-            )
-    })
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
-    }
+	@GetMapping("/me")
+	@Operation(summary = "Obtains a user from the system")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User obtained successfully",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = User.class)) }),
+			@ApiResponse(responseCode = "404", description = "User not found", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+		return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
+	}
 
-    @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         @Operation(
                 summary = "Update user profile",
                 description = "Actualiza el perfil del usuario con datos en JSON e imágenes opcionales.\n\n"
@@ -178,5 +171,6 @@ public class UserController {
                 }
         }
 
->>>>>>> origin/dev-front
+	>>>>>>>origin/dev-front
+
 }

@@ -1,19 +1,13 @@
-<<<<<<< HEAD
-package com.tripmates.backend.auth;
+<<<<<<<HEAD package com.tripmates.backend.auth;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-=======
->>>>>>> origin/dev-front
+import static org.junit.jupiter.api.Assertions.assertEquals;=======>>>>>>>origin/dev-front
 
 package com.tripmates.backend.auth;
 
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
-import com.tripmates.backend.config.TestCloudinaryConfig;
-<<<<<<< HEAD
+import com.tripmates.backend.config.TestCloudinaryConfig;<<<<<<<HEAD
 import com.tripmates.backend.config.TestSecurityConfig;
-import com.tripmates.backend.users.dto.UserCreationRequestDTO;
-=======
->>>>>>> origin/dev-front
+import com.tripmates.backend.users.dto.UserCreationRequestDTO;=======>>>>>>>origin/dev-front
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,13 +45,15 @@ public class AuthControllerTests {
 		userRepository.deleteAll();
 	}
 
-<<<<<<< HEAD
+	<<<<<<<HEAD
+
 	@Test
 	void registerUserShouldReturnNoContent() {
 		UserCreationRequestDTO requestDTO = new UserCreationRequestDTO("fran", "fran@example.com", "123456", Role.USER,
 				null);
 =======
-    @Test
+
+	@Test
     void registerUserTest() {
         when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));

@@ -8,23 +8,21 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-<<<<<<< HEAD
-=======
+import org.springframework.data.mongodb.core.mapping.Document;<<<<<<<HEAD=======
 import com.tripmates.backend.common.types.AttentionSchedule;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
->>>>>>> origin/dev-front
+import java.util.List;>>>>>>>origin/dev-front
 
-@Document(collection = "publications")
+@Document(collection="publications")
+
 @Getter
 @Setter
 public class Publication {
 
-<<<<<<< HEAD
+	<<<<<<<HEAD
 	@Id
 	private String id;
 
@@ -33,28 +31,42 @@ public class Publication {
 	private String description;
 
 	private List<DayOfWeek> openingDays;
-=======
-    private String title;
-    private String description;
-    private List<DayOfWeek> openingDays = new ArrayList<>();
-    private AttentionSchedule attentionSchedule;
-    private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
-    private String phoneNumber;
-    private String email;
-    private String location;
-    private List<String> imageUrls = new ArrayList<>();
-    private List<String> tags = new ArrayList<>();
 
-    private String ownerId; // Datos embebidos de la cuenta de negocio (para evitar hacer joins)
-    private String ownerUsername;
-    private String ownerAvatarUrl;
+	=======
+	private String title;
 
-    private Date createdAt = new Date();
->>>>>>> origin/dev-front
+	private String description;
+
+	private List<DayOfWeek> openingDays = new ArrayList<>();
 
 	private AttentionSchedule attentionSchedule;
 
-<<<<<<< HEAD
+	private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
+
+	private String phoneNumber;
+
+	private String email;
+
+	private String location;
+
+	private List<String> imageUrls = new ArrayList<>();
+
+	private List<String> tags = new ArrayList<>();
+
+	private String ownerId; // Datos embebidos de la cuenta de negocio (para evitar hacer
+							// joins)
+
+	private String ownerUsername;
+
+	private String ownerAvatarUrl;
+
+	private Date createdAt = new Date();
+
+	>>>>>>>origin/dev-front
+
+	private AttentionSchedule attentionSchedule;
+
+	<<<<<<<HEAD
 	private List<LocalDate> exceptionalClosingDays;
 
 	private String phoneNumber;
@@ -94,9 +106,9 @@ public class Publication {
 		this.ownerUsername = ownerUsername;
 		this.ownerAvatarUrl = ownerAvatarUrl;
 		this.createdAt = createdAt;
-	}
-=======
-    public Publication(
+	}=======
+
+	public Publication(
             String title,
             String description,
             List<DayOfWeek> openingDays,
@@ -124,7 +136,6 @@ public class Publication {
         this.ownerUsername = ownerUsername;
         this.ownerAvatarUrl = ownerAvatarUrl;
         this.createdAt = createdAt;
-    }
->>>>>>> origin/dev-front
+    }>>>>>>>origin/dev-front
 
 }
