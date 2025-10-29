@@ -41,7 +41,7 @@ public class AuthService {
 		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(u -> {
 			throw new UserAlreadyExistsException("Email no está disponible");
 		});
-    checkBusinessType(authRegisterRequestDTO);
+		checkBusinessType(authRegisterRequestDTO);
 
 		user.setName(authRegisterRequestDTO.name());
 		user.setEmail(authRegisterRequestDTO.email());
@@ -106,12 +106,12 @@ public class AuthService {
 		return new AuthRefreshResponseDTO(accessToken);
 	}
 
-  private void checkBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO) {
-    if (authRegisterRequestDTO.role() == Role.USER && authRegisterRequestDTO.businessType() != null)
-      throw new ValidationErrorException(ValidationErrorMessageAuth.FILD_NO_ALLOWED + "businessType");
+	private void checkBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO) {
+		if (authRegisterRequestDTO.role() == Role.USER && authRegisterRequestDTO.businessType() != null)
+			throw new ValidationErrorException(ValidationErrorMessageAuth.FILD_NO_ALLOWED + "businessType");
 
-    if (authRegisterRequestDTO.role() == Role.BUSINESS && authRegisterRequestDTO.businessType() == null)
-      throw new ValidationErrorException(ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "businessType");
-  }
+		if (authRegisterRequestDTO.role() == Role.BUSINESS && authRegisterRequestDTO.businessType() == null)
+			throw new ValidationErrorException(ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "businessType");
+	}
 
 }
