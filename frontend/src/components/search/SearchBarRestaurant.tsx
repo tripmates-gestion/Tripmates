@@ -34,7 +34,8 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
   const { token: accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState('');
-  
+  const [name, setName] = useState('');
+
   const handleSearch = async () => {
     if (!accessToken) {
               console.error('No access token available');
@@ -47,7 +48,14 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
         const restaurants = restaurantsResponse.content;
         console.log('Restaurants found:', restaurants);
 
-        const mappedRestaurants = restaurants.map(mapRestaurant);
+        let filteredRestaurants = restaurants;
+        if (name && name.trim() !== '') {
+            filteredRestaurants = restaurants.filter((restaurant: any) =>
+                restaurant.name && restaurant.name.toLowerCase().includes(name.toLowerCase())
+            );
+        }
+
+        const mappedRestaurants = filteredRestaurants.map(mapRestaurant);
         console.log('Restaurants found:', mappedRestaurants);
 
         onSearchResults(mappedRestaurants);
@@ -90,6 +98,16 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
           }}
           sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 250 }}
         />
+
+        <TextField
+            name="nombre"
+            placeholder="Nombre"
+            variant="outlined"
+            size="small"
+            onChange={(e) => setName(e.target.value)}
+            sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
+        />
+
 
         <Button
           variant="contained"

@@ -36,6 +36,7 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
     const { token: accessToken } = useAuth();
     const [loading, setLoading] = useState(false);
     const [location, setLocation] = useState('');
+    const [name, setName] = useState('');
 
     const handleSearch = async () => {
         if (!accessToken) {
@@ -47,7 +48,14 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
         try {
             const hotelsResponse = await searchHotels(accessToken, { "location": location });
             const hotels = hotelsResponse.content;
-            const mappedHotels = hotels.map(mapHotel);
+            let filteredHotels = hotels;
+            if (name && name.trim() !== '') {
+                filteredHotels = hotels.filter((hotel: any) => 
+                    hotel.name && hotel.name.toLowerCase().includes(name.toLowerCase())
+                );
+            }
+            
+            const mappedHotels = filteredHotels.map(mapHotel);
             console.log('Hotels found:', mappedHotels);
 
             onSearchResults(mappedHotels);
@@ -97,6 +105,15 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                         </InputAdornment>
                         ),
                     }}
+                    sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
+                />
+
+                <TextField
+                    name="nombre"
+                    placeholder="Nombre"
+                    variant="outlined"
+                    size="small"
+                    onChange={(e) => setName(e.target.value)}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
                 />
 
