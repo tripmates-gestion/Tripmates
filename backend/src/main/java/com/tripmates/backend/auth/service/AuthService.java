@@ -8,8 +8,11 @@ import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
+<<<<<<< HEAD
 import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.Role;
+=======
+>>>>>>> origin/dev-front
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,7 @@ public class AuthService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+<<<<<<< HEAD
 	/**
 	 * Crea un nuevo usuario persistiendolo en MongoDB.
 	 * @param userCreationRequestDTO contiene los datos del nuevo usuario.
@@ -39,6 +43,18 @@ public class AuthService {
 		userRepository.findByEmail(userCreationRequestDTO.email()).ifPresent(u -> {
 			throw new UserAlreadyExistsException("Email no está disponible");
 		});
+=======
+    /**
+     * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
+     *
+     * @param userCreationRequestDTO contiene los datos del nuevo usuario
+     */
+    public void register(AuthRegisterRequestDTO userCreationRequestDTO) {
+        User user = new User();
+        if (userRepository.findByEmail(userCreationRequestDTO.email()).isPresent()) {
+            throw new UserAlreadyExistsException("Email no esta disponible");
+        }
+>>>>>>> origin/dev-front
 
 		user.setName(userCreationRequestDTO.name());
 		user.setEmail(userCreationRequestDTO.email());
@@ -100,6 +116,7 @@ public class AuthService {
 		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))
 			throw new IncorrectTokenException("Credenciales invalidas");
 
+<<<<<<< HEAD
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
@@ -117,3 +134,19 @@ public class AuthService {
 	}
 
 }
+=======
+        return new AuthRefreshResponseDTO(accessToken);
+    }
+
+    private void setBusinessType(AuthRegisterRequestDTO userCreationRequestDTO, User user) {
+        if ((userCreationRequestDTO.role().toString().equals("BUSINESS"))) {
+
+            if (userCreationRequestDTO.businessType() == null) {
+                throw new BadRequestException("Business type is required for business users");
+            }
+
+            user.setBusinessType(userCreationRequestDTO.businessType());
+        }
+    }
+}
+>>>>>>> origin/dev-front

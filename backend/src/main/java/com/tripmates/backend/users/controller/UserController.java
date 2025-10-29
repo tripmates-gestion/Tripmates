@@ -28,9 +28,15 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/users")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
+<<<<<<< HEAD
+=======
+        private final UserService userService;
+        private final ObjectMapper mapper;
+>>>>>>> origin/dev-front
 
 	private final UserService userService;
 
+<<<<<<< HEAD
 	private final ObjectMapper mapper;
 
 	public UserController(UserService userService, ObjectMapper mapper) {
@@ -106,4 +112,71 @@ public class UserController {
 		}
 	}
 
+=======
+
+    
+    @GetMapping("/me")
+    @Operation(summary = "Obtains a user from the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User obtained successfully",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = User.class))
+                    }
+            ),
+            @ApiResponse(responseCode = "404", description = "User not found",
+                    content = { @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class))
+                    }
+            )
+    })
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
+    }
+
+    @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        @Operation(
+                summary = "Update user profile",
+                description = "Actualiza el perfil del usuario con datos en JSON e imágenes opcionales.\n\n"
+                        + "Estructura de la petición multipart (en este orden):\n"
+                        + "- `data`: (obligatorio) JSON con los datos del usuario a actualizar.\n"
+                        + "- `avatar`: (opcional) Imagen de avatar principal (JPG, PNG, etc.).\n"
+                        + "- `files`: (opcional) Imágenes adicionales del perfil (JPG, PNG, etc.).\n\n"
+                        + "Ejemplo de JSON para el campo 'data' (UserUpdateRequestDTO):\n"
+                        + "```json\n"
+                        + "{\n"
+                        + "  \"name\": \"John Doe\",\n"
+                        + "  \"description\": \"Travel enthusiast\",\n"
+                        + "  \"phoneNumber\": \"+1234567890\",\n"
+                        + "  \"location\": \"Main St 123, City\",\n"
+                        + "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\"],\n"
+                        + "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
+                        + "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2026-01-01\"]\n"
+                        + "}\n"
+                        + "```\n\n"
+                        + "Notas:\n"
+                        + "- Todos los campos presentes en 'data' son editables (email no es editable).\n"
+                        + "- Los campos de negocio (openingDays, attentionSchedule, exceptionalClosingDays) son opcionales.\n"
+                        + "- Las imágenes se cargan vía partes multipart: `avatar` (una) y `files` (múltiples)."
+        )
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "User profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResumeResponseDTO.class))),
+                        @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+        })
+        public ResponseEntity<?> updateProfileMultipart(
+                        @AuthenticationPrincipal UserDetails userDetails,
+                        @RequestPart("data") String data,
+                        @RequestPart(value = "avatar", required = false) MultipartFile avatar,
+                        @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+                try {
+                        UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
+                        return ResponseEntity.ok(
+                                        userService.updateUser(userDetails.getUsername(), dto, files, avatar));
+                } catch (Exception e) {
+                        throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
+                }
+        }
+
+>>>>>>> origin/dev-front
 }

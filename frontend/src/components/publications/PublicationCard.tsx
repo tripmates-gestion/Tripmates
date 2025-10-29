@@ -125,6 +125,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
               fontWeight: 700,
             })}
           />
+<<<<<<< HEAD
           {publication.attentionSchedule && (
             <Chip
               label={`${publication.attentionSchedule.openingTime}–${publication.attentionSchedule.closingTime}`}
@@ -137,6 +138,18 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
               })}
             />
           )}
+=======
+          <Chip
+            label={`${publication.attentionSchedule.openingTime}–${publication.attentionSchedule.closingTime}`}
+            size="small"
+            sx={(theme) => ({
+              bgcolor:
+          theme.palette.mode === "dark"
+            ? "rgba(255,255,255,0.2)"
+            : "rgba(255,255,255,0.9)",
+            })}
+          />
+>>>>>>> origin/dev-front
         </Stack>
         <IconButton
           onClick={(e) => {
@@ -225,4 +238,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
       </CardContent>
     </Card>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/dev-front
