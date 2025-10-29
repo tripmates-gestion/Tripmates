@@ -1,12 +1,18 @@
-
 package com.tripmates.backend.auth;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.json.JSONException;
+
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
+import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,55 +22,288 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.http.*;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import java.util.Optional;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
+import org.skyscreamer.jsonassert.JSONAssert;
+
+import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Import(TestCloudinaryConfig.class)
+@Import({ TestCloudinaryConfig.class, TestSecurityConfig.class })
 public class AuthControllerTests {
 
-    @LocalServerPort
-    private int port;
+	@LocalServerPort
+	private int port;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+	private TestHelper testHelper;
 
-    @MockBean
-    private UserRepository userRepository;
+	@Autowired
+	private TestRestTemplate restTemplate;
 
-    private String baseUrl;
+	@Autowired
+	private UserRepository userRepository;
 
-    @BeforeAll
-    void setUp() {
-        baseUrl = "http://localhost:" + port;
-    }
+	HttpHeaders headers = new HttpHeaders();
 
-    @Test
-    void registerUserTest() {
-        when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        AuthRegisterRequestDTO requestDTO = new AuthRegisterRequestDTO(
-                "fran",
-                "fran@example.com",
-                "123456",
-                Role.USER,
-                null);
+	@BeforeAll
+	void setUp() {
+		testHelper = new TestHelper(port, restTemplate);
+	}
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+	@BeforeEach
+	void beforeEach() {
+		userRepository.deleteAll();
+	}
 
-        HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(requestDTO, headers);
+	@Test
+	void registerUserShouldReturnNoContent() {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
+				Role.USER, null);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                baseUrl + "/auth/register",
-                request,
-                String.class);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
+		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				Void.class);
+		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+		assertEquals(1, userRepository.count());
+	}
+
+	@Test
+	void testGivenNoName_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO(null, "LETI@example.com", "123456",
+				Role.USER, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: name",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenEmptyName_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("", "LETI@example.com", "123456",
+				Role.USER, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: name",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenNoEmail_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", null, "123456", Role.USER,
+				null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: email",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenEmptyEmail_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", "", "123456", Role.USER,
+				null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: email",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenNoPassword_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", "LETI@example.com", null,
+				Role.USER, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: password",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenEmptyPassword_WhenRegisterUser_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", "LETI@example.com", "",
+				Role.USER, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: password",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testRegisterBusinessShouldReturnNoContent() {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
+				Role.BUSINESS, BusinessType.HOSTING);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				Void.class);
+		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+		assertEquals(1, userRepository.count());
+	}
+
+	@Test
+	void testGivenTypeBusiness_whenRegisterUserShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
+				Role.USER, BusinessType.HOSTING);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+					"type": "about:blank",
+					"title": "Validation Error",
+					"status": 400,
+					"detail": "El campo no está permitido: businessType",
+					"instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenNoBussinesTypeWhenRegisterBusinessShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", "leti@example.com", "123456",
+				Role.BUSINESS, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+					"type": "about:blank",
+					"title": "Validation Error",
+					"status": 400,
+					"detail": "El campo no debe estar vacio: businessType",
+					"instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+	@Test
+	void testGivenNoName_WhenRegisterBusiness_ThenShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO(null, "LETI@example.com", "123456",
+				Role.BUSINESS, BusinessType.HOSTING);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
+				String.class);
+
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+				{
+				    "type": "about:blank",
+				    "title": "Validation Error",
+				    "status": 400,
+				    "detail": "El campo no debe estar vacio: name",
+				    "instance": "/auth/register"
+				}
+				""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
 }
