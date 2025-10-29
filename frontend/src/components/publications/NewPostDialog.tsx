@@ -8,24 +8,22 @@ import {
   DialogTitle,
   Divider,
   FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   TextField,
   Typography,
   Card,
   CardMedia,
+  ToggleButton,
+  ToggleButtonGroup,
+  Chip, Autocomplete,
 } from '@mui/material'
-import Grid from '@mui/material/Grid2'
+import Grid from '@mui/material/Grid'
 import ImageUploader from '../ui/ImageUploader'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
 import { createBusinessPublication } from '../../services/businessPublications'
 import { dataURLtoFile, validateFile } from './utils/imageHelpers'
 import type {
-  BusinessType,
   BusinessPost,
   BusinessPublicationRequestDTO,
   FormState,
@@ -41,6 +39,40 @@ type NewPostDialogProps = {
   onCreated: () => void
 }
 
+
+// --- poné esto arriba del componente (fuera del return) ---
+const TAG_OPTIONS = [
+  "Apto para niños",
+  "Aventura",
+  "Cerca del centro",
+  "Cultural",
+  "Deportes",
+  "Desayuno incluido",
+  "Económico",
+  "Familiar",
+  "Gastronómico",
+  "Ideal para grupos",
+  "Lujo",
+  "Naturaleza",
+  "Negocios",
+  "Pet-friendly",
+  "Relax",
+  "Romántico",
+  "Spa",
+  "Vida nocturna",
+  "Vista al mar",
+  "Otros:",
+];
+
+const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }[] = [
+  { label: "Lunes",      value: "MONDAY" },
+  { label: "Martes",     value: "TUESDAY" },
+  { label: "Miércoles",  value: "WEDNESDAY" },
+  { label: "Jueves",     value: "THURSDAY" },
+  { label: "Viernes",    value: "FRIDAY" },
+  { label: "Sábado",     value: "SATURDAY" },
+  { label: "Domingo",    value: "SUNDAY" },
+] as const satisfies Array<{ label: string; value: typeof DEFAULT_OPENING_DAYS[number] }>;
 
 // ---------------------- Utils ----------------------
 
@@ -130,10 +162,10 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         phoneNumber: form.contact.trim(),
         email: '', // Agregar campo si lo necesitas
         location: form.location.trim(),
-        openingDays: DEFAULT_OPENING_DAYS,
+        openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
         attentionSchedule: parseHours(form.hours),
         exceptionalClosingDays: [],
-        tags: []
+        tags: form.tags.length > 0 ? form.tags : ["Otros:"],
       }
 
       // Convertir base64 a Files
@@ -152,16 +184,17 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
       // Crear objeto de publicación (para uso interno si lo necesitas)
       const savedPost: BusinessPost = {
-        id: crypto.randomUUID(),
+        id: response.id || crypto.randomUUID(),
         title: response.title,
-        type: form.type as BusinessType,
+        // type: form.type as BusinessType,
         description: response.description,
         hours: `${response.attentionSchedule.openingTime}–${response.attentionSchedule.closingTime}`,
         contact: response.phoneNumber,
         location: response.location,
         photos: response.imageUrls ?? [],
         createdAt: response.createdAt,
-
+        tags: response.tags,
+        openingDays: response.openingDays,
       }
 
       console.log('Publicación creada:', savedPost)
@@ -190,8 +223,8 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         <DialogTitle>Nueva publicación de negocio</DialogTitle>
 
         <DialogContent>
-          <Stack spacing={2} sx={{ pt: 1 }}>
-            {/* Título */}
+            <Stack spacing={2} sx={{ pt: 1 }}>
+            {/* Título (obligatorio) */}
             <TextField
               label="Título"
               value={form.title}
@@ -202,25 +235,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               required
             />
 
-            {/* Tipo */}
-            <FormControl error={hasError('type')} required>
-              <InputLabel id="bp-type">Tipo de publicación</InputLabel>
-              <Select
-                labelId="bp-type"
-                label="Tipo de publicación"
-                value={form.type}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, type: e.target.value as BusinessType }))
-                }
-                onBlur={() => setTouched((prev) => ({ ...prev, type: true }))}
-              >
-                <MenuItem value="alojamiento">Alojamiento</MenuItem>
-                <MenuItem value="servicio">Servicio</MenuItem>
-              </Select>
-              <FormHelperText>{helper('type')}</FormHelperText>
-            </FormControl>
-
-            {/* Descripción */}
+            {/* Descripción (obligatorio) */}
             <TextField
               label="Descripción / Detalles"
               value={form.description}
@@ -233,47 +248,97 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               required
             />
 
-            {/* Horario y Contacto */}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 6 }}>
+            {/* Tags (multiple + freeSolo) */}
+            <Autocomplete
+              multiple
+              freeSolo
+              options={TAG_OPTIONS}
+              value={form.tags}
+              onChange={(_, newValue) => setForm((prev) => ({ ...prev, tags: newValue }))}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip variant="outlined" label={option} {...getTagProps({ index })} key={`${option}-${index}`} />
+                ))
+              }
+              renderInput={(params) => (
                 <TextField
-                  label="Horario de atención"
+                  {...params}
+                  label="Etiquetas (tags)"
+                  placeholder="Ej: Familiar, Romántico, Pet-friendly…"
+                />
+              )}
+            />
+
+            {/* Días de apertura (opcional: si no elige, usás tu default en el DTO) */}
+
+            <FormControl component="fieldset">
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                Días disponibles (opcional)
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {DAYS.map((d) => {
+                  const selected = form.openingDays.includes(d.value);
+                  return (
+                    <Chip
+                      key={d.value}
+                      label={d.label}
+                      color={selected ? "primary" : "default"}
+                      variant={selected ? "filled" : "outlined"}
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          openingDays: selected
+                            ? prev.openingDays.filter((x) => x !== d.value)
+                            : [...prev.openingDays, d.value],
+                        }))
+                      }
+                    />
+                  );
+                })}
+              </Box>
+            </FormControl>
+
+            {/* Horario y Contacto (ambos opcionales) */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Horario de atención (opcional)"
                   placeholder="Ej: 09:00–18:00"
                   value={form.hours}
                   onChange={(e) => setForm((prev) => ({ ...prev, hours: e.target.value }))}
                   onBlur={() => setTouched((prev) => ({ ...prev, hours: true }))}
                   error={hasError('hours')}
                   helperText={helper('hours')}
-                  required
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
+
+              <Grid item xs={12} md={6}>
                 <TextField
-                  label="Información de contacto"
+                  label="Información de contacto (opcional)"
                   placeholder="Teléfono o email"
                   value={form.contact}
                   onChange={(e) => setForm((prev) => ({ ...prev, contact: e.target.value }))}
                   onBlur={() => setTouched((prev) => ({ ...prev, contact: true }))}
                   error={hasError('contact')}
                   helperText={helper('contact')}
-                  required
                 />
               </Grid>
             </Grid>
-
-            {/* Ubicación */}
+                
+            {/* Ubicación (opcional) */}
             <TextField
-              label="Ubicación"
+              label="Ubicación (opcional)"
               placeholder="Ciudad, provincia / Dirección"
               value={form.location}
               onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
               onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
               error={hasError('location')}
               helperText={helper('location')}
-              required
             />
 
+              </Stack>
             <Divider />
+            
 
             {/* Fotos */}
             <Stack spacing={1}>
@@ -286,18 +351,10 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
               <Grid container spacing={2}>
                 {form.photos.map((photo, i) => (
-                  <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid item key={i} xs={12} sm={6} md={4}>
                     <Card variant="outlined">
                       <CardMedia component="img" image={photo} height={160} />
-                      <Box
-                        sx={{
-                          px: 1,
-                          py: 1,
-                          display: 'flex',
-                          gap: 1,
-                          justifyContent: 'flex-end',
-                        }}
-                      >
+                      <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                         <Button size="small" onClick={() => removePhotoAt(i)}>
                           Quitar
                         </Button>
@@ -306,7 +363,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
                   </Grid>
                 ))}
                 {form.photos.length < 6 && (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Grid item xs={12} md={6}>
                     <Box sx={{ p: 1 }}>
                       <ImageUploader
                         label="Agregar imagen"
@@ -318,7 +375,6 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
                 )}
               </Grid>
             </Stack>
-          </Stack>
         </DialogContent>
 
         <DialogActions>

@@ -22,9 +22,9 @@ export function usePostValidation() {
       errors.title = 'El título es obligatorio'
     }
 
-    // Validar tipo
-    if (!form.type) {
-      errors.type = 'Seleccioná un tipo'
+    // Validar tag
+    if (!form.tags.length) {
+      errors.tags = 'Seleccioná un tipo'
     }
 
     // Validar descripción
@@ -32,24 +32,30 @@ export function usePostValidation() {
       errors.description = 'La descripción es obligatoria'
     }
 
-    // Validar horarios
-    if (!form.hours?.trim()) {
-      errors.hours = 'El horario es obligatorio'
-    } else if (!isValidSchedule(form.hours)) {
+    // // Validar horarios
+    // if (!form.hours?.trim()) {
+    //   errors.hours = 'El horario es obligatorio'
+    // } else 
+    
+    if (!isValidSchedule(form.hours)) {
       errors.hours = 'Formato inválido. Ejemplo: 09:00–18:00'
     }
 
-    // Validar contacto (email o teléfono)
-    if (!form.contact?.trim()) {
-      errors.contact = 'La información de contacto es obligatoria'
-    } else if (!isValidEmail(form.contact) && !isValidPhone(form.contact)) {
+    // // Validar contacto (email o teléfono)
+    // if (!form.contact?.trim()) {
+    //   errors.contact = 'La información de contacto es obligatoria'
+    // } else 
+    
+    if (!isValidEmail(form.contact) && !isValidPhone(form.contact)) {
       errors.contact = 'Debe ser un email o número de teléfono válido'
     }
 
-    // Validar ubicación
-    if (!form.location?.trim()) {
-      errors.location = 'La ubicación es obligatoria'
-    } else if (!isValidLocation(form.location)) {
+    // // Validar ubicación
+    // if (!form.location?.trim()) {
+    //   errors.location = 'La ubicación es obligatoria'
+    // } else 
+    
+    if (!isValidLocation(form.location)) {
       errors.location = 'Ingresá una ubicación válida (ciudad, provincia o dirección)'
     }
 
