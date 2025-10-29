@@ -124,14 +124,20 @@ export default function Search() {
   // Función para manejar los resultados de búsqueda
   const handleSearchResults = (results: any[]) => {
     setSearchResults(results);
-    setIsSearching(results.length > 0);
+    setIsSearching(true); // Siempre true cuando se hace una búsqueda
     console.log('Resultados recibidos en Search:', results);
   };
 
-  // Usar resultados de búsqueda si existen, sino usar MOCK filtrado
+  // Función para resetear la búsqueda
+  const resetSearch = () => {
+    setSearchResults([]);
+    setIsSearching(false);
+  };
+
+  // Usar resultados de búsqueda si existe una búsqueda activa, sino usar MOCK filtrado
   const items = useMemo(() => {
     if (isSearching) {
-      return searchResults; // Mostrar resultados de la API
+      return searchResults; // Mostrar resultados de la API (puede ser array vacío)
     }
     
     // Fallback al comportamiento original con MOCK
@@ -155,16 +161,35 @@ export default function Search() {
         }
       </Typography>
 
-      {/* Grilla responsiva */}
-
-        {/*<Box key={item.id || index} sx={{ p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
-          <Typography variant="h6">{item.name || item.hotelName}</Typography>
-          <Typography variant="body2">Rating: {item.rating}</Typography>
-        </Box> */}
-
-      <PlaceGrid places={items.map(normalizeToBusinessPlace)} />
-     
-
+      {/* Grilla responsiva o mensaje de sin resultados */}
+      {items.length > 0 ? (
+        <PlaceGrid places={items.map(normalizeToBusinessPlace)} />
+      ) : (
+        <Stack 
+          spacing={2} 
+          alignItems="center" 
+          sx={{ py: 8, textAlign: 'center' }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            😔 No se encontraron resultados
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {isSearching 
+              ? 'Intenta con otros términos de búsqueda o verifica la ubicación.'
+              : 'Realiza una búsqueda para ver resultados.'
+            }
+          </Typography>
+          {isSearching && (
+            <Button 
+              variant="outlined" 
+              onClick={resetSearch}
+              sx={{ mt: 2 }}
+            >
+              Ver todas las opciones
+            </Button>
+          )}
+        </Stack>
+      )}
       
     </Stack>
   );

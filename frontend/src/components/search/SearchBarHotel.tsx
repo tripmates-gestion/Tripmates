@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { normalizeToBusinessPlace } from './utils/normalizePlace';
 
 interface SearchBarHotelProps {
-  onSearchResults: (hotels: any[]) => void; // Callback para enviar resultados al padre
+    onSearchResults: (hotels: any[]) => void; // Callback para enviar resultados al padre
 }
 
 function mapHotel(hotel: any) {
@@ -38,15 +38,17 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
 
         setLoading(true);
         try {
-            const hotelsResponse = await searchHotels(accessToken, { location });
-            const hotels = hotelsResponse.content?.content ?? [];
+            const hotelsResponse = await searchHotels(accessToken, { "location": location });
+            console.log('Hotels found via api:', hotelsResponse);
+            const hotels = hotelsResponse.content ?? [];
+            console.log('Hotels found via api:', hotels);
             let filteredHotels = hotels;
             if (name && name.trim() !== '') {
-                filteredHotels = hotels.filter((hotel: any) => 
+                filteredHotels = hotels.filter((hotel: any) =>
                     hotel.name && hotel.name.toLowerCase().includes(name.toLowerCase())
                 );
             }
-            
+
             const mappedHotels = filteredHotels.map(mapHotel);
             console.log('Hotels found:', mappedHotels);
 
@@ -92,9 +94,9 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     onChange={(e) => setLocation(e.target.value)}
                     InputProps={{
                         startAdornment: (
-                        <InputAdornment position="start">
-                            <LocationOnIcon color="action" />
-                        </InputAdornment>
+                            <InputAdornment position="start">
+                                <LocationOnIcon color="action" />
+                            </InputAdornment>
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
@@ -109,7 +111,7 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
                 />
 
-                
+                { /*
                 <TextField
                     name="llegada"
                     type="date"
@@ -117,9 +119,9 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     size="small"
                     InputProps={{
                         startAdornment: (
-                        <InputAdornment position="start">
-                            <CalendarMonthIcon color="action" />
-                        </InputAdornment>
+                            <InputAdornment position="start">
+                                <CalendarMonthIcon color="action" />
+                            </InputAdornment>
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 160 }}
@@ -132,9 +134,9 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     size="small"
                     InputProps={{
                         startAdornment: (
-                        <InputAdornment position="start">
-                            <CalendarMonthIcon color="action" />
-                        </InputAdornment>
+                            <InputAdornment position="start">
+                                <CalendarMonthIcon color="action" />
+                            </InputAdornment>
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 160 }}
@@ -147,9 +149,9 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     size="small"
                     InputProps={{
                         startAdornment: (
-                        <InputAdornment position="start">
-                            <MonetizationOnIcon color="action" />
-                        </InputAdornment>
+                            <InputAdornment position="start">
+                                <MonetizationOnIcon color="action" />
+                            </InputAdornment>
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 80, maxWidth: 150 }}
@@ -162,13 +164,14 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     size="small"
                     InputProps={{
                         startAdornment: (
-                        <InputAdornment position="start">
-                            <MonetizationOnIcon color="action" />
-                        </InputAdornment>
+                            <InputAdornment position="start">
+                                <MonetizationOnIcon color="action" />
+                            </InputAdornment>
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 80, maxWidth: 150 }}
-                /> 
+                />
+                */}
 
                 <Button
                     variant="contained"

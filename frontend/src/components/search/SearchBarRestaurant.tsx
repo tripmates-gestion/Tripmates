@@ -36,12 +36,20 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
 
     setLoading(true);
     try {
-        const restaurantsResponse = await searchRestaurants(accessToken, { location }); 
+        const restaurantsResponse = await searchRestaurants(accessToken, { "location": location }); 
         const restaurants = restaurantsResponse?.content ?? [];
         console.log('Restaurants found:', restaurants);
 
-        const mappedRestaurants = restaurants.map(mapRestaurant);
+        let filteredRestaurants = restaurants;
+        if (name && name.trim() !== '') {
+          filteredRestaurants = restaurants.filter((restaurant: any) =>
+            restaurant.name && restaurant.name.toLowerCase().includes(name.toLowerCase())
+          );
+        }
+
+        const mappedRestaurants = filteredRestaurants.map(mapRestaurant);
         console.log('Restaurants found:', mappedRestaurants);
+        
 
         onSearchResults(mappedRestaurants);
 
