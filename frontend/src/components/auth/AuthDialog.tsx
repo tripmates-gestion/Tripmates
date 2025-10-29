@@ -8,8 +8,9 @@ import type { AuthTab, AccountType } from '../../types/auth';
 import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import { createUserRemote } from '../../helpers/userCreation';
-import { useAuth } from '../../context/AuthContext';
+import { registerUserApi } from '../../services/authService';
+import { useAuth } from '../../hooks/useAuth';
+import type { BusinessType } from '../../types/businessType';
 
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
@@ -26,7 +27,7 @@ type AuthDialogProps = {
 export default function AuthDialog({ open, onClose }: AuthDialogProps) {
   const { login } = useAuth();
   // Estado para manejar la pestaña seleccionada (login o register)
-  const [tab, setTab] = React.useState<AuthTab>('login');
+  const [tab, setTab] = React.useState<AuthTab>('LOGIN');
 
   // Estado para manejar la visibilidad de la contraseña en el formulario de login
   const [showPass, setShowPass] = React.useState(false);
@@ -38,7 +39,9 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
   const [loading, setLoading] = React.useState(false);
 
   // Estado para manejar el tipo de cuenta en el formulario de registro
-  const [accountType, setAccountType] = React.useState<AccountType>('user');
+  const [accountType, setAccountType] = React.useState<AccountType>('USER');
+  // Estado para manejar el tipo de negocio en el formulario de registro
+  const [businessType, setBusinessType] = React.useState<BusinessType | null>(null); 
 
   // Estado para almacenar los datos del formulario de registro
   const [registerData, setRegisterData] = React.useState({
@@ -46,9 +49,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     email: '',
     password: '',
   });
-
+  
   const formRef = React.useRef<HTMLFormElement>(null);
-
 
   const handleRegister = async () => {
     setError(null);
@@ -64,11 +66,12 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     try {
       console.log('Formulario completado automáticamente:', registerData);
       
-      await createUserRemote(
+      await registerUserApi(
+        registerData.name,
         registerData.email, 
         registerData.password,
         accountType,
-        registerData.name,
+        accountType === 'BUSINESS' ? businessType : null
       );      
       // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);
@@ -113,8 +116,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
     setError(null);
   }
   // Textos de título y subtítulo según la pestaña seleccionada (login o register)
-  const title = tab === 'login' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;
-  const subtitle = tab === 'login' ? AUTH_TEXT.loginSubtitle : AUTH_TEXT.registerSubtitle;
+  const title = tab === 'LOGIN' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;
+  const subtitle = tab === 'LOGIN' ? AUTH_TEXT.loginSubtitle : AUTH_TEXT.registerSubtitle;
 
   // Renderizado del diálogo de autenticación
   return (
@@ -131,12 +134,12 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         )}
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-          <Tab value="login" label="Iniciar sesión" />
-          <Tab value="register" label="Crear cuenta" />
+          <Tab value='LOGIN' label="Iniciar sesión" />
+          <Tab value='REGISTER' label="Crear cuenta" />
         </Tabs>
 
         {/* Renderizado del formulario de login o registro según la pestaña seleccionada */}
-        {tab === 'login' ? (
+        {tab === 'LOGIN' ? (
             <LoginForm 
               showPass={showPass} 
               setShowPass={setShowPass}
@@ -149,6 +152,8 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
             <RegisterForm
               accountType={accountType}
               setAccountType={setAccountType}
+              businessType={businessType}
+              setBusinessType={setBusinessType}
               showPass={showPass}
               setShowPass={setShowPass}
               onDataChange={handleRegisterDataChange}
@@ -164,7 +169,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         <Button onClick={closeDialog} variant="text">Cerrar</Button>
 
         {/* Botón para enviar el formulario según la pestaña seleccionada */}
-        {tab === 'login' ? (
+        {tab === 'LOGIN' ? (
           <Button 
             variant="contained" 
             onClick={handleLogin}

@@ -52,7 +52,7 @@ export default function EditProfileDialog({ open, onClose, user, onSave }: Props
             label="Nombre de usuario"
             value={form.username ?? ''}
             onChange={(v) => setForm({ ...form, username: v })}
-            maxLength={PROFILE_LIMITS.username}
+            maxLength={PROFILE_LIMITS.name}
             fullWidth
           />
           <CountedTextField

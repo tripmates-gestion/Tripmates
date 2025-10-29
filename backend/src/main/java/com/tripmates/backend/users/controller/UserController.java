@@ -54,31 +54,21 @@ public class UserController {
 	}
 
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Update user profile", description = """
-			Actualiza el perfil del usuario con datos en JSON e imágenes opcionales.
-
-			Estructura de la petición multipart (en este orden):
-			- `data`: (obligatorio) JSON con los datos del usuario a actualizar.
-			- `avatar`: (opcional) Imagen de avatar principal (JPG, PNG, etc.).
-			- `files`: (opcional) Imágenes adicionales del perfil (JPG, PNG, etc.).
-
-			Ejemplo de JSON para el campo 'data' (UserUpdateRequestDTO):
-			```json
-			{
-			  "name": "John Doe",
-			  "description": "Travel enthusiast",
-			  "phoneNumber": "+1234567890",
-			  "location": "Main St 123, City",
-			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY"],
-			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
-			  "exceptionalClosingDays": ["2025-12-25", "2026-01-01"]
-			}
-			```
-
-			Notas:
-			- Todos los campos presentes en 'data' son editables (email no es editable).
-			- Los campos de negocio (openingDays, attentionSchedule, exceptionalClosingDays) son opcionales.
-			- Las imágenes se cargan vía partes multipart: `avatar` (una) y `files` (múltiples).""")
+	@Operation(summary = "Update user profile",
+			description = "Actualiza el perfil del usuario con datos en JSON e imágenes opcionales.\n\n"
+					+ "Estructura de la petición multipart (en este orden):\n"
+					+ "- `data`: (obligatorio) JSON con los datos del usuario a actualizar.\n"
+					+ "- `avatar`: (opcional) Imagen de avatar principal (JPG, PNG, etc.).\n"
+					+ "- `files`: (opcional) Imágenes adicionales del perfil (JPG, PNG, etc.).\n\n"
+					+ "Ejemplo de JSON para el campo 'data' (UserUpdateRequestDTO):\n" + "```json\n" + "{\n"
+					+ "  \"name\": \"John Doe\",\n" + "  \"description\": \"Travel enthusiast\",\n"
+					+ "  \"phoneNumber\": \"+1234567890\",\n" + "  \"location\": \"Main St 123, City\",\n"
+					+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\"],\n"
+					+ "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
+					+ "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2026-01-01\"]\n" + "}\n" + "```\n\n"
+					+ "Notas:\n" + "- Todos los campos presentes en 'data' son editables (email no es editable).\n"
+					+ "- Los campos de negocio (openingDays, attentionSchedule, exceptionalClosingDays) son opcionales.\n"
+					+ "- Las imágenes se cargan vía partes multipart: `avatar` (una) y `files` (múltiples).")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "User profile updated successfully",
 					content = @Content(mediaType = "application/json",

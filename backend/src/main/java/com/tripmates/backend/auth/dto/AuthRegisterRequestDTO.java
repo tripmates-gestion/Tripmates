@@ -1,4 +1,3 @@
-
 package com.tripmates.backend.auth.dto;
 
 import org.springframework.validation.annotation.Validated;

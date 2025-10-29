@@ -1,3 +1,7 @@
+//TODO AHORA SE MODIFCIA MEDIANTE PATCH A Patch a /user para todos los campos
+// DOCUMENTACIÓN en Swagger en rama refactor
+// el Mail no se puede cambiar
+
 export function updateDescription(current: string, updated: string, accessToken: string) {
     if (current == updated) {
         return;

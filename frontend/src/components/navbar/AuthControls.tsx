@@ -1,10 +1,9 @@
-import { Button, Stack } from '@mui/material';
+import { Button, Stack, Avatar } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { PAGES_ROUTE } from '../../constants/Pages';
 import AuthDialog from '../../components/auth/AuthDialog';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useState } from 'react';
-
 
 
 export function AuthControls() {
@@ -15,9 +14,28 @@ export function AuthControls() {
     <>
       {user !== null ? (
         <Stack direction="row" spacing={1}>
-          <Button color="inherit" component={RouterLink} to={PAGES_ROUTE.profile}>
-            {user.username}
+          <Button
+            component={RouterLink}
+            to={PAGES_ROUTE.profile}
+            sx={{
+              minWidth: 'auto',
+              p: 0,              // quita padding
+              lineHeight: 0,     // evita expansión vertical
+            }}
+          >
+            <Avatar
+              src={user.avatarURL}
+              alt={user.username}
+              sx={{
+                width: 42,
+                height: 42,
+
+                borderColor: 'primary.main',
+              }}
+            />
           </Button>
+
+
           <Button color="secondary" variant="outlined" onClick={logout}>
             Cerrar sesión
           </Button>

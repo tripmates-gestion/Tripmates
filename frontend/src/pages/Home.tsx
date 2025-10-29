@@ -1,8 +1,8 @@
 // src/pages/Home.tsx
 import { Box, Button, Container, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import type { Place } from '../components/PlaceCard';
-import PlaceCard from '../components/PlaceCard';
+import type { Place } from '../components/ui/PlaceCard';
+import PlaceCard from '../components/ui/PlaceCard';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
@@ -74,11 +74,11 @@ export function Hero() {
         </Typography>
 
         <Typography variant="h3" fontWeight={800} lineHeight={1.2} gutterBottom>
-          Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y vive una nueva y completa vida
+          Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y conecta con otros viajeros
         </Typography>
 
         <Typography variant="body1" color="text.secondary" sx={{ mt: 3 }}>
-          Descubre experiencias únicas y lugares inolvidables. Deja que TripMates te inspire en tu próxima aventura.
+          Descubre experiencias lugares y personas inolvidables. Deja que TripMates te inspire en tu próxima aventura.
         </Typography>
 
         <Stack direction="row" spacing={2} mt={4}>
