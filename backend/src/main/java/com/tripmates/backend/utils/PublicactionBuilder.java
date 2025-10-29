@@ -11,54 +11,50 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.exception.BadRequestException;
 
 public class PublicactionBuilder {
-    private BusinessPublicationRequestDTO businessPublicationDTO;
-    private List<String> imageUrls = new ArrayList<>();
-    private User owner;
-    private StorageService storageService;
 
-    public PublicactionBuilder(StorageService storageService) {
-        this.storageService = storageService;
-    }
+	private BusinessPublicationRequestDTO businessPublicationDTO;
 
-    public PublicactionBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
-        this.businessPublicationDTO = businessPublicationDTO;
-        return this;
-    }
+	private List<String> imageUrls = new ArrayList<>();
 
-    public PublicactionBuilder imageFiles(List<MultipartFile> imageFiles) {
-        for (MultipartFile imageFile : imageFiles) {
-            if (imageFile != null && !imageFile.isEmpty()) {
-                String imageUrl = storageService.uploadFile(imageFile);
-                imageUrls.add(imageUrl);
-            } else {
-                throw new BadRequestException(
-                        "Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
-            }
-        }
-        return this;
-    }
+	private User owner;
 
-    public PublicactionBuilder owner(User owner) {
-        this.owner = owner;
-        return this;
-    }
+	private StorageService storageService;
 
-    public Publication build() {
+	public PublicactionBuilder(StorageService storageService) {
+		this.storageService = storageService;
+	}
 
-        return new Publication(
-                businessPublicationDTO.title(),
-                businessPublicationDTO.description(),
-                businessPublicationDTO.openingDays(),
-                businessPublicationDTO.attentionSchedule(),
-                businessPublicationDTO.exceptionalClosingDays(),
-                businessPublicationDTO.phoneNumber(),
-                businessPublicationDTO.email(),
-                businessPublicationDTO.location(),
-                businessPublicationDTO.tags(),
-                imageUrls,
-                owner.getId(),
-                owner.getName(),
-                owner.getAvatarURL(),
-                new Date());
-    }
+	public PublicactionBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
+		this.businessPublicationDTO = businessPublicationDTO;
+		return this;
+	}
+
+	public PublicactionBuilder imageFiles(List<MultipartFile> imageFiles) {
+		for (MultipartFile imageFile : imageFiles) {
+			if (imageFile != null && !imageFile.isEmpty()) {
+				String imageUrl = storageService.uploadFile(imageFile);
+				imageUrls.add(imageUrl);
+			}
+			else {
+				throw new BadRequestException(
+						"Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
+			}
+		}
+		return this;
+	}
+
+	public PublicactionBuilder owner(User owner) {
+		this.owner = owner;
+		return this;
+	}
+
+	public Publication build() {
+
+		return new Publication(businessPublicationDTO.title(), businessPublicationDTO.description(),
+				businessPublicationDTO.openingDays(), businessPublicationDTO.attentionSchedule(),
+				businessPublicationDTO.exceptionalClosingDays(), businessPublicationDTO.phoneNumber(),
+				businessPublicationDTO.email(), businessPublicationDTO.location(), businessPublicationDTO.tags(),
+				imageUrls, owner.getId(), owner.getName(), owner.getAvatarURL(), new Date());
+	}
+
 }

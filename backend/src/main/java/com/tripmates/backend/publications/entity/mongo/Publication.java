@@ -15,57 +15,60 @@ import java.util.List;
 @Getter
 @Setter
 public class Publication {
-    @Id
-    private String id;
 
-    private String title;
-    private String description;
-    private List<DayOfWeek> openingDays = new ArrayList<>();
-    private AttentionSchedule attentionSchedule;
-    private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
-    private String phoneNumber;
-    private String email;
-    private String location;
-    private List<String> imageUrls = new ArrayList<>();
-    private List<String> tags = new ArrayList<>();
+	@Id
+	private String id;
 
-    private String ownerId; // Datos embebidos de la cuenta de negocio (para evitar hacer joins)
-    private String ownerUsername;
-    private String ownerAvatarUrl;
+	private String title;
 
-    private Date createdAt = new Date();
+	private String description;
 
-    public Publication() {
-    }
+	private List<DayOfWeek> openingDays = new ArrayList<>();
 
-    public Publication(
-            String title,
-            String description,
-            List<DayOfWeek> openingDays,
-            AttentionSchedule attentionSchedule,
-            List<LocalDate> exceptionalClosingDays,
-            String phoneNumber,
-            String email,
-            String location,
-            List<String> tags,
-            List<String> imageUrls,
-            String ownerId, String ownerUsername,
-            String ownerAvatarUrl,
-            Date createdAt) {
-        this.title = title;
-        this.description = description;
-        this.openingDays.addAll(openingDays);
-        this.attentionSchedule = attentionSchedule;
-        this.exceptionalClosingDays.addAll(exceptionalClosingDays);
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.location = location;
-        this.tags.addAll(tags);
-        this.imageUrls.addAll(imageUrls);
-        this.ownerId = ownerId;
-        this.ownerUsername = ownerUsername;
-        this.ownerAvatarUrl = ownerAvatarUrl;
-        this.createdAt = createdAt;
-    }
+	private AttentionSchedule attentionSchedule;
+
+	private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
+
+	private String phoneNumber;
+
+	private String email;
+
+	private String location;
+
+	private List<String> imageUrls = new ArrayList<>();
+
+	private List<String> tags = new ArrayList<>();
+
+	private String ownerId; // Datos embebidos de la cuenta de negocio (para evitar hacer
+							// joins)
+
+	private String ownerUsername;
+
+	private String ownerAvatarUrl;
+
+	private Date createdAt = new Date();
+
+	public Publication() {
+	}
+
+	public Publication(String title, String description, List<DayOfWeek> openingDays,
+			AttentionSchedule attentionSchedule, List<LocalDate> exceptionalClosingDays, String phoneNumber,
+			String email, String location, List<String> tags, List<String> imageUrls, String ownerId,
+			String ownerUsername, String ownerAvatarUrl, Date createdAt) {
+		this.title = title;
+		this.description = description;
+		this.openingDays.addAll(openingDays);
+		this.attentionSchedule = attentionSchedule;
+		this.exceptionalClosingDays.addAll(exceptionalClosingDays);
+		this.phoneNumber = phoneNumber;
+		this.email = email;
+		this.location = location;
+		this.tags.addAll(tags);
+		this.imageUrls.addAll(imageUrls);
+		this.ownerId = ownerId;
+		this.ownerUsername = ownerUsername;
+		this.ownerAvatarUrl = ownerAvatarUrl;
+		this.createdAt = createdAt;
+	}
 
 }

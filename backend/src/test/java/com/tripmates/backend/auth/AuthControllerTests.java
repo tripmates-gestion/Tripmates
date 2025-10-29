@@ -28,43 +28,37 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(TestCloudinaryConfig.class)
 public class AuthControllerTests {
 
-    @LocalServerPort
-    private int port;
+	@LocalServerPort
+	private int port;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+	@Autowired
+	private TestRestTemplate restTemplate;
 
-    @MockBean
-    private UserRepository userRepository;
+	@MockBean
+	private UserRepository userRepository;
 
-    private String baseUrl;
+	private String baseUrl;
 
-    @BeforeAll
-    void setUp() {
-        baseUrl = "http://localhost:" + port;
-    }
+	@BeforeAll
+	void setUp() {
+		baseUrl = "http://localhost:" + port;
+	}
 
-    @Test
-    void registerUserTest() {
-        when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        AuthRegisterRequestDTO requestDTO = new AuthRegisterRequestDTO(
-                "fran",
-                "fran@example.com",
-                "123456",
-                Role.USER,
-                null);
+	@Test
+	void registerUserTest() {
+		when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+		AuthRegisterRequestDTO requestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456", Role.USER,
+				null);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(requestDTO, headers);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(requestDTO, headers);
 
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                baseUrl + "/auth/register",
-                request,
-                String.class);
+		ResponseEntity<String> response = restTemplate.postForEntity(baseUrl + "/auth/register", request, String.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+	}
+
 }

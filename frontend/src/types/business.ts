@@ -56,6 +56,19 @@ export type BusinessPublicationResponseDTO = {
   tags: string[]
 }
 
+export type UserResumeResponseDTO = {
+  email: string
+  description: string
+  avatarURL: string
+  businessType: BusinessType
+  openingDays: DayOfWeek[]
+  attentionSchedule: AttentionSchedule
+  exceptionalClosingDays: string[]
+  phoneNumber: string
+  location: string
+  imageUrls: string[]
+}
+
 // ---------------------- Tipos de formulario ----------------------
 export type FormState = {
   title: string;
