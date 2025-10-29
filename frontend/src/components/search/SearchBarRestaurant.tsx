@@ -10,25 +10,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useAuth } from '../../hooks/useAuth';
 import { searchRestaurants } from '../../services/searchService';
 import { useState } from 'react';
+import { normalizeToBusinessPlace } from './utils/normalizePlace';
 
 interface SearchBarRestaurantProps {
   onSearchResults: (restaurants: any[]) => void; // Callback para enviar resultados al padre
 }
 
 function mapRestaurant(restaurant: any) {
-    return {
-        title: restaurant.name,
-        description: restaurant.description,
-        openingDays: restaurant.openingDays,
-        attentionSchedule: restaurant.attentionSchedule,
-        exceptionalClosingDays: restaurant.exceptionalClosingDays,
-        email: restaurant.email,
-        phoneNumber: restaurant.phoneNumber,
-        image: restaurant.imageUrl,
-        location: restaurant.location,
-        imageUrls: [restaurant.avatarURL]
-    }
+  return normalizeToBusinessPlace(restaurant);
 }
+
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
   const { token: accessToken } = useAuth();
@@ -38,32 +29,27 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
 
   const handleSearch = async () => {
     if (!accessToken) {
-              console.error('No access token available');
-              return;
+      console.error('No access token available');
+      onSearchResults([]);
+      return;
     }
-  
+
     setLoading(true);
     try {
-        const restaurantsResponse = await searchRestaurants(accessToken, { "location": location });
-        const restaurants = restaurantsResponse.content;
+        const restaurantsResponse = await searchRestaurants(accessToken, { location }); 
+        const restaurants = restaurantsResponse?.content ?? [];
         console.log('Restaurants found:', restaurants);
 
-        let filteredRestaurants = restaurants;
-        if (name && name.trim() !== '') {
-            filteredRestaurants = restaurants.filter((restaurant: any) =>
-                restaurant.name && restaurant.name.toLowerCase().includes(name.toLowerCase())
-            );
-        }
-
-        const mappedRestaurants = filteredRestaurants.map(mapRestaurant);
+        const mappedRestaurants = restaurants.map(mapRestaurant);
         console.log('Restaurants found:', mappedRestaurants);
 
         onSearchResults(mappedRestaurants);
 
     } catch (error) {
-        console.error('Error searching restaurants:', error);
+      console.error('Error searching restaurants:', error);
+      onSearchResults([]);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -121,7 +107,7 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
             fontWeight: "bold",
             "&:hover": { bgcolor: "primary.dark" },
           }}
-            onClick={() => handleSearch(accessToken)}
+            onClick={handleSearch}
         >
           Buscar
         </Button>

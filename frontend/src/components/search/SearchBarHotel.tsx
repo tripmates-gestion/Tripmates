@@ -12,25 +12,16 @@ import { ENDPOINTS } from '../../api/endpoints';
 import { searchHotels } from '../../services/searchService';
 import { useAuth } from '../../hooks/useAuth';
 import { useState } from 'react';
+import { normalizeToBusinessPlace } from './utils/normalizePlace';
 
 interface SearchBarHotelProps {
   onSearchResults: (hotels: any[]) => void; // Callback para enviar resultados al padre
 }
 
 function mapHotel(hotel: any) {
-    return {
-        title: hotel.name,
-        description: hotel.description,
-        openingDays: hotel.openingDays,
-        attentionSchedule: hotel.attentionSchedule,
-        exceptionalClosingDays: hotel.exceptionalClosingDays,
-        email: hotel.email,
-        phoneNumber: hotel.phoneNumber,
-        image: hotel.imageUrl,
-        location: hotel.location,
-        imageUrls: [hotel.avatarURL]
-    }
+    return normalizeToBusinessPlace(hotel);
 }
+
 
 export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
     const { token: accessToken } = useAuth();
@@ -41,13 +32,14 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
     const handleSearch = async () => {
         if (!accessToken) {
             console.error('No access token available');
+            onSearchResults([]); // <- importante
             return;
         }
 
         setLoading(true);
         try {
-            const hotelsResponse = await searchHotels(accessToken, { "location": location });
-            const hotels = hotelsResponse.content;
+            const hotelsResponse = await searchHotels(accessToken, { location });
+            const hotels = hotelsResponse.content?.content ?? [];
             let filteredHotels = hotels;
             if (name && name.trim() !== '') {
                 filteredHotels = hotels.filter((hotel: any) => 
@@ -61,7 +53,7 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
             onSearchResults(mappedHotels);
         } catch (error) {
             console.error('Error searching hotels:', error);
-            onSearchResults([]);
+            onSearchResults([]); // <- importante
         } finally {
             setLoading(false);
         }
@@ -117,7 +109,7 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
                 />
 
-                {/*
+                
                 <TextField
                     name="llegada"
                     type="date"
@@ -176,7 +168,7 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
                         ),
                     }}
                     sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 80, maxWidth: 150 }}
-                /> */}
+                /> 
 
                 <Button
                     variant="contained"
