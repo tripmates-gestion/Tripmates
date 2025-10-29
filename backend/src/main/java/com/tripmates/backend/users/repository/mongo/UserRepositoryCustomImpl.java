@@ -23,15 +23,19 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	private MongoTemplate mongoTemplate;
 
 	@Override
-	public Page<User> searchUsers(Role role, String location, BusinessType businessType, Pageable pageable) {
+	public Page<User> searchUsers(String username, Role role, String location, BusinessType businessType,
+			Pageable pageable) {
 		Query query = new Query();
 		List<Criteria> criteriaList = new ArrayList<>();
+
+		if (username != null)
+			criteriaList.add(Criteria.where("name").is(username));
 
 		if (role != null)
 			criteriaList.add(Criteria.where("role").is(role));
 
 		if (location != null)
-			criteriaList.add(Criteria.where("location").regex(Pattern.quote(location.trim()), "i"));
+			criteriaList.add(Criteria.where("location").is(location));
 
 		if (businessType != null)
 			criteriaList.add(Criteria.where("businessType").is(businessType));

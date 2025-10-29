@@ -17,6 +17,6 @@ public interface UserRepositoryCustom {
 	 * @param pageable cantidad de paginas a retornar
 	 * @return {@link org.springframework.data.domain.Pageable Pageable}.
 	 */
-	Page<User> searchUsers(Role role, String location, BusinessType businessType, Pageable pageable);
+	Page<User> searchUsers(String username, Role role, String location, BusinessType businessType, Pageable pageable);
 
 }
