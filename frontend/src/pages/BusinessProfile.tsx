@@ -76,11 +76,7 @@ export default function BusinessProfile() {
   const { user, token ,updateUser} = useAuth();
 
   //posiblemente se borre el estado de perfil cada vez que se quiera editar los datos (aun cuand se cancelan los cambios)
-  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user));
-
-  // React.useEffect(() => {
-  //   setCompleteProfile((prev) => toUserProfile(user, prev));
-  // }, [user]);
+  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user))
 
 
   // ayuda para saber si el tab actual es "publicaciones"
