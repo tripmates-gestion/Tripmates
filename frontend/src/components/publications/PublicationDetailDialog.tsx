@@ -6,6 +6,8 @@ import {
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
+import ReviewPlace from "../reviews/ReviewPlaceholder";
+
 
 type Props = {
   open: boolean;
@@ -48,7 +50,7 @@ function initials(name?: string) {
 }
 
 export default function PublicationDetailDialog({ open, onClose, publication }: Props) {
-  // ⬇️ Hooks SIEMPRE al tope, sin returns condicionales antes
+  // Hooks SIEMPRE al tope, sin returns condicionales antes
   const [index, setIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
@@ -91,7 +93,7 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
     touchDeltaX.current = 0;
   };
 
-  // ⬇️ Ahora sí, si no hay publication, render “vacío” estable (sin cortar hooks)
+  // Ahora sí, si no hay publication, render “vacío” estable (sin cortar hooks)
   if (!publication) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -132,96 +134,96 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
           sx={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", borderRadius: 2, bgcolor: "background.paper", mb: 1.5 }}
           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
         >
-<Box
-  sx={{
-    position: "relative",
-    width: "100%",
-    aspectRatio: "16 / 9",
-    overflow: "hidden",
-    borderRadius: 2,
-    bgcolor: "black",           // letterbox
-    mb: 1.5,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <Box
-    sx={{
-      display: "flex",
-      height: "100%",
-      width: `${100 * max}%`,
-      transform: `translateX(calc(${-index * 100}% + ${touchDeltaX.current}px))`,
-      transition: isDragging.current ? "none" : "transform 280ms ease",
-    }}
-  >
-    {images.map((src, idx) => (
-      <Box key={`${src}-${idx}`} sx={{ flex: "0 0 100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "16 / 9",
+          overflow: "hidden",
+          borderRadius: 2,
+          bgcolor: "black",           // letterbox
+          mb: 1.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <Box
-          component="img"
-          src={src}
-          alt={publication.title}
           sx={{
-            maxWidth: "100%",
-            maxHeight: "100%",
-            width: "100%",          // opcional, junto a maxHeight/Width funciona bien
+            display: "flex",
             height: "100%",
-            objectFit: "contain",   // ⚠️ acá el cambio
-            display: "block",
-            userSelect: "none",
+            width: `${100 * max}%`,
+            transform: `translateX(calc(${-index * 100}% + ${touchDeltaX.current}px))`,
+            transition: isDragging.current ? "none" : "transform 280ms ease",
           }}
-          draggable={false}
-        />
-      </Box>
-    ))}
-  </Box>
-</Box>
-
-          {max > 1 && (
-            <>
-              <IconButton onClick={prev} sx={(t) => ({
-                position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
-                bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.9)",
-                "&:hover": { bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.25)" : "white" },
-              })}>
-                <ArrowBackIos />
-              </IconButton>
-              <IconButton onClick={next} sx={(t) => ({
-                position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.9)",
-                "&:hover": { bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.25)" : "white" },
-              })}>
-                <ArrowForwardIos />
-              </IconButton>
-              <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: 10, left: 0, right: 0, justifyContent: "center" }}>
-                {images.map((_, i) => (
-                  <Box key={i} sx={(t) => ({
-                    width: 8, height: 8, borderRadius: 999,
-                    bgcolor: i === index ? "primary.main" : (t.palette.mode === "dark" ? "grey.600" : "grey.300"),
-                  })} />
-                ))}
-              </Stack>
-            </>
-          )}
-        </Box>
-
-        {max > 1 && (
-          <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }}>
-            {images.map((src, i) => (
-              <ButtonBase
-                key={`${src}-thumb-${i}`} onClick={() => setIndex(i)}
+        >
+          {images.map((src, idx) => (
+            <Box key={`${src}-${idx}`} sx={{ flex: "0 0 100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box
+                component="img"
+                src={src}
+                alt={publication.title}
                 sx={{
-                  borderRadius: 1.5, overflow: "hidden",
-                  outline: i === index ? "2px solid" : "none",
-                  outlineColor: i === index ? "primary.main" : "transparent",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  width: "100%",          // opcional, junto a maxHeight/Width funciona bien
+                  height: "100%",
+                  objectFit: "contain",   // acá el cambio
+                  display: "block",
+                  userSelect: "none",
                 }}
-              >
-                <Box component="img" src={src} alt={`${publication.title} ${i + 1}`}
-                     sx={{ width: 96, height: 64, objectFit: "cover", display: "block" }} />
-              </ButtonBase>
+                draggable={false}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Box>
+
+      {max > 1 && (
+        <>
+          <IconButton onClick={prev} sx={(t) => ({
+            position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
+            bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.9)",
+            "&:hover": { bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.25)" : "white" },
+          })}>
+            <ArrowBackIos />
+          </IconButton>
+          <IconButton onClick={next} sx={(t) => ({
+            position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+            bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.9)",
+            "&:hover": { bgcolor: t.palette.mode === "dark" ? "rgba(255,255,255,0.25)" : "white" },
+          })}>
+            <ArrowForwardIos />
+          </IconButton>
+          <Stack direction="row" spacing={1} sx={{ position: "absolute", bottom: 10, left: 0, right: 0, justifyContent: "center" }}>
+            {images.map((_, i) => (
+              <Box key={i} sx={(t) => ({
+                width: 8, height: 8, borderRadius: 999,
+                bgcolor: i === index ? "primary.main" : (t.palette.mode === "dark" ? "grey.600" : "grey.300"),
+              })} />
             ))}
           </Stack>
-        )}
+        </>
+      )}
+    </Box>
+
+    {max > 1 && (
+      <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 1 }}>
+        {images.map((src, i) => (
+          <ButtonBase
+            key={`${src}-thumb-${i}`} onClick={() => setIndex(i)}
+            sx={{
+              borderRadius: 1.5, overflow: "hidden",
+              outline: i === index ? "2px solid" : "none",
+              outlineColor: i === index ? "primary.main" : "transparent",
+            }}
+          >
+            <Box component="img" src={src} alt={`${publication.title} ${i + 1}`}
+                  sx={{ width: 96, height: 64, objectFit: "cover", display: "block" }} />
+          </ButtonBase>
+        ))}
+      </Stack>
+    )}
 
         <Stack direction="row" alignItems="center" spacing={1} mt={1}>
           <Tooltip title={`Publicado el ${formatCreatedAt(publication.createdAt)}`}>
@@ -271,11 +273,10 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
             )}
           </Stack>
         </Stack>
+        
+        <Divider sx={{ my: 2 }} />
+        <ReviewPlace/>
 
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="subtitle1" fontWeight={700}>Reseñas</Typography>
-          <Typography variant="body2" color="text.secondary">Las reseñas estarán disponibles próximamente.</Typography>
-        </Box>
       </DialogContent>
     </Dialog>
   );

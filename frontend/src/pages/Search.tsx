@@ -1,22 +1,23 @@
 // src/pages/Search.tsx
 import { useMemo } from 'react';
-import Box from '@mui/material/Box';
+//import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 //import PlaceCard, { type Place } from '../components/publish/PlaceCard';
 import { useLocation, useNavigate } from 'react-router-dom';
-import React from 'react'
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
+// import React from 'react'
+// import LocationOnIcon from '@mui/icons-material/LocationOn';
+// import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+// import InputAdornment from '@mui/material/InputAdornment';
+// import TextField from '@mui/material/TextField';
+// import SearchIcon from '@mui/icons-material/Search';
 import { useState } from 'react';
 import { SearchBarHotel } from '../components/search/SearchBarHotel';
 import { SearchBarRestaurant } from '../components/search/SearchBarRestaurant';
-import PublicationCard from '../components/publications/PublicationCard';
+import PlaceGrid  from '../components/search/PlaceGrid';
+import { normalizeToBusinessPlace } from '../components/search/utils/normalizePlace';
 
 
 export function SearchBoxContainer({ onResults }: { onResults: (results: any[]) => void }) {
@@ -54,7 +55,7 @@ export function SearchBoxContainer({ onResults }: { onResults: (results: any[]) 
 
 
 // Esto deberia ir en la BDD xD, las fotos son elegidas de forma random
-const MOCK: Place[] = [
+const MOCK = [
   {
     id: '1',
     name: 'Hotel Bariloche Lake',
@@ -155,23 +156,16 @@ export default function Search() {
       </Typography>
 
       {/* Grilla responsiva */}
-      <Box
-        display="grid"
-        gridTemplateColumns={{
-          xs: '1fr',
-          sm: 'repeat(2, 1fr)',
-          md: 'repeat(3, 1fr)',
-        }}
-        gap={4}
-      >
+
         {/*<Box key={item.id || index} sx={{ p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
           <Typography variant="h6">{item.name || item.hotelName}</Typography>
           <Typography variant="body2">Rating: {item.rating}</Typography>
         </Box> */}
-        {items.map((item, index) => (
-          <PublicationCard key={item.id || index} publication={item} />
-        ))}
-      </Box>
+
+      <PlaceGrid places={items.map(normalizeToBusinessPlace)} />
+     
+
+      
     </Stack>
   );
 }

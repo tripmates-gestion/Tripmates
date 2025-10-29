@@ -2,7 +2,7 @@
 export const PROFILE_LIMITS = {
     name: 50,
     description: 300,
-    phone: 15,
+    phone: 50,
     location: 100,
     openningDays: 100,
     openingHours: 100,
