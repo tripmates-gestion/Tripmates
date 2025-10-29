@@ -4,7 +4,6 @@ import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,14 +27,16 @@ import java.util.List;
 @RequestMapping("/users")
 @Tag(name = "Users", description = "User management endpoints")
 public class UserController {
-    private final UserService userService;
-    private final ObjectMapper mapper;
+        private final UserService userService;
+        private final ObjectMapper mapper;
 
     public UserController(UserService userService, ObjectMapper mapper) {
         this.userService = userService;
         this.mapper = mapper;
     }
 
+
+    
     @GetMapping("/me")
     @Operation(summary = "Obtains a user from the system")
     @ApiResponses(value = {
@@ -82,26 +83,21 @@ public class UserController {
                         + "- Las imágenes se cargan vía partes multipart: `avatar` (una) y `files` (múltiples)."
         )
         @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User profile updated successfully",
-                content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = UserResumeResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "User not found",
-                content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ErrorDTO.class)))
+                        @ApiResponse(responseCode = "200", description = "User profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResumeResponseDTO.class))),
+                        @ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
         })
         public ResponseEntity<?> updateProfileMultipart(
-                @AuthenticationPrincipal UserDetails userDetails,
-                @RequestPart("data") String data,
-                @RequestPart(value = "avatar", required = false) MultipartFile avatar,
-                @RequestPart(value = "files", required = false) List<MultipartFile> files
-        ) {
-        try {
-            UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
-            return ResponseEntity.ok(
-                    userService.updateUser(userDetails.getUsername(), dto, files, avatar)
-            );
-        } catch (Exception e) {
-            throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
+                        @AuthenticationPrincipal UserDetails userDetails,
+                        @RequestPart("data") String data,
+                        @RequestPart(value = "avatar", required = false) MultipartFile avatar,
+                        @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+                try {
+                        UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
+                        return ResponseEntity.ok(
+                                        userService.updateUser(userDetails.getUsername(), dto, files, avatar));
+                } catch (Exception e) {
+                        throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
+                }
         }
-        }
+
 }

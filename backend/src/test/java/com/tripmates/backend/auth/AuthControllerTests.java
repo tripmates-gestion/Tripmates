@@ -1,7 +1,8 @@
-package com.tripmates.backend;
 
+package com.tripmates.backend.auth;
+
+import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.config.TestCloudinaryConfig;
-import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
@@ -47,24 +48,22 @@ public class AuthControllerTests {
     void registerUserTest() {
         when(userRepository.findByEmail("fran@example.com")).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        UserCreationRequestDTO requestDTO = new UserCreationRequestDTO(
+        AuthRegisterRequestDTO requestDTO = new AuthRegisterRequestDTO(
                 "fran",
                 "fran@example.com",
                 "123456",
                 Role.USER,
-                null
-        );
+                null);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<UserCreationRequestDTO> request = new HttpEntity<>(requestDTO, headers);
+        HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(requestDTO, headers);
 
         ResponseEntity<String> response = restTemplate.postForEntity(
-            baseUrl + "/auth/register",
-            request,
-            String.class
-        );
+                baseUrl + "/auth/register",
+                request,
+                String.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
