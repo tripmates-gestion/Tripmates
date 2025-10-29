@@ -17,6 +17,21 @@ interface SearchBarHotelProps {
   onSearchResults: (hotels: any[]) => void; // Callback para enviar resultados al padre
 }
 
+function mapHotel(hotel: any) {
+    return {
+        title: hotel.name,
+        description: hotel.description,
+        openingDays: hotel.openingDays,
+        attentionSchedule: hotel.attentionSchedule,
+        exceptionalClosingDays: hotel.exceptionalClosingDays,
+        email: hotel.email,
+        phoneNumber: hotel.phoneNumber,
+        image: hotel.imageUrl,
+        location: hotel.location,
+        imageUrls: [hotel.avatarURL]
+    }
+}
+
 export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
     const { token: accessToken } = useAuth();
     const [loading, setLoading] = useState(false);
@@ -32,9 +47,10 @@ export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
         try {
             const hotelsResponse = await searchHotels(accessToken, { "location": location });
             const hotels = hotelsResponse.content;
-            console.log('Hotels found:', hotels);
-            
-            onSearchResults(hotels);
+            const mappedHotels = hotels.map(mapHotel);
+            console.log('Hotels found:', mappedHotels);
+
+            onSearchResults(mappedHotels);
         } catch (error) {
             console.error('Error searching hotels:', error);
             onSearchResults([]);

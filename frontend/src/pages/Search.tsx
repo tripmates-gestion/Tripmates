@@ -16,6 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useState } from 'react';
 import { SearchBarHotel } from '../components/search/SearchBarHotel';
 import { SearchBarRestaurant } from '../components/search/SearchBarRestaurant';
+import PublicationCard from '../components/publications/PublicationCard';
 
 
 export function SearchBoxContainer({ onResults }: { onResults: (results: any[]) => void }) {
@@ -163,11 +164,12 @@ export default function Search() {
         }}
         gap={4}
       >
+        {/*<Box key={item.id || index} sx={{ p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
+          <Typography variant="h6">{item.name || item.hotelName}</Typography>
+          <Typography variant="body2">Rating: {item.rating}</Typography>
+        </Box> */}
         {items.map((item, index) => (
-          <Box key={item.id || index} sx={{ p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
-            <Typography variant="h6">{item.name || item.hotelName}</Typography>
-            <Typography variant="body2">Rating: {item.rating}</Typography>
-          </Box>
+          <PublicationCard key={item.id || index} publication={item} />
         ))}
       </Box>
     </Stack>

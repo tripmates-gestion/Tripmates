@@ -19,7 +19,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
 
   const handleMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget)
   const handleClose = () => setAnchorEl(null)
-
+  
   return (
     <Card
       onClick={() => onView(publication)}
@@ -33,7 +33,13 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
         <CardMedia
           component="img"
           height="180"
-          image={publication.imageUrls?.[0] || "/placeholder.jpg"}
+          image={
+            publication.imageUrls?.[0] !== undefined && 
+            publication.imageUrls[0] !== null && 
+            publication.imageUrls[0] !== '' 
+              ? publication.imageUrls[0] 
+              : "/logo.png"
+          }
           alt={publication.title}
         />
         <IconButton
@@ -66,9 +72,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
           <Typography variant="caption" color="text.secondary">
             ☎ {publication.phoneNumber || publication.email}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            🕘 {publication.attentionSchedule.openingTime}–{publication.attentionSchedule.closingTime}
-          </Typography>
+          {publication.attentionSchedule && (
+            <Typography variant="caption" color="text.secondary">
+              🕘 {publication.attentionSchedule.openingTime}–{publication.attentionSchedule.closingTime}
+            </Typography>
+          )}
         </Stack>
       </CardContent>
     </Card>

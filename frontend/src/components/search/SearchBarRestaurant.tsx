@@ -15,6 +15,20 @@ interface SearchBarRestaurantProps {
   onSearchResults: (restaurants: any[]) => void; // Callback para enviar resultados al padre
 }
 
+function mapRestaurant(restaurant: any) {
+    return {
+        title: restaurant.name,
+        description: restaurant.description,
+        openingDays: restaurant.openingDays,
+        attentionSchedule: restaurant.attentionSchedule,
+        exceptionalClosingDays: restaurant.exceptionalClosingDays,
+        email: restaurant.email,
+        phoneNumber: restaurant.phoneNumber,
+        image: restaurant.imageUrl,
+        location: restaurant.location,
+        imageUrls: [restaurant.avatarURL]
+    }
+}
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
   const { token: accessToken } = useAuth();
@@ -33,7 +47,11 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
         const restaurants = restaurantsResponse.content;
         console.log('Restaurants found:', restaurants);
 
-        onSearchResults(restaurants);
+        const mappedRestaurants = restaurants.map(mapRestaurant);
+        console.log('Restaurants found:', mappedRestaurants);
+
+        onSearchResults(mappedRestaurants);
+
     } catch (error) {
         console.error('Error searching restaurants:', error);
     } finally {
