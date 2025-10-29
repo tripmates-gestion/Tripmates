@@ -6,6 +6,9 @@ import com.tripmates.backend.users.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import com.tripmates.backend.common.constants.ValidationErrorMessageAuth;
+
 import com.tripmates.backend.common.types.BusinessType;
 
 /**
@@ -23,17 +26,17 @@ import com.tripmates.backend.common.types.BusinessType;
 @Validated
 public record AuthRegisterRequestDTO(
 		@Schema(description = "User's username") @NotBlank(
-				message = "The username cannot be empty to register a user.") String name,
+				message = ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "name") String name,
 
 		@Schema(description = "User's email") @NotBlank(
-				message = "The user's email cannot be empty to register a user.") @Email(
-						message = "The provided email is not valid.") String email,
+				message = ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "email") @Email(
+						message = ValidationErrorMessageAuth.INVALID_EMAIL) String email,
 
 		@Schema(description = "User's password") @NotBlank(
-				message = "The user's password cannot be empty to register a user.") String password,
+				message = ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "password") String password,
 
-		@Schema(description = "User's role") @NotBlank(
-				message = "The user role cannot be empty to register a user.") Role role,
+		@Schema(description = "User's role") @NotNull(
+				message = ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "role") Role role,
 
 		@Schema(description = "User's business type (Just for business users)") BusinessType businessType
 
