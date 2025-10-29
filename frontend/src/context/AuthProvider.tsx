@@ -58,6 +58,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [accessToken, refreshToken, user?.email, logoutHandler]);
 
+  const updateUser = (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null  ) => {
+    setUser((prev) => ({
+      ...prev!,
+      username: newUserName ?? prev?.username ?? '',
+      description: newDescription ?? prev?.description ?? '',
+      avatarURL: newAvatarURL ?? prev?.avatarURL ?? '',
+    }));
+  };
+  
+
   useEffect(() => {
     //siempre que no haya un token seteado se está saliendo
     if (!accessToken) return;
@@ -73,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [accessToken, refreshAccessTokenHandler]);
 
   return (
-    <AuthContext.Provider value={{ token: accessToken, refreshToken, user, login: loginHandler, logout: logoutHandler, refreshAccessToken: refreshAccessTokenHandler }}>
+    <AuthContext.Provider value={{ token: accessToken, refreshToken, user, login: loginHandler, logout: logoutHandler, refreshAccessToken: refreshAccessTokenHandler, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

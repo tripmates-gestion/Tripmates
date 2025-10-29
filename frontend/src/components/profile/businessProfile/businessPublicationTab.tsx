@@ -34,7 +34,7 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
       return () => controller.abort();
     }, [token]);
   
-    React.useEffect(() => { fetchAll() }, [])
+    React.useEffect(() => { fetchAll() }, [fetchAll])
   
     // ✅ Handler de eliminación
     const handleDelete = async (id: string) => {
