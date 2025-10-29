@@ -7,8 +7,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface PublicationRepositoryCustom {
 
-    /**
-     * Search publications by optional filters. If no filters are provided, returns all.
-     */
-    Page<Publication> search(PublicationSearchRequestDTO filters, Pageable pageable);
+	/**
+	 * Search publications by optional filters. If no filters are provided, returns all.
+	 */
+	Page<Publication> search(PublicationSearchRequestDTO filters, Pageable pageable);
+
 }
