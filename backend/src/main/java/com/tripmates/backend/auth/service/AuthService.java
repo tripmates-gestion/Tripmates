@@ -5,9 +5,9 @@ import com.tripmates.backend.auth.exception.IncorrectPasswordException;
 import com.tripmates.backend.auth.exception.IncorrectTokenException;
 import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
-import com.tripmates.backend.users.dto.UserCreationRequestDTO;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
@@ -16,7 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.tripmates.backend.common.exception.BadRequestException;
+
+import com.tripmates.backend.common.constants.ValidationErrorMessageAuth;
 
 @Service
 @Transactional
@@ -40,13 +41,13 @@ public class AuthService {
 		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(u -> {
 			throw new UserAlreadyExistsException("Email no está disponible");
 		});
+    checkBusinessType(authRegisterRequestDTO);
 
 		user.setName(authRegisterRequestDTO.name());
 		user.setEmail(authRegisterRequestDTO.email());
 		user.setPassword(passwordEncoder.encode(authRegisterRequestDTO.password()));
 		user.setRole(authRegisterRequestDTO.role());
-		setBusinessType(authRegisterRequestDTO, user);
-
+		user.setBusinessType(authRegisterRequestDTO.businessType());
 		userRepository.save(user);
 	}
 
@@ -105,14 +106,12 @@ public class AuthService {
 		return new AuthRefreshResponseDTO(accessToken);
 	}
 
-	private void setBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO, User user) {
-		if (authRegisterRequestDTO.role() == Role.USER)
-			return;
+  private void checkBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO) {
+    if (authRegisterRequestDTO.role() == Role.USER && authRegisterRequestDTO.businessType() != null)
+      throw new ValidationErrorException(ValidationErrorMessageAuth.FILD_NO_ALLOWED + "businessType");
 
-		if (authRegisterRequestDTO.businessType() == null)
-			throw new BadRequestException("Tipo de negocio es requerido para una cuenta de negocio");
-
-		user.setBusinessType(authRegisterRequestDTO.businessType());
-	}
+    if (authRegisterRequestDTO.role() == Role.BUSINESS && authRegisterRequestDTO.businessType() == null)
+      throw new ValidationErrorException(ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "businessType");
+  }
 
 }

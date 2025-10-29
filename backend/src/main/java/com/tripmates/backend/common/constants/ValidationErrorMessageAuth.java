@@ -8,5 +8,6 @@ public class ValidationErrorMessageAuth {
   public static final String INVALID_ACCESS_TOKEN = "Token invalido";
   public static final String EMPTY_OR_NULL_FIELD = "El campo no debe estar vacio: ";
   public static final String INVALID_EMAIL = "El email del usuario no es valido.";
+  public static final String FILD_NO_ALLOWED = "El campo no está permitido: ";
 
 }

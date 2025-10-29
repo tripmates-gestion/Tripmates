@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.json.JSONException;
 
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
+import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.entity.Role;
@@ -238,6 +239,93 @@ public class AuthControllerTests {
   }
   
 
-  
+  @Test
+	void testRegisterBusinessShouldReturnNoContent() {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
+				Role.BUSINESS, BusinessType.HOSTING);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<Void> response = restTemplate.postForEntity(url("/auth/register"), request, Void.class);
+		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+		assertEquals(1, userRepository.count());
+	}
+
+  @Test
+	void testGivenTypeBusiness_whenRegisterUserShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
+				Role.USER, BusinessType.HOSTING);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(url("/auth/register"), request, String.class);
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+		{
+			"type": "about:blank",
+			"title": "Validation Error",
+			"status": 400,
+			"detail": "El campo no está permitido: businessType",
+			"instance": "/auth/register"
+		}
+		""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+  @Test
+	void testGivenNoBussinesTypeWhenRegisterBusinessShouldFailAndReturnError400() throws JSONException {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("leti", "leti@example.com", "123456",
+				Role.BUSINESS, null);
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+		ResponseEntity<String> response = restTemplate.postForEntity(url("/auth/register"), request, String.class);
+		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+		String expectedJson = """
+		{
+			"type": "about:blank",
+			"title": "Validation Error",
+			"status": 400,
+			"detail": "El campo no debe estar vacio: businessType",
+			"instance": "/auth/register"
+		}
+		""";
+
+		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+	}
+
+
+  @Test
+  void testGivenNoName_WhenRegisterBusiness_ThenShouldFailAndReturnError400() throws JSONException  {
+      AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO(
+          null, "LETI@example.com", "123456", Role.BUSINESS, BusinessType.HOSTING
+      );
+
+      headers.setContentType(MediaType.APPLICATION_JSON);
+      HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
+
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          url("/auth/register"), 
+          request, 
+          String.class
+      );
+
+      assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+      String expectedJson = """
+      {
+          "type": "about:blank",
+          "title": "Validation Error",
+          "status": 400,
+          "detail": "El campo no debe estar vacio: name",
+          "instance": "/auth/register"
+      }
+      """;
+
+      JSONAssert.assertEquals(expectedJson, response.getBody(), false);
+  }
 
 }
