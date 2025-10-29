@@ -6,6 +6,8 @@ import {
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
+import ReviewPlace from "../reviews/ReviewPlaceholder";
+
 
 type Props = {
   open: boolean;
@@ -271,11 +273,10 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
             )}
           </Stack>
         </Stack>
+        
+        <Divider sx={{ my: 2 }} />
+        <ReviewPlace/>
 
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="subtitle1" fontWeight={700}>Reseñas</Typography>
-          <Typography variant="body2" color="text.secondary">Las reseñas estarán disponibles próximamente.</Typography>
-        </Box>
       </DialogContent>
     </Dialog>
   );
