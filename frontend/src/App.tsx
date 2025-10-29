@@ -12,6 +12,7 @@ import { Toolbar } from '@mui/material';
 import { Outlet } from "react-router-dom";
 import RoleBasedRoute from './routes/RoleBasedRoute';
 import { ACCOUNT_TYPES } from './constants/Rol';
+import { SnackbarProvider } from 'notistack';
 
 function DefaultLayout() {
   return (
@@ -24,6 +25,12 @@ function DefaultLayout() {
 export default function App({ mode, setMode }: AppProps) {  
 
   return (
+    <SnackbarProvider
+    maxSnack={3}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    autoHideDuration={2500}
+    preventDuplicate
+  >
     <Box>
       <NavBar
         mode={mode}
@@ -58,5 +65,6 @@ export default function App({ mode, setMode }: AppProps) {
         </Route>
       </Routes>
     </Box>
+    </SnackbarProvider>
   );
 }

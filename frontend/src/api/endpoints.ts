@@ -8,6 +8,7 @@ export const ENDPOINTS = {
     PUBLISH_BUSINESS: '/publications/business',
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',
     PATCH_BUSINESS_PUBLICATION: '/publications/',
-    DELETE_BUSINESS_PUBLICATION: '/publications/'
+    DELETE_BUSINESS_PUBLICATION: '/publications/',
+    SEARCH: '/users/search',
   };
   

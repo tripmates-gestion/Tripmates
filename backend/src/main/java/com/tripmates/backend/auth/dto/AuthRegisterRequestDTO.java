@@ -1,11 +1,12 @@
-package com.tripmates.backend.users.dto;
 
-import com.tripmates.backend.common.types.BusinessType;
+package com.tripmates.backend.auth.dto;
+
+import org.springframework.validation.annotation.Validated;
 import com.tripmates.backend.users.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.validation.annotation.Validated;
+import com.tripmates.backend.common.types.BusinessType;
 
 /**
  * Data Transfer Object (DTO) utilizado para recibir los datos en formato JSON, necesarios
@@ -17,17 +18,24 @@ import org.springframework.validation.annotation.Validated;
  * @param description descripción o biografía del usuario
  * @param role rol del usuario
  * @param avatarURL URL del avatar del usuario
+ * @param businessType tipo de negocio (Solo para usuarios de negocio)
  */
 @Validated
-public record UserCreationRequestDTO(
+public record AuthRegisterRequestDTO(
 		@Schema(description = "User's username") @NotBlank(
 				message = "The username cannot be empty to register a user.") String name,
+
 		@Schema(description = "User's email") @NotBlank(
 				message = "The user's email cannot be empty to register a user.") @Email(
 						message = "The provided email is not valid.") String email,
+
 		@Schema(description = "User's password") @NotBlank(
 				message = "The user's password cannot be empty to register a user.") String password,
+
 		@Schema(description = "User's role") @NotBlank(
 				message = "The user role cannot be empty to register a user.") Role role,
-		@Schema(description = "User's business type (Just for business users)") BusinessType businessType) {
+
+		@Schema(description = "User's business type (Just for business users)") BusinessType businessType
+
+) {
 }

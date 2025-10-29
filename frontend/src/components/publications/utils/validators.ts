@@ -6,6 +6,7 @@
  */
 export function isValidPhone(input: string): boolean {
   const clean = input.trim()
+  if (clean === '') return true
   return /^(\+?\d{1,3}\s?)?(\d{2,4}[\s-]?)?\d{3,4}[\s-]?\d{3,4}$/.test(clean)
 }
 
@@ -15,6 +16,7 @@ export function isValidPhone(input: string): boolean {
  */
 export function isValidEmail(input: string): boolean {
   const clean = input.trim()
+  if (clean === '') return true
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean)
 }
 
@@ -24,6 +26,7 @@ export function isValidEmail(input: string): boolean {
  */
 export function isValidSchedule(input: string): boolean {
   const clean = input.trim()
+  if (clean === '') return true
   return /^([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d$/.test(clean)
 }
 
@@ -34,6 +37,7 @@ export function isValidSchedule(input: string): boolean {
  */
 export function isValidLocation(input: string): boolean {
   const clean = input.trim()
+  if (clean === '') return true
   return clean.length >= 4 && /[a-zA-Záéíóúñ\s,.-]+/.test(clean)
 }
 

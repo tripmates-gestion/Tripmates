@@ -18,7 +18,7 @@ export default function PublicationGrid({ publications, onEdit, onDelete }: Prop
     <>
       <Grid container spacing={3}>
         {publications.map((p) => (
-          <Grid key={p.id} item xs={12} sm={6} md={4}>
+          <Grid key={p.id} item xs={12} sm={12} md={6}>
             <PublicationCard
               publication={p}
               onView={setSelected}

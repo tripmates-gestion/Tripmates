@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import * as React from 'react';
 import {
   Avatar,
@@ -12,14 +14,20 @@ import {
   Tab,
   Tabs,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from '@mui/material';
-import Settings from '@mui/icons-material/Settings';
+
 import Edit from '@mui/icons-material/Edit';
 import ComplementBusinessProfileDialog from '../components/profile/businessProfile/ComplementProfileDialog';
 import type { UpdateProfileFormState } from '../types/business';
 import { useAuth } from '../hooks/useAuth';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
-import {BusinessPublicationsTab} from '../components/profile/businessProfile/businessPublicationTab';
+import { Alert } from "@mui/material";
+import type { BusinessPublicationResponseDTO } from "../types/business";
 import { Stat } from '../components/profile/stats';
 import { EmptyState } from '../components/profile/EmptyState';
 import type { CommonUsersInformation } from '../types/user';
@@ -29,7 +37,9 @@ import { updateBusinessUser } from '../services/userService';
 import type { BusinessUpdateRequestDTO } from '../types/business';
 import { mapDaysToEnglish, parseHours } from '../types/business';
 import { dataURLtoFile } from '../components/publications/utils/imageHelpers';
-
+import { enqueueSnackbar } from 'notistack';
+import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
+import PublicationGrid from "../components/publications/PublicationGrid";
 // ----- defaults hardcodeados cuando el back no los provee -----
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 const businessRoleChipColor = 'warning';
@@ -193,9 +203,9 @@ export default function BusinessProfile() {
                 )}
               </Box>
 
-              <ButtonGroup variant="outlined" size="small">
+              <ButtonGroup variant="outlined" size="large">
                 <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Completá los datos de tu negocio!</Button>
-                <Button startIcon={<Settings />}>Configuración</Button>
+                {/* <Button startIcon={<Settings />}>Configuración</Button> */}
               </ButtonGroup>
             </Stack>
 
@@ -242,3 +252,113 @@ export default function BusinessProfile() {
 
 
 
+export function BusinessPublicationsTab({ token }: { token: string | null }) {
+  const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  // --- Confirmación de borrado (UI estado) ---
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [toDeleteId, setToDeleteId] = React.useState<string | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
+
+  const fetchAll = React.useCallback(async () => {
+    if (!token) {
+      setError("No estás autenticado.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await getBusinessPublications(token);
+      setItems(res ?? []);
+    } catch (e: any) {
+      setError(e?.message || "Error al obtener publicaciones");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  React.useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Click en "Eliminar" desde la card -> abre diálogo
+  const handleDeleteRequest = (id: string) => {
+    setToDeleteId(id);
+    setConfirmOpen(true);
+  };
+
+  // Confirmar eliminación en el diálogo
+  const handleConfirmDelete = async () => {
+    if (!token || !toDeleteId) return;
+    setDeleting(true);
+    try {
+      await deleteBusinessPublication(token, toDeleteId);
+      setItems(prev => prev.filter(p => p.id !== toDeleteId));
+
+      enqueueSnackbar('¡Publicación eliminada', { variant: 'success' });
+      setConfirmOpen(false);
+      setToDeleteId(null);
+
+    } catch (e: any) {
+      enqueueSnackbar('Error al eliminar publicación', { variant: 'success' });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Cancelar diálogo
+  const handleCancelDelete = () => {
+    setConfirmOpen(false);
+    setToDeleteId(null);
+  };
+
+  // Datos de la publicación a borrar (para mostrar título en el diálogo)
+  const toDeletePub = toDeleteId ? items.find(p => p.id === toDeleteId) : undefined;
+
+  if (loading) return <p>Cargando publicaciones...</p>;
+
+  if (error) {
+    return (
+      <Stack spacing={2}>
+        <Alert severity="error">{error}</Alert>
+        <Button onClick={fetchAll}>Reintentar</Button>
+      </Stack>
+    );
+  }
+
+  return (
+    <Box>
+      <PublicationGrid
+        publications={items}
+        onDelete={handleDeleteRequest}  // << ahora abre diálogo "pro"
+      />
+
+      {/* Diálogo de confirmación */}
+      <Dialog open={confirmOpen} onClose={deleting ? undefined : handleCancelDelete} maxWidth="xs" fullWidth>
+        <DialogTitle>Eliminar publicación</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {toDeletePub
+              ? <>¿Seguro que querés eliminar <strong>{toDeletePub.title}</strong>? Esta acción no se puede deshacer.</>
+              : "¿Seguro que querés eliminar esta publicación? Esta acción no se puede deshacer."
+            }
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} disabled={deleting}>Cancelar</Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={18} /> : undefined}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}

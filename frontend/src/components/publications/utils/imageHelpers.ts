@@ -1,3 +1,4 @@
+
 export const FILE_CONFIG = {
     allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'] as string[],
     maxSizeMB: 5 * 1024 * 1024,
