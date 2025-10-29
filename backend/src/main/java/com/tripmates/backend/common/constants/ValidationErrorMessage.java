@@ -1,6 +1,6 @@
 package com.tripmates.backend.common.constants;
 
-public class ValidationErrorMessageAuth {
+public class ValidationErrorMessage {
 
 	public static final String USER_ALREADY_EXISTS = "El usuario ya existe";
 

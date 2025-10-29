@@ -8,13 +8,17 @@ import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.FileUploadException;
+
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -27,6 +31,18 @@ public class GlobalExceptionHandler {
 			.getFieldErrors()
 			.stream()
 			.map(FieldError::getDefaultMessage)
+			.collect(Collectors.joining("; "));
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
+					String.valueOf(request.getRequestURI())));
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
+		String errorMessage = ex.getConstraintViolations()
+			.stream()
+			.map(violation -> String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
 			.collect(Collectors.joining("; "));
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.tripmates.backend.common.constants.ValidationErrorMessageAuth;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
 @Service
 @Transactional
@@ -108,10 +108,10 @@ public class AuthService {
 
 	private void checkBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO) {
 		if (authRegisterRequestDTO.role() == Role.USER && authRegisterRequestDTO.businessType() != null)
-			throw new ValidationErrorException(ValidationErrorMessageAuth.FILD_NO_ALLOWED + "businessType");
+			throw new ValidationErrorException(ValidationErrorMessage.FILD_NO_ALLOWED + "businessType");
 
 		if (authRegisterRequestDTO.role() == Role.BUSINESS && authRegisterRequestDTO.businessType() == null)
-			throw new ValidationErrorException(ValidationErrorMessageAuth.EMPTY_OR_NULL_FIELD + "businessType");
+			throw new ValidationErrorException(ValidationErrorMessage.EMPTY_OR_NULL_FIELD + "businessType");
 	}
 
 }
