@@ -4,6 +4,7 @@ import com.tripmates.backend.auth.exception.IncorrectPasswordException;
 import com.tripmates.backend.auth.exception.IncorrectTokenException;
 import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.FileUploadException;
@@ -30,6 +31,13 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
+					String.valueOf(request.getRequestURI())));
+	}
+
+	@ExceptionHandler(ValidationErrorException.class)
+	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
 					String.valueOf(request.getRequestURI())));
 	}
 
