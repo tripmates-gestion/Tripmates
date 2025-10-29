@@ -63,7 +63,7 @@ const TAG_OPTIONS = [
   "Otros:",
 ];
 
-const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }[] = [
+export const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }[] = [
   { label: "Lunes",      value: "MONDAY" },
   { label: "Martes",     value: "TUESDAY" },
   { label: "Miércoles",  value: "WEDNESDAY" },

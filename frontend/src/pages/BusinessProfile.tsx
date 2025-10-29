@@ -35,7 +35,7 @@ import type { CompleteBusinessProfile } from '../types/business';
 import { DEFAULT_OPENING_DAYS } from '../types/business';
 import { updateBusinessUser } from '../services/userService';
 import type { BusinessUpdateRequestDTO } from '../types/business';
-import { mapDaysToEnglish, parseHours } from '../types/business';
+import { parseHours } from '../types/business';
 import { dataURLtoFile } from '../components/publications/utils/imageHelpers';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
@@ -96,12 +96,7 @@ export default function BusinessProfile() {
       const data : BusinessUpdateRequestDTO = {
         name: formContent.name.trim(),
         description: formContent.description,
-        openingDays: mapDaysToEnglish(
-          formContent.openningDays
-            .split(",")
-            .map((d) => d.trim())
-            .filter(Boolean) // elimina vacíos
-        ),
+        openingDays: formContent.openningDays.filter(Boolean),
         attentionSchedule: parseHours(formContent.openingHours),
         location: formContent.location.trim(),
         phoneNumber: formContent.phone.trim(),
