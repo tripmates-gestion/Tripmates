@@ -1,18 +1,29 @@
 package com.tripmates.backend.publications.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.tripmates.backend.publications.service.PublicationService;
+import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import java.util.List;
 import com.tripmates.backend.common.exception.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 
 @RestController
 @RequestMapping("/publications")
@@ -133,6 +144,23 @@ public class PublicationController {
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.deletePublication(id, userDetails.getUsername());
 		return ResponseEntity.noContent().build();
+	}
+	
+	@GetMapping("/search")
+	@Operation(summary = "Obtains publications that meet the filters",
+			description = "Filters are received as query params via model attributes.\n\n"
+					+ "Parameters:\n"
+					+ "- q: Full-text search across title and description (case-insensitive).\n"
+					+ "- location: Partial match (case-insensitive).\n"
+					+ "- tags: Publication must contain all provided tags.\n"
+					+ "- ownerId: Filter by owner id.\n"
+					+ "- page, size, sort: Pagination (e.g., sort=createdAt,desc).")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Publications obtained successfully",
+			content = { @Content(mediaType = "application/json",
+					schema = @Schema(implementation = BusinessPublicationResponseDTO.class)) }) })
+	public ResponseEntity<?> search(@ParameterObject @ModelAttribute PublicationSearchRequestDTO publicationSearchRequestDTO,
+			@ParameterObject @PageableDefault Pageable pageable) {
+		return ResponseEntity.ok().body(publicationService.search(publicationSearchRequestDTO, pageable));
 	}
 
 }
