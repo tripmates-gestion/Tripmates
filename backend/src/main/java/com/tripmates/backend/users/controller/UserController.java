@@ -25,6 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
 
 @RestController
 @RequestMapping("/users")
@@ -98,12 +99,18 @@ public class UserController {
 	}
 
 	@GetMapping("/search")
-	@Operation(summary = "Obtains users that meet the filters")
+	@Operation(summary = "Obtains users that meet the filters",
+			description = "Filters are received as query params via model attributes.\n\n"
+				+ "Parameters:\n"
+				+ "- role: User role to filter.\n"
+				+ "- location: Partial match (case-insensitive).\n"
+				+ "- businessType: Business category.\n"
+				+ "- page, size, sort: Pagination (e.g., sort=name,asc).")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "User obtained successfully",
 			content = { @Content(mediaType = "application/json",
 					schema = @Schema(implementation = UserResumeResponseDTO.class)) }) })
-	public ResponseEntity<?> search(@ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
-			@PageableDefault Pageable pageable) {
+	public ResponseEntity<?> search(@ParameterObject @ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
+			@ParameterObject @PageableDefault Pageable pageable) {
 		return ResponseEntity.ok().body(userService.search(userSearchRequestDTO, pageable));
 	}
 
