@@ -12,6 +12,8 @@ import {
     Stack,
     Typography,
     Grid,
+    FormControl,
+    Chip,
 } from '@mui/material';
 import { PROFILE_LIMITS } from '../../../constants/UserProfile';
 import CountedTextField from '../../ui/CountedTextField';
@@ -19,7 +21,7 @@ import ImageUploader from '../../ui/ImageUploader';
 import type { CompleteBusinessProfile ,UpdateProfileFormState} from '../../../types/business';
 import { useSnackbar } from 'notistack';
 import { useUpdateBusinessUserValidation } from '../../../hooks/useUpdateBusinessUserValidation';
-import { mapDayToSpanish } from '../../../types/business';
+import { DAYS } from '../../../components/publications/NewPostDialog';
 // ---------------------- Props ----------------------
 type Props = {
   open: boolean;
@@ -35,7 +37,7 @@ function mapCompleteProfileToFormState(
   return {
     name: completeProfile.name ?? '',
     description: completeProfile.description ?? '',
-    openningDays: completeProfile.openningDays.map(mapDayToSpanish).join(', '),
+    openningDays: completeProfile.openningDays,
     openingHours: completeProfile.openingHours
       ? `${completeProfile.openingHours.openingTime}–${completeProfile.openingHours.closingTime}`
       : '',
@@ -171,17 +173,32 @@ export default function ComplementBusinessProfileDialog({
             minRows={3}
           />
 
-          <CountedTextField
-            label="Días de apertura"
-            placeholder="Ej: Lunes, Martes, Viernes"
-            value={form.openningDays}
-            onChange={(v) => handleChange('openningDays', v)}
-            onBlur={() => handleBlur('openningDays')}
-            error={hasError('openningDays')}
-            helperText={helper('openningDays')}
-            fullWidth
-            maxLength={PROFILE_LIMITS.openningDays}
-          />
+          <FormControl component="fieldset">
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
+                ¿Qué días atiende tu negocio?
+              </Typography>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {DAYS.map((d) => {
+                  const selected = form.openningDays.includes(d.value);
+                  return (
+                    <Chip
+                      key={d.value}
+                      label={d.label}
+                      color={selected ? "primary" : "default"}
+                      variant={selected ? "filled" : "outlined"}
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          openningDays: selected
+                            ? prev.openningDays.filter((x) => x !== d.value)
+                            : [...prev.openningDays, d.value],
+                        }))
+                      }
+                    />
+                  );
+                })}
+              </Box>
+            </FormControl>
 
           <CountedTextField
             label="Horario de atención"
@@ -216,29 +233,50 @@ export default function ComplementBusinessProfileDialog({
             fullWidth
             maxLength={PROFILE_LIMITS.phone}
           />
-
-          <Typography variant="subtitle1" fontWeight={700}>
-            Imagen del negocio
-          </Typography>
-
-          <ImageUploader
-            label="Foto de perfil"
-            imageUrl={form.avatarUrl}
-            variant="circular"
-            onChange={(img) => {
-              // img es dataURL (base64)
-              handleChange('avatar', img);      // para subir
-              handleChange('avatarUrl', img);   // para preview inmediato
-            }}
-          />
         </Stack>
-        {/* Fotos */}
+
+        <Typography 
+          variant="subtitle1" 
+          fontWeight={700}
+          sx={{
+            borderTop: '2px solid',
+            borderColor: 'divider',
+            paddingTop: 2,
+            paddingBottom: 1,
+            marginBottom: 2,
+            marginTop: 4
+          }}
+        >
+          ¿Qué fotos te gustaría mostrar en el perfil de tu negocio?
+        </Typography>
+        
         <Stack spacing={1}>
-              <Typography variant="subtitle1" fontWeight={700}>
-                Fotos (opcional)
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Hasta 6 imágenes. Formato: JPG/PNG/WebP.
+        <ImageUploader
+          label="Foto de perfil"
+          imageUrl={form.avatarUrl}
+          variant="circular"
+          onChange={(img) => {
+            // img es dataURL (base64)
+            handleChange('avatar', img);      // para subir
+            handleChange('avatarUrl', img);   // para preview inmediato
+          }}
+        />
+        {/* Fotos */}
+          <Typography 
+          variant="subtitle2" 
+          fontWeight={700}
+          sx={{
+            paddingTop: 2,
+            paddingBottom: 1,
+            marginBottom: 2,
+            marginTop: 4
+          }}
+          >
+          Fotos (opcional)
+          </Typography>
+          
+          <Typography variant="body2" color="text.secondary">
+            Hasta 6 imágenes. Formato: JPG/PNG/WebP.
               </Typography>
 
               <Grid container spacing={2}>
