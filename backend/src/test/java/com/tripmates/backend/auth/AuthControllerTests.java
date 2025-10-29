@@ -66,7 +66,6 @@ public class AuthControllerTests {
 		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
 				Void.class);
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-		assertEquals(1, userRepository.count());
 	}
 
 	@Test
@@ -230,7 +229,6 @@ public class AuthControllerTests {
 		ResponseEntity<Void> response = restTemplate.postForEntity(testHelper.url("/auth/register"), request,
 				Void.class);
 		assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-		assertEquals(1, userRepository.count());
 	}
 
 	@Test

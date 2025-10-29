@@ -44,7 +44,7 @@ public class UserController {
 	@GetMapping("/me")
 	@Operation(summary = "Obtains a user from the system")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User obtained successfully",
+			@ApiResponse(responseCode = "204", description = "User obtained successfully",
 					content = {
 							@Content(mediaType = "application/json", schema = @Schema(implementation = User.class)) }),
 			@ApiResponse(responseCode = "404", description = "User not found", content = {
@@ -90,12 +90,9 @@ public class UserController {
 
 	@GetMapping("/search")
 	@Operation(summary = "Obtains users that meet the filters",
-			description = "Filters are received as query params via model attributes.\n\n"
-				+ "Parameters:\n"
-				+ "- role: User role to filter.\n"
-				+ "- location: Partial match (case-insensitive).\n"
-				+ "- businessType: Business category.\n"
-				+ "- page, size, sort: Pagination (e.g., sort=name,asc).")
+			description = "Filters are received as query params via model attributes.\n\n" + "Parameters:\n"
+					+ "- role: User role to filter.\n" + "- location: Partial match (case-insensitive).\n"
+					+ "- businessType: Business category.\n" + "- page, size, sort: Pagination (e.g., sort=name,asc).")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "User obtained successfully",
 			content = { @Content(mediaType = "application/json",
 					schema = @Schema(implementation = UserResumeResponseDTO.class)) }) })
