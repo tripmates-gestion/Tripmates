@@ -10,11 +10,28 @@ import com.tripmates.backend.common.exception.FileUploadException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex,
+			HttpServletRequest request) {
+		String errorMessage = ex.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map(FieldError::getDefaultMessage)
+			.collect(Collectors.joining("; "));
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
+					String.valueOf(request.getRequestURI())));
+	}
 
 	@ExceptionHandler(UserAlreadyExistsException.class)
 	public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
@@ -56,6 +73,13 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
 					"auth/refresh"));
+	}
+
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<?> handleException(Exception e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					e.getMessage(), String.valueOf(request.getRequestURI())));
 	}
 
 }
