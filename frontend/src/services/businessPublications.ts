@@ -27,7 +27,7 @@ export async function createBusinessPublication(
   const fd = new FormData();
   fd.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }), "data.json");
   files.forEach((f) => fd.append("files", f, f.name));
-  console.log("[BUSINESS_Publication]: Sending request with:\n", "Method: POST\n", "Endpoint: ", ENDPOINTS.PUBLISH_BUSINESS, "\n", "Headers ", { Authorization: `Bearer ${accessToken}` }, "\n", "Body: ", fd)
+
   return apiFetch(ENDPOINTS.PUBLISH_BUSINESS, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type
