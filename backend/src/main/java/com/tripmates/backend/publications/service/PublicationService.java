@@ -148,4 +148,5 @@ public class PublicationService {
 	public Page<BusinessPublicationResponseDTO> search(PublicationSearchRequestDTO filters, Pageable pageable) {
 		return publicationRepository.search(filters, pageable).map(BusinessPublicationResponseDTO::fromPublication);
 	}
+
 }

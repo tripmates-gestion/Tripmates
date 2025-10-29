@@ -51,7 +51,6 @@ public class PublicationControllerTests {
 	@Autowired
 	private MockMvc mockMvc;
 
-
 	@BeforeAll
 	void setUp() {
 		testHelper = new TestHelper(port, restTemplate);

@@ -106,20 +106,19 @@ public class PublicationController {
 		publicationService.deletePublication(id, userDetails.getUsername());
 		return ResponseEntity.noContent().build();
 	}
-	
+
 	@GetMapping("/search")
 	@Operation(summary = "Obtains publications that meet the filters",
-			description = "Filters are received as query params via model attributes.\n\n"
-					+ "Parameters:\n"
+			description = "Filters are received as query params via model attributes.\n\n" + "Parameters:\n"
 					+ "- q: Full-text search across title and description (case-insensitive).\n"
 					+ "- location: Partial match (case-insensitive).\n"
-					+ "- tags: Publication must contain all provided tags.\n"
-					+ "- ownerId: Filter by owner id.\n"
+					+ "- tags: Publication must contain all provided tags.\n" + "- ownerId: Filter by owner id.\n"
 					+ "- page, size, sort: Pagination (e.g., sort=createdAt,desc).")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Publications obtained successfully",
 			content = { @Content(mediaType = "application/json",
 					schema = @Schema(implementation = BusinessPublicationResponseDTO.class)) }) })
-	public ResponseEntity<?> search(@ParameterObject @ModelAttribute PublicationSearchRequestDTO publicationSearchRequestDTO,
+	public ResponseEntity<?> search(
+			@ParameterObject @ModelAttribute PublicationSearchRequestDTO publicationSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
 		return ResponseEntity.ok().body(publicationService.search(publicationSearchRequestDTO, pageable));
 	}

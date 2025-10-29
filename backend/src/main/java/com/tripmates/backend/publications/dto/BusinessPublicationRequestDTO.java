@@ -34,6 +34,5 @@ public record BusinessPublicationRequestDTO(
 
 		@Schema(description = "Business publication tags") @JsonSetter(nulls = Nulls.AS_EMPTY) List<String> tags
 
-
 ) {
 }
