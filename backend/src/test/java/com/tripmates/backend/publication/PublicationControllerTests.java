@@ -4,6 +4,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -56,6 +57,9 @@ public class PublicationControllerTests {
 	@Autowired
 	private MockMvc mockMvc;
 
+	@Autowired
+	private MongoTemplate mongoTemplate;
+
 	private HttpHeaders headers = new HttpHeaders();
 
 	@BeforeAll
@@ -65,7 +69,7 @@ public class PublicationControllerTests {
 
 	@BeforeEach
 	void beforeEach() {
-		userRepository.deleteAll();
+		mongoTemplate.getDb().drop();
 		restTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 	}
 
