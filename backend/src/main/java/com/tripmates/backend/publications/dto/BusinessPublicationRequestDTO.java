@@ -9,18 +9,19 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
 public record BusinessPublicationRequestDTO(
 		@Schema(description = "Publication title") @NotBlank(
-				message = "The title cannot be empty to create a business publication.") String title,
+				message = ValidationErrorMessage.EMPTY_OR_NULL_FIELD) String title,
 
 		@Schema(description = "Business publication description text") @NotBlank(
-				message = "The description cannot be empty to create a business publication.") String description,
+				message = ValidationErrorMessage.EMPTY_OR_NULL_FIELD) String description,
 
 		@Schema(description = "Business publication phone number") String phoneNumber,
 
 		@Schema(description = "Business publication email") @Email(
-				message = "The provided email is not valid.") String email,
+				message = ValidationErrorMessage.INVALID_EMAIL) String email,
 
 		@Schema(description = "Business publication location") String location,
 
