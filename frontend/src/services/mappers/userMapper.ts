@@ -14,7 +14,7 @@ export function mapUser(data: any): CommonUsersInformation {
     username: data.name,
     role: data.role,
     description: data.description || '',
-    avatarURL: data.avatarURL || DEFAULT_AVATAR_URL,
+    avatarURL: data.avatarURL ?? DEFAULT_AVATAR_URL,
   };
 }
 

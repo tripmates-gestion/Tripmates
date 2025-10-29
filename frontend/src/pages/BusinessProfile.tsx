@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import * as React from 'react';
 import {
   Avatar,
@@ -19,40 +20,47 @@ import {
   DialogActions,
   CircularProgress,
 } from '@mui/material';
-import Settings from '@mui/icons-material/Settings';
+
 import Edit from '@mui/icons-material/Edit';
-import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
+import ComplementBusinessProfileDialog from '../components/profile/businessProfile/ComplementProfileDialog';
+import type { UpdateProfileFormState } from '../types/business';
 import { useAuth } from '../hooks/useAuth';
-import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
-import { type AccountType } from '../types/user'
 import { Alert } from "@mui/material";
 import type { BusinessPublicationResponseDTO } from "../types/business";
-import { getBusinessPublications, deleteBusinessPublication} from "../services/businessPublications";
-import PublicationGrid from "../components/publications/PublicationGrid";
 import { Stat } from '../components/profile/stats';
+import { EmptyState } from '../components/profile/EmptyState';
+import type { CommonUsersInformation } from '../types/user';
+import type { CompleteBusinessProfile } from '../types/business';
+import { DEFAULT_OPENING_DAYS } from '../types/business';
+import { updateBusinessUser } from '../services/userService';
+import type { BusinessUpdateRequestDTO } from '../types/business';
+import { mapDaysToEnglish, parseHours } from '../types/business';
+import { dataURLtoFile } from '../components/publications/utils/imageHelpers';
 import { enqueueSnackbar } from 'notistack';
-
+import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
+import PublicationGrid from "../components/publications/PublicationGrid";
 // ----- defaults hardcodeados cuando el back no los provee -----
 const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 const businessRoleChipColor = 'warning';
+const tabs = [
+  { key: 'mi presentacion', label: 'Mi Presentación' },
+  {key: 'publicaciones', label: 'Publicaciones'},
+  { key: 'fotos', label: 'Fotos' },
+];
 
-// ----- tipo User que viene del back (como lo describiste) -----
-type BackendUser = {
-  id: string;
-  username: string;
-  email: string;
-  role: AccountType;
-  description: string;
-  avatarURL: string | null;
-};
 
-// ----- util: mapea User (back) -> UserProfile (UI) -----
-function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
+// ----- util: mapea CommonUsersInformation (información básica de autenticación) -> CompleteBusinessProfile (estado del perfil en front) -----
+function toUserProfile(u: CommonUsersInformation | null | undefined, prev?: CompleteBusinessProfile): CompleteBusinessProfile {
   return {
-    name: u?.username ?? prev?.name ?? '',
-    username: u?.username ?? prev?.username ?? '',
-    description: u?.description ?? prev?.description ?? '',
+    name:                   u?.username ?? prev?.name ?? '',
+    description:            u?.description ?? prev?.description ?? '',
+    openningDays:           prev?.openningDays ?? DEFAULT_OPENING_DAYS,
+    openingHours:           prev?.openingHours ?? null,
+    location:               prev?.location ?? '',
+    phone:                  prev?.phone ?? '',
+    onCloudPhotos:          prev?.onCloudPhotos ?? [],
+
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
       : (prev?.avatarUrl),
@@ -65,57 +73,91 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
 export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
+  const { user, token ,updateUser} = useAuth();
 
-  const { user, token } = useAuth();
+  //posiblemente se borre el estado de perfil cada vez que se quiera editar los datos (aun cuand se cancelan los cambios)
+  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user));
 
-  // estado local de perfil (UI)
-  //creo que esto debería ser un contexto 
-  //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
-  const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
+  // React.useEffect(() => {
+  //   setCompleteProfile((prev) => toUserProfile(user, prev));
+  // }, [user]);
 
-  React.useEffect(() => {
-    setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
-  }, [user]);
-
-  // tabs con "Publicaciones" (perfil de business)
-  const tabs = [
-      { key: 'mi presentacion', label: 'Mi Presentación' },
-      {key: 'publicaciones', label: 'Publicaciones'},
-      { key: 'fotos', label: 'Fotos' },
-    ];
 
   // ayuda para saber si el tab actual es "publicaciones"
   const currentTabKey = tabs[tab]?.key;
-
-  // REINTEGRADO: persistencia al back como antes
-  const handleSaveUserData = (updated: UserProfile) => {
+  const saveChangesInBackend = async (formContent: UpdateProfileFormState) => { 
+       
     if (!token) {
       console.error('No auth token available; skipping remote update');
-      setProfile(updated);
       return;
     }
 
-    Promise.all([
-      updateDescription(profile.description || '', updated.description || '', token),
-      updateUsername(profile.username, updated.username, token),
-    ])
-      .then(() => {
-        setProfile(updated);
-      })
-      .catch((error) => {
-        console.error('Error updating profile:', error);
-        // si querés, mostrar un toast/alert acá
-      });
+    try{
+      const data : BusinessUpdateRequestDTO = {
+        name: formContent.name.trim(),
+        description: formContent.description,
+        openingDays: mapDaysToEnglish(
+          formContent.openningDays
+            .split(",")
+            .map((d) => d.trim())
+            .filter(Boolean) // elimina vacíos
+        ),
+        attentionSchedule: parseHours(formContent.openingHours),
+        location: formContent.location.trim(),
+        phoneNumber: formContent.phone.trim(),
+      }
+
+      const files: File[] = formContent.uploadingPhotos
+        .filter(Boolean)
+        .map((photo, i) => dataURLtoFile(photo, `photo_${i + 1}.jpg`));
+      
+      const avatarFile = formContent.avatar
+        ? dataURLtoFile(formContent.avatar, "avatar.jpg")
+        : null;  
+      console.log("Avatar base64 (primeros 200 caracteres):", formContent.avatar?.slice(0, 200));
+      console.log("AvatarFile:", avatarFile);
+      
+      const response = await updateBusinessUser(data, avatarFile, files, token);
+
+      console.log("ANTES (avatar URL):", completeProfile.avatarUrl);
+      console.log("RESPUESTA BACK (avatar URL):", response.avatarURL);
+
+      
+      // console.log(response)
+
+      const updatedProfile: CompleteBusinessProfile = {
+        ...completeProfile, // mantenemos los campos no modificados
+        name: response.name,
+        description: response.description,
+        openningDays: response.openingDays,
+        openingHours: response.attentionSchedule,
+        location: response.location,
+        phone: response.phoneNumber,
+        avatarUrl: response.avatarURL ? response.avatarURL : completeProfile.avatarUrl, // nota: el backend devuelve `avatarURL` (camel case distinto)
+        onCloudPhotos: response.profileImageUrls, // corresponde a las imágenes subidas
+        stats: completeProfile.stats, // se conserva el objeto de estadísticas local
+      };
+      setCompleteProfile(updatedProfile);
+      //Actualizo información básica de auth
+      updateUser(response.name, response.description, response.avatarURL);
+      console.log("Perfil actualizado correctamente:", updatedProfile);
+      setTimeout(() => {
+        console.log("DESPUÉS:", completeProfile.avatarUrl);
+      }, 1000);
+
+    } catch(error){
+      console.error('Error updating profile:', error);
+    }
   };
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-      {/* Banner */}
+      {/* Banner de fondo */}
       <Box
         sx={{
           minHeight: { xs: '38vh', md: '30vh' },
           position: 'relative',
-          backgroundImage: profile.coverUrl ? `url(${profile.coverUrl})` : 'none',
+          backgroundImage: completeProfile.coverUrl ? `url(${completeProfile.coverUrl})` : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -133,8 +175,8 @@ export default function BusinessProfile() {
           <CardContent sx={{ pb: 1.5 }}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
               <Avatar
-                src={profile.avatarUrl}
-                alt={profile.name}
+                src={completeProfile.avatarUrl}
+                alt={completeProfile.name}
                 sx={{
                   width: 96, height: 96, mt: { xs: -6, md: -8 },
                   border: (t) => `4px solid ${t.palette.background.paper}`,
@@ -142,11 +184,11 @@ export default function BusinessProfile() {
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5" fontWeight={800}>{profile.username}</Typography>
-                  {!!(user as BackendUser | null)?.role && (
+                  <Typography variant="h5" fontWeight={800}>{completeProfile.name}</Typography>
+                  {!!user?.role && (
                     <Chip
                       size="small"
-                      label={(user as BackendUser).role}
+                      label={user.role}
                       color={businessRoleChipColor}
                       variant="outlined"
                       sx={{ ml: 0.5 }}
@@ -154,24 +196,24 @@ export default function BusinessProfile() {
                   )}
                 </Stack>
 
-                {profile.description && (
+                {completeProfile.description && (
                   <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
-                    {profile.description}
+                    {completeProfile.description}
                   </Typography>
                 )}
               </Box>
 
-              <ButtonGroup variant="outlined" size="small">
-                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Editar perfil</Button>
-                <Button startIcon={<Settings />}>Configuración</Button>
+              <ButtonGroup variant="outlined" size="large">
+                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Completá los datos de tu negocio!</Button>
+                {/* <Button startIcon={<Settings />}>Configuración</Button> */}
               </ButtonGroup>
             </Stack>
 
             {/* Stats */}
             <Stack direction="row" spacing={4} alignItems="center" sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-              <Stat label="Aportes" value={profile.stats.aportes} />
-              <Stat label="Seguidores" value={profile.stats.seguidores} />
-              <Stat label="Siguiendo" value={profile.stats.siguiendo} />
+              <Stat label="Aportes" value={completeProfile.stats.aportes} />
+              <Stat label="Seguidores" value={completeProfile.stats.seguidores} />
+              <Stat label="Siguiendo" value={completeProfile.stats.siguiendo} />
             </Stack>
           </CardContent>
 
@@ -188,11 +230,9 @@ export default function BusinessProfile() {
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
-            {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
-            {currentTabKey === 'publicaciones' && (
+            {currentTabKey === 'mi presentacion'  && <EmptyState title="Presentación de mi negocio" />}
+            {currentTabKey === 'fotos'            && <EmptyState title="Fotos" />}
+            {currentTabKey === 'publicaciones'    && (
               <BusinessPublicationsTab token={token} />
             )}
           </Box>
@@ -200,29 +240,17 @@ export default function BusinessProfile() {
       </Box>
 
       {/* Modal de edición */}
-      <EditProfileDialog
+      <ComplementBusinessProfileDialog
         open={editOpen}
         onClose={() => setEditOpen(false)}
-        user={profile}
-        onSave={handleSaveUserData}
+        completeProfile={completeProfile}
+        onSave={saveChangesInBackend}
       />
     </Box>
   );
 }
 
 
-function EmptyState({ title }: { title: string }) {
-  return (
-    <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
-      <Typography variant="h6" fontWeight={800}>
-        {title}
-      </Typography>
-      <Typography variant="body1" color="text.secondary">
-        No hay contenido por ahora.
-      </Typography>
-    </Stack>
-  );
-}
 
 export function BusinessPublicationsTab({ token }: { token: string | null }) {
   const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([]);

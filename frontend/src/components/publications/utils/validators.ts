@@ -40,3 +40,19 @@ export function isValidLocation(input: string): boolean {
   if (clean === '') return true
   return clean.length >= 4 && /[a-zA-Záéíóúñ\s,.-]+/.test(clean)
 }
+
+/**
+ * Valida fechas en formato YYYY-MM-DD
+ * Ejemplos válidos: "2023-12-31", "2024-01-01"
+ */
+export function isValidDate(input: string): boolean {
+  const clean = input.trim();
+  // Verifica el formato básico YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+    return false;
+  }
+  
+  // Verifica que sea una fecha válida
+  const date = new Date(clean);
+  return !isNaN(date.getTime());
+}

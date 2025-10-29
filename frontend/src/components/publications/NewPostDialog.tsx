@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState, useEffect, useRef } from 'react'
 import {
   Box,
@@ -77,6 +78,7 @@ const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }[] = [
 /**
  * Parsea string de horario "09:00–18:00" o "09:00-18:00" a AttentionSchedule
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function parseHours(scheduleString: string): AttentionSchedule {
   const match = scheduleString.match(/([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d/)
   if (!match) {

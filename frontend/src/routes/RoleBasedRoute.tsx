@@ -1,13 +1,14 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../src/hooks/useAuth';
-import { ACCOUNT_TYPES } from '../src/constants/Rol';
-import { PAGES_ROUTE } from "../src/constants/Pages";
+import { useAuth } from '../hooks/useAuth';
+import { ACCOUNT_TYPES } from '../constants/Rol';
+import { PAGES_ROUTE } from "../constants/Pages";
 
 
 interface RoleBasedRouteProps {
   allowedRoles: Array<typeof ACCOUNT_TYPES[keyof typeof ACCOUNT_TYPES]>;
   redirectTo?: string;
   children?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render?: (props: { user: any }) => React.ReactNode;
 }
 
