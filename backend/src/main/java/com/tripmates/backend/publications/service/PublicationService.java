@@ -3,6 +3,7 @@ package com.tripmates.backend.publications.service;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+import com.tripmates.backend.publications.dto.BusinessPublicationUpdateRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 import com.tripmates.backend.utils.PublicactionBuilder;
@@ -18,7 +19,6 @@ import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import java.util.ArrayList;
-
 @Component
 @Transactional
 @Service
@@ -38,12 +38,12 @@ public class PublicationService {
 			String authenticatedUserEmail) {
 
 		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
 		var publicationConstructor = new PublicactionBuilder(storageService).publicationDetails(businessPublicationDTO)
 			.owner(user);
 
-		if (imageFiles != null) {
+		if (imageFiles != null && !imageFiles.isEmpty()) {
 			publicationConstructor = publicationConstructor.imageFiles(imageFiles);
 		}
 		Publication savedPublication = publicationRepository.save(publicationConstructor.build());
@@ -90,7 +90,7 @@ public class PublicationService {
 		return BusinessPublicationResponseDTO.fromPublication(publication);
 	}
 
-	public BusinessPublicationResponseDTO updatePublication(String id, BusinessPublicationRequestDTO dto,
+	public BusinessPublicationResponseDTO updatePublication(String id, BusinessPublicationUpdateRequestDTO dto,
 			List<MultipartFile> imageFiles, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
 			.orElseThrow(() -> new BadRequestException("Publication not found"));
