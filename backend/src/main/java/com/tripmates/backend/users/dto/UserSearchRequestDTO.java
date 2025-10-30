@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-public record UserSearchRequestDTO(@Schema(description = "User's role type") Role role,
-		@Schema(description = "User's location") String location,
+public record UserSearchRequestDTO(@Schema(description = "User's username") String username,
+		@Schema(description = "User's role type") Role role, @Schema(description = "User's location") String location,
 		@Schema(description = "User's business type") BusinessType businessType) {
 }

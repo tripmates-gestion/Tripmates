@@ -15,6 +15,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,9 @@ public class UserControllerTests {
 	private TestRestTemplate restTemplate;
 
 	@Autowired
+	private MongoTemplate mongoTemplate;
+
+	@Autowired
 	private UserRepository userRepository;
 
 	private String baseUrl() {
@@ -46,12 +50,12 @@ public class UserControllerTests {
 
 	@BeforeEach
 	void beforeEach() {
-		userRepository.deleteAll();
+		mongoTemplate.getDb().drop();
 	}
 
 	@AfterAll
 	void afterAll() {
-		userRepository.deleteAll();
+		mongoTemplate.getDb().drop();
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -59,10 +63,13 @@ public class UserControllerTests {
 	}
 
 	@Test
-	void searchWithZeroUsersShouldReturnNothing() {
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate
-			.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-			});
+	void searchWithFiltersButWithNoUsersShouldReturnNothing() {
+		String url = baseUrl()
+				+ "/users/search?name=Fran Infanti&location=Buenos Aires, 3 de Febrero&role=BUSINESS&businessType=TOURISM";
+
+		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+				new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -97,27 +104,21 @@ public class UserControllerTests {
 	}
 
 	@Test
-	void filterByUserTypeWorksAsExpected() {
-		User fran = new User();
-		fran.setEmail("fran@fi.uba.ar");
-		fran.setName("FranInfanti");
-		fran.setPassword("1234");
-		fran.setRole(Role.USER);
+	void filterByRoleUserReturnsOnlyUsersAccounts() {
+		User markZuckerberg = new User();
+		markZuckerberg.setEmail("mark@facebook.com");
+		markZuckerberg.setName("Mark Zuckerberg");
+		markZuckerberg.setPassword("1234678");
+		markZuckerberg.setRole(Role.USER);
 
-		User oli = new User();
-		oli.setEmail("oli@gmail.com");
-		oli.setName("Oli123");
-		oli.setPassword("987456");
-		oli.setRole(Role.USER);
+		User louvre = new User();
+		louvre.setEmail("louvre@museum.com.fr");
+		louvre.setName("Louvre Museum");
+		louvre.setPassword("12345678");
+		louvre.setBusinessType(BusinessType.TOURISM);
+		louvre.setRole(Role.BUSINESS);
 
-		User billGates = new User();
-		billGates.setEmail("billGates@microsoft.com");
-		billGates.setName("TheBill's Gates");
-		billGates.setPassword("Windows11:)");
-		billGates.setBusinessType(BusinessType.TOURISM);
-		billGates.setRole(Role.BUSINESS);
-
-		userRepository.saveAll(List.of(fran, oli, billGates));
+		userRepository.saveAll(List.of(markZuckerberg, louvre));
 
 		String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
 			.queryParam("role", "USER")
@@ -132,38 +133,34 @@ public class UserControllerTests {
 		PageResponse<UserResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
-		Assertions.assertEquals(2, page.totalElements());
-
-		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(fran),
-				UserResumeResponseDTO.fromUser(oli));
-
-		Assertions.assertEquals(userResumeResponseDTOList, page.content());
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(markZuckerberg)), page.content());
 	}
 
 	@Test
-	void filterByBusinessTypeWorksAsExpected() {
-		User jeffBezos = new User();
-		jeffBezos.setEmail("jeffBezos@amazon.com");
-		jeffBezos.setName("Jeff Bezos");
-		jeffBezos.setPassword("AWS1234");
-		jeffBezos.setBusinessType(BusinessType.RESTAURANT);
-		jeffBezos.setRole(Role.USER);
+	void filterByBusinessTypeReturnsOnlyBusinessTypesBusinessAccounts() {
+		User sigaLaVaca = new User();
+		sigaLaVaca.setEmail("sigaLaVaca@gmail.com");
+		sigaLaVaca.setName("Siga La Vaca");
+		sigaLaVaca.setPassword("12345678");
+		sigaLaVaca.setBusinessType(BusinessType.RESTAURANT);
+		sigaLaVaca.setRole(Role.BUSINESS);
 
-		User markCuban = new User();
-		markCuban.setEmail("markCuban@mavs.com");
-		markCuban.setName("Mark Cuban");
-		markCuban.setPassword("12345678");
-		markCuban.setBusinessType(BusinessType.HOSTING);
-		markCuban.setRole(Role.USER);
+		User kansas = new User();
+		kansas.setEmail("kansas@gmail.com.ar");
+		kansas.setName("Kansas");
+		kansas.setPassword("123456789");
+		kansas.setBusinessType(BusinessType.RESTAURANT);
+		kansas.setRole(Role.BUSINESS);
 
-		User billGates = new User();
-		billGates.setEmail("billGates@microsoft.com");
-		billGates.setName("TheBill's Gates");
-		billGates.setPassword("Windows11:)");
-		billGates.setBusinessType(BusinessType.TOURISM);
-		billGates.setRole(Role.BUSINESS);
+		User rosmarie = new User();
+		rosmarie.setEmail("rosmarie@gmail.com.ar");
+		rosmarie.setName("Rosmarie");
+		rosmarie.setPassword("12345678");
+		rosmarie.setBusinessType(BusinessType.HOSTING);
+		rosmarie.setRole(Role.BUSINESS);
 
-		userRepository.saveAll(List.of(jeffBezos, markCuban, billGates));
+		userRepository.saveAll(List.of(sigaLaVaca, kansas, rosmarie));
 
 		String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
 			.queryParam("businessType", "RESTAURANT")
@@ -178,88 +175,33 @@ public class UserControllerTests {
 		PageResponse<UserResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
-		Assertions.assertEquals(1, page.totalElements());
-
-		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(jeffBezos));
-
-		Assertions.assertEquals(userResumeResponseDTOList, page.content());
-	}
-
-	@Test
-	void filterByLocationWorksAsExpected() {
-		User jeffBezos = new User();
-		jeffBezos.setEmail("jeffBezos@amazon.com");
-		jeffBezos.setName("Jeff Bezos");
-		jeffBezos.setPassword("AWS1234");
-		jeffBezos.setLocation("West US");
-		jeffBezos.setBusinessType(BusinessType.RESTAURANT);
-		jeffBezos.setRole(Role.USER);
-
-		User markCuban = new User();
-		markCuban.setEmail("markCuban@mavs.com");
-		markCuban.setName("Mark Cuban");
-		markCuban.setPassword("12345678");
-		markCuban.setLocation("California, Los Angeles");
-		markCuban.setBusinessType(BusinessType.HOSTING);
-		markCuban.setRole(Role.USER);
-
-		User billGates = new User();
-		billGates.setEmail("billGates@microsoft.com");
-		billGates.setName("TheBill's Gates");
-		billGates.setPassword("Windows11:)");
-		billGates.setLocation("California, Los Angeles");
-		billGates.setBusinessType(BusinessType.TOURISM);
-		billGates.setRole(Role.BUSINESS);
-
-		userRepository.saveAll(List.of(jeffBezos, markCuban, billGates));
-
-		String url = baseUrl() + "/users/search?location=California, Los Angeles";
-
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
-				new ParameterizedTypeReference<>() {
-				});
-
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
-
-		Assertions.assertNotNull(page);
 		Assertions.assertEquals(2, page.totalElements());
-
-		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(markCuban),
-				UserResumeResponseDTO.fromUser(billGates));
-
-		Assertions.assertEquals(userResumeResponseDTOList, page.content());
+		Assertions.assertEquals(
+				List.of(UserResumeResponseDTO.fromUser(sigaLaVaca), UserResumeResponseDTO.fromUser(kansas)),
+				page.content());
 	}
 
 	@Test
-	void filterByBusinessAndUserTypeWorksAsExpected() {
-		User jeffBezos = new User();
-		jeffBezos.setEmail("jeffBezos@amazon.com");
-		jeffBezos.setName("Jeff Bezos");
-		jeffBezos.setPassword("AWS1234");
-		jeffBezos.setRole(Role.USER);
+	void filterByLocationReturnsOnlyBusinessAccountsWithThatLocation() {
+		User mcDonalds = new User();
+		mcDonalds.setEmail("McDonalds@gmail.com.ar");
+		mcDonalds.setName("McDonald's");
+		mcDonalds.setPassword("123456789");
+		mcDonalds.setLocation("Buenos Aires, Martinez Unicenter");
+		mcDonalds.setBusinessType(BusinessType.RESTAURANT);
+		mcDonalds.setRole(Role.BUSINESS);
 
-		User markCuban = new User();
-		markCuban.setEmail("markCuban@mavs.com");
-		markCuban.setName("Mark Cuban");
-		markCuban.setPassword("12345678");
-		markCuban.setBusinessType(BusinessType.HOSTING);
-		markCuban.setRole(Role.BUSINESS);
+		User burgerKing = new User();
+		burgerKing.setEmail("kansas@gmail.com.ar");
+		burgerKing.setName("Kansas");
+		burgerKing.setPassword("123456789");
+		burgerKing.setLocation("Buenos Aires, 3 De Febrero");
+		burgerKing.setBusinessType(BusinessType.RESTAURANT);
+		burgerKing.setRole(Role.BUSINESS);
 
-		User billGates = new User();
-		billGates.setEmail("billGates@microsoft.com");
-		billGates.setName("TheBill's Gates");
-		billGates.setPassword("Windows11:)");
-		billGates.setBusinessType(BusinessType.TOURISM);
-		billGates.setRole(Role.BUSINESS);
+		userRepository.saveAll(List.of(mcDonalds, burgerKing));
 
-		userRepository.saveAll(List.of(jeffBezos, markCuban, billGates));
-
-		String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
-			.queryParam("userType", "BUSINESS")
-			.queryParam("businessType", "HOSTING")
-			.toUriString();
+		String url = baseUrl() + "/users/search?location=Buenos Aires, Martinez Unicenter";
 
 		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
 				new ParameterizedTypeReference<>() {
@@ -271,41 +213,61 @@ public class UserControllerTests {
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-
-		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(markCuban));
-
-		Assertions.assertEquals(userResumeResponseDTOList, page.content());
+		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(mcDonalds)), page.content());
 	}
 
 	@Test
-	void filterByBusinessTypeAndLocationWorksAsExpected() {
-		User jeffBezos = new User();
-		jeffBezos.setEmail("jeffBezos@amazon.com");
-		jeffBezos.setName("Jeff Bezos");
-		jeffBezos.setPassword("AWS1234");
-		jeffBezos.setLocation("West US");
-		jeffBezos.setBusinessType(BusinessType.RESTAURANT);
-		jeffBezos.setRole(Role.USER);
+	void filterWithMultipleFiltersReturnsOnlyValidAccounts() {
+		User wendys = new User();
+		wendys.setEmail("Wendys@gmail.com.us");
+		wendys.setName("Wendy's");
+		wendys.setPassword("123456789");
+		wendys.setLocation("England, London");
+		wendys.setBusinessType(BusinessType.RESTAURANT);
+		wendys.setRole(Role.BUSINESS);
 
-		User markCuban = new User();
-		markCuban.setEmail("markCuban@mavs.com");
-		markCuban.setName("Mark Cuban");
-		markCuban.setPassword("12345678");
-		markCuban.setLocation("New York, The Bronx");
-		markCuban.setBusinessType(BusinessType.HOSTING);
-		markCuban.setRole(Role.USER);
+		User alanTuring = new User();
+		alanTuring.setEmail("alanTuring@gmail.com");
+		alanTuring.setName("Alan Turing");
+		alanTuring.setPassword("123456789");
+		alanTuring.setRole(Role.USER);
 
+		userRepository.saveAll(List.of(wendys, alanTuring));
+
+		String url = baseUrl() + "/users/search?role=BUSINESS&location=England, London&businessType=RESTAURANT";
+
+		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+				new ParameterizedTypeReference<>() {
+				});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<UserResumeResponseDTO> page = response.getBody();
+
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(wendys)), page.content());
+	}
+
+	@Test
+	void filterByUsernameReturnsOnlyValidAccounts() {
 		User billGates = new User();
 		billGates.setEmail("billGates@microsoft.com");
 		billGates.setName("TheBill's Gates");
-		billGates.setPassword("Windows11:)");
+		billGates.setPassword("12345678");
 		billGates.setLocation("California, Los Angeles");
-		billGates.setBusinessType(BusinessType.TOURISM);
-		billGates.setRole(Role.BUSINESS);
+		billGates.setRole(Role.USER);
 
-		userRepository.saveAll(List.of(jeffBezos, markCuban, billGates));
+		User timCook = new User();
+		timCook.setEmail("timCook@apple.com");
+		timCook.setName("Tim Cook");
+		timCook.setPassword("12345678");
+		timCook.setLocation("California, Los Angeles");
+		timCook.setRole(Role.USER);
 
-		String url = baseUrl() + "/users/search?location=New York, The Bronx&businessType=HOSTING";
+		userRepository.saveAll(List.of(timCook, billGates));
+
+		String url = baseUrl() + "/users/search?username=Tim Cook&location=California, Los Angeles";
 
 		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
 				new ParameterizedTypeReference<>() {
@@ -317,10 +279,7 @@ public class UserControllerTests {
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-
-		List<UserResumeResponseDTO> userResumeResponseDTOList = List.of(UserResumeResponseDTO.fromUser(markCuban));
-
-		Assertions.assertEquals(userResumeResponseDTOList, page.content());
+		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(timCook)), page.content());
 	}
 
 }
