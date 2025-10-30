@@ -3,7 +3,7 @@ package com.tripmates.backend.users.dto;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.users.entity.mongo.Account;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ public record UserResumeResponseDTO(@Schema(description = "User's username") Str
 		@Schema(description = "User's phone number") String phoneNumber,
 		@Schema(description = "User's location") String location,
 		@Schema(description = "User's profile image URLs") List<String> profileImageUrls) {
-	public static UserResumeResponseDTO fromUser(User user) {
+	public static UserResumeResponseDTO fromUser(Account user) {
 		return new UserResumeResponseDTO(user.getName(), user.getEmail(), user.getRole(), user.getDescription(),
 				user.getAvatarURL(), user.getBusinessType(), user.getOpeningDays(), user.getAttentionSchedule(),
 				user.getExceptionalClosingDays(), user.getPhoneNumber(), user.getLocation(),

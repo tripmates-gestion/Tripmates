@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.exception.BadRequestException;
@@ -18,7 +18,7 @@ public class PublicationBuilder {
 
 	private final StorageService storageService;
 
-	private User owner;
+	private Account owner;
 
 	public PublicationBuilder(StorageService storageService) {
 		this.storageService = storageService;
@@ -34,8 +34,7 @@ public class PublicationBuilder {
 			if (imageFile != null && !imageFile.isEmpty()) {
 				String imageUrl = storageService.uploadFile(imageFile);
 				imageUrls.add(imageUrl);
-			}
-			else {
+			} else {
 				throw new BadRequestException(
 						"Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
 			}
@@ -43,7 +42,7 @@ public class PublicationBuilder {
 		return this;
 	}
 
-	public PublicationBuilder owner(User owner) {
+	public PublicationBuilder owner(Account owner) {
 		this.owner = owner;
 		return this;
 	}

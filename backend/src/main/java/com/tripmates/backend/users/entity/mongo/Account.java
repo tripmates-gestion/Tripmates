@@ -21,8 +21,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @Setter
-@Document(collection = "users")
-public class User implements UserDetails {
+@Document(collection = "account")
+public class Account implements UserDetails {
 
 	/** User's ID. */
 	@Id
@@ -69,7 +69,9 @@ public class User implements UserDetails {
 	/** User's business attention schedule. Only allowed in BUSINESS account. */
 	private AttentionSchedule attentionSchedule;
 
-	/** User's business particular closing days. Only allowed in BUSINESS account. */
+	/**
+	 * User's business particular closing days. Only allowed in BUSINESS account.
+	 */
 	private List<LocalDate> exceptionalClosingDays;
 
 	/** User's phone number. Only allowed in BUSINESS account. */

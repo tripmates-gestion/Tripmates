@@ -5,7 +5,7 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,18 +28,19 @@ public class UserService {
 
 	/**
 	 * Retorna un usuario
+	 * 
 	 * @param email email del usuario
-	 * @return {@link com.tripmates.backend.users.entity.mongo.User User}
+	 * @return {@link com.tripmates.backend.users.entity.mongo.Account User}
 	 */
 	public UserResumeResponseDTO getUser(String email) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+		Account user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		return UserResumeResponseDTO.fromUser(user);
 	}
 
 	public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+		Account user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		if (userUpdateRequestDTO.name() != null)
 			user.setName(userUpdateRequestDTO.name());
@@ -91,8 +92,7 @@ public class UserService {
 			if (user.getAvatarURL() == null && !urls.isEmpty())
 				user.setAvatarURL(urls.getFirst());
 
-		}
-		else if (userUpdateRequestDTO.profileImageUrls() != null) {
+		} else if (userUpdateRequestDTO.profileImageUrls() != null) {
 			if (user.getProfileImageUrls() != null) {
 				for (String oldUrl : user.getProfileImageUrls()) {
 					if (oldUrl != null && !oldUrl.isBlank())
@@ -122,15 +122,17 @@ public class UserService {
 
 	/**
 	 * Retorna una page con los usuarios que cumplen con los filtros especificados.
+	 * 
 	 * @param userSearchRequestDTO dto que contiene los filtros de busqueda.
-	 * @param pageable configuración de pages a retornar
+	 * @param pageable             configuración de pages a retornar
 	 * @return {@link Page}
 	 */
 	public Page<UserResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
 		return userRepository
-			.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(), userSearchRequestDTO.location(),
-					userSearchRequestDTO.businessType(), pageable)
-			.map(UserResumeResponseDTO::fromUser);
+				.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(),
+						userSearchRequestDTO.location(),
+						userSearchRequestDTO.businessType(), pageable)
+				.map(UserResumeResponseDTO::fromUser);
 	}
 
 }
