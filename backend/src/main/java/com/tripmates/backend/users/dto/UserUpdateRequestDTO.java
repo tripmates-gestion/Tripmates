@@ -8,6 +8,10 @@ import java.time.DayOfWeek;
 import com.tripmates.backend.common.types.AveragePrice;
 import java.util.List;
 import com.tripmates.backend.common.types.MenuItem;
+import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
+import java.util.Arrays;
+import com.tripmates.backend.utils.updateMe.UpdateCommandFactory;
+import java.util.AbstractMap;
 
 @Schema(description = "User update request DTO")
 public record UserUpdateRequestDTO(
@@ -22,4 +26,20 @@ public record UserUpdateRequestDTO(
 		@Schema(description = "Restaurant's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant's menu") List<MenuItem> menu,
 		@Schema(description = "Hotel's type") String hotelType) {
+
+	public List<AccountUpdateCommand> toCommands() {
+		return Arrays.stream(this.getClass().getRecordComponents())
+				.map(rc -> {
+					try {
+						Object value = rc.getAccessor().invoke(this);
+						return new AbstractMap.SimpleEntry<>(rc.getName(), value);
+					} catch (ReflectiveOperationException e) {
+						throw new RuntimeException(e);
+					}
+				})
+				.filter(entry -> entry.getValue() != null)
+				.map(entry -> UpdateCommandFactory.createCommand(entry.getKey(), entry.getValue()))
+				.toList();
+	}
+
 }

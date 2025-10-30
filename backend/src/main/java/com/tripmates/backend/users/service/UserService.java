@@ -1,12 +1,15 @@
 package com.tripmates.backend.users.service;
 
 import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
+
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,92 +41,19 @@ public class UserService {
 		return UserResumeResponseDTO.fromUser(user);
 	}
 
-	// public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO
-	// userUpdateRequestDTO,
-	// List<MultipartFile> imageFiles, MultipartFile avatar) {
+	public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
+			List<MultipartFile> imageFiles, MultipartFile avatar) {
+		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands();
+		Account account = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		System.out.println("la cuenta antes de editar " + account);
+		for (AccountUpdateCommand command : commands) {
+			account = command.apply(account);
+		}
 
-	// Account user = userRepository.findByEmail(email).orElseThrow(() -> new
-	// UserNotFoundException("User not found"));
-
-	// if (userUpdateRequestDTO.name() != null)
-	// user.setName(userUpdateRequestDTO.name());
-
-	// if (userUpdateRequestDTO.description() != null)
-	// user.setDescription(userUpdateRequestDTO.description());
-
-	// if (userUpdateRequestDTO.avatarURL() != null) {
-	// String previous = user.getAvatarURL();
-	// String next = userUpdateRequestDTO.avatarURL();
-
-	// if (previous != null && !previous.isBlank() && (!previous.equals(next)))
-	// storageService.deleteByUrl(previous);
-
-	// user.setAvatarURL(next);
-	// }
-
-	// if (userUpdateRequestDTO.openingDays() != null)
-	// user.setOpeningDays(userUpdateRequestDTO.openingDays());
-
-	// if (userUpdateRequestDTO.attentionSchedule() != null)
-	// user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
-
-	// if (userUpdateRequestDTO.exceptionalClosingDays() != null)
-	// user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
-
-	// if (userUpdateRequestDTO.phoneNumber() != null)
-	// user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
-
-	// if (userUpdateRequestDTO.location() != null)
-	// user.setLocation(userUpdateRequestDTO.location());
-
-	// if (imageFiles != null && !imageFiles.isEmpty()) {
-	// if (user.getProfileImageUrls() != null) {
-	// for (String oldUrl : user.getProfileImageUrls()) {
-	// if (oldUrl != null && !oldUrl.isBlank())
-	// storageService.deleteByUrl(oldUrl);
-	// }
-	// }
-
-	// List<String> urls = new ArrayList<>();
-	// for (MultipartFile file : imageFiles) {
-	// String url = storageService.uploadFile(file);
-	// urls.add(url);
-	// }
-
-	// user.setProfileImageUrls(urls);
-
-	// if (user.getAvatarURL() == null && !urls.isEmpty())
-	// user.setAvatarURL(urls.getFirst());
-
-	// } else if (userUpdateRequestDTO.profileImageUrls() != null) {
-	// if (user.getProfileImageUrls() != null) {
-	// for (String oldUrl : user.getProfileImageUrls()) {
-	// if (oldUrl != null && !oldUrl.isBlank())
-	// storageService.deleteByUrl(oldUrl);
-	// }
-	// }
-
-	// user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
-	// }
-
-	// if (avatar != null && !avatar.isEmpty()) {
-	// String previous = user.getAvatarURL();
-	// if (previous != null && !previous.isBlank())
-	// storageService.deleteByUrl(previous);
-
-	// String avatarUrl = storageService.uploadFile(avatar);
-	// user.setAvatarURL(avatarUrl);
-	// }
-
-	// userRepository.save(user);
-
-	// return new UserResumeResponseDTO(user.getName(), user.getEmail(),
-	// user.getRole(), user.getDescription(),
-	// user.getAvatarURL(), user.getBusinessType(), user.getOpeningDays(),
-	// user.getAttentionSchedule(),
-	// user.getExceptionalClosingDays(), user.getPhoneNumber(), user.getLocation(),
-	// user.getProfileImageUrls());
-	// }
+		account = userRepository.save(account);
+		return UserResumeResponseDTO.fromUser(account);
+	}
 
 	/**
 	 * Retorna una page con los usuarios que cumplen con los filtros especificados.

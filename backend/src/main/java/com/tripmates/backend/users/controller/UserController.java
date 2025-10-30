@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
@@ -53,20 +54,7 @@ public class UserController {
 	}
 
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Update user profile", description = "Actualiza el perfil del usuario con datos en JSON e imágenes opcionales.\n\n"
-			+ "Estructura de la petición multipart (en este orden):\n"
-			+ "- `data`: (obligatorio) JSON con los datos del usuario a actualizar.\n"
-			+ "- `avatar`: (opcional) Imagen de avatar principal (JPG, PNG, etc.).\n"
-			+ "- `files`: (opcional) Imágenes adicionales del perfil (JPG, PNG, etc.).\n\n"
-			+ "Ejemplo de JSON para el campo 'data' (UserUpdateRequestDTO):\n" + "```json\n" + "{\n"
-			+ "  \"name\": \"John Doe\",\n" + "  \"description\": \"Travel enthusiast\",\n"
-			+ "  \"phoneNumber\": \"+1234567890\",\n" + "  \"location\": \"Main St 123, City\",\n"
-			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\"],\n"
-			+ "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
-			+ "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2026-01-01\"]\n" + "}\n" + "```\n\n"
-			+ "Notas:\n" + "- Todos los campos presentes en 'data' son editables (email no es editable).\n"
-			+ "- Los campos de negocio (openingDays, attentionSchedule, exceptionalClosingDays) son opcionales.\n"
-			+ "- Las imágenes se cargan vía partes multipart: `avatar` (una) y `files` (múltiples).")
+	@Operation(summary = "Update user profile", description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "User profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResumeResponseDTO.class))),
 			@ApiResponse(responseCode = "404", description = "User not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))) })
@@ -75,9 +63,7 @@ public class UserController {
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
 		try {
 			UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
-			return ResponseEntity.ok().body(dto); // SOLO PARA SUBIR CAMBISO RÁPIDO, no debería pasar esto
-			// return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(),
-			// dto, files, avatar));
+			return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(), dto, files, avatar));
 		} catch (Exception e) {
 			throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
 		}
