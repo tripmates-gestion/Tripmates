@@ -7,7 +7,7 @@ import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,7 +42,7 @@ public class UserControllerTests {
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	private String baseUrl() {
 		return "http://localhost:" + port;

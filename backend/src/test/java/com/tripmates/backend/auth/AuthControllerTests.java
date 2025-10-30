@@ -8,7 +8,7 @@ import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ public class AuthControllerTests {
 	private TestRestTemplate restTemplate;
 
 	@MockBean
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;

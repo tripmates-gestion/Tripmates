@@ -7,7 +7,7 @@ import com.tripmates.backend.users.dto.UserResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserService {
 
 	@Autowired
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	@Autowired
 	private StorageService storageService;
