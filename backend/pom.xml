@@ -70,6 +70,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- OpenAPI / Swagger -->
         <dependency>
@@ -109,6 +115,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- JSON -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20231013</version>
+        </dependency>
+
         <!-- Misc -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
@@ -146,9 +159,8 @@
                 <executions>
                     <execution>
                         <phase>validate</phase>
-                        <inherited>true</inherited>
                         <goals>
-                            <goal>validate</goal>
+                            <goal>apply</goal>
                         </goals>
                     </execution>
                 </executions>

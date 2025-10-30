@@ -3,10 +3,12 @@ package com.tripmates.backend.publications.service;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+
+import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
-import com.tripmates.backend.utils.PublicactionBuilder;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.utils.PublicationBuilder;
+import com.tripmates.backend.users.entity.mongo.Account;
 
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,9 @@ import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import java.util.ArrayList;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Component
 @Transactional
@@ -37,13 +42,13 @@ public class PublicationService {
 			BusinessPublicationRequestDTO businessPublicationDTO, List<MultipartFile> imageFiles,
 			String authenticatedUserEmail) {
 
-		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+				.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
-		var publicationConstructor = new PublicactionBuilder(storageService).publicationDetails(businessPublicationDTO)
-			.owner(user);
+		var publicationConstructor = new PublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
+				.owner(user);
 
-		if (imageFiles != null) {
+		if (imageFiles != null && !imageFiles.isEmpty()) {
 			publicationConstructor = publicationConstructor.imageFiles(imageFiles);
 		}
 		Publication savedPublication = publicationRepository.save(publicationConstructor.build());
@@ -52,9 +57,9 @@ public class PublicationService {
 
 	public void deletePublication(String id, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
-		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+				.orElseThrow(() -> new BadRequestException("Publication not found"));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to delete this publication");
 		}
@@ -69,8 +74,8 @@ public class PublicationService {
 	}
 
 	public java.util.List<BusinessPublicationResponseDTO> listMyPublications(String authenticatedUserEmail) {
-		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 		java.util.List<Publication> pubs = publicationRepository.findByOwnerId(user.getId());
 		java.util.List<BusinessPublicationResponseDTO> out = new java.util.ArrayList<>();
 		for (Publication p : pubs) {
@@ -81,9 +86,9 @@ public class PublicationService {
 
 	public BusinessPublicationResponseDTO getMyPublication(String id, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
-		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+				.orElseThrow(() -> new BadRequestException("Publication not found"));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to access this publication");
 		}
@@ -93,10 +98,10 @@ public class PublicationService {
 	public BusinessPublicationResponseDTO updatePublication(String id, BusinessPublicationRequestDTO dto,
 			List<MultipartFile> imageFiles, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
+				.orElseThrow(() -> new BadRequestException("Publication not found"));
 
-		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+				.orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to update this publication");
@@ -138,6 +143,10 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		return BusinessPublicationResponseDTO.fromPublication(publication);
+	}
+
+	public Page<BusinessPublicationResponseDTO> search(PublicationSearchRequestDTO filters, Pageable pageable) {
+		return publicationRepository.search(filters, pageable).map(BusinessPublicationResponseDTO::fromPublication);
 	}
 
 }
