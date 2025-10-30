@@ -2,9 +2,9 @@ name: Integration Tests
 
 on:
   push:
-    branches: [main, dev, dev-back]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev, backend]
 
 env:
   # MongoDB
