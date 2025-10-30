@@ -225,7 +225,7 @@ public class AuthControllerTests {
 	@Test
 	void testRegisterBusinessShouldReturnNoContent() {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
-				Role.BUSINESS, BusinessType.HOSTING);
+				Role.BUSINESS, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -238,7 +238,7 @@ public class AuthControllerTests {
 	@Test
 	void testGivenTypeBusiness_whenRegisterUserShouldFailAndReturnError400() throws JSONException {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
-				Role.USER, BusinessType.HOSTING);
+				Role.USER, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -286,7 +286,7 @@ public class AuthControllerTests {
 	@Test
 	void testGivenNoName_WhenRegisterBusiness_ThenShouldFailAndReturnError400() throws JSONException {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO(null, "LETI@example.com", "123456",
-				Role.BUSINESS, BusinessType.HOSTING);
+				Role.BUSINESS, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);

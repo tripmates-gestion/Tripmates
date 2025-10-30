@@ -18,4 +18,9 @@ public class ValidationErrorMessage {
 
 	public static final String FILD_NO_ALLOWED = "El campo no está permitido: ";
 
+	public static final String NOT_BUSINESS_ACCOUNT = "La cuenta debe ser de tipo negocio";
+
+	public static final String NOT_RESTAURANT_ACCOUNT = "La cuenta debe ser de tipo restaurante";
+
+	public static final String NOT_HOTEL_ACCOUNT = "La cuenta debe ser de tipo hotel";
 }
