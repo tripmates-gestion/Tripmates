@@ -2,10 +2,11 @@ package com.tripmates.backend.users.entity.mongo;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.common.types.MenuItem;
+import com.tripmates.backend.common.types.RoomPack;
 import com.tripmates.backend.users.entity.Role;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
@@ -18,72 +19,82 @@ import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import com.tripmates.backend.common.types.AveragePrice;
 
 @Getter
 @Setter
 @Document(collection = "account")
 public class Account implements UserDetails {
 
-	/** User's ID. */
+	/** Account's refresh token. */
+	@Field(targetType = FieldType.STRING)
+	private String token;
+
+	/** Account's ID. */
 	@Id
 	private String id;
 
-	/** User's email. */
+	/** Account's avatar profile URL. */
+	@Field(targetType = FieldType.STRING)
+	private String avatarURL;
+
+	/** Account's name. */
+	@NotNull
+	private String name;
+
+	/** Account's email. */
 	@NotNull
 	@Indexed(unique = true)
 	private String email;
 
-	/** User's username. */
-	@NotNull
-	private String name;
-
-	/** User's password. */
+	/** Account's password. */
 	@NotNull
 	private String password;
 
-	/** User's business type. Only allowed in BUSINESS account. */
-	@NotNull
-	@Field(targetType = FieldType.STRING)
-	private BusinessType businessType;
-
-	/** User's role. */
+	/** Account's role. */
 	@NotNull
 	@Field(targetType = FieldType.STRING)
 	private Role role;
 
-	/** User's profile description. */
+	/** Account's profile description. */
 	@Field(targetType = FieldType.STRING)
 	private String description;
 
-	/** User's avatar profile URL. */
+	/** Account's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
-	private String avatarURL;
-
-	/** User's refresh token. */
-	@Field(targetType = FieldType.STRING)
-	private String token;
-
-	/** User's business available days. Only allowed in BUSINESS account. */
-	private List<DayOfWeek> openingDays;
-
-	/** User's business attention schedule. Only allowed in BUSINESS account. */
-	private AttentionSchedule attentionSchedule;
-
-	/**
-	 * User's business particular closing days. Only allowed in BUSINESS account.
-	 */
-	private List<LocalDate> exceptionalClosingDays;
+	private String location;
 
 	/** User's phone number. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
 	private String phoneNumber;
 
-	/** User's business location. Only allowed in BUSINESS account. */
-	@Field(targetType = FieldType.STRING)
-	private String location;
+	/** Account's public email. Only allowed in BUSINESS account. */
+	private String publicEmail;
 
-	/** User's profile pictures URLs. */
+	/** Account's profile pictures URLs. Only allowed in BUSINESS account */
 	private List<String> profileImageUrls;
+
+	/** Account's business type. Only allowed in BUSINESS account. */
+	@NotNull
+	@Field(targetType = FieldType.STRING)
+	private BusinessType businessType;
+
+	/** Account's average price. Only allowed in BUSINESS account. */
+	private AveragePrice averagePrice;
+
+	/**
+	 * For restaurants:
+	 */
+	private String restaurantType;
+	private AttentionSchedule attentionSchedule;
+	private List<DayOfWeek> openingDays;
+	private List<MenuItem> menu;
+
+	/*
+	 * For hotels:
+	 */
+	private String hotelType;
+	private List<RoomPack> roomPacks;
 
 	@Override
 	public String getPassword() {
