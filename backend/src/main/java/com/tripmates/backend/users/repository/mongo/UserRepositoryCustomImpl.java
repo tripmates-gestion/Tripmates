@@ -2,7 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.users.entity.mongo.Account;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -23,7 +23,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	private MongoTemplate mongoTemplate;
 
 	@Override
-	public Page<User> searchUsers(String username, Role role, String location, BusinessType businessType,
+	public Page<Account> searchUsers(String username, Role role, String location, BusinessType businessType,
 			Pageable pageable) {
 		Query query = new Query();
 		List<Criteria> criteriaList = new ArrayList<>();
@@ -43,10 +43,10 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 		if (!criteriaList.isEmpty())
 			query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
 
-		long total = mongoTemplate.count(query, User.class);
+		long total = mongoTemplate.count(query, Account.class);
 		query.with(pageable);
 
-		return new PageImpl<>(mongoTemplate.find(query, User.class), pageable, total);
+		return new PageImpl<>(mongoTemplate.find(query, Account.class), pageable, total);
 	}
 
 }
