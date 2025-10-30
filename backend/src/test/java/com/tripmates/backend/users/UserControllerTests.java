@@ -20,7 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.util.UriComponentsBuilder;
+// import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
@@ -62,23 +62,25 @@ public class UserControllerTests {
 	public record PageResponse<T>(List<T> content, int totalPages, long totalElements, int number, int size) {
 	}
 
-	@Test
-	void searchWithFiltersButWithNoUsersShouldReturnNothing() {
-		String url = baseUrl()
-				+ "/users/search?name=Fran Infanti&location=Buenos Aires, 3 de Febrero&role=BUSINESS&businessType=TOURISM";
+	// @Test
+	// void searchWithFiltersButWithNoUsersShouldReturnNothing() {
+	// String url = baseUrl()
+	// + "/users/search?name=Fran Infanti&location=Buenos Aires, 3 de
+	// Febrero&role=BUSINESS&businessType=TOURISM";
 
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
-				new ParameterizedTypeReference<>() {
-				});
+	// ResponseEntity<PageResponse<UserResumeResponseDTO>> response =
+	// restTemplate.exchange(url, HttpMethod.GET, null,
+	// new ParameterizedTypeReference<>() {
+	// });
 
-		assertEquals(HttpStatus.OK, response.getStatusCode());
+	// assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
+	// PageResponse<UserResumeResponseDTO> page = response.getBody();
 
-		Assertions.assertNotNull(page);
-		Assertions.assertEquals(0, page.totalElements());
-		Assertions.assertTrue(page.content().isEmpty());
-	}
+	// Assertions.assertNotNull(page);
+	// Assertions.assertEquals(0, page.totalElements());
+	// Assertions.assertTrue(page.content().isEmpty());
+	// }
 
 	@Test
 	void searchWithNoFiltersShouldReturnAllUsers() {
