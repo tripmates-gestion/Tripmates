@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import {
-  isValidEmail,
   isValidPhone,
   isValidSchedule,
   isValidLocation,
@@ -26,23 +25,6 @@ export function useUpdateBusinessUserValidation() {
       errors.description = 'La descripción es obligatoria';
     }
 
-    // Validar días de apertura (formato: palabra, palabra, ...)
-    if (!form.openningDays?.trim()) {
-      errors.openningDays = 'Los días de apertura son obligatorios';
-    } else {
-      const days = form.openningDays
-        .split(',')
-        .map((d) => d.trim())
-        .filter(Boolean);
-
-      const invalid = days.some(
-        (d) => !/^[A-Za-zÁÉÍÓÚáéíóúÑñ]+$/.test(d)
-      );
-      if (invalid) {
-        errors.openningDays = 'Formato inválido. Usá nombres de días separados por coma (ej: Lunes, Martes)';
-      }
-    }
-
     // Validar horarios
     if (!form.openingHours?.trim()) {
       errors.openingHours = 'El horario es obligatorio';
@@ -60,8 +42,8 @@ export function useUpdateBusinessUserValidation() {
     // Validar contacto
     if (!form.phone?.trim()) {
       errors.phone = 'El teléfono es obligatorio';
-    } else if (!isValidEmail(form.phone) && !isValidPhone(form.phone)) {
-      errors.phone = 'Debe ser un email o número de teléfono válido';
+    } else if (!isValidPhone(form.phone)) {
+      errors.phone = 'Ingresá un número de teléfono válido';
     }
 
     return errors;

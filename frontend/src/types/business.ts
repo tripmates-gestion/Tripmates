@@ -161,7 +161,7 @@ export type UserStats = { aportes: number; seguidores: number; siguiendo: number
 export type UpdateProfileFormState = {
   name: string;
   description: string;
-  openningDays: string;
+  openningDays: DayOfWeek[];
   openingHours: string;
   location: string;
   phone: string;
