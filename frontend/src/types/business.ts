@@ -180,7 +180,7 @@ export type CompleteBusinessProfile = {
   openingHours: AttentionSchedule | null;
   location:string;
   phone:string;
-  onCloudPhotos: string[];//array de links a las fotos
+  businessUrlPhotos: string[];//array de links a las fotos
 
   avatarUrl?: string;
   coverUrl?: string;
