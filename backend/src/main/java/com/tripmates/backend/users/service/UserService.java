@@ -38,87 +38,92 @@ public class UserService {
 		return UserResumeResponseDTO.fromUser(user);
 	}
 
-	public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
-			List<MultipartFile> imageFiles, MultipartFile avatar) {
-		Account user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+	// public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO
+	// userUpdateRequestDTO,
+	// List<MultipartFile> imageFiles, MultipartFile avatar) {
 
-		if (userUpdateRequestDTO.name() != null)
-			user.setName(userUpdateRequestDTO.name());
+	// Account user = userRepository.findByEmail(email).orElseThrow(() -> new
+	// UserNotFoundException("User not found"));
 
-		if (userUpdateRequestDTO.description() != null)
-			user.setDescription(userUpdateRequestDTO.description());
+	// if (userUpdateRequestDTO.name() != null)
+	// user.setName(userUpdateRequestDTO.name());
 
-		if (userUpdateRequestDTO.avatarURL() != null) {
-			String previous = user.getAvatarURL();
-			String next = userUpdateRequestDTO.avatarURL();
+	// if (userUpdateRequestDTO.description() != null)
+	// user.setDescription(userUpdateRequestDTO.description());
 
-			if (previous != null && !previous.isBlank() && (!previous.equals(next)))
-				storageService.deleteByUrl(previous);
+	// if (userUpdateRequestDTO.avatarURL() != null) {
+	// String previous = user.getAvatarURL();
+	// String next = userUpdateRequestDTO.avatarURL();
 
-			user.setAvatarURL(next);
-		}
+	// if (previous != null && !previous.isBlank() && (!previous.equals(next)))
+	// storageService.deleteByUrl(previous);
 
-		if (userUpdateRequestDTO.openingDays() != null)
-			user.setOpeningDays(userUpdateRequestDTO.openingDays());
+	// user.setAvatarURL(next);
+	// }
 
-		if (userUpdateRequestDTO.attentionSchedule() != null)
-			user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
+	// if (userUpdateRequestDTO.openingDays() != null)
+	// user.setOpeningDays(userUpdateRequestDTO.openingDays());
 
-		if (userUpdateRequestDTO.exceptionalClosingDays() != null)
-			user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
+	// if (userUpdateRequestDTO.attentionSchedule() != null)
+	// user.setAttentionSchedule(userUpdateRequestDTO.attentionSchedule());
 
-		if (userUpdateRequestDTO.phoneNumber() != null)
-			user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
+	// if (userUpdateRequestDTO.exceptionalClosingDays() != null)
+	// user.setExceptionalClosingDays(userUpdateRequestDTO.exceptionalClosingDays());
 
-		if (userUpdateRequestDTO.location() != null)
-			user.setLocation(userUpdateRequestDTO.location());
+	// if (userUpdateRequestDTO.phoneNumber() != null)
+	// user.setPhoneNumber(userUpdateRequestDTO.phoneNumber());
 
-		if (imageFiles != null && !imageFiles.isEmpty()) {
-			if (user.getProfileImageUrls() != null) {
-				for (String oldUrl : user.getProfileImageUrls()) {
-					if (oldUrl != null && !oldUrl.isBlank())
-						storageService.deleteByUrl(oldUrl);
-				}
-			}
+	// if (userUpdateRequestDTO.location() != null)
+	// user.setLocation(userUpdateRequestDTO.location());
 
-			List<String> urls = new ArrayList<>();
-			for (MultipartFile file : imageFiles) {
-				String url = storageService.uploadFile(file);
-				urls.add(url);
-			}
+	// if (imageFiles != null && !imageFiles.isEmpty()) {
+	// if (user.getProfileImageUrls() != null) {
+	// for (String oldUrl : user.getProfileImageUrls()) {
+	// if (oldUrl != null && !oldUrl.isBlank())
+	// storageService.deleteByUrl(oldUrl);
+	// }
+	// }
 
-			user.setProfileImageUrls(urls);
+	// List<String> urls = new ArrayList<>();
+	// for (MultipartFile file : imageFiles) {
+	// String url = storageService.uploadFile(file);
+	// urls.add(url);
+	// }
 
-			if (user.getAvatarURL() == null && !urls.isEmpty())
-				user.setAvatarURL(urls.getFirst());
+	// user.setProfileImageUrls(urls);
 
-		} else if (userUpdateRequestDTO.profileImageUrls() != null) {
-			if (user.getProfileImageUrls() != null) {
-				for (String oldUrl : user.getProfileImageUrls()) {
-					if (oldUrl != null && !oldUrl.isBlank())
-						storageService.deleteByUrl(oldUrl);
-				}
-			}
+	// if (user.getAvatarURL() == null && !urls.isEmpty())
+	// user.setAvatarURL(urls.getFirst());
 
-			user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
-		}
+	// } else if (userUpdateRequestDTO.profileImageUrls() != null) {
+	// if (user.getProfileImageUrls() != null) {
+	// for (String oldUrl : user.getProfileImageUrls()) {
+	// if (oldUrl != null && !oldUrl.isBlank())
+	// storageService.deleteByUrl(oldUrl);
+	// }
+	// }
 
-		if (avatar != null && !avatar.isEmpty()) {
-			String previous = user.getAvatarURL();
-			if (previous != null && !previous.isBlank())
-				storageService.deleteByUrl(previous);
+	// user.setProfileImageUrls(userUpdateRequestDTO.profileImageUrls());
+	// }
 
-			String avatarUrl = storageService.uploadFile(avatar);
-			user.setAvatarURL(avatarUrl);
-		}
+	// if (avatar != null && !avatar.isEmpty()) {
+	// String previous = user.getAvatarURL();
+	// if (previous != null && !previous.isBlank())
+	// storageService.deleteByUrl(previous);
 
-		userRepository.save(user);
+	// String avatarUrl = storageService.uploadFile(avatar);
+	// user.setAvatarURL(avatarUrl);
+	// }
 
-		return new UserResumeResponseDTO(user.getName(), user.getEmail(), user.getRole(), user.getDescription(),
-				user.getAvatarURL(), user.getBusinessType(), user.getOpeningDays(), user.getAttentionSchedule(),
-				user.getExceptionalClosingDays(), user.getPhoneNumber(), user.getLocation(),
-				user.getProfileImageUrls());
-	}
+	// userRepository.save(user);
+
+	// return new UserResumeResponseDTO(user.getName(), user.getEmail(),
+	// user.getRole(), user.getDescription(),
+	// user.getAvatarURL(), user.getBusinessType(), user.getOpeningDays(),
+	// user.getAttentionSchedule(),
+	// user.getExceptionalClosingDays(), user.getPhoneNumber(), user.getLocation(),
+	// user.getProfileImageUrls());
+	// }
 
 	/**
 	 * Retorna una page con los usuarios que cumplen con los filtros especificados.

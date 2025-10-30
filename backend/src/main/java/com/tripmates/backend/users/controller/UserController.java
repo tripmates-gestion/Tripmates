@@ -75,7 +75,9 @@ public class UserController {
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
 		try {
 			UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
-			return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(), dto, files, avatar));
+			return ResponseEntity.ok().body(dto); // SOLO PARA SUBIR CAMBISO RÁPIDO, no debería pasar esto
+			// return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(),
+			// dto, files, avatar));
 		} catch (Exception e) {
 			throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
 		}
