@@ -44,6 +44,8 @@ export default function App({ mode, setMode }: AppProps) {
         <Route element={<DefaultLayout />}>
           <Route path={PAGES_ROUTE.root} element={<Home />} />
           <Route path={PAGES_ROUTE.search} element={<Search />} />
+          {/* <Route path={PAGES_ROUTE.restaurantPublic} element={<RestaurantPublicPage />} />
+          <Route path={PAGES_ROUTE.hotelPublic} element={<HotelPublicPage />} /> */}
         </Route>
 
         {/* Profile route with role-based rendering */}

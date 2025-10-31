@@ -117,8 +117,9 @@ export default function Search() {
   const nav = useNavigate();
   const q = new URLSearchParams(useLocation().search).get('q') || '';
   
-  // Estado para almacenar los resultados de búsqueda
+  // Estado para almacenar los resultados de búsqueda (con TODA LA información retornada)
   const [searchResults, setSearchResults] = useState<any[]>([]);
+
   const [isSearching, setIsSearching] = useState(false);
 
   // Función para manejar los resultados de búsqueda
@@ -163,6 +164,7 @@ export default function Search() {
 
       {/* Grilla responsiva o mensaje de sin resultados */}
       {items.length > 0 ? (
+        // tema... ¿Qué le envíamos a la placeGrid para que renderice en miniatura los resultados de business y cuando se le haga click se redirija a la página de detalles de la cuenta?
         <PlaceGrid places={items.map(normalizeToBusinessPlace)} />
       ) : (
         <Stack 
