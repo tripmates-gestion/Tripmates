@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.common.types.AveragePrice;
 import com.tripmates.backend.common.types.BusinessType;
 
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -498,227 +499,183 @@ public class PatchMeTest {
                                 .andDo(print());
         }
 
-        // @Test
-        // void
-        // testGivenUserAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
-        // String requestJson = """
-        // {
-        // "name": "New Name",
-        // "description": "New Description"
-        // }
-        // """;
+        @Test
+        void testGivenRestaurantAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200()
+                        throws Exception {
+                String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
+                String requestJson = """
+                                {
+                                "name": "New Name",
+                                "description": "New Description"
+                                }
+                                """;
 
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
+                MockMultipartFile dataPart = new MockMultipartFile("data", "",
+                                "application/json",
+                                requestJson.getBytes(StandardCharsets.UTF_8));
 
-        // mockMvc.perform(multipart("/users/me")
-        // .file(dataPart)
-        // .with(request -> {
-        // request.setMethod("PATCH");
-        // return request;
-        // }).header("Authorization", "Bearer " + jwt))
-        // .andExpect(status().isOk())
-        // .andDo(print());
-        // }
+                mockMvc.perform(multipart("/users/me")
+                                .file(dataPart)
+                                .with(request -> {
+                                        request.setMethod("PATCH");
+                                        return request;
+                                }).header("Authorization", "Bearer " + jwt))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.avatarURL", is(nullValue())))
+                                .andExpect(jsonPath("$.name", is("New Name")))
+                                .andExpect(jsonPath("$.email", is("test@example.com")))
+                                .andExpect(jsonPath("$.role", is("BUSINESS")))
+                                .andExpect(jsonPath("$.description", is("New Description")))
+                                .andExpect(jsonPath("$.location", is(nullValue())))
+                                .andExpect(jsonPath("$.phoneNumber", is(nullValue())))
+                                .andExpect(jsonPath("$.publicEmail", is(nullValue())))
+                                .andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
+                                .andExpect(jsonPath("$.businessType", is("RESTAURANT")))
+                                .andExpect(jsonPath("$.averagePrice", is(nullValue())))
+                                .andExpect(jsonPath("$.restaurantType", is(nullValue())))
+                                .andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
+                                .andExpect(jsonPath("$.openingDays", is(nullValue())))
+                                .andExpect(jsonPath("$.menu", is(nullValue())))
+                                .andExpect(jsonPath("$.hotelType", is(nullValue())))
+                                .andExpect(jsonPath("$.roomPacks", is(nullValue())))
+                                .andDo(print());
+        }
 
-        // @Test
-        // void
-        // testGivenUserAccount_WhenPatchMeWithRestaurantFields_ThenShouldFailAndReturnError400BadRequest()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
-        // String requestJson = """
-        // {
-        // "restaurantType": "Comida peruana"
-        // }
-        // """;
+        @Test
+        void testGivenRestaurantAccount_WhenPatchMeBusinessCommonFields_ThenShouldSuccessAndReturn200()
+                        throws Exception {
+                String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
+                String requestJson = """
+                                {
+                                "name": "New Name",
+                                "description": "New Description",
+                                "location": "New Location",
+                                "phoneNumber": "123456789",
+                                "publicEmail": "testPublic@example.com",
+                                "averagePrice": "$"
+                                }
+                                """;
 
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
+                MockMultipartFile dataPart = new MockMultipartFile("data", "",
+                                "application/json",
+                                requestJson.getBytes(StandardCharsets.UTF_8));
 
-        // mockMvc.perform(multipart("/users/me")
-        // .file(dataPart)
-        // .with(request -> {
-        // request.setMethod("PATCH");
-        // return request;
-        // }).header("Authorization", "Bearer " + jwt))
-        // .andExpect(status().isBadRequest())
-        // .andExpect(jsonPath("$.type").value("about:blank"))
-        // .andExpect(jsonPath("$.title").value("Bad Request"))
-        // .andExpect(jsonPath("$.status").value(400))
-        // .andExpect(jsonPath("$.detail").value(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT))
-        // .andExpect(jsonPath("$.instance").value("/users/me"))
-        // .andDo(print());
-        // }
+                mockMvc.perform(multipart("/users/me")
+                                .file(dataPart)
+                                .with(request -> {
+                                        request.setMethod("PATCH");
+                                        return request;
+                                }).header("Authorization", "Bearer " + jwt))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.avatarURL", is(nullValue())))
+                                .andExpect(jsonPath("$.name", is("New Name")))
+                                .andExpect(jsonPath("$.email", is("test@example.com")))
+                                .andExpect(jsonPath("$.role", is("BUSINESS")))
+                                .andExpect(jsonPath("$.description", is("New Description")))
+                                .andExpect(jsonPath("$.location", is("New Location")))
+                                .andExpect(jsonPath("$.phoneNumber", is("123456789")))
+                                .andExpect(jsonPath("$.publicEmail", is("testPublic@example.com")))
+                                .andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
+                                .andExpect(jsonPath("$.businessType", is("RESTAURANT")))
+                                .andExpect(jsonPath("$.averagePrice", is("$")))
+                                .andExpect(jsonPath("$.restaurantType", is(nullValue())))
+                                .andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
+                                .andExpect(jsonPath("$.openingDays", is(nullValue())))
+                                .andExpect(jsonPath("$.menu", is(nullValue())))
+                                .andExpect(jsonPath("$.hotelType", is(nullValue())))
+                                .andExpect(jsonPath("$.roomPacks", is(nullValue())))
+                                .andDo(print());
+        }
 
-        // @Test
-        // void testGivenNoTitle_WhenCreatePublication_ThenShouldFailAndReturnError400()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
+        @Test
+        void testGivenHotelAccount_WhenPatchMeBusinessCommonFields_ThenShouldSuccessAndReturn200()
+                        throws Exception {
+                String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
+                String requestJson = """
+                                {
+                                "name": "New Name",
+                                "description": "New Description",
+                                "location": "New Location",
+                                "phoneNumber": "123456789",
+                                "publicEmail": "testPublic@example.com",
+                                "averagePrice": "$"
+                                }
+                                """;
 
-        // String requestJson = """
-        // {
-        // "description": "Beautiful place with amazing views and full amenities.",
-        // "phoneNumber": "+541112345678",
-        // "email": "contact@hostel.com",
-        // "location": "San Carlos de Bariloche, Argentina",
-        // "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-        // "attentionSchedule": {
-        // "openingTime": "09:00",
-        // "closingTime": "18:00"
-        // },
-        // "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-        // "tags": ["hostel", "mountain", "nature"]
-        // }
-        // """;
+                MockMultipartFile dataPart = new MockMultipartFile("data", "",
+                                "application/json",
+                                requestJson.getBytes(StandardCharsets.UTF_8));
 
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
+                mockMvc.perform(multipart("/users/me")
+                                .file(dataPart)
+                                .with(request -> {
+                                        request.setMethod("PATCH");
+                                        return request;
+                                }).header("Authorization", "Bearer " + jwt))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.avatarURL", is(nullValue())))
+                                .andExpect(jsonPath("$.name", is("New Name")))
+                                .andExpect(jsonPath("$.email", is("test@example.com")))
+                                .andExpect(jsonPath("$.role", is("BUSINESS")))
+                                .andExpect(jsonPath("$.description", is("New Description")))
+                                .andExpect(jsonPath("$.location", is("New Location")))
+                                .andExpect(jsonPath("$.phoneNumber", is("123456789")))
+                                .andExpect(jsonPath("$.publicEmail", is("testPublic@example.com")))
+                                .andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
+                                .andExpect(jsonPath("$.businessType", is("HOTEL")))
+                                .andExpect(jsonPath("$.averagePrice", is("$")))
+                                .andExpect(jsonPath("$.restaurantType", is(nullValue())))
+                                .andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
+                                .andExpect(jsonPath("$.openingDays", is(nullValue())))
+                                .andExpect(jsonPath("$.menu", is(nullValue())))
+                                .andExpect(jsonPath("$.hotelType", is(nullValue())))
+                                .andExpect(jsonPath("$.roomPacks", is(nullValue())))
+                                .andDo(print());
+        }
 
-        // mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization",
-        // "Bearer " + jwt))
-        // .andExpect(status().isBadRequest())
-        // .andExpect(jsonPath("$.type").value("about:blank"))
-        // .andExpect(jsonPath("$.title").value("Validation Error"))
-        // .andExpect(jsonPath("$.status").value(400))
-        // .andExpect(jsonPath("$.detail")
-        // .value("title: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
-        // .andExpect(jsonPath("$.instance").value("/publications/business"))
-        // .andDo(print());
-        // }
+        @Test
+        void testGivenHotelAccount_WhenPatchMeHotelCommonFields_ThenShouldSuccessAndReturn200()
+                        throws Exception {
+                String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
+                String requestJson = """
+                                {
+                                "name": "New Name",
+                                "hotelType": "Hotel de lujo"
+                                }
+                                """;
 
-        // @Test
-        // void
-        // testGivenNoDescription_WhenCreatePublication_ThenShouldFailAndReturnError400()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
+                MockMultipartFile dataPart = new MockMultipartFile("data", "",
+                                "application/json",
+                                requestJson.getBytes(StandardCharsets.UTF_8));
 
-        // String requestJson = """
-        // {
-        // "title": "Beautiful place with amazing views and full amenities.",
-        // "phoneNumber": "+541112345678",
-        // "email": "contact@hostel.com",
-        // "location": "San Carlos de Bariloche, Argentina",
-        // "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-        // "attentionSchedule": {
-        // "openingTime": "09:00",
-        // "closingTime": "18:00"
-        // },
-        // "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-        // "tags": ["hostel", "mountain", "nature"]
-        // }
-        // """;
-
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
-
-        // mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization",
-        // "Bearer " + jwt))
-        // .andExpect(status().isBadRequest())
-        // .andExpect(jsonPath("$.type").value("about:blank"))
-        // .andExpect(jsonPath("$.title").value("Validation Error"))
-        // .andExpect(jsonPath("$.status").value(400))
-        // .andExpect(jsonPath("$.detail")
-        // .value("description: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
-        // .andExpect(jsonPath("$.instance").value("/publications/business"))
-        // .andDo(print());
-        // }
-
-        // @Test
-        // void
-        // testGivenJustDescriptionAndTitle_WhenCreatePublication_ThenShouldSuccess()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
-
-        // String requestJson = """
-        // {
-        // "title": "Beautiful place with amazing views and full amenities.",
-        // "description": "Beautiful place with amazing views and full amenities."
-        // }
-        // """;
-
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
-        // mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization",
-        // "Bearer " + jwt))
-        // .andExpect(status().isOk())
-        // .andExpect(jsonPath("$.id").isNotEmpty())
-        // .andExpect(jsonPath("$.title")
-        // .value("Beautiful place with amazing views and full amenities."))
-        // .andExpect(jsonPath("$.description")
-        // .value("Beautiful place with amazing views and full amenities."))
-        // .andExpect(jsonPath("$.openingDays").isArray())
-        // .andExpect(jsonPath("$.openingDays").isEmpty())
-        // .andExpect(jsonPath("$.attentionSchedule").value(Matchers.nullValue()))
-        // .andExpect(jsonPath("$.phoneNumber").value(Matchers.nullValue()))
-        // .andExpect(jsonPath("$.email").value(Matchers.nullValue()))
-        // .andExpect(jsonPath("$.location").value(Matchers.nullValue()))
-        // .andExpect(jsonPath("$.imageUrls").isArray())
-        // .andExpect(jsonPath("$.imageUrls").isEmpty())
-        // .andExpect(jsonPath("$.tags").isArray())
-        // .andExpect(jsonPath("$.tags").isEmpty())
-        // .andExpect(jsonPath("$.ownerId").isNotEmpty())
-        // .andExpect(jsonPath("$.ownerUsername").exists())
-        // .andExpect(jsonPath("$.createdAt").isNotEmpty())
-        // .andDo(print());
-        // }
-
-        // @Test
-        // void testGivenAllFieldsExceptImages_WhenCreatePublication_ThenShouldSuccess()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
-
-        // String requestJson = """
-        // {
-        // "title": "Beautiful place with amazing views and full amenities.",
-        // "description": "Beautiful place with amazing views and full amenities.",
-        // "phoneNumber": "+541112345678",
-        // "email": "contact@hostel.com",
-        // "location": "San Carlos de Bariloche, Argentina",
-        // "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-        // "attentionSchedule": {
-        // "openingTime": "09:00",
-        // "closingTime": "18:00"
-        // },
-        // "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-        // "tags": ["hostel", "mountain", "nature"]
-        // }
-        // """;
-
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
-        // mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization",
-        // "Bearer " + jwt))
-        // .andExpect(status().isOk())
-        // .andExpect(jsonPath("$.id").isNotEmpty())
-        // .andExpect(jsonPath("$.title")
-        // .value("Beautiful place with amazing views and full amenities."))
-        // .andExpect(jsonPath("$.description")
-        // .value("Beautiful place with amazing views and full amenities."))
-        // .andExpect(jsonPath("$.openingDays").isArray())
-        // .andExpect(jsonPath("$.openingDays",
-        // contains("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")))
-        // .andExpect(jsonPath("$.attentionSchedule.openingTime").value("09:00"))
-        // .andExpect(jsonPath("$.attentionSchedule.closingTime").value("18:00"))
-        // .andExpect(jsonPath("$.phoneNumber").value("+541112345678"))
-        // .andExpect(jsonPath("$.email").value("contact@hostel.com"))
-        // .andExpect(jsonPath("$.location").value("San Carlos de Bariloche,
-        // Argentina"))
-        // .andExpect(jsonPath("$.imageUrls").isArray())
-        // .andExpect(jsonPath("$.imageUrls").isEmpty())
-        // .andExpect(jsonPath("$.tags").isArray())
-        // .andExpect(jsonPath("$.tags", contains("hostel", "mountain", "nature")))
-        // .andExpect(jsonPath("$.ownerId").isNotEmpty())
-        // .andExpect(jsonPath("$.ownerUsername").exists())
-        // .andExpect(jsonPath("$.createdAt").isNotEmpty())
-        // .andDo(print());
-        // }
-
+                mockMvc.perform(multipart("/users/me")
+                                .file(dataPart)
+                                .with(request -> {
+                                        request.setMethod("PATCH");
+                                        return request;
+                                }).header("Authorization", "Bearer " + jwt))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.avatarURL", is(nullValue())))
+                                .andExpect(jsonPath("$.name", is("New Name")))
+                                .andExpect(jsonPath("$.email", is("test@example.com")))
+                                .andExpect(jsonPath("$.role", is("BUSINESS")))
+                                .andExpect(jsonPath("$.description", is(nullValue())))
+                                .andExpect(jsonPath("$.location", is(nullValue())))
+                                .andExpect(jsonPath("$.phoneNumber", is(nullValue())))
+                                .andExpect(jsonPath("$.publicEmail", is(nullValue())))
+                                .andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
+                                .andExpect(jsonPath("$.businessType", is("HOTEL")))
+                                .andExpect(jsonPath("$.averagePrice", is(nullValue())))
+                                .andExpect(jsonPath("$.restaurantType", is(nullValue())))
+                                .andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
+                                .andExpect(jsonPath("$.openingDays", is(nullValue())))
+                                .andExpect(jsonPath("$.menu", is(nullValue())))
+                                .andExpect(jsonPath("$.hotelType", is("Hotel de lujo")))
+                                .andExpect(jsonPath("$.roomPacks", is(nullValue())))
+                                .andDo(print());
+        }
 }
