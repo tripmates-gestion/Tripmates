@@ -26,7 +26,7 @@ public record AccountResumeResponseDTO(
 		@Schema(description = "Business account's business type") BusinessType businessType,
 		@Schema(description = "Business account's average price") AveragePrice averagePrice,
 		@Schema(description = "Restaurant account's type") String restaurantType,
-		@Schema(description = "Restaurant account's opening days") AttentionSchedule attentionSchedule,
+		@Schema(description = "Restaurant account's attention schedule") AttentionSchedule attentionSchedule,
 		@Schema(description = "Restaurant account's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant account's menu") List<MenuItem> menu,
 		@Schema(description = "Hotel account's type") String hotelType,
