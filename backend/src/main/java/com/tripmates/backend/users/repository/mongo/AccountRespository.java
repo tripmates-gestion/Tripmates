@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @see org.springframework.data.mongodb.repository.MongoRepository
  * @see com.tripmates.backend.users.entity.mongo.Account
  */
-public interface UserRepository extends MongoRepository<Account, String>, UserRepositoryCustom {
+public interface AccountRespository extends MongoRepository<Account, String>, UserRepositoryCustom {
 
 	/**
 	 * Devuelve el usuario asociado al email.
