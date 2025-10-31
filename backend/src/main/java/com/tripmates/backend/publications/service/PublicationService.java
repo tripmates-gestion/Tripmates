@@ -6,7 +6,7 @@ import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 import com.tripmates.backend.utils.PublicationBuilder;
 import com.tripmates.backend.users.entity.mongo.Account;
 
@@ -36,7 +36,7 @@ public class PublicationService {
 	private StorageService storageService;
 
 	@Autowired
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	public BusinessPublicationResponseDTO createBusinessPublication(
 			BusinessPublicationRequestDTO businessPublicationDTO, List<MultipartFile> imageFiles,

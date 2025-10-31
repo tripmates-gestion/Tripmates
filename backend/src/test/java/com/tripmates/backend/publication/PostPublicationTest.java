@@ -5,7 +5,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
-
 import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -37,7 +34,7 @@ import com.tripmates.backend.TestHelper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc
 @Import({ TestCloudinaryConfig.class })
-public class PublicationControllerTests {
+public class PostPublicationTest {
 
 	@LocalServerPort
 	private int port;
@@ -48,15 +45,10 @@ public class PublicationControllerTests {
 	private TestRestTemplate restTemplate;
 
 	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
-
-	private HttpHeaders headers = new HttpHeaders();
 
 	@BeforeAll
 	void setUp() {
@@ -71,7 +63,7 @@ public class PublicationControllerTests {
 
 	@Test
 	void testGivenNoTitle_WhenCreatePublication_ThenShouldFailAndReturnError400() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -93,18 +85,18 @@ public class PublicationControllerTests {
 				requestJson.getBytes(StandardCharsets.UTF_8));
 
 		mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.type").value("about:blank"))
-			.andExpect(jsonPath("$.title").value("Validation Error"))
-			.andExpect(jsonPath("$.status").value(400))
-			.andExpect(jsonPath("$.detail").value("title: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
-			.andExpect(jsonPath("$.instance").value("/publications/business"))
-			.andDo(print());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.type").value("about:blank"))
+				.andExpect(jsonPath("$.title").value("Validation Error"))
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.detail").value("title: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
+				.andExpect(jsonPath("$.instance").value("/publications/business"))
+				.andDo(print());
 	}
 
 	@Test
 	void testGivenNoDescription_WhenCreatePublication_ThenShouldFailAndReturnError400() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -126,18 +118,18 @@ public class PublicationControllerTests {
 				requestJson.getBytes(StandardCharsets.UTF_8));
 
 		mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.type").value("about:blank"))
-			.andExpect(jsonPath("$.title").value("Validation Error"))
-			.andExpect(jsonPath("$.status").value(400))
-			.andExpect(jsonPath("$.detail").value("description: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
-			.andExpect(jsonPath("$.instance").value("/publications/business"))
-			.andDo(print());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.type").value("about:blank"))
+				.andExpect(jsonPath("$.title").value("Validation Error"))
+				.andExpect(jsonPath("$.status").value(400))
+				.andExpect(jsonPath("$.detail").value("description: " + ValidationErrorMessage.EMPTY_OR_NULL_FIELD))
+				.andExpect(jsonPath("$.instance").value("/publications/business"))
+				.andDo(print());
 	}
 
 	@Test
 	void testGivenJustDescriptionAndTitle_WhenCreatePublication_ThenShouldSuccess() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -149,29 +141,29 @@ public class PublicationControllerTests {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
 		mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").isNotEmpty())
-			.andExpect(jsonPath("$.title").value("Beautiful place with amazing views and full amenities."))
-			.andExpect(jsonPath("$.description").value("Beautiful place with amazing views and full amenities."))
-			.andExpect(jsonPath("$.openingDays").isArray())
-			.andExpect(jsonPath("$.openingDays").isEmpty())
-			.andExpect(jsonPath("$.attentionSchedule").value(Matchers.nullValue()))
-			.andExpect(jsonPath("$.phoneNumber").value(Matchers.nullValue()))
-			.andExpect(jsonPath("$.email").value(Matchers.nullValue()))
-			.andExpect(jsonPath("$.location").value(Matchers.nullValue()))
-			.andExpect(jsonPath("$.imageUrls").isArray())
-			.andExpect(jsonPath("$.imageUrls").isEmpty())
-			.andExpect(jsonPath("$.tags").isArray())
-			.andExpect(jsonPath("$.tags").isEmpty())
-			.andExpect(jsonPath("$.ownerId").isNotEmpty())
-			.andExpect(jsonPath("$.ownerUsername").exists())
-			.andExpect(jsonPath("$.createdAt").isNotEmpty())
-			.andDo(print());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isNotEmpty())
+				.andExpect(jsonPath("$.title").value("Beautiful place with amazing views and full amenities."))
+				.andExpect(jsonPath("$.description").value("Beautiful place with amazing views and full amenities."))
+				.andExpect(jsonPath("$.openingDays").isArray())
+				.andExpect(jsonPath("$.openingDays").isEmpty())
+				.andExpect(jsonPath("$.attentionSchedule").value(Matchers.nullValue()))
+				.andExpect(jsonPath("$.phoneNumber").value(Matchers.nullValue()))
+				.andExpect(jsonPath("$.email").value(Matchers.nullValue()))
+				.andExpect(jsonPath("$.location").value(Matchers.nullValue()))
+				.andExpect(jsonPath("$.imageUrls").isArray())
+				.andExpect(jsonPath("$.imageUrls").isEmpty())
+				.andExpect(jsonPath("$.tags").isArray())
+				.andExpect(jsonPath("$.tags").isEmpty())
+				.andExpect(jsonPath("$.ownerId").isNotEmpty())
+				.andExpect(jsonPath("$.ownerUsername").exists())
+				.andExpect(jsonPath("$.createdAt").isNotEmpty())
+				.andDo(print());
 	}
 
 	@Test
 	void testGivenAllFieldsExceptImages_WhenCreatePublication_ThenShouldSuccess() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -193,25 +185,25 @@ public class PublicationControllerTests {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
 		mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").isNotEmpty())
-			.andExpect(jsonPath("$.title").value("Beautiful place with amazing views and full amenities."))
-			.andExpect(jsonPath("$.description").value("Beautiful place with amazing views and full amenities."))
-			.andExpect(jsonPath("$.openingDays").isArray())
-			.andExpect(jsonPath("$.openingDays", contains("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")))
-			.andExpect(jsonPath("$.attentionSchedule.openingTime").value("09:00"))
-			.andExpect(jsonPath("$.attentionSchedule.closingTime").value("18:00"))
-			.andExpect(jsonPath("$.phoneNumber").value("+541112345678"))
-			.andExpect(jsonPath("$.email").value("contact@hostel.com"))
-			.andExpect(jsonPath("$.location").value("San Carlos de Bariloche, Argentina"))
-			.andExpect(jsonPath("$.imageUrls").isArray())
-			.andExpect(jsonPath("$.imageUrls").isEmpty())
-			.andExpect(jsonPath("$.tags").isArray())
-			.andExpect(jsonPath("$.tags", contains("hostel", "mountain", "nature")))
-			.andExpect(jsonPath("$.ownerId").isNotEmpty())
-			.andExpect(jsonPath("$.ownerUsername").exists())
-			.andExpect(jsonPath("$.createdAt").isNotEmpty())
-			.andDo(print());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").isNotEmpty())
+				.andExpect(jsonPath("$.title").value("Beautiful place with amazing views and full amenities."))
+				.andExpect(jsonPath("$.description").value("Beautiful place with amazing views and full amenities."))
+				.andExpect(jsonPath("$.openingDays").isArray())
+				.andExpect(jsonPath("$.openingDays", contains("MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY")))
+				.andExpect(jsonPath("$.attentionSchedule.openingTime").value("09:00"))
+				.andExpect(jsonPath("$.attentionSchedule.closingTime").value("18:00"))
+				.andExpect(jsonPath("$.phoneNumber").value("+541112345678"))
+				.andExpect(jsonPath("$.email").value("contact@hostel.com"))
+				.andExpect(jsonPath("$.location").value("San Carlos de Bariloche, Argentina"))
+				.andExpect(jsonPath("$.imageUrls").isArray())
+				.andExpect(jsonPath("$.imageUrls").isEmpty())
+				.andExpect(jsonPath("$.tags").isArray())
+				.andExpect(jsonPath("$.tags", contains("hostel", "mountain", "nature")))
+				.andExpect(jsonPath("$.ownerId").isNotEmpty())
+				.andExpect(jsonPath("$.ownerUsername").exists())
+				.andExpect(jsonPath("$.createdAt").isNotEmpty())
+				.andDo(print());
 	}
 
 }
