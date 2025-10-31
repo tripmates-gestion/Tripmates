@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { CommonUsersInformation } from "../types/user";
+import type { CommonUsersInformation } from "../types/CommonUserInfo";
 interface AuthContextType {
   token: string | null;
   refreshToken: string | null;

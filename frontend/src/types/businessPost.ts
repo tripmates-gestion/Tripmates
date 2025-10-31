@@ -1,4 +1,4 @@
-import type { BusinessType } from "./businessType";
+import type { BusinessType } from "./AccountTypes";
 
 export type BusinessPost = {
   id: string
