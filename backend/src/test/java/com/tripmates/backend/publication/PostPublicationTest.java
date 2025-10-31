@@ -5,7 +5,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
-
 import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
