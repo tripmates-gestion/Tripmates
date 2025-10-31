@@ -19,7 +19,7 @@ import EditProfileDialog, { type UserProfile } from '../components/profile/EditP
 import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
-import { type AccountType } from '../types/user'
+import { type AccountType } from '../types/AccountTypes'
 
 import { Stat } from '../components/profile/stats';
 

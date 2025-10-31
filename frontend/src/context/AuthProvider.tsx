@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
-import { type CommonUsersInformation } from "../types/user";
+import { type CommonUsersInformation } from "../types/CommonUserInfo";
 import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";
@@ -8,7 +8,6 @@ import { mapUser } from "../services/mappers/userMapper";
 interface AuthProviderProps {
     children: ReactNode;
   }
-//OJO: Chequear que el login solo devuelve los tokens
 export function AuthProvider({ children }: AuthProviderProps) {
   const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("token"));
   const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));

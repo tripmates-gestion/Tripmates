@@ -4,13 +4,14 @@ import {
   Dialog, DialogContent, DialogActions, Tabs, Tab,
   Typography, Button, Alert
 } from '@mui/material';
-import type { AuthTab, AccountType } from '../../types/auth';
+import type { AuthTab } from '../../types/auth';
+import type { AccountType } from '../../types/AccountTypes';
 import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { registerUserApi } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
-import type { BusinessType } from '../../types/businessType';
+import type { BusinessType } from '../../types/AccountTypes';
 
 // Componente de diálogo de autenticación
 // Recibe una prop "open" para controlar si el diálogo está abierto o cerrado

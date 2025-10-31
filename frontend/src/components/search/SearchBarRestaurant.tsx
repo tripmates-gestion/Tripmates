@@ -2,7 +2,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 //import PlaceCard, { type Place } from '../components/publish/PlaceCard';
-import React from 'react'
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -11,6 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { searchRestaurants } from '../../services/searchService';
 import { useState } from 'react';
 import { normalizeToBusinessPlace } from './utils/normalizePlace';
+// import { BusinessAccountData } from '../../types/AccountData';
 
 interface SearchBarRestaurantProps {
   onSearchResults: (restaurants: any[]) => void; // Callback para enviar resultados al padre
@@ -19,6 +19,14 @@ interface SearchBarRestaurantProps {
 function mapRestaurant(restaurant: any) {
   return normalizeToBusinessPlace(restaurant);
 }
+// function mapRestaurantAccount(restaurantAccount: any):BusinessAccountData {
+//   return { 
+//     id: restaurantAccount.id,
+//     name: restaurantAccount.name,
+//     role: restaurantAccount.role,
+//     photoUrl: restaurantAccount.photoUrl,
+//   }
+// }
 
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
@@ -47,11 +55,10 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
           );
         }
 
-        const mappedRestaurants = filteredRestaurants.map(mapRestaurant);
-        console.log('Restaurants found:', mappedRestaurants);
-        
+        const restaurantsProfiles = filteredRestaurants.map(mapRestaurant);
+        console.log('Restaurants found:', restaurantsProfiles);
 
-        onSearchResults(mappedRestaurants);
+        onSearchResults(restaurantsProfiles);
 
     } catch (error) {
       console.error('Error searching restaurants:', error);

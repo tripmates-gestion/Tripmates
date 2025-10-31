@@ -30,7 +30,7 @@ import { Alert } from "@mui/material";
 import type { BusinessPublicationResponseDTO } from "../types/business";
 import { Stat } from '../components/profile/stats';
 import { EmptyState } from '../components/profile/EmptyState';
-import type { CommonUsersInformation } from '../types/user';
+import type { CommonUsersInformation } from '../types/CommonUserInfo';
 import type { CompleteBusinessProfile } from '../types/business';
 import { DEFAULT_OPENING_DAYS } from '../types/business';
 import { updateBusinessUser } from '../services/userService';
@@ -59,7 +59,7 @@ function toUserProfile(u: CommonUsersInformation | null | undefined, prev?: Comp
     openingHours:           prev?.openingHours ?? null,
     location:               prev?.location ?? '',
     phone:                  prev?.phone ?? '',
-    onCloudPhotos:          prev?.onCloudPhotos ?? [],
+    businessUrlPhotos:          prev?.businessUrlPhotos ?? [],
 
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
@@ -76,11 +76,7 @@ export default function BusinessProfile() {
   const { user, token ,updateUser} = useAuth();
 
   //posiblemente se borre el estado de perfil cada vez que se quiera editar los datos (aun cuand se cancelan los cambios)
-  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user));
-
-  // React.useEffect(() => {
-  //   setCompleteProfile((prev) => toUserProfile(user, prev));
-  // }, [user]);
+  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user))
 
 
   // ayuda para saber si el tab actual es "publicaciones"
@@ -108,17 +104,9 @@ export default function BusinessProfile() {
       
       const avatarFile = formContent.avatar
         ? dataURLtoFile(formContent.avatar, "avatar.jpg")
-        : null;  
-      console.log("Avatar base64 (primeros 200 caracteres):", formContent.avatar?.slice(0, 200));
-      console.log("AvatarFile:", avatarFile);
+        : null;
       
       const response = await updateBusinessUser(data, avatarFile, files, token);
-
-      console.log("ANTES (avatar URL):", completeProfile.avatarUrl);
-      console.log("RESPUESTA BACK (avatar URL):", response.avatarURL);
-
-      
-      // console.log(response)
 
       const updatedProfile: CompleteBusinessProfile = {
         ...completeProfile, // mantenemos los campos no modificados
@@ -129,7 +117,7 @@ export default function BusinessProfile() {
         location: response.location,
         phone: response.phoneNumber,
         avatarUrl: response.avatarURL ? response.avatarURL : completeProfile.avatarUrl, // nota: el backend devuelve `avatarURL` (camel case distinto)
-        onCloudPhotos: response.profileImageUrls, // corresponde a las imágenes subidas
+        businessUrlPhotos: response.profileImageUrls, // corresponde a las imágenes subidas
         stats: completeProfile.stats, // se conserva el objeto de estadísticas local
       };
       setCompleteProfile(updatedProfile);
