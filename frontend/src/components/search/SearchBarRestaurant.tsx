@@ -22,7 +22,7 @@ function mapRestaurant(restaurant: any) {
 
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
-  const { token: accessToken } = useAuth();
+  const { accesToken: accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState('');
   const [name, setName] = useState('');

@@ -187,6 +187,8 @@ export type CompleteBusinessProfile = {
   stats: UserStats;
 };
 
+
+
 export type BusinessUpdateRequestDTO={
   name: string;
   description: string;
@@ -196,6 +198,8 @@ export type BusinessUpdateRequestDTO={
   attentionSchedule: AttentionSchedule;
   exceptionalClosingDays?:string[];  
 }
+
+
 export const DEFAULT_OPENING_DAYS: DayOfWeek[] = [
   'MONDAY', 
   'TUESDAY', 

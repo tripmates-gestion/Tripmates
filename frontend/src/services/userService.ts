@@ -1,6 +1,8 @@
 import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 import type { BusinessUpdateRequestDTO, BusinessUpdateResponseDTO } from '../types/business';
+import type { BusinessUser } from '../context/TypesUser';
+
 
 export async function getCurrentUser(token: string) {
     return apiFetch(ENDPOINTS.USER_ME, {
@@ -10,7 +12,7 @@ export async function getCurrentUser(token: string) {
 }
 
 export async function updateBusinessUser(
-  data: BusinessUpdateRequestDTO,
+  data: BusinessUser,
   avatar: File | null,
   files: File[],
   accessToken: string | null,
@@ -23,10 +25,9 @@ export async function updateBusinessUser(
   
   if (avatar) fd.append("avatar", avatar, avatar.name);
   files.forEach((f) => fd.append("files", f, f.name));
-  console.log("[USER SERVICE]: Sending request with:\n", "Method: PATCH\n", "Endpoint: ", ENDPOINTS.USER_ME, "\n", "Headers ", { Authorization: `Bearer ${accessToken}` }, "\n")
-  console.log("Body: ")
-  fd.forEach((value, key) => console.log(key, value))
-  
+  console.log("[USER SERVICE]: Sending request with:\n", "Method: PATCH\n", "Endpoint: ", ENDPOINTS.USER_ME, "\n")
+  console.log("Data: ", data)
+
   return apiFetch(ENDPOINTS.USER_ME, {
     method: "PATCH",
     headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type

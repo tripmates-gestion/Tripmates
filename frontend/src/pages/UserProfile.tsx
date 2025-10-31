@@ -56,7 +56,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
 export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token } = useAuth();
+  const { user, accessToken } = useAuth();
 
   // estado local de perfil (UI)
   //creo que esto debería ser un contexto 
@@ -80,15 +80,15 @@ export default function UserProfile() {
 
   // REINTEGRADO: persistencia al back como antes
   const handleSaveUserData = (updated: UserProfile) => {
-    if (!token) {
+    if (!accessToken) {
       console.error('No auth token available; skipping remote update');
       setProfile(updated);
       return;
     }
 
     Promise.all([
-      updateDescription(profile.description || '', updated.description || '', token),
-      updateUsername(profile.username, updated.username, token),
+      updateDescription(profile.description || '', updated.description || '', accessToken),
+      updateUsername(profile.username, updated.username, accessToken),
     ])
       .then(() => {
         setProfile(updated);
