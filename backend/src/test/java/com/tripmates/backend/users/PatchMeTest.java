@@ -461,10 +461,7 @@ public class PatchMeTest {
         // String requestJson = """
         // {
         // "name": "New Name",
-        // "description": "New Description",
-        // "location": "New Location",
-        // "phoneNumber": "1234567890",
-        // "publicEmail": "new@example.com"
+        // "description": "New Description"
         // }
         // """;
 
@@ -478,12 +475,38 @@ public class PatchMeTest {
         // request.setMethod("PATCH");
         // return request;
         // }).header("Authorization", "Bearer " + jwt))
-        // .andExpect(status().isBadRequest())
+        // .andExpect(status().isOk())
         // .andExpect(jsonPath("$.type").value("about:blank"))
         // .andExpect(jsonPath("$.title").value("Bad Request"))
         // .andExpect(jsonPath("$.status").value(400))
         // .andExpect(jsonPath("$.detail").value(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT))
         // .andExpect(jsonPath("$.instance").value("/users/me"))
+        // .andDo(print());
+        // }
+
+        // @Test
+        // void
+        // testGivenUserAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200()
+        // throws Exception {
+        // String jwt = testHelper.getUserTestingJwt("test@example.com");
+        // String requestJson = """
+        // {
+        // "name": "New Name",
+        // "description": "New Description"
+        // }
+        // """;
+
+        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
+        // "application/json",
+        // requestJson.getBytes(StandardCharsets.UTF_8));
+
+        // mockMvc.perform(multipart("/users/me")
+        // .file(dataPart)
+        // .with(request -> {
+        // request.setMethod("PATCH");
+        // return request;
+        // }).header("Authorization", "Bearer " + jwt))
+        // .andExpect(status().isOk())
         // .andDo(print());
         // }
 

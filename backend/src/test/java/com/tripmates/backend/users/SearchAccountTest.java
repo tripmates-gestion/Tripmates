@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
-import com.tripmates.backend.users.dto.UserResumeResponseDTO;
+import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
@@ -92,17 +92,17 @@ public class SearchAccountTest {
 
 		userRepository.saveAll(List.of(fran));
 
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate
 				.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(fran)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(fran)), page.content());
 	}
 
 	// @Test
@@ -209,17 +209,18 @@ public class SearchAccountTest {
 
 		String url = baseUrl() + "/users/search?location=Buenos Aires, Martinez Unicenter";
 
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
+				null,
 				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(mcDonalds)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(mcDonalds)), page.content());
 	}
 
 	@Test
@@ -242,17 +243,18 @@ public class SearchAccountTest {
 
 		String url = baseUrl() + "/users/search?role=BUSINESS&location=England, London&businessType=RESTAURANT";
 
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
+				null,
 				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(wendys)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(wendys)), page.content());
 	}
 
 	@Test
@@ -275,17 +277,18 @@ public class SearchAccountTest {
 
 		String url = baseUrl() + "/users/search?username=Tim Cook&location=California, Los Angeles";
 
-		ResponseEntity<PageResponse<UserResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET, null,
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
+				null,
 				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
-		PageResponse<UserResumeResponseDTO> page = response.getBody();
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(timCook)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(timCook)), page.content());
 	}
 
 }

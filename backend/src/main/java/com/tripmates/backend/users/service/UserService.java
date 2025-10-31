@@ -6,7 +6,7 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.users.dto.UserResumeResponseDTO;
+import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
@@ -38,13 +38,13 @@ public class UserService {
 	 * @param email email del usuario
 	 * @return {@link com.tripmates.backend.users.entity.mongo.Account User}
 	 */
-	public UserResumeResponseDTO getUser(String email) {
+	public AccountResumeResponseDTO getUser(String email) {
 		Account user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-		return UserResumeResponseDTO.fromUser(user);
+		return AccountResumeResponseDTO.fromAccount(user);
 	}
 
-	public UserResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
+	public AccountResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
 		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands();
 		Account account = userRepository.findByEmail(email)
@@ -55,7 +55,7 @@ public class UserService {
 		updateAvatar(account, avatar);
 		updateProfileImages(account, imageFiles);
 		account = userRepository.save(account);
-		return UserResumeResponseDTO.fromUser(account);
+		return AccountResumeResponseDTO.fromAccount(account);
 	}
 
 	/**
@@ -65,12 +65,12 @@ public class UserService {
 	 * @param pageable             configuración de pages a retornar
 	 * @return {@link Page}
 	 */
-	public Page<UserResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
+	public Page<AccountResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
 		return userRepository
 				.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(),
 						userSearchRequestDTO.location(),
 						userSearchRequestDTO.businessType(), pageable)
-				.map(UserResumeResponseDTO::fromUser);
+				.map(AccountResumeResponseDTO::fromAccount);
 	}
 
 	private void updateAvatar(Account account, MultipartFile avatar) {
