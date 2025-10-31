@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -17,14 +19,13 @@ import org.springframework.web.bind.annotation.*;
 
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
-import com.tripmates.backend.common.exception.BadRequestException;
+import com.tripmates.backend.common.service.pasring.ObjectParsingService;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.service.UserService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 
@@ -35,11 +36,11 @@ public class UserController {
 
 	private final UserService userService;
 
-	private final ObjectMapper mapper;
+	@Autowired
+	private ObjectParsingService parsingService;
 
-	public UserController(UserService userService, ObjectMapper mapper) {
+	public UserController(UserService userService) {
 		this.userService = userService;
-		this.mapper = mapper;
 	}
 
 	@GetMapping("/me")
@@ -61,12 +62,10 @@ public class UserController {
 	public ResponseEntity<?> updateProfileMultipart(@AuthenticationPrincipal UserDetails userDetails,
 			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
-		try {
-			UserUpdateRequestDTO dto = mapper.readValue(data, UserUpdateRequestDTO.class);
-			return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(), dto, files, avatar));
-		} catch (Exception e) {
-			throw new BadRequestException("Error al parsear el JSON: " + e.getMessage());
-		}
+
+		UserUpdateRequestDTO dto = parsingService.parseAndValidate(data, UserUpdateRequestDTO.class);
+		return ResponseEntity.ok(userService.updateUser(userDetails.getUsername(), dto, files, avatar));
+
 	}
 
 	@GetMapping("/search")
