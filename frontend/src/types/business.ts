@@ -1,4 +1,4 @@
-import type { AccountType } from "./auth"
+import type { AccountType } from "./AccountTypes"
 
 // ---------------------- Tipos locales ----------------------
 export type BusinessType = 'alojamiento' | 'servicio'

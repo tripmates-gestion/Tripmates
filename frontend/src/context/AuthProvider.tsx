@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
-import { type CommonUsersInformation } from "../types/user";
+import { type CommonUsersInformation } from "../types/CommonUserInfo";
 import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";

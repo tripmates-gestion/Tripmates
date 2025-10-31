@@ -30,7 +30,7 @@ import { Alert } from "@mui/material";
 import type { BusinessPublicationResponseDTO } from "../types/business";
 import { Stat } from '../components/profile/stats';
 import { EmptyState } from '../components/profile/EmptyState';
-import type { CommonUsersInformation } from '../types/user';
+import type { CommonUsersInformation } from '../types/CommonUserInfo';
 import type { CompleteBusinessProfile } from '../types/business';
 import { DEFAULT_OPENING_DAYS } from '../types/business';
 import { updateBusinessUser } from '../services/userService';
