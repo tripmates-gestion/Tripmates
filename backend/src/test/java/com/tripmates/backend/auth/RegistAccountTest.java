@@ -31,7 +31,7 @@ import com.tripmates.backend.TestHelper;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(TestCloudinaryConfig.class)
-public class AuthControllerTests {
+public class RegistAccountTest {
 
 	@LocalServerPort
 	private int port;
