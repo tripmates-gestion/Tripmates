@@ -16,6 +16,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -453,36 +455,48 @@ public class PatchMeTest {
                                 .andDo(print());
         }
 
-        // @Test
-        // void
-        // testGivenUserAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200()
-        // throws Exception {
-        // String jwt = testHelper.getUserTestingJwt("test@example.com");
-        // String requestJson = """
-        // {
-        // "name": "New Name",
-        // "description": "New Description"
-        // }
-        // """;
+        @Test
+        void testGivenUserAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200()
+                        throws Exception {
+                String jwt = testHelper.getUserTestingJwt("test@example.com");
+                String requestJson = """
+                                {
+                                "name": "New Name",
+                                "description": "New Description"
+                                }
+                                """;
 
-        // MockMultipartFile dataPart = new MockMultipartFile("data", "",
-        // "application/json",
-        // requestJson.getBytes(StandardCharsets.UTF_8));
+                MockMultipartFile dataPart = new MockMultipartFile("data", "",
+                                "application/json",
+                                requestJson.getBytes(StandardCharsets.UTF_8));
 
-        // mockMvc.perform(multipart("/users/me")
-        // .file(dataPart)
-        // .with(request -> {
-        // request.setMethod("PATCH");
-        // return request;
-        // }).header("Authorization", "Bearer " + jwt))
-        // .andExpect(status().isOk())
-        // .andExpect(jsonPath("$.type").value("about:blank"))
-        // .andExpect(jsonPath("$.title").value("Bad Request"))
-        // .andExpect(jsonPath("$.status").value(400))
-        // .andExpect(jsonPath("$.detail").value(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT))
-        // .andExpect(jsonPath("$.instance").value("/users/me"))
-        // .andDo(print());
-        // }
+                mockMvc.perform(multipart("/users/me")
+                                .file(dataPart)
+                                .with(request -> {
+                                        request.setMethod("PATCH");
+                                        return request;
+                                }).header("Authorization", "Bearer " + jwt))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.id").exists())
+                                .andExpect(jsonPath("$.avatarURL", is(nullValue())))
+                                .andExpect(jsonPath("$.name", is("New Name")))
+                                .andExpect(jsonPath("$.email", is("test@example.com")))
+                                .andExpect(jsonPath("$.role", is("USER")))
+                                .andExpect(jsonPath("$.description", is("New Description")))
+                                .andExpect(jsonPath("$.location", is(nullValue())))
+                                .andExpect(jsonPath("$.phoneNumber", is(nullValue())))
+                                .andExpect(jsonPath("$.publicEmail", is(nullValue())))
+                                .andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
+                                .andExpect(jsonPath("$.businessType", is(nullValue())))
+                                .andExpect(jsonPath("$.averagePrice", is(nullValue())))
+                                .andExpect(jsonPath("$.restaurantType", is(nullValue())))
+                                .andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
+                                .andExpect(jsonPath("$.openingDays", is(nullValue())))
+                                .andExpect(jsonPath("$.menu", is(nullValue())))
+                                .andExpect(jsonPath("$.hotelType", is(nullValue())))
+                                .andExpect(jsonPath("$.roomPacks", is(nullValue())))
+                                .andDo(print());
+        }
 
         // @Test
         // void
