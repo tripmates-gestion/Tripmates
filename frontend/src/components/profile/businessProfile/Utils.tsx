@@ -1,14 +1,12 @@
-export function parseHours(hhmmRange: string | '') {
-    if (!hhmmRange) return undefined;
-    const [o, c] = hhmmRange.split('–');
-    const [oh, om] = o.split(':').map(Number);
-    const [ch, cm] = c.split(':').map(Number);
-    return {
-      openingTime: { hour: oh, minute: om, second: 0, nano: 0 },
-      closingTime: { hour: ch, minute: cm, second: 0, nano: 0 },
-    };
-  }
-  
+// Utils.ts
+export function parseHours(s?: string) {
+  if (!s) return undefined;
+  const clean = s.replace(/[–—]/g, "-").trim();   // en dash/em dash -> hyphen
+  const [open, close] = clean.split("-").map(t => t.trim());
+  if (!/^\d{2}:\d{2}$/.test(open) || !/^\d{2}:\d{2}$/.test(close)) return undefined;
+  return { openingTime: open, closingTime: close };
+}
+
   // dataURL (base64) -> File
   export function dataURLtoFile(dataUrl: string, filename: string) {
     const arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)?.[1] ?? 'image/jpeg';

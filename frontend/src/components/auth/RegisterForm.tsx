@@ -5,9 +5,9 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import type { AccountType } from '../../types/auth';
+import type { AccountType } from '../../types/AccountTypes';
 import { ACCOUNT_TYPES, AUTH_TEXT } from '../../constants/Auth';
-import type { BusinessType } from '../../types/businessType';
+import type { BusinessType } from '../../types/AccountTypes';
 
 type Props = {
   accountType: AccountType;

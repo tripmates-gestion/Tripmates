@@ -19,13 +19,11 @@ import EditProfileDialog, { type UserProfile } from '../components/profile/EditP
 import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
-import { type AccountType } from '../types/user'
+import { type AccountType } from '../types/AccountTypes'
 
 import { Stat } from '../components/profile/stats';
 
 
-// ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 const userRoleChipColor = 'info';
 
 
@@ -48,7 +46,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
       : (prev?.avatarUrl),
-    coverUrl: prev?.coverUrl ?? DEFAULT_COVER_URL,
+    coverUrl: prev?.coverUrl ?? '',
     stats: prev?.stats ?? DEFAULT_STATS,
   };
 }
