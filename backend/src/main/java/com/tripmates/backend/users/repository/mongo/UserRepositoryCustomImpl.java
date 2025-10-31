@@ -5,6 +5,8 @@ import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.User;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -21,9 +23,13 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 	private MongoTemplate mongoTemplate;
 
 	@Override
-	public Page<User> searchUsers(Role role, String location, BusinessType businessType, Pageable pageable) {
+	public Page<User> searchUsers(String username, Role role, String location, BusinessType businessType,
+			Pageable pageable) {
 		Query query = new Query();
 		List<Criteria> criteriaList = new ArrayList<>();
+
+		if (username != null)
+			criteriaList.add(Criteria.where("name").is(username));
 
 		if (role != null)
 			criteriaList.add(Criteria.where("role").is(role));

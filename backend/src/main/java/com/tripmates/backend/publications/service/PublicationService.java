@@ -3,9 +3,11 @@ package com.tripmates.backend.publications.service;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+
+import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.UserRepository;
-import com.tripmates.backend.utils.PublicactionBuilder;
+import com.tripmates.backend.utils.PublicationBuilder;
 import com.tripmates.backend.users.entity.mongo.User;
 
 import org.springframework.stereotype.Component;
@@ -18,6 +20,9 @@ import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import java.util.ArrayList;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Component
 @Transactional
@@ -38,12 +43,12 @@ public class PublicationService {
 			String authenticatedUserEmail) {
 
 		User user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
-		var publicationConstructor = new PublicactionBuilder(storageService).publicationDetails(businessPublicationDTO)
+		var publicationConstructor = new PublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
 			.owner(user);
 
-		if (imageFiles != null) {
+		if (imageFiles != null && !imageFiles.isEmpty()) {
 			publicationConstructor = publicationConstructor.imageFiles(imageFiles);
 		}
 		Publication savedPublication = publicationRepository.save(publicationConstructor.build());
@@ -138,6 +143,10 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		return BusinessPublicationResponseDTO.fromPublication(publication);
+	}
+
+	public Page<BusinessPublicationResponseDTO> search(PublicationSearchRequestDTO filters, Pageable pageable) {
+		return publicationRepository.search(filters, pageable).map(BusinessPublicationResponseDTO::fromPublication);
 	}
 
 }

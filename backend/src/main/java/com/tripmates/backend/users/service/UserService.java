@@ -121,13 +121,14 @@ public class UserService {
 	}
 
 	/**
-	 * @param userSearchRequestDTO
-	 * @param pageable
-	 * @return
+	 * Retorna una page con los usuarios que cumplen con los filtros especificados.
+	 * @param userSearchRequestDTO dto que contiene los filtros de busqueda.
+	 * @param pageable configuración de pages a retornar
+	 * @return {@link Page}
 	 */
 	public Page<UserResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
 		return userRepository
-			.searchUsers(userSearchRequestDTO.role(), userSearchRequestDTO.location(),
+			.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(), userSearchRequestDTO.location(),
 					userSearchRequestDTO.businessType(), pageable)
 			.map(UserResumeResponseDTO::fromUser);
 	}

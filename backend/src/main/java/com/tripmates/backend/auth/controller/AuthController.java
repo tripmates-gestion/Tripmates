@@ -1,6 +1,7 @@
 package com.tripmates.backend.auth.controller;
 
 import com.tripmates.backend.auth.dto.*;
+import jakarta.validation.Valid;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.dto.ErrorDTO;
 
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +30,12 @@ public class AuthController {
 	@PostMapping("/register")
 	@Operation(summary = "Registers a new user in the system")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User created successfully", content = { @Content() }),
+			@ApiResponse(responseCode = "204", description = "User created successfully", content = { @Content() }),
 			@ApiResponse(responseCode = "400", description = "User already exists", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-	public ResponseEntity<?> register(@RequestBody AuthRegisterRequestDTO userCreationRequestDTO) {
-		authService.register(userCreationRequestDTO);
-		return ResponseEntity.ok().build();
+	public ResponseEntity<?> register(@RequestBody @Valid AuthRegisterRequestDTO authRegisterRequestDTO) {
+		authService.register(authRegisterRequestDTO);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@PostMapping("/login")
@@ -54,14 +56,14 @@ public class AuthController {
 	@PostMapping("/logout")
 	@Operation(summary = "Logout user from the system")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User logouts successfully",
+			@ApiResponse(responseCode = "204", description = "User logouts successfully",
 					content = {
 							@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }),
 			@ApiResponse(responseCode = "404", description = "User not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> logout(@RequestBody AuthLogoutRequestDTO authLogoutRequestDTO) {
 		authService.logout(authLogoutRequestDTO);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@PostMapping("/refresh")
