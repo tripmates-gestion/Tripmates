@@ -249,7 +249,7 @@ function ImageCarousel({
 /* ===================== principal ===================== */
 
 export default function BusinessProfile() {
-  const { user } = useAuth();
+  const { user , accessToken} = useAuth();
   const { business, loading } = useBusinessProfile();
 
   const [tab, setTab] = React.useState(0);
@@ -429,9 +429,8 @@ export default function BusinessProfile() {
 
             {/* ===== PUBLICACIONES (placeholder: reemplazá por tu componente si lo tenés) ===== */}
             {currentTabKey === 'publicaciones' && (
-              <Typography variant="body2" color="text.secondary">
-                Próximamente: publicaciones del negocio.
-              </Typography>
+         
+              <BusinessPublicationsTab accessToken={accessToken} />
             )}
 
             {/* ===== FOTOS (grid secundario, además del carrusel en Mi Presentación) ===== */}
