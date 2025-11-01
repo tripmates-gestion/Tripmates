@@ -1,6 +1,6 @@
 import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
-import type { BusinessUpdateRequestDTO, BusinessUpdateResponseDTO } from '../types/business';
+import type { BusinessUpdateResponseDTO } from '../types/business';
 import type { BusinessUser } from '../context/TypesUser';
 
 

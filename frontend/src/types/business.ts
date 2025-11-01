@@ -103,6 +103,7 @@ export type BusinessPublicationResponseDTO = {
   tags: string[]
 }
 
+{/* Deprecado */}
 export type UserResumeResponseDTO = {
   email: string
   description: string
@@ -116,6 +117,7 @@ export type UserResumeResponseDTO = {
   imageUrls: string[]
 }
 
+{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
 export type BusinessUpdateResponseDTO = {
   name: string;
   email: string;
