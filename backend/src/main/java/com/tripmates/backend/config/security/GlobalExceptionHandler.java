@@ -18,6 +18,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import com.tripmates.backend.common.exception.NotFoundException;
 
 import java.util.stream.Collectors;
 
@@ -54,6 +55,13 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
+					String.valueOf(request.getRequestURI())));
+	}
+
+  @ExceptionHandler(NotFoundException.class)
+	public ResponseEntity<?> handleNotFoundException(NotFoundException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(new ErrorDTO("about:blank", "Not Found Error", HttpStatus.NOT_FOUND.value(), e.getMessage(),
 					String.valueOf(request.getRequestURI())));
 	}
 

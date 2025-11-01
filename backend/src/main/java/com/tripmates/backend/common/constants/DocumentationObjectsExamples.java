@@ -28,7 +28,7 @@ public class DocumentationObjectsExamples {
 
 			### Request Structure
 			- `data`: (required) JSON with the fields to update.
-			- `files`: (optional) New image files for the business (JPG, PNG, etc.).
+			- `files`: (optional) New image files for the business (JPG, PNG, etc.), these are added to the existing images.
 
 			### Updatable Fields
 			- `name`: Business name
@@ -40,6 +40,7 @@ public class DocumentationObjectsExamples {
 			- `averagePrice`: Price range (e.g., "$", "$$", "$$$")
 			- `attentionSchedule`: Object with `openingTime` and `closingTime` in "HH:mm" format
 			- `openingDays`: Array of days the business is open (e.g., ["MONDAY", "TUESDAY"])
+			- `imageUrlsToDelete`: Array of image URLs to delete from the business's profile photos collection (e.g., ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]).
 
 			### Example Request (for Restaurant Type)
 			```json
@@ -55,7 +56,8 @@ public class DocumentationObjectsExamples {
 			    "openingTime": "10:00",
 			    "closingTime": "23:00"
 			  },
-			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
+			  "imageUrlsToDelete": []
 			}
 			```
 			""";
