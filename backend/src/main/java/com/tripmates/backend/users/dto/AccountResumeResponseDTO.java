@@ -12,11 +12,9 @@ import java.time.DayOfWeek;
 import java.util.List;
 
 @Schema(description = "Account profile response DTO")
-public record AccountResumeResponseDTO(
-		@Schema(description = "Account's ID") String id,
+public record AccountResumeResponseDTO(@Schema(description = "Account's ID") String id,
 		@Schema(description = "Account's avatar URL") String avatarURL,
-		@Schema(description = "Account's name") String name,
-		@Schema(description = "Account's email") String email,
+		@Schema(description = "Account's name") String name, @Schema(description = "Account's email") String email,
 		@Schema(description = "Account's role") Role role,
 		@Schema(description = "Business account's description") String description,
 		@Schema(description = "Business account's location") String location,
@@ -33,24 +31,11 @@ public record AccountResumeResponseDTO(
 		@Schema(description = "Hotel account's room packs") List<RoomPack> roomPacks) {
 
 	public static AccountResumeResponseDTO fromAccount(Account account) {
-		return new AccountResumeResponseDTO(
-				account.getId(),
-				account.getAvatarURL(),
-				account.getName(),
-				account.getEmail(),
-				account.getRole(),
-				account.getDescription(),
-				account.getLocation(),
-				account.getPhoneNumber(),
-				account.getPublicEmail(),
-				account.getProfileImageUrls(),
-				account.getBusinessType(),
-				account.getAveragePrice(),
-				account.getRestaurantType(),
-				account.getAttentionSchedule(),
-				account.getOpeningDays(),
-				account.getMenu(),
-				account.getHotelType(),
+		return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
+				account.getEmail(), account.getRole(), account.getDescription(), account.getLocation(),
+				account.getPhoneNumber(), account.getPublicEmail(), account.getProfileImageUrls(),
+				account.getBusinessType(), account.getAveragePrice(), account.getRestaurantType(),
+				account.getAttentionSchedule(), account.getOpeningDays(), account.getMenu(), account.getHotelType(),
 				account.getRoomPacks());
 	}
 

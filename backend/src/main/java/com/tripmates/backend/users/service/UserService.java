@@ -33,7 +33,6 @@ public class UserService {
 
 	/**
 	 * Retorna un usuario
-	 * 
 	 * @param email email del usuario
 	 * @return {@link com.tripmates.backend.users.entity.mongo.Account User}
 	 */
@@ -47,7 +46,7 @@ public class UserService {
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
 		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
 		Account account = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		for (AccountUpdateCommand command : commands) {
 			account = command.apply(account);
 		}
@@ -59,17 +58,15 @@ public class UserService {
 
 	/**
 	 * Retorna una page con los usuarios que cumplen con los filtros especificados.
-	 * 
 	 * @param userSearchRequestDTO dto que contiene los filtros de busqueda.
-	 * @param pageable             configuración de pages a retornar
+	 * @param pageable configuración de pages a retornar
 	 * @return {@link Page}
 	 */
 	public Page<AccountResumeResponseDTO> search(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
 		return userRepository
-				.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(),
-						userSearchRequestDTO.location(),
-						userSearchRequestDTO.businessType(), pageable)
-				.map(AccountResumeResponseDTO::fromAccount);
+			.searchUsers(userSearchRequestDTO.username(), userSearchRequestDTO.role(), userSearchRequestDTO.location(),
+					userSearchRequestDTO.businessType(), pageable)
+			.map(AccountResumeResponseDTO::fromAccount);
 	}
 
 	private void updateAvatar(Account account, MultipartFile avatar) {
@@ -91,8 +88,8 @@ public class UserService {
 		if (account.getRole() != Role.BUSINESS) {
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
 		}
-    List<String> oldImageUrls = account.getProfileImageUrls();
-    List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
+		List<String> oldImageUrls = account.getProfileImageUrls();
+		List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
 		for (MultipartFile imageFile : imageFiles) {
 			String newImageUrl = storageService.uploadFile(imageFile);
 			imageUrls.add(newImageUrl);

@@ -93,14 +93,18 @@ public class Account implements UserDetails {
 	 * For restaurants:
 	 */
 	private String restaurantType;
+
 	private AttentionSchedule attentionSchedule;
+
 	private List<DayOfWeek> openingDays;
+
 	private List<MenuItem> menu;
 
 	/*
 	 * For hotels:
 	 */
 	private String hotelType;
+
 	private List<RoomPack> roomPacks;
 
 	@Override

@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
 					String.valueOf(request.getRequestURI())));
 	}
 
-  @ExceptionHandler(NotFoundException.class)
+	@ExceptionHandler(NotFoundException.class)
 	public ResponseEntity<?> handleNotFoundException(NotFoundException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 			.body(new ErrorDTO("about:blank", "Not Found Error", HttpStatus.NOT_FOUND.value(), e.getMessage(),

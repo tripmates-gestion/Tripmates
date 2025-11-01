@@ -34,7 +34,6 @@ public class AuthService {
 
 	/**
 	 * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
-	 * 
 	 * @param authRegisterRequestDTO contiene los datos del nuevo usuario
 	 */
 	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
@@ -53,26 +52,24 @@ public class AuthService {
 	}
 
 	/**
-	 * Genera un access y refresh token para el usuario, persiste en la base de
-	 * datos el
+	 * Genera un access y refresh token para el usuario, persiste en la base de datos el
 	 * refresh token generado
-	 * 
 	 * @param authLoginRequestDTO contiene email y password
 	 * @return {@link AuthLoginResponseDTO AuthLoginResponseDTO}
 	 */
 	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
 		Account user = userRepository.findByEmail(authLoginRequestDTO.email())
-				.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
 			throw new IncorrectPasswordException("Credenciales invalidas");
 		}
 
 		var accessToken = this.jwtService
-				.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
 		var refreshToken = this.jwtService
-				.generateRefreshToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+			.generateRefreshToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
 		user.setToken(refreshToken);
 		userRepository.save(user);
@@ -82,12 +79,11 @@ public class AuthService {
 
 	/**
 	 * Elimina el refresh token persistido en la base de datos, del usuario
-	 * 
 	 * @param authLogoutRequestDTO contiene email
 	 */
 	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
 		Account user = userRepository.findByEmail(authLogoutRequestDTO.email())
-				.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		user.setToken(null);
 		userRepository.save(user);
@@ -95,20 +91,19 @@ public class AuthService {
 
 	/**
 	 * Retorna un nuevo access token para el usuario
-	 * 
 	 * @param authRefreshRequestDTO contiene email y refresh token
 	 * @return {@link AuthRefreshResponseDTO AuthRefreshResponseDTO}
 	 */
 	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
 		Account user = userRepository.findByEmail(authRefreshRequestDTO.email())
-				.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken())) {
 			throw new IncorrectTokenException("Credenciales invalidas");
 		}
 
 		var accessToken = this.jwtService
-				.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
 
 		return new AuthRefreshResponseDTO(accessToken);
 	}

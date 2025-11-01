@@ -93,8 +93,8 @@ public class SearchAccountTest {
 		userRepository.saveAll(List.of(fran));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate
-				.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-				});
+			.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+			});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -210,8 +210,7 @@ public class SearchAccountTest {
 		String url = baseUrl() + "/users/search?location=Buenos Aires, Martinez Unicenter";
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null,
-				new ParameterizedTypeReference<>() {
+				null, new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -244,8 +243,7 @@ public class SearchAccountTest {
 		String url = baseUrl() + "/users/search?role=BUSINESS&location=England, London&businessType=RESTAURANT";
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null,
-				new ParameterizedTypeReference<>() {
+				null, new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -278,8 +276,7 @@ public class SearchAccountTest {
 		String url = baseUrl() + "/users/search?username=Tim Cook&location=California, Los Angeles";
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null,
-				new ParameterizedTypeReference<>() {
+				null, new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());

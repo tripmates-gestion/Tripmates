@@ -46,8 +46,9 @@ public class UserController {
 	@GetMapping("/me")
 	@Operation(summary = "Obtains an account from the system")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Account obtained successfully", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = Account.class)) }),
+			@ApiResponse(responseCode = "204", description = "Account obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = Account.class)) }),
 			@ApiResponse(responseCode = "404", description = "Account not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
@@ -57,8 +58,12 @@ public class UserController {
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Update account profile", description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))) })
+			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateProfileMultipart(@AuthenticationPrincipal UserDetails userDetails,
 			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -69,13 +74,13 @@ public class UserController {
 	}
 
 	@GetMapping("/search")
-	@Operation(summary = "Obtains accounts that meet the filters", description = "Filters are received as query params via model attributes.\n\n"
-			+ "Parameters:\n"
-			+ "- role: User role to filter.\n" + "- location: Partial match (case-insensitive).\n"
-			+ "- businessType: Business category.\n" + "- page, size, sort: Pagination (e.g., sort=name,asc).")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account obtained successfully", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class)) }) })
+	@Operation(summary = "Obtains accounts that meet the filters",
+			description = "Filters are received as query params via model attributes.\n\n" + "Parameters:\n"
+					+ "- role: User role to filter.\n" + "- location: Partial match (case-insensitive).\n"
+					+ "- businessType: Business category.\n" + "- page, size, sort: Pagination (e.g., sort=name,asc).")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Account obtained successfully",
+			content = { @Content(mediaType = "application/json",
+					schema = @Schema(implementation = AccountResumeResponseDTO.class)) }) })
 	public ResponseEntity<?> search(@ParameterObject @ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
 		return ResponseEntity.ok().body(userService.search(userSearchRequestDTO, pageable));

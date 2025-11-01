@@ -33,8 +33,8 @@ public class TestHelper {
 	}
 
 	public boolean regist(String email, Role role, BusinessType businessType) {
-		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña",
-				role, businessType);
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña", role,
+				businessType);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -65,4 +65,5 @@ public class TestHelper {
 		Map<String, String> response = responseEntity.getBody();
 		return response.get("accessToken");
 	}
+
 }
