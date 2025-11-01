@@ -4,16 +4,16 @@ import com.tripmates.backend.users.entity.mongo.Account;
 
 public class UpdateDescription implements AccountUpdateCommand {
 
-    private final String newDescription;
+	private final String newDescription;
 
-    public UpdateDescription(String newDescription) {
-        this.newDescription = newDescription;
-    }
+	public UpdateDescription(String newDescription) {
+		this.newDescription = newDescription;
+	}
 
-    @Override
-    public Account apply(Account account) {
-        account.setDescription(newDescription);
-        return account;
-    }
+	@Override
+	public Account apply(Account account) {
+		account.setDescription(newDescription);
+		return account;
+	}
 
 }

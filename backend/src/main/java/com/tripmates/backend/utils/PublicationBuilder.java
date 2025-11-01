@@ -34,7 +34,8 @@ public class PublicationBuilder {
 			if (imageFile != null && !imageFile.isEmpty()) {
 				String imageUrl = storageService.uploadFile(imageFile);
 				imageUrls.add(imageUrl);
-			} else {
+			}
+			else {
 				throw new BadRequestException(
 						"Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
 			}
