@@ -134,20 +134,21 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
           sx={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", borderRadius: 2, bgcolor: "background.paper", mb: 1.5 }}
           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
         >
-      <Box
-        sx={{
-          position: "relative",
-          width: "100%",
-          aspectRatio: "16 / 9",
-          overflow: "hidden",
-          borderRadius: 2,
-          bgcolor: "black",           // letterbox
-          mb: 1.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+        <Box
+          sx={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: "16 / 9",
+            overflow: "hidden",
+            borderRadius: 2,
+            backdropFilter: "blur(10px)",
+            backgroundColor: "rgba(255,255,255,0.3)",
+            mb: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"            
+          }}
+        >
         <Box
           sx={{
             display: "flex",
@@ -171,6 +172,7 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
                   objectFit: "contain",   // acá el cambio
                   display: "block",
                   userSelect: "none",
+                  borderRadius: 2, 
                 }}
                 draggable={false}
               />
