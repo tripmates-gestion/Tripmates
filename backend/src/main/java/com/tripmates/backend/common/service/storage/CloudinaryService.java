@@ -19,9 +19,10 @@ public class CloudinaryService implements StorageService {
 	public String uploadFile(MultipartFile file) {
 		try {
 			Map uploadResult = cloudinary.uploader()
-					.upload(file.getBytes(), ObjectUtils.asMap("folder", "tripmates_uploads"));
+				.upload(file.getBytes(), ObjectUtils.asMap("folder", "tripmates_uploads"));
 			return (String) uploadResult.get("secure_url");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new FileUploadException(String.format("Error al subir el archivo a la nube: %s", e.getMessage()));
 		}
 	}
@@ -44,7 +45,8 @@ public class CloudinaryService implements StorageService {
 			String publicId = extractPublicId(imageUrl);
 			Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
 			System.out.println("Delete result: " + result);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new FileUploadException(String.format("Error al eliminar el archivo de la nube: %s", e.getMessage()));
 		}
 	}

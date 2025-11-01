@@ -1,10 +1,7 @@
 package com.tripmates.backend.users.entity.mongo;
 
-import com.tripmates.backend.common.types.AttentionSchedule;
-import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.common.types.MenuItem;
-import com.tripmates.backend.common.types.RoomPack;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.*;
+import com.tripmates.backend.common.types.Role;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.util.Collection;
@@ -23,7 +20,6 @@ import org.springframework.data.mongodb.core.mapping.FieldType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import com.tripmates.backend.common.types.AveragePrice;
 
 @Data
 @NoArgsConstructor
@@ -90,17 +86,39 @@ public class Account implements UserDetails {
 	private AveragePrice averagePrice;
 
 	/**
-	 * For restaurants:
+	 * Account's restaurant type. Only allowed in BUSINESS accounts with business type
+	 * equal to Restaurant.
 	 */
-	private String restaurantType;
+	private RestaurantType restaurantType;
+
+	/**
+	 * Account's restaurant attention schedule. Only allowed in BUSINESS accounts with
+	 * business type equal to Restaurant.
+	 */
 	private AttentionSchedule attentionSchedule;
+
+	/**
+	 * Account's restaurant opening days. Only allowed in BUSINESS accounts with business
+	 * type equal to Restaurant.
+	 */
 	private List<DayOfWeek> openingDays;
+
+	/**
+	 * Account's restaurant menu. Only allowed in BUSINESS accounts with business type
+	 * equal to Restaurant.
+	 */
 	private List<MenuItem> menu;
 
-	/*
-	 * For hotels:
+	/**
+	 * Account's hotel type. Only allowed in BUSINESS accounts with business type equal to
+	 * Hotel.
 	 */
-	private String hotelType;
+	private HotelType hotelType;
+
+	/**
+	 * Account's hotel room packs. Only allowed in BUSINESS accounts with business type
+	 * equal to Hotel.
+	 */
 	private List<RoomPack> roomPacks;
 
 	@Override

@@ -1,7 +1,7 @@
 package com.tripmates.backend.auth.dto;
 
 import org.springframework.validation.annotation.Validated;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

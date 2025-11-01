@@ -16,7 +16,7 @@ import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import java.util.List;
 
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
-import com.tripmates.backend.common.service.pasring.ObjectParsingService;
+import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,57 +38,69 @@ public class PublicationController {
 	private ObjectParsingService parsingService;
 
 	@PostMapping(value = "/business", consumes = "multipart/form-data")
-	@Operation(summary = "Create a new business publication", description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_EXAMPLE)
-	public ResponseEntity<?> uploadBusinessPublication(
-			@Parameter(description = "JSON string containing the business publication data. Required fields: title (non-empty), description (non-empty), the rest are optional.") @RequestPart("data") String data,
-			@Parameter(description = "Optional image files for the publication. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files,
+	@Operation(summary = "Create a new business publication",
+			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_EXAMPLE)
+	public ResponseEntity<?> uploadBusinessPublication(@Parameter(
+			description = "JSON string containing the business publication data. Required fields: title (non-empty), description (non-empty), the rest are optional.") @RequestPart("data") String data,
+			@Parameter(
+					description = "Optional image files for the publication. Supported formats: JPG, PNG, etc.") @RequestPart(
+							value = "files", required = false) List<MultipartFile> files,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		BusinessPublicationRequestDTO publication = parsingService.parseAndValidate(data,
 				BusinessPublicationRequestDTO.class);
 		return ResponseEntity.ok()
-				.body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
+			.body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
 	}
 
 	@GetMapping("/mine")
-	@Operation(summary = "List my publications", description = "Returns all publications owned by the authenticated user.")
+	@Operation(summary = "List my publications",
+			description = "Returns all publications owned by the authenticated user.")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Publications fetched successfully") })
 	public ResponseEntity<?> listMyPublications(@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok(publicationService.listMyPublications(userDetails.getUsername()));
 	}
 
 	@PatchMapping(value = "/{id}", consumes = "multipart/form-data")
-	@Operation(summary = "Update a publication", description = "Updates an existing publication with JSON data and optional images.\n\n"
-			+ "Multipart request structure:\n" + "- `data`: (required) JSON with the fields to update.\n"
-			+ "- `files`: (optional) Images for the publication (JPG, PNG, etc.).\n\n"
-			+ "Example JSON for the `data` part:\n" + "```json\n" + "{\n" + "  \"title\": \"New title\",\n"
-			+ "  \"description\": \"Updated description\",\n" + "  \"phoneNumber\": \"+541112345678\",\n"
-			+ "  \"email\": \"contact@hostel.com\",\n" + "  \"location\": \"123 Address, City\",\n"
-			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n"
-			+ "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
-			+ "  \"exceptionalClosingDays\": [\"2025-12-25\"]\n" + "}\n" + "```")
+	@Operation(summary = "Update a publication",
+			description = "Updates an existing publication with JSON data and optional images.\n\n"
+					+ "Multipart request structure:\n" + "- `data`: (required) JSON with the fields to update.\n"
+					+ "- `files`: (optional) Images for the publication (JPG, PNG, etc.).\n\n"
+					+ "Example JSON for the `data` part:\n" + "```json\n" + "{\n" + "  \"title\": \"New title\",\n"
+					+ "  \"description\": \"Updated description\",\n" + "  \"phoneNumber\": \"+541112345678\",\n"
+					+ "  \"email\": \"contact@hostel.com\",\n" + "  \"location\": \"123 Address, City\",\n"
+					+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n"
+					+ "  \"attentionSchedule\": { \"openingTime\": \"09:00\", \"closingTime\": \"18:00\" },\n"
+					+ "  \"exceptionalClosingDays\": [\"2025-12-25\"]\n" + "}\n" + "```")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Publication updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessPublicationResponseDTO.class))),
+			@ApiResponse(responseCode = "200", description = "Publication updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = BusinessPublicationResponseDTO.class))),
 			@ApiResponse(responseCode = "400", description = "Invalid request") })
 	public ResponseEntity<?> updateBusinessPublication(@PathVariable String id, @RequestPart("data") String data,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		BusinessPublicationRequestDTO dto = parsingService.parseAndValidate(data, BusinessPublicationRequestDTO.class);
 		return ResponseEntity.ok()
-				.body(publicationService.updatePublication(id, dto, files, userDetails.getUsername()));
+			.body(publicationService.updatePublication(id, dto, files, userDetails.getUsername()));
 	}
 
 	@GetMapping("/{id}")
-	@Operation(summary = "Get my publication", description = "Obtains a publication by id, only if it belongs to the authenticated user.")
+	@Operation(summary = "Get my publication",
+			description = "Obtains a publication by id, only if it belongs to the authenticated user.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Publication obtained successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BusinessPublicationResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Publication does not exist or does not belong to the user") })
+			@ApiResponse(responseCode = "200", description = "Publication obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = BusinessPublicationResponseDTO.class))),
+			@ApiResponse(responseCode = "400",
+					description = "Publication does not exist or does not belong to the user") })
 	public ResponseEntity<?> getMyPublication(@PathVariable String id,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok(publicationService.getMyPublication(id, userDetails.getUsername()));
 	}
 
 	@DeleteMapping("/{id}")
-	@Operation(summary = "Delete my publication", description = "Deletes a publication by id, only if it belongs to the authenticated user.")
+	@Operation(summary = "Delete my publication",
+			description = "Deletes a publication by id, only if it belongs to the authenticated user.")
 	@ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Publication deleted successfully"),
 			@ApiResponse(responseCode = "400", description = "Not found or not owned by user") })
 	public ResponseEntity<Void> deleteMyPublication(@PathVariable String id,
@@ -98,15 +110,15 @@ public class PublicationController {
 	}
 
 	@GetMapping("/search")
-	@Operation(summary = "Obtains publications that meet the filters", description = "Filters are received as query params via model attributes.\n\n"
-			+ "Parameters:\n"
-			+ "- q: Full-text search across title and description (case-insensitive).\n"
-			+ "- location: Partial match (case-insensitive).\n"
-			+ "- tags: Publication must contain all provided tags.\n" + "- ownerId: Filter by owner id.\n"
-			+ "- page, size, sort: Pagination (e.g., sort=createdAt,desc).")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Publications obtained successfully", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = BusinessPublicationResponseDTO.class)) }) })
+	@Operation(summary = "Obtains publications that meet the filters",
+			description = "Filters are received as query params via model attributes.\n\n" + "Parameters:\n"
+					+ "- q: Full-text search across title and description (case-insensitive).\n"
+					+ "- location: Partial match (case-insensitive).\n"
+					+ "- tags: Publication must contain all provided tags.\n" + "- ownerId: Filter by owner id.\n"
+					+ "- page, size, sort: Pagination (e.g., sort=createdAt,desc).")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Publications obtained successfully",
+			content = { @Content(mediaType = "application/json",
+					schema = @Schema(implementation = BusinessPublicationResponseDTO.class)) }) })
 	public ResponseEntity<?> search(
 			@ParameterObject @ModelAttribute PublicationSearchRequestDTO publicationSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
