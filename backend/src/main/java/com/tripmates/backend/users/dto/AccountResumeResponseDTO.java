@@ -8,9 +8,9 @@ import java.util.List;
 
 @Schema(description = "Account profile response DTO")
 public record AccountResumeResponseDTO(@Schema(description = "Account's ID") String id,
-		@Schema(description = "Account's email") String email,
 		@Schema(description = "Account's avatar URL") String avatarURL,
-		@Schema(description = "Account's name") String name, @Schema(description = "Account's role") Role role,
+		@Schema(description = "Account's name") String name, @Schema(description = "Account's email") String email,
+		@Schema(description = "Account's role") Role role,
 		@Schema(description = "Business account's description") String description,
 		@Schema(description = "Business account's location") String location,
 		@Schema(description = "Business account's phone number") String phoneNumber,

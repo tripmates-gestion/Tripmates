@@ -27,23 +27,23 @@ public record UserUpdateRequestDTO(@Schema(description = "Account's name") Strin
 		@Schema(description = "Restaurant's attention schedule") AttentionSchedule attentionSchedule,
 		@Schema(description = "Restaurant's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant's menu") List<MenuItem> menu,
-		@Schema(description = "Hotel's type") HotelType hotelType
-    @Schema(description = "Business account's images URL's to delete from profile photos collection") List<String> imageUrlsToDelete) {
+		@Schema(description = "Hotel's type") HotelType hotelType,
+		@Schema(description = "Business account's images URL's to delete from profile photos collection") List<String> imageUrlsToDelete) {
 
 	public List<AccountUpdateCommand> toCommands(StorageService storageService) {
-    UpdateCommandFactory updateCommandFactory = new UpdateCommandFactory(storageService);
-		return Arrays.stream(this.getClass().getRecordComponents())
-				.map(rc -> {
-					try {
-						Object value = rc.getAccessor().invoke(this);
-						return new AbstractMap.SimpleEntry<>(rc.getName(), value);
-					} catch (ReflectiveOperationException e) {
-						throw new RuntimeException(e);
-					}
-				})
-				.filter(entry -> entry.getValue() != null)
-				.map(entry -> updateCommandFactory.createCommand(entry.getKey(), entry.getValue()))
-				.toList();
+		UpdateCommandFactory updateCommandFactory = new UpdateCommandFactory(storageService);
+		return Arrays.stream(this.getClass().getRecordComponents()).map(rc -> {
+			try {
+				Object value = rc.getAccessor().invoke(this);
+				return new AbstractMap.SimpleEntry<>(rc.getName(), value);
+			}
+			catch (ReflectiveOperationException e) {
+				throw new RuntimeException(e);
+			}
+		})
+			.filter(entry -> entry.getValue() != null)
+			.map(entry -> updateCommandFactory.createCommand(entry.getKey(), entry.getValue()))
+			.toList();
 	}
 
 }

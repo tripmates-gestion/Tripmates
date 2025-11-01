@@ -57,28 +57,29 @@ public class UserController {
 	}
 
 	@PostMapping("/search/business")
-	@Operation(summary = "Obtains accounts that meet the filters", description = """
-			Filters are received as the following example, all filters are optional.
+	@Operation(summary = "Obtains accounts that meet the filters",
+			description = """
+					Filters are received as the following example, all filters are optional.
 
-            {
-                "averagePrice": Business's average price. Use: {$, $$, $$$},
-                "location": Business's location. Use any location,
-                "username": Business's username. Use any username,
-                "businessType": Business's type. Use {RESTAURANT, HOTEL},
-                "restaurantType": Restaurant's type. Use {CAFE, VEGANO, VEGETARIANO, PERUANO, ARGENTO, ITALIANO},
-                "hotelType": Hotel's type. Use {LUJO},
-                "attentionSchedule": [
-                    "openingTime": Restaurant's opening time. Use format HH:mm,
-                    "closingTime": Restaurant's closing time. Use format HH:mm
-                ],
-                "roomPacks": [
-                    "checkInDate": Hotel's check in date. Use format yyyy-MM-dd,
-                    "checkOutDate": Hotel's check out date. Use format yyyy-MM-dd,
-                    "numberOfGuests": Hotel's number of guests. Use integer format,
-                    "price": Hotel's price. Use float format
-                ]
-            }
-			""")
+					         {
+					             "averagePrice": Business's average price. Use: {$, $$, $$$},
+					             "location": Business's location. Use any location,
+					             "username": Business's username. Use any username,
+					             "businessType": Business's type. Use {RESTAURANT, HOTEL},
+					             "restaurantType": Restaurant's type. Use {CAFE, VEGANO, VEGETARIANO, PERUANO, ARGENTO, ITALIANO},
+					             "hotelType": Hotel's type. Use {LUJO},
+					             "attentionSchedule": [
+					                 "openingTime": Restaurant's opening time. Use format HH:mm,
+					                 "closingTime": Restaurant's closing time. Use format HH:mm
+					             ],
+					             "roomPacks": [
+					                 "checkInDate": Hotel's check in date. Use format yyyy-MM-dd,
+					                 "checkOutDate": Hotel's check out date. Use format yyyy-MM-dd,
+					                 "numberOfGuests": Hotel's number of guests. Use integer format,
+					                 "price": Hotel's price. Use float format
+					             ]
+					         }
+					""")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
 					content = { @Content(mediaType = "application/json",
@@ -87,12 +88,12 @@ public class UserController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
 	public ResponseEntity<?> search(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-        Page<AccountResumeResponseDTO> accountResumeResponseDTOPage =  userService.search(accountSearchRequestDTO, pageable);
-        if (accountResumeResponseDTOPage.getTotalElements() > 0) {
-            return ResponseEntity.noContent().build();
-        }
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.search(accountSearchRequestDTO,
+				pageable);
+		if (accountResumeResponseDTOPage.getTotalElements() == 0)
+			return ResponseEntity.noContent().build();
 
-        return ResponseEntity.ok().body(accountResumeResponseDTOPage);
+		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
 	}
 
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

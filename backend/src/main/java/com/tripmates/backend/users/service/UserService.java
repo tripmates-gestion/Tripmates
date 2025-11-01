@@ -54,15 +54,15 @@ public class UserService {
 	public AccountResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
 		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
-		Account account = userRepository.findByEmail(email)
-				.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		Account account = accountRespository.findByEmail(email)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		for (AccountUpdateCommand command : commands)
 			account = command.apply(account);
-      
+
 		updateAvatar(account, avatar);
 		updateProfileImages(account, imageFiles);
-    
-		return AccountResumeResponseDTO.fromAccount(userRepository.save(account);
+
+		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
 	}
 
 	/**
@@ -72,9 +72,8 @@ public class UserService {
 	 * @return {@link Page}
 	 */
 	public Page<AccountResumeResponseDTO> search(AccountSearchRequestDTO accountSearchRequestDTO, Pageable pageable) {
-        return accountRespository
-            .searchAccount(accountSearchRequestDTO, pageable)
-            .map(AccountResumeResponseDTO::fromAccount);
+		return accountRespository.searchAccount(accountSearchRequestDTO, pageable)
+			.map(AccountResumeResponseDTO::fromAccount);
 	}
 
 	/**
@@ -104,15 +103,15 @@ public class UserService {
 
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
-	
-    List<String> oldImageUrls = account.getProfileImageUrls();
-    List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
+
+		List<String> oldImageUrls = account.getProfileImageUrls();
+		List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
 		for (MultipartFile imageFile : imageFiles) {
 			String newImageUrl = storageService.uploadFile(imageFile);
 			imageUrls.add(newImageUrl);
 		}
-		
-    account.setProfileImageUrls(imageUrls);
+
+		account.setProfileImageUrls(imageUrls);
 	}
 
 }
