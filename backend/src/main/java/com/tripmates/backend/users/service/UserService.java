@@ -5,7 +5,6 @@ import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
-import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.dto.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
@@ -46,7 +45,7 @@ public class UserService {
 
 	public AccountResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
-		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands();
+		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
 		Account account = userRepository.findByEmail(email)
 				.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		for (AccountUpdateCommand command : commands) {
@@ -92,20 +91,13 @@ public class UserService {
 		if (account.getRole() != Role.BUSINESS) {
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
 		}
-
-		List<String> newImageUrls = new ArrayList<>();
+    List<String> oldImageUrls = account.getProfileImageUrls();
+    List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
 		for (MultipartFile imageFile : imageFiles) {
 			String newImageUrl = storageService.uploadFile(imageFile);
-			newImageUrls.add(newImageUrl);
+			imageUrls.add(newImageUrl);
 		}
-
-		List<String> oldImageUrls = account.getProfileImageUrls();
-		if (oldImageUrls != null) {
-			for (String oldImageUrl : oldImageUrls) {
-				storageService.deleteByUrl(oldImageUrl);
-			}
-		}
-		account.setProfileImageUrls(newImageUrls);
+		account.setProfileImageUrls(imageUrls);
 	}
 
 }
