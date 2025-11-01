@@ -1,34 +1,26 @@
 // ──────────────────────────────────────────────────────────────────────────────
 // components/places/PlaceGrid.tsx
 // ──────────────────────────────────────────────────────────────────────────────
-import * as React from "react";
 import { Grid } from "@mui/material";
 import PlaceCard from "./PlaceCard";
-import type { BusinessPlaceDTO } from "../../types/place";
-import { PlaceDetailDialog } from "./PlaceDetailDialog";
+import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 
 type Props = {
-  places: BusinessPlaceDTO[];
+  businessAccounts: BusinessPubAccountDataDTO[];
 };
 
-export default function PlaceGrid({ places }: Props) {
-  const [selected, setSelected] = React.useState<BusinessPlaceDTO | null>(null);
+export default function PlaceGrid({ businessAccounts }: Props) {
+  // const [selected, setSelected] = React.useState<BusinessPlaceDTO | null>(null);
 
   return (
     <>
       <Grid container spacing={3}>
-        {places.map((p, idx) => (
+        {businessAccounts.map((p, idx) => (
           <Grid key={p.id ?? idx} item xs={12} sm={6} md={6}>
-            <PlaceCard place={p} onView={setSelected} />
+            <PlaceCard businessAccountData={p} />
           </Grid>
         ))}
       </Grid>
-
-      <PlaceDetailDialog
-        open={!!selected}
-        onClose={() => setSelected(null)}
-        place={selected}
-      />
     </>
   );
 }
