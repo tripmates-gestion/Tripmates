@@ -24,4 +24,10 @@ public class ValidationErrorMessage {
 
 	public static final String NOT_HOTEL_ACCOUNT = "La cuenta debe ser de tipo hotel";
 
+  public static final String NOT_VALID_DAY = "Se debe proporcionar días válidos (en mayúsculas)";
+
+  public static final String INVALID_LIST_ELEMENTS = "Se debe proporcionar una lista de elementos válidos";
+
+  public static final String NOT_FOUND_IMAGE_URL = "No se encontró la imagen referida.";
+
 }

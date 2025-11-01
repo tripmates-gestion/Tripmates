@@ -53,17 +53,16 @@ public class UserService {
 	 */
 	public AccountResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
-		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands();
-		Account account = accountRespository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-
+		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
+		Account account = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		for (AccountUpdateCommand command : commands)
 			account = command.apply(account);
-
+      
 		updateAvatar(account, avatar);
 		updateProfileImages(account, imageFiles);
-
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+    
+		return AccountResumeResponseDTO.fromAccount(userRepository.save(account);
 	}
 
 	/**
@@ -105,20 +104,15 @@ public class UserService {
 
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
-
-		List<String> newImageUrls = new ArrayList<>();
+	
+    List<String> oldImageUrls = account.getProfileImageUrls();
+    List<String> imageUrls = oldImageUrls != null ? oldImageUrls : new ArrayList<>();
 		for (MultipartFile imageFile : imageFiles) {
 			String newImageUrl = storageService.uploadFile(imageFile);
-			newImageUrls.add(newImageUrl);
+			imageUrls.add(newImageUrl);
 		}
-
-		List<String> oldImageUrls = account.getProfileImageUrls();
-		if (oldImageUrls != null) {
-			for (String oldImageUrl : oldImageUrls)
-				storageService.deleteByUrl(oldImageUrl);
-		}
-
-		account.setProfileImageUrls(newImageUrls);
+		
+    account.setProfileImageUrls(imageUrls);
 	}
 
 }
