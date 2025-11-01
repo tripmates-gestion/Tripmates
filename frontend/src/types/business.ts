@@ -22,40 +22,7 @@ export type BusinessPost = {
 export type DayOfWeek =
   | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
 
-type DayMapping = {
-  [key in DayOfWeek]: string
-}
-
-const dayToSpanish: DayMapping = {
-  'MONDAY': 'Lunes',
-  'TUESDAY': 'Martes',
-  'WEDNESDAY': 'Miércoles',
-  'THURSDAY': 'Jueves',
-  'FRIDAY': 'Viernes',
-  'SATURDAY': 'Sábado',
-  'SUNDAY': 'Domingo'
-}
-
-const dayToEnglish: Record<string, DayOfWeek> = {
-  'Lunes': 'MONDAY',
-  'Martes': 'TUESDAY',
-  'Miércoles': 'WEDNESDAY',
-  'Jueves': 'THURSDAY',
-  'Viernes': 'FRIDAY',
-  'Sábado': 'SATURDAY',
-  'Domingo': 'SUNDAY'
-}
-
-export function mapDayToSpanish(day: DayOfWeek): string {
-  return dayToSpanish[day] || day
-}
-
-export function mapDaysToSpanish(days: DayOfWeek[]): string[] {
-  return days.map(day => dayToSpanish[day] || day)
-}
-export function mapDaysToEnglish(days: string[]): DayOfWeek[] {
-  return days.map(day => dayToEnglish[day as DayOfWeek] || day as DayOfWeek)
-}
+export type AveragePrice = '$' | '$$' | '$$$'
 
 export function parseHours(scheduleString: string): AttentionSchedule {
   const match = scheduleString.match(/([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d/)
@@ -171,7 +138,6 @@ export type UpdateProfileFormState = {
 };
 // ---------------------- Tipos con el contenido del perfil de negocio----------------------
 //Campos que no son seteados por la información de sesión (común) son null
-//podría cumplir la misma funcionalidad que el DTO para el request excepto que 
 export type CompleteBusinessProfile = {
   name: string;
   description: string;

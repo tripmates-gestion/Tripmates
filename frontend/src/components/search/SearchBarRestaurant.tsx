@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-//import PlaceCard, { type Place } from '../components/publish/PlaceCard';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -9,25 +10,37 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useAuth } from '../../hooks/useAuth';
 import { searchRestaurants } from '../../services/searchService';
 import { useState } from 'react';
-import { normalizeToBusinessPlace } from './utils/normalizePlace';
-// import { BusinessAccountData } from '../../types/AccountData';
+import type{ BusinessPubAccountDataDTO } from '../../types/AccountData';
 
 interface SearchBarRestaurantProps {
-  onSearchResults: (restaurants: any[]) => void; // Callback para enviar resultados al padre
+  onSearchResults: (restaurants: BusinessPubAccountDataDTO[]) => void; // Callback para enviar resultados al padre
 }
 
-function mapRestaurant(restaurant: any) {
-  return normalizeToBusinessPlace(restaurant);
+function mapRestaurant(restaurant: any): BusinessPubAccountDataDTO {
+  return {
+      id: restaurant.id,
+      avatarURL: restaurant.avatarURL,
+      name: restaurant.name,
+      email: restaurant.email,
+      role: restaurant.role,
+      description: restaurant.description,
+      location: restaurant.location,
+      phoneNumber: restaurant.phoneNumber,
+      publicEmail: restaurant.publicEmail,
+      profileImageUrls: restaurant.profileImageUrls,
+      businessType: restaurant.businessType,
+      averagePrice: restaurant.averagePrice,
+      // Restaurant specific
+      restaurantType: restaurant.restaurantType,
+      attentionSchedule: restaurant.attentionSchedule,
+      openingDays: restaurant.openingDays,
+      menu: restaurant.menu || [],
+      
+      // Hotel specific (required by type but not used for restaurants)
+      hotelType: null,
+      roomPacks: null
+  };
 }
-// function mapRestaurantAccount(restaurantAccount: any):BusinessAccountData {
-//   return { 
-//     id: restaurantAccount.id,
-//     name: restaurantAccount.name,
-//     role: restaurantAccount.role,
-//     photoUrl: restaurantAccount.photoUrl,
-//   }
-// }
-
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
   const { token: accessToken } = useAuth();

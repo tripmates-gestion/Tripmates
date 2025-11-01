@@ -1,25 +1,48 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import React from 'react'
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+// import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+// import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
-import { ENDPOINTS } from '../../api/endpoints';
+// import { ENDPOINTS } from '../../api/endpoints';
 import { searchHotels } from '../../services/searchService';
 import { useAuth } from '../../hooks/useAuth';
 import { useState } from 'react';
-import { normalizeToBusinessPlace } from './utils/normalizePlace';
+import type{ BusinessPubAccountDataDTO } from '../../types/AccountData';
 
 interface SearchBarHotelProps {
-    onSearchResults: (hotels: any[]) => void; // Callback para enviar resultados al padre
+    onSearchResults: (hotels: BusinessPubAccountDataDTO[]) => void; // Callback para enviar resultados al padre
 }
 
-function mapHotel(hotel: any) {
-    return normalizeToBusinessPlace(hotel);
+function mapHotel(hotel: any): BusinessPubAccountDataDTO{
+    return {
+        id: hotel.id,
+        avatarURL: hotel.avatarURL,
+        name: hotel.name,
+        email: hotel.email,
+        role: hotel.role,
+        description: hotel.description,
+        location: hotel.location,
+        phoneNumber: hotel.phoneNumber,
+        publicEmail: hotel.publicEmail,
+        profileImageUrls: hotel.profileImageUrls,
+        businessType: hotel.businessType,
+        averagePrice: hotel.averagePrice,
+        // Restaurant specific
+        restaurantType: null,
+        attentionSchedule:null,
+        openingDays: null,
+        menu: null,
+        
+        // Hotel specific (required by type but not used for restaurants)
+        hotelType: hotel.hotelType,
+        roomPacks: hotel.roomPacks
+    };
 }
 
 

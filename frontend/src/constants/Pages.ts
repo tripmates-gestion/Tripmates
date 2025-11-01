@@ -3,6 +3,6 @@ export const PAGES_ROUTE = {
   search: '/search',
   profile: '/profile',
   businessPosts: "/business/posts", //parece que NO se usa
-  restaurantPublic: "/restaurant/:userId",
-  hotelPublic: "/hotel/:userId",
+  restaurantPublic: "/restaurant",
+  hotelPublic: "/hotel",
 };
