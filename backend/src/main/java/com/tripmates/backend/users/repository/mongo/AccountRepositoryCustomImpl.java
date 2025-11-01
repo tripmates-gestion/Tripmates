@@ -91,16 +91,17 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 				List<Criteria> roomPackCriteria = new ArrayList<>();
 
 				if (roomPack.numberOfGuests() != null)
-                    roomPackCriteria.add(Criteria.where("numberOfGuests").is(roomPack.numberOfGuests()));
+					roomPackCriteria.add(Criteria.where("numberOfGuests").is(roomPack.numberOfGuests()));
 
 				if (roomPack.checkInDate() != null)
-                    roomPackCriteria.add(Criteria.where("checkInDate").lte(roomPack.checkInDate()));
+					roomPackCriteria.add(Criteria.where("checkInDate").lte(roomPack.checkInDate()));
 
 				if (roomPack.checkOutDate() != null)
-                    roomPackCriteria.add(Criteria.where("checkOutDate").gte(roomPack.checkOutDate()));
+					roomPackCriteria.add(Criteria.where("checkOutDate").gte(roomPack.checkOutDate()));
 
 				if (!roomPackCriteria.isEmpty())
-					roomPacksCriteria.add(Criteria.where("roomPacks").elemMatch(new Criteria().andOperator(roomPackCriteria.toArray(new Criteria[0]))));
+					roomPacksCriteria.add(Criteria.where("roomPacks")
+						.elemMatch(new Criteria().andOperator(roomPackCriteria.toArray(new Criteria[0]))));
 			}
 		}
 
