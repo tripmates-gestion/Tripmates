@@ -47,7 +47,7 @@ public class UserController {
 	@Operation(summary = "Obtains an account from the system")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "Account obtained successfully", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = Account.class)) }),
+					@Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "404", description = "Account not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
