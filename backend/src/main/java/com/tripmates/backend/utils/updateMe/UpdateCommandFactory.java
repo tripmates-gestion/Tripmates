@@ -11,14 +11,25 @@ import com.tripmates.backend.utils.updateMe.command.UpdatePublicEmail;
 import com.tripmates.backend.utils.updateMe.command.UpdateAveragePrice;
 import com.tripmates.backend.utils.updateMe.command.UpdateAttentionSchedule;
 import com.tripmates.backend.utils.updateMe.command.UpdateOpeningDays;
+import com.tripmates.backend.utils.updateMe.command.DeletePhotosUrls;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.AveragePrice;
 import java.util.List;
+
+import com.tripmates.backend.common.exception.BadRequestException;
 import java.time.DayOfWeek;
+import com.tripmates.backend.common.service.storage.StorageService;
 
 public class UpdateCommandFactory {
 
-    public static AccountUpdateCommand createCommand(String fieldName, Object value) {
+    private final StorageService storageService;
+
+    public UpdateCommandFactory(StorageService storageService) {
+        this.storageService = storageService;
+    }
+
+    public AccountUpdateCommand createCommand(String fieldName, Object value) {
         return switch (fieldName) {
             case "name" -> new UpdateName((String) value);
             case "description" -> new UpdateDescription((String) value);
@@ -30,17 +41,24 @@ public class UpdateCommandFactory {
             case "averagePrice" -> new UpdateAveragePrice((AveragePrice) value);
             case "attentionSchedule" -> new UpdateAttentionSchedule((AttentionSchedule) value);
             case "openingDays" -> {
-                if (!(value instanceof List<?> list)) {
-                    throw new IllegalArgumentException("openingDays must be a List");
-                }
-                if (!list.isEmpty() && !(list.get(0) instanceof DayOfWeek)) {
-                    throw new IllegalArgumentException("All elements in openingDays must be of type DayOfWeek");
-                }
+                parseAndValidateList(value, DayOfWeek.class);
                 @SuppressWarnings("unchecked")
                 List<DayOfWeek> daysOfWeek = (List<DayOfWeek>) value;
                 yield new UpdateOpeningDays(daysOfWeek);
             }
+            case "imageUrlsToDelete" -> {
+                parseAndValidateList(value, String.class);
+                @SuppressWarnings("unchecked")
+                List<String> imageUrls = (List<String>) value;
+                yield new DeletePhotosUrls(imageUrls, storageService);
+            }
             default -> throw new IllegalArgumentException("Unknown field: " + fieldName);
         };
+    }
+    private static <T> void parseAndValidateList(Object value, Class<T> clazz) {
+        if (!(value instanceof List<?> list) || (!list.isEmpty() && !clazz.isInstance(list.get(0)))) {
+            throw new BadRequestException(ValidationErrorMessage.NOT_VALID_DAY);
+        }
+
     }
 }

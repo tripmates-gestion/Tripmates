@@ -7,11 +7,14 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import java.time.DayOfWeek;
 import com.tripmates.backend.common.types.AveragePrice;
 import java.util.List;
+
+
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 import java.util.Arrays;
 import com.tripmates.backend.utils.updateMe.UpdateCommandFactory;
 import java.util.AbstractMap;
+import com.tripmates.backend.common.service.storage.StorageService;
 
 @Schema(description = "User update request DTO")
 public record UserUpdateRequestDTO(
@@ -25,9 +28,11 @@ public record UserUpdateRequestDTO(
 		@Schema(description = "Restaurant's attention schedule") AttentionSchedule attentionSchedule,
 		@Schema(description = "Restaurant's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant's menu") List<MenuItem> menu,
-		@Schema(description = "Hotel's type") String hotelType) {
+		@Schema(description = "Hotel's type") String hotelType,
+    @Schema(description = "Business account's images URL's to delete from profile photos collection") List<String> imageUrlsToDelete ){
 
-	public List<AccountUpdateCommand> toCommands() {
+	public List<AccountUpdateCommand> toCommands(StorageService storageService) {
+    UpdateCommandFactory updateCommandFactory = new UpdateCommandFactory(storageService);
 		return Arrays.stream(this.getClass().getRecordComponents())
 				.map(rc -> {
 					try {
@@ -38,7 +43,7 @@ public record UserUpdateRequestDTO(
 					}
 				})
 				.filter(entry -> entry.getValue() != null)
-				.map(entry -> UpdateCommandFactory.createCommand(entry.getKey(), entry.getValue()))
+				.map(entry -> updateCommandFactory.createCommand(entry.getKey(), entry.getValue()))
 				.toList();
 	}
 
