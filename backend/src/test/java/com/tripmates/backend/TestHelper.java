@@ -14,7 +14,7 @@ import java.util.Map;
 import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.Role;
 
 @ActiveProfiles("test")
 public class TestHelper {
@@ -33,8 +33,8 @@ public class TestHelper {
 	}
 
 	public boolean regist(String email, Role role, BusinessType businessType) {
-		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña",
-				role, businessType);
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña", role,
+				businessType);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -65,4 +65,5 @@ public class TestHelper {
 		Map<String, String> response = responseEntity.getBody();
 		return response.get("accessToken");
 	}
+
 }
