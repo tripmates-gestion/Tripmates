@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -57,28 +58,41 @@ public class UserController {
 
 	@PostMapping("/search/business")
 	@Operation(summary = "Obtains accounts that meet the filters", description = """
-			Filters are received as query params via model attributes.
+			Filters are received as the following example, all filters are optional.
 
-			Parametros:
-			- averagePrice
-			- location: ....
-			- username:
-			         - businessType
-			         - restaurantType
-			         - hotelType
-			         - attentionSchedule: ...
-			- roomPacks
-			- page, size, sort: Pagination (e.g., sort=name,asc).""")
+            {
+                "averagePrice": Business's average price. Use: {$, $$, $$$},
+                "location": Business's location. Use any location,
+                "username": Business's username. Use any username,
+                "businessType": Business's type. Use {RESTAURANT, HOTEL},
+                "restaurantType": Restaurant's type. Use {CAFE, VEGANO, VEGETARIANO, PERUANO, ARGENTO, ITALIANO},
+                "hotelType": Hotel's type. Use {LUJO},
+                "attentionSchedule": [
+                    "openingTime": Restaurant's opening time. Use format HH:mm,
+                    "closingTime": Restaurant's closing time. Use format HH:mm
+                ],
+                "roomPacks": [
+                    "checkInDate": Hotel's check in date. Use format yyyy-MM-dd,
+                    "checkOutDate": Hotel's check out date. Use format yyyy-MM-dd,
+                    "numberOfGuests": Hotel's number of guests. Use integer format,
+                    "price": Hotel's price. Use float format
+                ]
+            }
+			""")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
-			@ApiResponse(responseCode = "?", description = "?", content = {
+			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
 	public ResponseEntity<?> search(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
+        Page<AccountResumeResponseDTO> accountResumeResponseDTOPage =  userService.search(accountSearchRequestDTO, pageable);
+        if (accountResumeResponseDTOPage.getTotalElements() > 0) {
+            return ResponseEntity.noContent().build();
+        }
 
-		return ResponseEntity.ok().body(userService.search(accountSearchRequestDTO, pageable));
+        return ResponseEntity.ok().body(accountResumeResponseDTOPage);
 	}
 
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

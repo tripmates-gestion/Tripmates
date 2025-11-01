@@ -73,14 +73,9 @@ public class UserService {
 	 * @return {@link Page}
 	 */
 	public Page<AccountResumeResponseDTO> search(AccountSearchRequestDTO accountSearchRequestDTO, Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = accountRespository
-			.searchAccount(accountSearchRequestDTO, pageable)
-			.map(AccountResumeResponseDTO::fromAccount);
-		if (!accountResumeResponseDTOPage.hasContent()) {
-			return accountResumeResponseDTOPage;
-		}
-
-		return accountResumeResponseDTOPage;
+        return accountRespository
+            .searchAccount(accountSearchRequestDTO, pageable)
+            .map(AccountResumeResponseDTO::fromAccount);
 	}
 
 	/**

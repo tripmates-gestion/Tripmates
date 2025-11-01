@@ -14,7 +14,7 @@ public record AccountSearchRequestDTO(
 		@Schema(description = "Filter by business's username") String username,
 		@Schema(description = "Filter by business's type") BusinessType businessType,
 		@Schema(description = "Filter by restaurant's type") RestaurantType restaurantType,
+        @Schema(description = "Filter by hotel's type") HotelType hotelType,
 		@Schema(description = "Filter by restaurant's attention schedule") AttentionSchedule attentionSchedule,
-		@Schema(description = "Filter by hotel's type") HotelType hotelType,
 		@Schema(description = "Filter by hotel's room packs") @JsonProperty("roomPacks") List<RoomPack> roomPacksList) {
 }
