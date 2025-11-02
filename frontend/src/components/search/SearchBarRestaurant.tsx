@@ -43,7 +43,7 @@ function mapRestaurant(restaurant: any): BusinessPubAccountDataDTO {
 }
 
 export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
-  const { accesToken: accessToken } = useAuth();
+  const { accessToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState('');
   const [name, setName] = useState('');

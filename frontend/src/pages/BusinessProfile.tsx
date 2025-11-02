@@ -607,6 +607,7 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
       <PublicationGrid
         publications={items}
         onDelete={handleDeleteRequest}  // << ahora abre diálogo "pro"
+        letReview={false}
       />
 
       {/* Diálogo de confirmación */}
