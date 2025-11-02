@@ -30,4 +30,12 @@ public class ValidationErrorMessage {
 
 	public static final String NOT_FOUND_IMAGE_URL = "No se encontró la imagen referida.";
 
+  public static final String REVIEW_TITLE_BLANK = "El titulo de la reseña no puede estar en blanco";
+
+  public static final String REVIEW_CONTENT_BLANK = "El contenido de la reseña no puede estar en blanco";
+
+  public static final String REVIEW_RATING_MIN = "La calificacion de la reseña debe ser mayor o igual 0.5";
+
+  public static final String REVIEW_RATING_MAX = "La calificacion de la reseña debe ser menor o igual a 5.0";
+
 }
