@@ -2,17 +2,24 @@ package com.tripmates.backend.publications.service;
 
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.service.storage.StorageService;
-import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
-
+import com.tripmates.backend.common.types.Review;
+import com.tripmates.backend.publications.dto.PublicationRequestDTO;
+import com.tripmates.backend.publications.dto.ReviewCreationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.exception.PublicationNotFoundException;
 import com.tripmates.backend.publications.exception.PublicationOwnerException;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
-import com.tripmates.backend.utils.PublicationBuilder;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
+import com.tripmates.backend.common.exception.BadRequestException;
+import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.utils.BusinessPublicationBuilder;
+import com.tripmates.backend.utils.ReviewBuilder;
 
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,26 +48,54 @@ public class PublicationService {
 
 	/**
 	 * Crea una nueva publicación de un negocio. Retorna la publicacion creada.
-	 * @param businessPublicationRequestDTO dto que contiene la información de la
-	 * publicación.
+	 * @param publicationRequestDTO dto que contiene la información de la publicación.
 	 * @param imageFiles imagenes de la publicacion.
 	 * @param email email del usuario.
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
-	public PublicationResumeResponseDTO create(BusinessPublicationRequestDTO businessPublicationRequestDTO,
+	public PublicationResumeResponseDTO createPublication(PublicationRequestDTO publicationRequestDTO,
 			List<MultipartFile> imageFiles, String email) {
 
 		Account account = accountRespository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-		PublicationBuilder publicationBuilder = new PublicationBuilder(storageService)
-			.publicationDetails(businessPublicationRequestDTO)
+		BusinessPublicationBuilder businessPublicationBuilder = new BusinessPublicationBuilder(storageService)
+			.publicationDetails(publicationRequestDTO)
 			.owner(account);
 
 		if (imageFiles != null && !imageFiles.isEmpty())
-			publicationBuilder = publicationBuilder.imageFiles(imageFiles);
+			businessPublicationBuilder = businessPublicationBuilder.imageFiles(imageFiles);
 
-		return PublicationResumeResponseDTO.fromPublication(publicationRepository.save(publicationBuilder.build()));
+		return PublicationResumeResponseDTO
+			.fromPublication(publicationRepository.save(businessPublicationBuilder.build()));
+	}
+
+	public ReviewResponseDTO createReview(ReviewCreationRequestDTO reviewCreationRequestDTO,
+			List<MultipartFile> imageFiles, String publicationId, String authenticatedUserEmail
+
+	) {
+
+		Account user = accountRespository.findByEmail(authenticatedUserEmail)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (user.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		Publication publication = publicationRepository.findById(publicationId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
+
+		var reviewConstructor = new ReviewBuilder(storageService).publicationDetails(reviewCreationRequestDTO)
+			.publicationId(publicationId)
+			.owner(user);
+
+		if (imageFiles != null && !imageFiles.isEmpty())
+			reviewConstructor = reviewConstructor.imageFiles(imageFiles);
+
+		Review review = reviewConstructor.build();
+		publication.addReview(review);
+		publicationRepository.save(publication);
+
+		return ReviewResponseDTO.fromEntities(review, publication, user);
 	}
 
 	/**
@@ -68,12 +103,12 @@ public class PublicationService {
 	 * @param publicationId ID de la publicación.
 	 * @param email email del usuario.
 	 */
-	public void delete(String publicationId, String email) {
+	public void deletePublication(String publicationId, String email) {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
 		Account account = accountRespository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))
 			throw new PublicationOwnerException("No tenes permiso para eliminar esta publicacion");
@@ -93,9 +128,9 @@ public class PublicationService {
 	 * @param email email del usuario.
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
-	public List<PublicationResumeResponseDTO> getAuthenticated(String email) {
+	public List<PublicationResumeResponseDTO> getPublicationAuthenticated(String email) {
 		Account account = accountRespository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(account.getId())
 			.stream()
@@ -108,8 +143,9 @@ public class PublicationService {
 	 * @param userId ID del usuario.
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
-	public List<PublicationResumeResponseDTO> getNoneAuthenticated(String userId) {
-		accountRespository.findById(userId).orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+	public List<PublicationResumeResponseDTO> getPublicationNoneAuthenticated(String userId) {
+		accountRespository.findById(userId)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(userId)
 			.stream()
@@ -120,45 +156,45 @@ public class PublicationService {
 	/**
 	 * Edita la publicacion del usuario autenticado. Retorna la publicacion actualizada.
 	 * @param publicationId ID de la publicacion.
-	 * @param businessPublicationRequestDTO dto que contiene la información a actualizar.
+	 * @param publicationRequestDTO dto que contiene la información a actualizar.
 	 * @param imageFiles imagenes de la publicacion
 	 * @param email email del usuario.
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
-	public PublicationResumeResponseDTO update(String publicationId,
-			BusinessPublicationRequestDTO businessPublicationRequestDTO, List<MultipartFile> imageFiles, String email) {
+	public PublicationResumeResponseDTO updatePublication(String publicationId,
+			PublicationRequestDTO publicationRequestDTO, List<MultipartFile> imageFiles, String email) {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
 		Account account = accountRespository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))
 			throw new PublicationOwnerException("No tenes permiso para editar esta publicacion");
 
-		if (businessPublicationRequestDTO.title() != null)
-			publication.setTitle(businessPublicationRequestDTO.title());
+		if (publicationRequestDTO.title() != null)
+			publication.setTitle(publicationRequestDTO.title());
 
-		if (businessPublicationRequestDTO.description() != null)
-			publication.setDescription(businessPublicationRequestDTO.description());
+		if (publicationRequestDTO.description() != null)
+			publication.setDescription(publicationRequestDTO.description());
 
-		if (businessPublicationRequestDTO.phoneNumber() != null)
-			publication.setPhoneNumber(businessPublicationRequestDTO.phoneNumber());
+		if (publicationRequestDTO.phoneNumber() != null)
+			publication.setPhoneNumber(publicationRequestDTO.phoneNumber());
 
-		if (businessPublicationRequestDTO.email() != null)
-			publication.setEmail(businessPublicationRequestDTO.email());
+		if (publicationRequestDTO.email() != null)
+			publication.setEmail(publicationRequestDTO.email());
 
-		if (businessPublicationRequestDTO.location() != null)
-			publication.setLocation(businessPublicationRequestDTO.location());
+		if (publicationRequestDTO.location() != null)
+			publication.setLocation(publicationRequestDTO.location());
 
-		if (businessPublicationRequestDTO.openingDays() != null)
-			publication.setOpeningDays(businessPublicationRequestDTO.openingDays());
+		if (publicationRequestDTO.openingDays() != null)
+			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
-		if (businessPublicationRequestDTO.attentionSchedule() != null)
-			publication.setAttentionSchedule(businessPublicationRequestDTO.attentionSchedule());
+		if (publicationRequestDTO.attentionSchedule() != null)
+			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (businessPublicationRequestDTO.exceptionalClosingDays() != null)
-			publication.setExceptionalClosingDays(businessPublicationRequestDTO.exceptionalClosingDays());
+		if (publicationRequestDTO.exceptionalClosingDays() != null)
+			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		if (imageFiles != null && !imageFiles.isEmpty()) {
 			if (publication.getImageUrls() != null) {
@@ -187,7 +223,7 @@ public class PublicationService {
 	 * @param pageable configuracion de paginas del search.
 	 * @return {@link PublicationResumeResponseDTO}
 	 */
-	public Page<PublicationResumeResponseDTO> search(PublicationSearchRequestDTO publicationSearchRequestDTO,
+	public Page<PublicationResumeResponseDTO> searchPublication(PublicationSearchRequestDTO publicationSearchRequestDTO,
 			Pageable pageable) {
 		return publicationRepository.search(publicationSearchRequestDTO, pageable)
 			.map(PublicationResumeResponseDTO::fromPublication);

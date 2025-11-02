@@ -11,6 +11,7 @@ import com.tripmates.backend.common.exception.FileUploadException;
 import com.tripmates.backend.common.exception.NotFoundException;
 import com.tripmates.backend.publications.exception.PublicationNotFoundException;
 import com.tripmates.backend.publications.exception.PublicationOwnerException;
+import com.tripmates.backend.common.exception.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -53,6 +54,13 @@ public class GlobalExceptionHandler {
 					String.valueOf(request.getRequestURI())));
 	}
 
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					String.valueOf(request.getRequestURI())));
+	}
+
 	@ExceptionHandler(ValidationErrorException.class)
 	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -67,40 +75,40 @@ public class GlobalExceptionHandler {
 					String.valueOf(request.getRequestURI())));
 	}
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorDTO("about:blank", "Bad Request", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
-                        String.valueOf(request.getRequestURI())));
-    }
+	@ExceptionHandler(BadRequestException.class)
+	public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+			.body(new ErrorDTO("about:blank", "Bad Request", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
+					String.valueOf(request.getRequestURI())));
+	}
 
-    @ExceptionHandler(IncorrectPasswordException.class)
-    public ResponseEntity<?> handleIncorrectPasswordException(IncorrectPasswordException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-                        "auth/login"));
-    }
+	@ExceptionHandler(IncorrectPasswordException.class)
+	public ResponseEntity<?> handleIncorrectPasswordException(IncorrectPasswordException e) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					"auth/login"));
+	}
 
-    @ExceptionHandler(FileUploadException.class)
-    public ResponseEntity<?> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorDTO("about:blank", "File Upload Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        e.getMessage(), String.valueOf(request.getRequestURI())));
-    }
+	@ExceptionHandler(FileUploadException.class)
+	public ResponseEntity<?> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(new ErrorDTO("about:blank", "File Upload Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					e.getMessage(), String.valueOf(request.getRequestURI())));
+	}
 
-    @ExceptionHandler(IncorrectTokenException.class)
-    public ResponseEntity<?> handleIncorrectTokenException(IncorrectTokenException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-                        "auth/refresh"));
-    }
+	@ExceptionHandler(IncorrectTokenException.class)
+	public ResponseEntity<?> handleIncorrectTokenException(IncorrectTokenException e) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					"auth/refresh"));
+	}
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception e, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        e.getMessage(), String.valueOf(request.getRequestURI())));
-    }
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<?> handleException(Exception e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					e.getMessage(), String.valueOf(request.getRequestURI())));
+	}
 
 	@ExceptionHandler(UserAlreadyExistsException.class)
 	public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
@@ -123,10 +131,11 @@ public class GlobalExceptionHandler {
 					"publications/**"));
 	}
 
-    @ExceptionHandler(PublicationNotFoundException.class)
-    public ResponseEntity<?> handlePublicationNotFoundException(PublicationNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorDTO("about:blank", "Publication Not Found", HttpStatus.NOT_FOUND.value(), e.getMessage(),
-                        "publications/**"));
-    }
+	@ExceptionHandler(PublicationNotFoundException.class)
+	public ResponseEntity<?> handlePublicationNotFoundException(PublicationNotFoundException e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(new ErrorDTO("about:blank", "Publication Not Found", HttpStatus.NOT_FOUND.value(), e.getMessage(),
+					"publications/**"));
+	}
+
 }

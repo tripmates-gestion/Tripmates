@@ -1,6 +1,11 @@
 package com.tripmates.backend.publications.controller;
 
 import com.tripmates.backend.common.dto.ErrorDTO;
+import com.tripmates.backend.publications.dto.*;
+import com.tripmates.backend.publications.service.PublicationService;
+import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
+import com.tripmates.backend.common.service.parsing.ObjectParsingService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,13 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springdoc.core.annotations.ParameterObject;
-
-import com.tripmates.backend.publications.service.PublicationService;
-import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
-import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
-import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
-import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
-import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 
 import java.util.List;
 
@@ -51,15 +50,30 @@ public class PublicationController {
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> upload(@Parameter(
 			description = "JSON string that contains the business publication data. Required fields: title (non-empty), description (non-empty), the rest are optional.") @RequestPart("data") String data,
-                                    @Parameter(
+			@Parameter(
 					description = "Optional image files for the publication. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files,
-                                    @AuthenticationPrincipal UserDetails userDetails) {
+			@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok()
-			.body(publicationService.create(parsingService.parseAndValidate(data, BusinessPublicationRequestDTO.class),
-					files, userDetails.getUsername()));
+			.body(publicationService.createPublication(
+					parsingService.parseAndValidate(data, PublicationRequestDTO.class), files,
+					userDetails.getUsername()));
 	}
-	@PatchMapping(value = "/{id}", consumes = "multipart/form-data")
+
+	@PostMapping(value = "/{publicationId}/review", consumes = "multipart/form-data")
+	@Operation(summary = "Create a new review", description = DocumentationObjectsExamples.CREATE_REVIEW_EXAMPLE)
+	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Review created successfully",
+			content = @Content(mediaType = "application/json",
+					schema = @Schema(implementation = ReviewResponseDTO.class))) })
+	public ResponseEntity<?> createReview(@RequestPart("data") String data,
+			@RequestPart(value = "files", required = false) List<MultipartFile> files,
+			@PathVariable String publicationId, @AuthenticationPrincipal UserDetails userDetails) {
+		ReviewCreationRequestDTO review = parsingService.parseAndValidate(data, ReviewCreationRequestDTO.class);
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
+	}
+
+	@PatchMapping(value = "/{publicationId}", consumes = "multipart/form-data")
 	@Operation(summary = "Update a publication",
 			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_UPDATE_EXAMPLE)
 	@ApiResponses(value = {
@@ -75,16 +89,16 @@ public class PublicationController {
 			@ApiResponse(responseCode = "401", description = "Invalid credentials",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> update(@PathVariable String id, @RequestPart("data") String data,
-                                    @RequestPart(value = "files", required = false) List<MultipartFile> files,
-                                    @AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> update(@PathVariable String publicationId, @RequestPart("data") String data,
+			@RequestPart(value = "files", required = false) List<MultipartFile> files,
+			@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok()
-			.body(publicationService.update(id,
-					parsingService.parseAndValidate(data, BusinessPublicationRequestDTO.class), files,
+			.body(publicationService.updatePublication(publicationId,
+					parsingService.parseAndValidate(data, PublicationRequestDTO.class), files,
 					userDetails.getUsername()));
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/{publicationId}")
 	@Operation(summary = "Deletes user's publication")
 	@ApiResponses(
 			value = {
@@ -97,9 +111,9 @@ public class PublicationController {
 					@ApiResponse(responseCode = "401", description = "Invalid credentials",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<Void> delete(@PathVariable String id,
-                                       @AuthenticationPrincipal UserDetails userDetails) {
-		publicationService.delete(id, userDetails.getUsername());
+	public ResponseEntity<Void> delete(@PathVariable String publicationId,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		publicationService.deletePublication(publicationId, userDetails.getUsername());
 		return ResponseEntity.noContent().build();
 	}
 
@@ -112,33 +126,33 @@ public class PublicationController {
 	public ResponseEntity<?> search(
 			@ParameterObject @ModelAttribute PublicationSearchRequestDTO publicationSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		return ResponseEntity.ok().body(publicationService.search(publicationSearchRequestDTO, pageable));
+		return ResponseEntity.ok().body(publicationService.searchPublication(publicationSearchRequestDTO, pageable));
 	}
 
-    @GetMapping("/mine")
-    @Operation(summary = "Gets user's publications")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Publication fetched successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Publication not found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))) })
-    public ResponseEntity<?> getAuthorized(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(publicationService.getAuthenticated(userDetails.getUsername()));
-    }
+	@GetMapping("/mine")
+	@Operation(summary = "Gets user's publications")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Publication fetched successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Publication not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getAuthorized(@AuthenticationPrincipal UserDetails userDetails) {
+		return ResponseEntity.ok(publicationService.getPublicationAuthenticated(userDetails.getUsername()));
+	}
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Obtains a publication by user's ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Publication obtained successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
-            @ApiResponse(responseCode = "404", description = "User not found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))) })
-    public ResponseEntity<?> getUnauthorized(@PathVariable String id) {
-        return ResponseEntity.ok(publicationService.getNoneAuthenticated(id));
-    }
+	@GetMapping("/{userId}")
+	@Operation(summary = "Obtains a publication by user's ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Publication obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getUnauthorized(@PathVariable String userId) {
+		return ResponseEntity.ok(publicationService.getPublicationNoneAuthenticated(userId));
+	}
 
 }
