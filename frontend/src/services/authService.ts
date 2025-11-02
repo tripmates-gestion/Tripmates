@@ -10,7 +10,7 @@ export async function loginApi(email: string, password: string) {
 }
 
 export async function logoutApi(accesstoken: string, refreshToken: string, email: string | undefined) {
-  console.log("[AuthService] LOGGING OUT with:", email, refreshToken);
+  console.log("[AuthService] LOGGING OUT with:", email);
   console.log("Accesstoken: ", accesstoken)
   console.log("RefreshToken: ", refreshToken)
 

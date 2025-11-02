@@ -70,6 +70,7 @@ export type BusinessPublicationResponseDTO = {
   tags: string[]
 }
 
+{/* Deprecado */}
 export type UserResumeResponseDTO = {
   email: string
   description: string
@@ -83,6 +84,7 @@ export type UserResumeResponseDTO = {
   imageUrls: string[]
 }
 
+{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
 export type BusinessUpdateResponseDTO = {
   name: string;
   email: string;
@@ -153,6 +155,8 @@ export type CompleteBusinessProfile = {
   stats: UserStats;
 };
 
+
+
 export type BusinessUpdateRequestDTO={
   name: string;
   description: string;
@@ -162,6 +166,8 @@ export type BusinessUpdateRequestDTO={
   attentionSchedule: AttentionSchedule;
   exceptionalClosingDays?:string[];  
 }
+
+
 export const DEFAULT_OPENING_DAYS: DayOfWeek[] = [
   'MONDAY', 
   'TUESDAY', 

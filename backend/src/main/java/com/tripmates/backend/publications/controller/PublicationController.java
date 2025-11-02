@@ -10,10 +10,12 @@ import com.tripmates.backend.publications.service.PublicationService;
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.tripmates.backend.publications.docs.PublicationsObjectsExamples;
+
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import java.util.List;
+
+import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.service.pasring.ObjectParsingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +39,7 @@ public class PublicationController {
 
 	@PostMapping(value = "/business", consumes = "multipart/form-data")
 	@Operation(summary = "Create a new business publication",
-			description = PublicationsObjectsExamples.BUSINESS_PUBLICATION_EXAMPLE)
+			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_EXAMPLE)
 	public ResponseEntity<?> uploadBusinessPublication(@Parameter(
 			description = "JSON string containing the business publication data. Required fields: title (non-empty), description (non-empty), the rest are optional.") @RequestPart("data") String data,
 			@Parameter(

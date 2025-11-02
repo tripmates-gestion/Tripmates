@@ -47,7 +47,7 @@ function mapHotel(hotel: any): BusinessPubAccountDataDTO{
 
 
 export function SearchBarHotel({ onSearchResults }: SearchBarHotelProps) {
-    const { token: accessToken } = useAuth();
+    const { accessToken } = useAuth();
     const [loading, setLoading] = useState(false);
     const [location, setLocation] = useState('');
     const [name, setName] = useState('');

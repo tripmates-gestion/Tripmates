@@ -1,9 +1,12 @@
 import { createContext } from "react";
-import type { CommonUsersInformation } from "../types/CommonUserInfo";
+import type { CurrentUser } from "./TypesUser";
+
+
+
 interface AuthContextType {
-  token: string | null;
+  accessToken: string | null;
   refreshToken: string | null;
-  user: CommonUsersInformation | null;
+  user: CurrentUser | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;

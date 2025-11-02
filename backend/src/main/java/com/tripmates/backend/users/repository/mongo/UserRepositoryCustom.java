@@ -2,7 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
+import com.tripmates.backend.users.entity.mongo.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,6 +17,7 @@ public interface UserRepositoryCustom {
 	 * @param pageable cantidad de paginas a retornar
 	 * @return {@link org.springframework.data.domain.Pageable Pageable}.
 	 */
-	Page<User> searchUsers(String username, Role role, String location, BusinessType businessType, Pageable pageable);
+	Page<Account> searchUsers(String username, Role role, String location, BusinessType businessType,
+			Pageable pageable);
 
 }

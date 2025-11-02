@@ -8,7 +8,7 @@ import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ import com.tripmates.backend.TestHelper;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(TestCloudinaryConfig.class)
-public class AuthControllerTests {
+public class RegistAccountTest {
 
 	@LocalServerPort
 	private int port;
@@ -42,7 +42,7 @@ public class AuthControllerTests {
 	private TestRestTemplate restTemplate;
 
 	@MockBean
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -225,7 +225,7 @@ public class AuthControllerTests {
 	@Test
 	void testRegisterBusinessShouldReturnNoContent() {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
-				Role.BUSINESS, BusinessType.HOSTING);
+				Role.BUSINESS, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -238,7 +238,7 @@ public class AuthControllerTests {
 	@Test
 	void testGivenTypeBusiness_whenRegisterUserShouldFailAndReturnError400() throws JSONException {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("fran", "fran@example.com", "123456",
-				Role.USER, BusinessType.HOSTING);
+				Role.USER, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -286,7 +286,7 @@ public class AuthControllerTests {
 	@Test
 	void testGivenNoName_WhenRegisterBusiness_ThenShouldFailAndReturnError400() throws JSONException {
 		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO(null, "LETI@example.com", "123456",
-				Role.BUSINESS, BusinessType.HOSTING);
+				Role.BUSINESS, BusinessType.HOTEL);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);

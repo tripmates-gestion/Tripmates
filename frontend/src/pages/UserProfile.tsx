@@ -24,8 +24,6 @@ import { type AccountType } from '../types/AccountTypes'
 import { Stat } from '../components/profile/stats';
 
 
-// ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
 const userRoleChipColor = 'info';
 
 
@@ -48,7 +46,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
       : (prev?.avatarUrl),
-    coverUrl: prev?.coverUrl ?? DEFAULT_COVER_URL,
+    coverUrl: prev?.coverUrl ?? '',
     stats: prev?.stats ?? DEFAULT_STATS,
   };
 }
@@ -56,7 +54,7 @@ function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): U
 export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token } = useAuth();
+  const { user, accessToken } = useAuth();
 
   // estado local de perfil (UI)
   //creo que esto debería ser un contexto 
@@ -80,15 +78,15 @@ export default function UserProfile() {
 
   // REINTEGRADO: persistencia al back como antes
   const handleSaveUserData = (updated: UserProfile) => {
-    if (!token) {
+    if (!accessToken) {
       console.error('No auth token available; skipping remote update');
       setProfile(updated);
       return;
     }
 
     Promise.all([
-      updateDescription(profile.description || '', updated.description || '', token),
-      updateUsername(profile.username, updated.username, token),
+      updateDescription(profile.description || '', updated.description || '', accessToken),
+      updateUsername(profile.username, updated.username, accessToken),
     ])
       .then(() => {
         setProfile(updated);

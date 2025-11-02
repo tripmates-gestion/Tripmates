@@ -27,41 +27,27 @@ public class CloudinaryService implements StorageService {
 		}
 	}
 
+	private String extractPublicId(String imageUrl) {
+		String[] parts = imageUrl.split("/upload/");
+		if (parts.length < 2) {
+			throw new IllegalArgumentException("URL inválida: no contiene '/upload/'");
+		}
+
+		String pathPart = parts[1];
+		pathPart = pathPart.substring(pathPart.indexOf("/") + 1);
+		pathPart = pathPart.replaceAll("\\.[a-zA-Z0-9]+$", "");
+		return pathPart;
+	}
+
 	@Override
-	public void deleteByUrl(String fileUrl) {
+	public void deleteByUrl(String imageUrl) {
 		try {
-			String url = fileUrl;
-			int q = url.indexOf('?');
-			if (q != -1)
-				url = url.substring(0, q);
-			String marker = "/upload/";
-			int idx = url.indexOf(marker);
-			if (idx == -1) {
-				return;
-			}
-			String tail = url.substring(idx + marker.length());
-			String[] parts = tail.split("/");
-			int start = 0;
-			for (int i = 0; i < parts.length; i++) {
-				if (parts[i].matches("^v\\d+$")) {
-					start = i + 1;
-					break;
-				}
-			}
-			StringBuilder sb = new StringBuilder();
-			for (int i = start; i < parts.length; i++) {
-				if (i > start)
-					sb.append('/');
-				sb.append(parts[i]);
-			}
-			String publicId = sb.toString();
-			int dot = publicId.lastIndexOf('.');
-			if (dot > 0)
-				publicId = publicId.substring(0, dot);
-			cloudinary.uploader().destroy(publicId, ObjectUtils.asMap("invalidate", true, "resource_type", "image"));
+			String publicId = extractPublicId(imageUrl);
+			Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+			System.out.println("Delete result: " + result);
 		}
 		catch (Exception e) {
-			// Swallow deletion errors to avoid blocking business flow
+			throw new FileUploadException(String.format("Error al eliminar el archivo de la nube: %s", e.getMessage()));
 		}
 	}
 

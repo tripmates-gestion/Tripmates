@@ -12,13 +12,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   if (!isForm && !("Content-Type" in headers)) {
     baseHeaders["Content-Type"] = "application/json";
   }
-
+  
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: { ...baseHeaders, ...headers },
   });
 
-  console.log(response)
   // leer respuesta como texto (puede ser vacío)
   const raw = await response.text().catch(() => "");
   let payload: any = null;

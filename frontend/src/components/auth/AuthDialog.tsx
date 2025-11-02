@@ -74,14 +74,17 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
         accountType,
         accountType === 'BUSINESS' ? businessType : null
       );      
+
       // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);
       console.log("[AuthDialog] Login successful");
       onClose();
+
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error al crear usuario, por favor intenta de nuevo';
       console.error(error);
       setError(errorMessage);
+
     } finally {
       setLoading(false);
     }

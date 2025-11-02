@@ -1,7 +1,7 @@
 import { useContext } from 'react';
-import { BusinessProfileContext } from '../context/businessProfileContext';
+import { BusinessProfileContext } from '../context/BusinessProfileContext';
 
-// ---------------------- Hook de acceso ----------------------
+// ---------------------- Hook de acceso a perfil de usuario ----------------------
 export const useBusinessProfile = () => {
     const context = useContext(BusinessProfileContext);
     if (!context) {

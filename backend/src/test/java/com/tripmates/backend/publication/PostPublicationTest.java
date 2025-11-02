@@ -5,7 +5,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -28,8 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
-
 import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -37,7 +34,7 @@ import com.tripmates.backend.TestHelper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc
 @Import({ TestCloudinaryConfig.class })
-public class PublicationControllerTests {
+public class PostPublicationTest {
 
 	@LocalServerPort
 	private int port;
@@ -48,15 +45,10 @@ public class PublicationControllerTests {
 	private TestRestTemplate restTemplate;
 
 	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
 	private MockMvc mockMvc;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
-
-	private HttpHeaders headers = new HttpHeaders();
 
 	@BeforeAll
 	void setUp() {
@@ -71,7 +63,7 @@ public class PublicationControllerTests {
 
 	@Test
 	void testGivenNoTitle_WhenCreatePublication_ThenShouldFailAndReturnError400() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -104,7 +96,7 @@ public class PublicationControllerTests {
 
 	@Test
 	void testGivenNoDescription_WhenCreatePublication_ThenShouldFailAndReturnError400() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -137,7 +129,7 @@ public class PublicationControllerTests {
 
 	@Test
 	void testGivenJustDescriptionAndTitle_WhenCreatePublication_ThenShouldSuccess() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{
@@ -171,7 +163,7 @@ public class PublicationControllerTests {
 
 	@Test
 	void testGivenAllFieldsExceptImages_WhenCreatePublication_ThenShouldSuccess() throws Exception {
-		String jwt = testHelper.getJwtTesting("test@example.com");
+		String jwt = testHelper.getUserTestingJwt("test@example.com");
 
 		String requestJson = """
 				{

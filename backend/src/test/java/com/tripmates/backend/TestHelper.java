@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
+import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.entity.Role;
 
 @ActiveProfiles("test")
@@ -31,9 +32,9 @@ public class TestHelper {
 		return "http://localhost:" + port + path;
 	}
 
-	public boolean registUser(String email) {
-		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña",
-				Role.USER, null);
+	public boolean regist(String email, Role role, BusinessType businessType) {
+		AuthRegisterRequestDTO authRegisterRequestDTO = new AuthRegisterRequestDTO("myName", email, "contraseña", role,
+				businessType);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthRegisterRequestDTO> request = new HttpEntity<>(authRegisterRequestDTO, headers);
@@ -41,10 +42,20 @@ public class TestHelper {
 		return response.getStatusCode().value() == HttpStatus.SC_NO_CONTENT;
 	}
 
-	public String getJwtTesting(String email) {
-		if (!registUser(email))
+	public String getUserTestingJwt(String email) {
+		if (!regist(email, Role.USER, null))
 			return null;
-		AuthLoginRequestDTO authLoginRequestDTO = new AuthLoginRequestDTO(email, "contraseña");
+		return getTestingJwt(email, "contraseña");
+	}
+
+	public String getBusinessTestingJwt(String email, BusinessType businessType) {
+		if (!regist(email, Role.BUSINESS, businessType))
+			return null;
+		return getTestingJwt(email, "contraseña");
+	}
+
+	private String getTestingJwt(String email, String password) {
+		AuthLoginRequestDTO authLoginRequestDTO = new AuthLoginRequestDTO(email, password);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthLoginRequestDTO> request = new HttpEntity<>(authLoginRequestDTO, headers);

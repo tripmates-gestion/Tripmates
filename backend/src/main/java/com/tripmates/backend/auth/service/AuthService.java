@@ -9,8 +9,8 @@ import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.users.entity.Role;
-import com.tripmates.backend.users.entity.mongo.User;
-import com.tripmates.backend.users.repository.mongo.UserRepository;
+import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.users.repository.mongo.AccountRespository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 public class AuthService {
 
 	@Autowired
-	private UserRepository userRepository;
+	private AccountRespository userRepository;
 
 	@Autowired
 	private JwtService jwtService;
@@ -37,7 +37,7 @@ public class AuthService {
 	 * @param authRegisterRequestDTO contiene los datos del nuevo usuario
 	 */
 	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
-		User user = new User();
+		Account user = new Account();
 		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(u -> {
 			throw new UserAlreadyExistsException("Email no está disponible");
 		});
@@ -58,7 +58,7 @@ public class AuthService {
 	 * @return {@link AuthLoginResponseDTO AuthLoginResponseDTO}
 	 */
 	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
-		User user = userRepository.findByEmail(authLoginRequestDTO.email())
+		Account user = userRepository.findByEmail(authLoginRequestDTO.email())
 			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
@@ -82,7 +82,7 @@ public class AuthService {
 	 * @param authLogoutRequestDTO contiene email
 	 */
 	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
-		User user = userRepository.findByEmail(authLogoutRequestDTO.email())
+		Account user = userRepository.findByEmail(authLogoutRequestDTO.email())
 			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		user.setToken(null);
@@ -95,7 +95,7 @@ public class AuthService {
 	 * @return {@link AuthRefreshResponseDTO AuthRefreshResponseDTO}
 	 */
 	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
-		User user = userRepository.findByEmail(authRefreshRequestDTO.email())
+		Account user = userRepository.findByEmail(authRefreshRequestDTO.email())
 			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
 
 		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken())) {

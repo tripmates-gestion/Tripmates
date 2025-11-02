@@ -18,7 +18,7 @@ type Props = {
   setShowPass: (v: boolean) => void;
   onDataChange: (data: { name: string; email: string; password: string; accountType: AccountType }) => void;
   onSubmit: (e: React.FormEvent) => void; // Nueva prop para manejar submit
-  formRef: React.RefObject<HTMLFormElement>; // Ref del formulario
+  formRef: React.RefObject<HTMLFormElement | null>; // Ref del formulario
 };
 
 export default function RegisterForm({
@@ -115,7 +115,7 @@ export default function RegisterForm({
               required
             >
               <MenuItem value="RESTAURANT">Restaurante</MenuItem>
-              <MenuItem value="HOSTING">Alojamiento</MenuItem>
+              <MenuItem value="HOTEL">Alojamiento</MenuItem>
               <MenuItem value="TOURISM">Turismo</MenuItem>
             </TextField>
           </>
