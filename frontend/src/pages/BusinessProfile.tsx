@@ -9,7 +9,6 @@ import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
 import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../context/TypesUser';
 import ImageCarousel from '../components/ui/ImageCarousel';
-import { LABEL_DAYS } from '../constants/Days';
 import { formatHours } from './utils/Utils';
 import PublicationGrid from '../components/publications/PublicationGrid';
 import type { BusinessPublicationResponseDTO } from '../types/business';
@@ -18,6 +17,9 @@ import { deleteBusinessPublication, getBusinessPublications } from '../services/
 import HotelEditDialog from '../components/profile/businessProfile/HotelEditDialog';
 import RestaurantEditDialog from '../components/profile/businessProfile/RestaurantEditDialog';
 import { InfoRow } from '../components/profile/businessProfile/BusinessPubProfileLayout';
+import { PriceBadge, OpeningDaysRow} from "../components/profile/businessProfile/Utils";
+import RestaurantMenuTab from '../components/profile/businessProfile/restaurant/RestaurantMenuTab';
+
 
 const BASE_TABS = [
   { key: 'mi-presentacion', label: 'Mi Presentación' },
@@ -44,7 +46,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function BusinessProfile() {
   const { user, accessToken } = useAuth();
-  const { business, loading } = useBusinessProfile();
+  const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
 
@@ -94,16 +96,19 @@ export default function BusinessProfile() {
                   <Chip
                     size="small"
                     variant="outlined"
-                    label={business.businessType === BUSINESS_TYPES.restaurant ? 'Restaurante' : 'Hotel'}
+                    label={business.businessType === BUSINESS_TYPES.restaurant ? 'RESTAURANT' : 'HOTEL'}
                     color="success"
                     sx={{ ml: 0.5 }}
                   />
-                  {business.businessType === BUSINESS_TYPES.restaurant && business.averagePrice && (
-                    <Chip size="small" label={`Precio: ${business.averagePrice}`} sx={{ ml: 0.5 }} />
+
+                  {/* {business.businessType === BUSINESS_TYPES.restaurant && (
+                    <PriceBadge value={business.averagePrice ?? undefined} />
                   )}
+
                   {business.businessType === BUSINESS_TYPES.hotel && business.hotelType && (
                     <Chip size="small" label={business.hotelType} sx={{ ml: 0.5 }} />
-                  )}
+                  )} */}
+
                 </Stack>
 
                 <Stack direction="row" spacing={2} sx={{ mt: 1.25 }} flexWrap="wrap">
@@ -148,17 +153,23 @@ export default function BusinessProfile() {
             {currentTabKey === 'mi-presentacion' && (
               <Stack spacing={3}>
                 <Box>
-                <ImageCarousel
-                  images={business.profileImageUrls ?? []}
-                  aspectRatio={16 / 9} // Puede ser tambien 4/3 u otro, height={420}, height={300} fit="cover"
-                  height={300}
-                  fit="contain"
-                />
-                  {(!business.profileImageUrls || business.profileImageUrls.length === 0) && (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Aún no subiste fotos a tu perfil.
-                    </Typography>
-                  )}
+                {(!business.profileImageUrls || business.profileImageUrls.length === 0) ? (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1 }}
+                  >
+                    Aún no subiste fotos a tu perfil.
+                  </Typography>
+                ) : (
+                  <ImageCarousel
+                    images={business.profileImageUrls ?? []}
+                    aspectRatio={16 / 9} // puede ser también 4/3 u otro
+                    height={300}
+                    fit="contain"
+                  />
+                )}
+
                 </Box>
 
                 <Grid container spacing={3} alignItems="flex-start">
@@ -171,23 +182,59 @@ export default function BusinessProfile() {
                       </Section>
                     )}
 
-                    {isRestaurant(business) && (
-                      <Section title="Atención">
-                        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
-                          {(business.openingDays ?? []).map(d => (
-                            <Chip key={d} size="small" label={LABEL_DAYS[d as keyof typeof LABEL_DAYS] ?? d} sx={{ mb: 1 }} />
-                          ))}
-                          {business.attentionSchedule && (
-                            <Chip size="small" variant="outlined" label={formatHours(business.attentionSchedule)} sx={{ mb: 1 }} />
-                          )}
-                        </Stack>
-                          
-                        <Stack direction="row" spacing={1} flexWrap="wrap">
-                          {!!business.restaurantType && <Chip size="small" variant="outlined" label={business.restaurantType} />}
-                          {!!business.averagePrice && <Chip size="small" variant="outlined" label={`Precio: ${business.averagePrice}`} />}
-                        </Stack>
-                      </Section>
-                    )}
+                    {/* --- Información de atención según tipo de negocio --- */}
+                    {isRestaurant(business) ? (
+                      <>
+                        {/* --- Días de atención --- */}
+                        <Section title="Atención">
+                          <OpeningDaysRow openingDays={business.openingDays} />
+                        </Section>
+
+                        {/* --- Detalles del restaurante --- */}
+                        <Section title="Detalles del restaurante">
+                          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center">
+                            {business.attentionSchedule && (
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                label={formatHours(business.attentionSchedule)}
+                              />
+                            )}
+                            {!!business.restaurantType && (
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                label={business.restaurantType}
+                              />
+                            )}
+                            {!!business.averagePrice && <PriceBadge value={business.averagePrice} />}
+                          </Stack>
+                        </Section>
+                      </>
+                    ) : business.businessType === BUSINESS_TYPES.hotel ? (
+                      <>
+                        {/* --- Detalles del hotel --- */}
+                        <Section title="Detalles del hotel">
+                          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center">
+                            {!!business.hotelType && (
+                              <Chip
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                label={business.hotelType}
+                                sx={{
+                                  fontWeight: 600,
+                                  textTransform: "capitalize",
+                                }}
+                              />
+                            )}
+                            {!!business.averagePrice && <PriceBadge value={business.averagePrice} />}
+                          </Stack>
+                        </Section>
+                      </>
+                    ) : null}
+
+
                   </Grid>
 
                   <Grid item xs={12} md={5}>
@@ -221,7 +268,11 @@ export default function BusinessProfile() {
             )}
 
             {currentTabKey === 'menu' && business.businessType === BUSINESS_TYPES.restaurant && (
-              <RestaurantMenuEditor menu={business.menu ?? []} />
+              <RestaurantMenuTab
+                accessToken={accessToken!}
+                initialMenu={business.menu ?? []}
+                onBusinessReload={refreshProfile} // opcional si tenés forma de refrescar el profile externo
+              />
             )}
 
             {currentTabKey === 'habitaciones' && business.businessType === BUSINESS_TYPES.hotel && (
@@ -236,6 +287,9 @@ export default function BusinessProfile() {
     </Box>
   );
 }
+
+
+
 
 function RestaurantMenuEditor({ menu }: { menu: any[] }) {
   return (

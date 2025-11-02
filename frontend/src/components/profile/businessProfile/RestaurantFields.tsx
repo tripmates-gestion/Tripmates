@@ -1,7 +1,8 @@
 import { Stack, TextField, MenuItem, FormControl, FormHelperText } from '@mui/material'
 import DaysSelector from './common/DaysSelector'
 import ScheduleInput from './common/ScheduleInput'
-import { PRICE_OPTIONS, RESTAURANT_TYPE_OPTIONS, type RestaurantTypes } from './common/types'
+import { PRICE_OPTIONS, RESTAURANT_TYPE_OPTIONS } from './common/types'
+import { type RestaurantType } from '../../../types/Restaurant';
 
 export type RestaurantFieldsErrors = Partial<{
   openingDays: string
@@ -24,8 +25,8 @@ export default function RestaurantFields({
   setOpeningHours: (v: string) => void
   averagePrice?: '$'|'$$'|'$$$'
   setAveragePrice: (v: '$'|'$$'|'$$$'|undefined) => void
-  restaurantType?: RestaurantTypes
-  setRestaurantType: (v: RestaurantTypes|undefined) => void
+  restaurantType?: RestaurantType
+  setRestaurantType: (v: RestaurantType|undefined) => void
   disabled?: boolean
   errors?: RestaurantFieldsErrors
 }) {
@@ -61,7 +62,7 @@ export default function RestaurantFields({
         fullWidth
         disabled={disabled}
         value={restaurantType ?? ''}
-        onChange={e=>setRestaurantType((e.target.value || undefined) as RestaurantTypes | undefined)}
+        onChange={e=>setRestaurantType((e.target.value || undefined) as RestaurantType | undefined)}
         error={Boolean(errors?.restaurantType)}
         helperText={errors?.restaurantType || 'Seleccioná un tipo'}
       >

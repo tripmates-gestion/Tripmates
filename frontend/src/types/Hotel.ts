@@ -1,4 +1,5 @@
-export type HotelType = "hotel" | "hostel" | "departamento" | "cabaña" | "camping"
+export type HotelType = "hotel" | "hostel" | "departamento" | "cabaña" | "camping" | "LUJO"
+
 
 export type RoomPackDTO = {
     checkInDate: string;        // formato "yyyy-MM-dd"
