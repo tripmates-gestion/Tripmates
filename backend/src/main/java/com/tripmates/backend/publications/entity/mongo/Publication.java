@@ -75,8 +75,8 @@ public class Publication {
 		this.createdAt = createdAt;
 	}
 
-  public void addReview(Review review) {
-    this.reviews.add(review);
-  }
+	public void addReview(Review review) {
+		this.reviews.add(review);
+	}
 
 }

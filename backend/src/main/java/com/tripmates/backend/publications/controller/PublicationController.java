@@ -55,18 +55,18 @@ public class PublicationController {
 			.body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
 	}
 
-  @PostMapping(value = "/{publicationId}/review", consumes = "multipart/form-data")
-  @Operation(summary = "Create a new review", description = DocumentationObjectsExamples.CREATE_REVIEW_EXAMPLE)
-  @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Review created successfully",
+	@PostMapping(value = "/{publicationId}/review", consumes = "multipart/form-data")
+	@Operation(summary = "Create a new review", description = DocumentationObjectsExamples.CREATE_REVIEW_EXAMPLE)
+	@ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Review created successfully",
 			content = @Content(mediaType = "application/json",
-			schema = @Schema(implementation = ReviewResponseDTO.class))) })
-  public ResponseEntity<?> createReview(@RequestPart("data") String data,
+					schema = @Schema(implementation = ReviewResponseDTO.class))) })
+	public ResponseEntity<?> createReview(@RequestPart("data") String data,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files,
-			@PathVariable String publicationId,
-			@AuthenticationPrincipal UserDetails userDetails) {
-    ReviewCreationRequestDTO review = parsingService.parseAndValidate(data, ReviewCreationRequestDTO.class);
-    return ResponseEntity.status(HttpStatus.CREATED).body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
-  }
+			@PathVariable String publicationId, @AuthenticationPrincipal UserDetails userDetails) {
+		ReviewCreationRequestDTO review = parsingService.parseAndValidate(data, ReviewCreationRequestDTO.class);
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
+	}
 
 	@GetMapping("/mine")
 	@Operation(summary = "List my publications",

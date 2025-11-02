@@ -51,12 +51,13 @@ public class GlobalExceptionHandler {
 			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
 					String.valueOf(request.getRequestURI())));
 	}
-  @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException e, HttpServletRequest request) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-                  String.valueOf(request.getRequestURI())));
-  }
+
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException e, HttpServletRequest request) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					String.valueOf(request.getRequestURI())));
+	}
 
 	@ExceptionHandler(ValidationErrorException.class)
 	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {

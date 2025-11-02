@@ -26,7 +26,6 @@ import com.tripmates.backend.publications.dto.ReviewResponseDTO;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.utils.ReviewBuilder;
 
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -51,7 +50,8 @@ public class PublicationService {
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-		var publicationConstructor = new BusinessPublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
+		var publicationConstructor = new BusinessPublicationBuilder(storageService)
+			.publicationDetails(businessPublicationDTO)
 			.owner(user);
 
 		if (imageFiles != null && !imageFiles.isEmpty()) {
@@ -61,37 +61,32 @@ public class PublicationService {
 		return BusinessPublicationResponseDTO.fromPublication(savedPublication);
 	}
 
-  public ReviewResponseDTO createReview(
-    ReviewCreationRequestDTO reviewCreationRequestDTO,
-    List<MultipartFile> imageFiles,
-    String publicationId,
-    String authenticatedUserEmail
-    
-  ) {
+	public ReviewResponseDTO createReview(ReviewCreationRequestDTO reviewCreationRequestDTO,
+			List<MultipartFile> imageFiles, String publicationId, String authenticatedUserEmail
 
-    Account user = userRepository.findByEmail(authenticatedUserEmail)
-      .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    if (user.getRole() != Role.USER) {
-      throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-    }
+	) {
 
-    Publication publication = publicationRepository.findById(publicationId)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
+		Account user = userRepository.findByEmail(authenticatedUserEmail)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		if (user.getRole() != Role.USER) {
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+		}
 
-    var reviewConstructor = new ReviewBuilder(storageService)
-                                .publicationDetails(reviewCreationRequestDTO)
-                                .publicationId(publicationId)
-                                .owner(user);
+		Publication publication = publicationRepository.findById(publicationId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
 
-    if (imageFiles != null && !imageFiles.isEmpty()) {
-      reviewConstructor = reviewConstructor.imageFiles(imageFiles);
-    }
-    Review review = reviewConstructor.build();
-    publication.addReview(review);
-    publicationRepository.save(publication);
-    return ReviewResponseDTO.fromEntities(review,publication,user);
-  }
-  
+		var reviewConstructor = new ReviewBuilder(storageService).publicationDetails(reviewCreationRequestDTO)
+			.publicationId(publicationId)
+			.owner(user);
+
+		if (imageFiles != null && !imageFiles.isEmpty()) {
+			reviewConstructor = reviewConstructor.imageFiles(imageFiles);
+		}
+		Review review = reviewConstructor.build();
+		publication.addReview(review);
+		publicationRepository.save(publication);
+		return ReviewResponseDTO.fromEntities(review, publication, user);
+	}
 
 	public void deletePublication(String id, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)

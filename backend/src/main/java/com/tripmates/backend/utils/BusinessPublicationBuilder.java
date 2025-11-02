@@ -37,8 +37,7 @@ public class BusinessPublicationBuilder {
 				imageUrls.add(imageUrl);
 			}
 			else {
-				throw new BadRequestException(
-						ValidationErrorMessage.IMAGE_FILES_BLANK);
+				throw new BadRequestException(ValidationErrorMessage.IMAGE_FILES_BLANK);
 			}
 		}
 		return this;

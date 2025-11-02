@@ -1,6 +1,5 @@
 package com.tripmates.backend.utils;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +13,8 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 public class ReviewBuilder {
 
 	private ReviewCreationRequestDTO reviewCreationRequestDTO;
-  private String publicationId;
+
+	private String publicationId;
 
 	private final List<String> imageUrls = new ArrayList<>();
 
@@ -30,10 +30,11 @@ public class ReviewBuilder {
 		this.reviewCreationRequestDTO = reviewCreationRequestDTO;
 		return this;
 	}
-  public ReviewBuilder publicationId(String publicationId) {
-    this.publicationId = publicationId;
-    return this;
-  }
+
+	public ReviewBuilder publicationId(String publicationId) {
+		this.publicationId = publicationId;
+		return this;
+	}
 
 	public ReviewBuilder imageFiles(List<MultipartFile> imageFiles) {
 		for (MultipartFile imageFile : imageFiles) {
@@ -54,13 +55,8 @@ public class ReviewBuilder {
 	}
 
 	public Review build() {
-		return new Review(
-      publicationId,
-      reviewCreationRequestDTO.title(),
-			reviewCreationRequestDTO.content(),
-      reviewCreationRequestDTO.rating(),
-      imageUrls,
-      owner.getId());
+		return new Review(publicationId, reviewCreationRequestDTO.title(), reviewCreationRequestDTO.content(),
+				reviewCreationRequestDTO.rating(), imageUrls, owner.getId());
 	}
 
 }
