@@ -63,18 +63,7 @@ public class UserController {
 
     @PostMapping(value = "/me/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Append one menu item (multipart)",
-            description = """
-                    Send one MenuItem in 'data' (JSON) and 0..N images in 'files'.
-
-                    Example data (JSON):
-                    {
-                      "foodName": "Double Burger",
-                      "price": 9.99,
-                      "description": "With cheddar and bacon",
-                      "photosURLs": []
-                    }
-
-                    """)
+            description = DocumentationObjectsExamples.RESTAURANT_APPEND_EXAMPLE)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Menu item appended successfully",
                     content = @Content(mediaType = "application/json",
@@ -84,7 +73,7 @@ public class UserController {
                             schema = @Schema(implementation = ErrorDTO.class)))
     })
     public ResponseEntity<?> appendMenuItem(@AuthenticationPrincipal UserDetails userDetails,
-                                            @Parameter(description = "JSON string containing the menu item. Required fields: foodName (non-empty), price (number). Optional: description (string), photosURLs (array of strings).") @RequestPart("data") String data,
+                                            @Parameter(description = "JSON with non-image fields (foodName, price, description). Images must be sent via 'files'.") @RequestPart("data") String data,
                                             @Parameter(description = "Optional image files for the menu item. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         MenuItem item = parsingService.parseAndValidate(data, MenuItem.class);
         return ResponseEntity.ok(userService.addMenuItem(userDetails.getUsername(), item, files));
@@ -92,19 +81,7 @@ public class UserController {
 
     @PatchMapping(value = "/me/restaurant/{index}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update one menu item by index (multipart)",
-            description = """
-                    Send one MenuItem in 'data' (JSON) and 0..N images in 'files'.
-                    Uploaded images are appended to the 'photosURLs' provided in the JSON.
-
-                    Example data (JSON):
-                    {
-                      "foodName": "Triple Burger",
-                      "price": 11.5,
-                      "description": "With cheddar, bacon and egg",
-                      "photosURLs": [""]
-                    }
-
-                    """)
+            description = DocumentationObjectsExamples.RESTAURANT_UPDATE_EXAMPLE)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Menu item updated successfully",
                     content = @Content(mediaType = "application/json",
@@ -115,10 +92,11 @@ public class UserController {
     })
     public ResponseEntity<?> updateMenuItem(@AuthenticationPrincipal UserDetails userDetails,
                                             @Parameter(description = "0-based index of the menu item to update") @PathVariable("index") int index,
-                                            @Parameter(description = "JSON string containing the updated menu item. Required fields: foodName (non-empty), price (number). Optional: description (string), photosURLs (array of strings).") @RequestPart("data") String data,
-                                            @Parameter(description = "Optional image files to append to the item's photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        MenuItem item = parsingService.parseAndValidate(data, MenuItem.class);
-        return ResponseEntity.ok(userService.updateMenuItem(userDetails.getUsername(), index, item, files));
+                                            @Parameter(description = "Optional JSON string containing updated non-image fields (foodName, price, description). If omitted, only photos will be modified.") @RequestPart(value = "data", required = false) String data,
+                                            @Parameter(description = "Optional image files to append to the item's photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                            @Parameter(description = "Optional list of 0-based photo indexes to delete from the item.") @RequestParam(value = "deletePhotoIndexes", required = false) List<Integer> deletePhotoIndexes) {
+        MenuItem item = (data != null && !data.isBlank()) ? parsingService.parseAndValidate(data, MenuItem.class) : null;
+        return ResponseEntity.ok(userService.updateMenuItem(userDetails.getUsername(), index, item, files, deletePhotoIndexes));
     }
 
     @DeleteMapping(value = "/me/restaurant/{index}")
@@ -143,20 +121,7 @@ public class UserController {
 
     @PostMapping(value = "/me/hosting", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Append one room pack (multipart)",
-            description = """
-                    Send one RoomPack in 'data' (JSON) and 0..N images in 'files'.
-
-                    Example data (JSON):
-                    {
-                      "checkInDate": "2025-11-10",
-                      "checkOutDate": "2025-11-12",
-                      "numberOfGuests": 2,
-                      "services": ["breakfast", "pool"],
-                      "price": 250.0,
-                      "description": "Suite with sea view",
-                      "photosURLs": []
-                    }
-                    """)
+            description = DocumentationObjectsExamples.HOSTING_APPEND_EXAMPLE)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Room pack appended successfully",
                     content = @Content(mediaType = "application/json",
@@ -166,7 +131,7 @@ public class UserController {
                             schema = @Schema(implementation = ErrorDTO.class)))
     })
     public ResponseEntity<?> appendRoomPack(@AuthenticationPrincipal UserDetails userDetails,
-                                            @Parameter(description = "JSON string containing the room pack. Required fields: checkInDate (yyyy-MM-dd), checkOutDate (yyyy-MM-dd), numberOfGuests (integer), price (number). Optional: services (array of strings), description (string), photosURLs (array of strings).") @RequestPart("data") String data,
+                                            @Parameter(description = "JSON with non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description). Images must be sent via 'files'.") @RequestPart("data") String data,
                                             @Parameter(description = "Optional image files for the room pack. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         RoomPack pack = parsingService.parseAndValidate(data, RoomPack.class);
         return ResponseEntity.ok(userService.addRoomPack(userDetails.getUsername(), pack, files));
@@ -174,21 +139,7 @@ public class UserController {
 
     @PatchMapping(value = "/me/hosting/{index}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Update one room pack by index (multipart)",
-            description = """
-                    Send one RoomPack in 'data' (JSON) and 0..N images in 'files'.
-                    Uploaded images are appended to the 'photosURLs' provided in the JSON.
-
-                    Example data (JSON):
-                    {
-                      "checkInDate": "2025-11-15",
-                      "checkOutDate": "2025-11-18",
-                      "numberOfGuests": 3,
-                      "services": ["breakfast","pool","gym"],
-                      "price": 310.0,
-                      "description": "Premium suite",
-                      "photosURLs": ["https://cdn.example.com/prev-suite.jpg"]
-                    }
-                    """)
+            description = DocumentationObjectsExamples.HOSTING_UPDATE_EXAMPLE)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Room pack updated successfully",
                     content = @Content(mediaType = "application/json",
@@ -199,10 +150,11 @@ public class UserController {
     })
     public ResponseEntity<?> updateRoomPack(@AuthenticationPrincipal UserDetails userDetails,
                                             @Parameter(description = "0-based index of the room pack to update") @PathVariable("index") int index,
-                                            @Parameter(description = "JSON string containing the updated room pack. Required fields: checkInDate (yyyy-MM-dd), checkOutDate (yyyy-MM-dd), numberOfGuests (integer), price (number). Optional: services (array of strings), description (string), photosURLs (array of strings).") @RequestPart("data") String data,
-                                            @Parameter(description = "Optional image files to append to the room pack photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        RoomPack pack = parsingService.parseAndValidate(data, RoomPack.class);
-        return ResponseEntity.ok(userService.updateRoomPack(userDetails.getUsername(), index, pack, files));
+                                            @Parameter(description = "Optional JSON string containing updated non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description). If omitted, only photos will be modified.") @RequestPart(value = "data", required = false) String data,
+                                            @Parameter(description = "Optional image files to append to the room pack photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files,
+                                            @Parameter(description = "Optional list of 0-based photo indexes to delete from the room pack.") @RequestParam(value = "deletePhotoIndexes", required = false) List<Integer> deletePhotoIndexes) {
+        RoomPack pack = (data != null && !data.isBlank()) ? parsingService.parseAndValidate(data, RoomPack.class) : null;
+        return ResponseEntity.ok(userService.updateRoomPack(userDetails.getUsername(), index, pack, files, deletePhotoIndexes));
     }
 
     @DeleteMapping(value = "/me/hosting/{index}")

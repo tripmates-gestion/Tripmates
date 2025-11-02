@@ -52,10 +52,7 @@ public class UserService {
         return AccountResumeResponseDTO.fromAccount(user);
     }
 
-    /**
-     * Actualiza un item del menú por índice, subiendo opcionalmente sus fotos.
-     */
-    public AccountResumeResponseDTO updateMenuItem(String email, int index, MenuItem item, List<MultipartFile> files) {
+    public AccountResumeResponseDTO updateMenuItem(String email, int index, MenuItem item, List<MultipartFile> files, List<Integer> deletePhotoIndexes) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
         if (account.getRole() != Role.BUSINESS)
@@ -67,6 +64,30 @@ public class UserService {
         if (index < 0 || index >= current.size())
             throw new BadRequestException("Invalid menu index");
 
+        MenuItem currentItem = current.get(index);
+        List<String> existing = currentItem.photosURLs();
+        List<String> mergedPhotos = existing != null ? new ArrayList<>(existing) : new ArrayList<>();
+
+        List<Integer> idxToDelete = new ArrayList<>();
+        if (deletePhotoIndexes != null && !deletePhotoIndexes.isEmpty()) {
+            for (Integer i : deletePhotoIndexes) {
+                if (i != null && i >= 0 && existing != null && i < existing.size()) idxToDelete.add(i);
+            }
+        }
+        if (!idxToDelete.isEmpty()) {
+            List<String> urlsToDelete = new ArrayList<>();
+            for (Integer i : idxToDelete) {
+                if (existing != null && i >= 0 && i < existing.size()) urlsToDelete.add(existing.get(i));
+            }
+            idxToDelete.sort((a,b) -> Integer.compare(b, a));
+            for (Integer i : idxToDelete) {
+                if (i >= 0 && i < mergedPhotos.size()) mergedPhotos.remove((int)i);
+            }
+            for (String url : urlsToDelete) {
+                if (url != null) storageService.deleteByUrl(url);
+            }
+        }
+
         List<String> urls = new ArrayList<>();
         if (files != null) {
             for (MultipartFile file : files) {
@@ -74,18 +95,16 @@ public class UserService {
                 urls.add(storageService.uploadFile(file));
             }
         }
-        List<String> mergedPhotos = new ArrayList<>();
-        if (item.photosURLs() != null) mergedPhotos.addAll(item.photosURLs());
         mergedPhotos.addAll(urls);
 
-        current.set(index, new MenuItem(mergedPhotos, item.foodName(), item.price(), item.description()));
+        String foodName = (item != null && item.foodName() != null) ? item.foodName() : currentItem.foodName();
+        Float price = (item != null && item.price() != null) ? item.price() : currentItem.price();
+        String description = (item != null && item.description() != null) ? item.description() : currentItem.description();
+        current.set(index, new MenuItem(mergedPhotos, foodName, price, description));
         account.setMenu(current);
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Elimina un item del menú por índice.
-     */
     public AccountResumeResponseDTO deleteMenuItem(String email, int index) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -97,15 +116,18 @@ public class UserService {
         List<MenuItem> current = account.getMenu() != null ? new ArrayList<>(account.getMenu()) : new ArrayList<>();
         if (index < 0 || index >= current.size())
             throw new BadRequestException("Invalid menu index");
+        List<String> photos = current.get(index).photosURLs();
+        if (photos != null) {
+            for (String url : photos) {
+                if (url != null) storageService.deleteByUrl(url);
+            }
+        }
         current.remove(index);
         account.setMenu(current);
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Actualiza un room pack por índice, subiendo opcionalmente sus fotos.
-     */
-    public AccountResumeResponseDTO updateRoomPack(String email, int index, RoomPack pack, List<MultipartFile> files) {
+    public AccountResumeResponseDTO updateRoomPack(String email, int index, RoomPack pack, List<MultipartFile> files, List<Integer> deletePhotoIndexes) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
         if (account.getRole() != Role.BUSINESS)
@@ -117,6 +139,30 @@ public class UserService {
         if (index < 0 || index >= current.size())
             throw new BadRequestException("Invalid room pack index");
 
+        RoomPack currentPack = current.get(index);
+        List<String> existing = currentPack.photosURLs();
+        List<String> mergedPhotos = existing != null ? new ArrayList<>(existing) : new ArrayList<>();
+
+        List<Integer> idxToDelete = new ArrayList<>();
+        if (deletePhotoIndexes != null && !deletePhotoIndexes.isEmpty()) {
+            for (Integer i : deletePhotoIndexes) {
+                if (i != null && i >= 0 && existing != null && i < existing.size()) idxToDelete.add(i);
+            }
+        }
+        if (!idxToDelete.isEmpty()) {
+            List<String> urlsToDelete = new ArrayList<>();
+            for (Integer i : idxToDelete) {
+                if (existing != null && i >= 0 && i < existing.size()) urlsToDelete.add(existing.get(i));
+            }
+            idxToDelete.sort((a,b) -> Integer.compare(b, a));
+            for (Integer i : idxToDelete) {
+                if (i >= 0 && i < mergedPhotos.size()) mergedPhotos.remove((int)i);
+            }
+            for (String url : urlsToDelete) {
+                if (url != null) storageService.deleteByUrl(url);
+            }
+        }
+
         List<String> urls = new ArrayList<>();
         if (files != null) {
             for (MultipartFile file : files) {
@@ -124,19 +170,20 @@ public class UserService {
                 urls.add(storageService.uploadFile(file));
             }
         }
-        List<String> mergedPhotos = new ArrayList<>();
-        if (pack.photosURLs() != null) mergedPhotos.addAll(pack.photosURLs());
         mergedPhotos.addAll(urls);
 
-        current.set(index, new RoomPack(pack.checkInDate(), pack.checkOutDate(), pack.numberOfGuests(), pack.services(),
-                pack.price(), pack.description(), mergedPhotos));
+        java.time.LocalDate checkInDate = (pack != null && pack.checkInDate() != null) ? pack.checkInDate() : currentPack.checkInDate();
+        java.time.LocalDate checkOutDate = (pack != null && pack.checkOutDate() != null) ? pack.checkOutDate() : currentPack.checkOutDate();
+        Integer numberOfGuests = (pack != null && pack.numberOfGuests() != null) ? pack.numberOfGuests() : currentPack.numberOfGuests();
+        java.util.List<String> services = (pack != null && pack.services() != null) ? pack.services() : currentPack.services();
+        Float priceVal = (pack != null && pack.price() != null) ? pack.price() : currentPack.price();
+        String descriptionVal = (pack != null && pack.description() != null) ? pack.description() : currentPack.description();
+        current.set(index, new RoomPack(checkInDate, checkOutDate, numberOfGuests, services,
+                priceVal, descriptionVal, mergedPhotos));
         account.setRoomPacks(current);
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Elimina un room pack por índice.
-     */
     public AccountResumeResponseDTO deleteRoomPack(String email, int index) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -148,14 +195,17 @@ public class UserService {
         List<RoomPack> current = account.getRoomPacks() != null ? new ArrayList<>(account.getRoomPacks()) : new ArrayList<>();
         if (index < 0 || index >= current.size())
             throw new BadRequestException("Invalid room pack index");
+        List<String> photos = current.get(index).photosURLs();
+        if (photos != null) {
+            for (String url : photos) {
+                if (url != null) storageService.deleteByUrl(url);
+            }
+        }
         current.remove(index);
         account.setRoomPacks(current);
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Agrega un item al menú (RESTO) subiendo opcionalmente sus fotos.
-     */
     public AccountResumeResponseDTO addMenuItem(String email, MenuItem item, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -183,9 +233,6 @@ public class UserService {
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Agrega un room pack (HOTEL) subiendo opcionalmente sus fotos.
-     */
     public AccountResumeResponseDTO addRoomPack(String email, RoomPack pack, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -214,9 +261,6 @@ public class UserService {
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Sube N fotos para el menú del restaurante y retorna sus URLs (ordenadas como fueron recibidas).
-     */
     public List<String> uploadRestaurantMenuPhotos(String email, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -235,9 +279,6 @@ public class UserService {
         return urls;
     }
 
-    /**
-     * Sube N fotos para los room packs del hotel y retorna sus URLs (ordenadas como fueron recibidas).
-     */
     public List<String> uploadHostingRoomPackPhotos(String email, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -326,9 +367,6 @@ public class UserService {
         account.setProfileImageUrls(imageUrls);
     }
 
-    /**
-     * Reemplaza el menú del restaurante usando archivos por convención de nombres: menu-<itemIndex>-<photoIndex>.*
-     */
     public AccountResumeResponseDTO updateRestaurantMenu(String email, List<MenuItem> menu, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -367,9 +405,6 @@ public class UserService {
         return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
     }
 
-    /**
-     * Reemplaza los room packs del hotel usando archivos por convención: roompack-<packIndex>-<photoIndex>.*
-     */
     public AccountResumeResponseDTO updateHostingRoomPacks(String email, List<RoomPack> roomPacks, List<MultipartFile> files) {
         Account account = accountRespository.findByEmail(email)
             .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
