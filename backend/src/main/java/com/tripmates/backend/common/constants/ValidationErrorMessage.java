@@ -38,4 +38,10 @@ public class ValidationErrorMessage {
 
   public static final String REVIEW_RATING_MAX = "La calificacion de la reseña debe ser menor o igual a 5.0";
 
+  public static final String REVIEW_PUBLICAITON_ID_BLANK = "El id de la publicacion referida en la reseña debe ser provista";
+
+  public static final String REVIEW_PUBLICAITON_ID_NOT_FOUND = "La publicacion referida en la reseña no existe";
+
+  public static final String UNAUTHORIZED = "No tienes permiso para realizar esta accion";
+
 }

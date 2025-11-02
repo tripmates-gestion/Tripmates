@@ -10,9 +10,12 @@ import com.tripmates.backend.publications.service.PublicationService;
 import com.tripmates.backend.publications.dto.BusinessPublicationResponseDTO;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.http.HttpStatus;
 import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
+import com.tripmates.backend.publications.dto.ReviewCreationRequestDTO;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
+
 import java.util.List;
 
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
@@ -51,6 +54,19 @@ public class PublicationController {
 		return ResponseEntity.ok()
 			.body(publicationService.createBusinessPublication(publication, files, userDetails.getUsername()));
 	}
+
+  @PostMapping(value = "/{publicationId}/review", consumes = "multipart/form-data")
+  @Operation(summary = "Create a new review", description = DocumentationObjectsExamples.CREATE_REVIEW_EXAMPLE)
+  @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Review created successfully",
+			content = @Content(mediaType = "application/json",
+			schema = @Schema(implementation = ReviewResponseDTO.class))) })
+  public ResponseEntity<?> createReview(@RequestPart("data") String data,
+			@RequestPart(value = "files", required = false) List<MultipartFile> files,
+			@PathVariable String publicationId,
+			@AuthenticationPrincipal UserDetails userDetails) {
+    ReviewCreationRequestDTO review = parsingService.parseAndValidate(data, ReviewCreationRequestDTO.class);
+    return ResponseEntity.status(HttpStatus.CREATED).body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
+  }
 
 	@GetMapping("/mine")
 	@Operation(summary = "List my publications",

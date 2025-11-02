@@ -23,6 +23,33 @@ public class DocumentationObjectsExamples {
 			+ "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2025-01-01\"],\n"
 			+ "  \"tags\": [\"hostel\", \"mountain\", \"nature\"]\n" + "}\n" + "```";
 
+	static public final String CREATE_REVIEW_EXAMPLE = """
+			Creates a new review for a publication.
+
+			### Request Structure
+			- `data`: (required) JSON with the review details.
+			- `files`: (optional) Image files to include with the review (JPG, PNG, etc.).
+			- `publicationId`: (path variable) ID of the publication being reviewed.
+
+			### Required Fields
+			- `title`: Title of the review (non-blank string)
+			- `content`: Detailed review content (non-blank string)
+			- `rating`: Numeric rating between 0.5 and 5.0 (inclusive)
+
+			### Example Request
+			```json
+			{
+			  "title": "Amazing experience!",
+			  "content": "Had a wonderful time at this place. The staff was very friendly and the food was delicious.",
+			  "rating": 4.5
+			}
+			```
+
+			### Response
+			- Status: 201 Created
+			- Body: The created review details in `ReviewResponseDTO` format
+			""";
+
 	static public final String UPDATE_PROFILE_EXAMPLE = """
 			Updates an existing business with the provided data. All fields are optional.
 

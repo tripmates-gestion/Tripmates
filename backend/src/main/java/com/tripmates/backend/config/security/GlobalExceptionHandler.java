@@ -19,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.common.exception.UnauthorizedException;
 
 import java.util.stream.Collectors;
 
@@ -50,6 +51,12 @@ public class GlobalExceptionHandler {
 			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
 					String.valueOf(request.getRequestURI())));
 	}
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException e, HttpServletRequest request) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+                  String.valueOf(request.getRequestURI())));
+  }
 
 	@ExceptionHandler(ValidationErrorException.class)
 	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {
