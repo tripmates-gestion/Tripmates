@@ -43,6 +43,9 @@ export default function PlaceCard({ businessAccountData }: Props) {
         overflow: "hidden",
         transition: "0.25s",
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
+        height: "100%", 
+        display: "flex", 
+        flexDirection: "column" 
       }}
     >
       <Box sx={{ position: "relative" }}>

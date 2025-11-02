@@ -18,6 +18,7 @@ import BusinessPublicationsTab from "./BusinessPublicationsTab";
 import ImageCarousel from "../../ui/ImageCarousel";
 import type { BusinessPubAccountDataDTO } from "../../../types/AccountData";
 
+
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;
   specificTab: React.ReactNode;
@@ -59,9 +60,30 @@ export default function BusinessPubProfileLayout({
                 variant="outlined"
               />
             </Stack>
-            <Typography variant="subtitle1" color="text.secondary">
-              Precio promedio: {business.averagePrice}
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={2}> 
+              <Typography variant="subtitle1" color="text.secondary">
+                Precio promedio:
+              </Typography>
+              <Typography variant="subtitle1" color="green">
+                {business.averagePrice}
+              </Typography>
+            </Stack>
+            {business.businessType === "HOSTING" && (
+              <Stack direction="row" alignItems="center" spacing={2}> 
+                <Typography variant="subtitle1" color="text.secondary">
+                  Tipo:
+                </Typography>
+                <Chip label={business.hotelType} color="primary" variant="outlined" />
+              </Stack>
+            )}
+            {business.businessType === "RESTAURANT" && (
+              <Stack direction="row" alignItems="center" spacing={2}> 
+                <Typography variant="subtitle1" color="text.secondary">
+                  Tipo:
+                </Typography>
+                <Chip label={business.restaurantType} color="primary" variant="outlined" />
+              </Stack>
+            )}
           </Grid>
         </Grid>
 
