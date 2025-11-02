@@ -44,4 +44,8 @@ public class ValidationErrorMessage {
 
   public static final String UNAUTHORIZED = "No tienes permiso para realizar esta accion";
 
+  public static final String IMAGE_FILES_BLANK = "Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.";
+
+  public static final String PUBLICATION_NOT_FOUND  = "La publicacion no se encontró";
+
 }

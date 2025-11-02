@@ -8,7 +8,7 @@ import com.tripmates.backend.publications.dto.ReviewCreationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.repository.PublicationRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
-import com.tripmates.backend.utils.PublicationBuilder;
+import com.tripmates.backend.utils.BusinessPublicationBuilder;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
 import org.springframework.stereotype.Component;
@@ -49,9 +49,9 @@ public class PublicationService {
 			String authenticatedUserEmail) {
 
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-		var publicationConstructor = new PublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
+		var publicationConstructor = new BusinessPublicationBuilder(storageService).publicationDetails(businessPublicationDTO)
 			.owner(user);
 
 		if (imageFiles != null && !imageFiles.isEmpty()) {
@@ -95,9 +95,9 @@ public class PublicationService {
 
 	public void deletePublication(String id, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
+			.orElseThrow(() -> new BadRequestException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to delete this publication");
 		}
@@ -113,7 +113,7 @@ public class PublicationService {
 
 	public List<BusinessPublicationResponseDTO> listMyPublications(String authenticatedUserEmail) {
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		List<Publication> pubs = publicationRepository.findByOwnerId(user.getId());
 		List<BusinessPublicationResponseDTO> out = new ArrayList<>();
 		for (Publication p : pubs) {
@@ -124,9 +124,9 @@ public class PublicationService {
 
 	public BusinessPublicationResponseDTO getMyPublication(String id, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
+			.orElseThrow(() -> new BadRequestException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to access this publication");
 		}
@@ -136,10 +136,10 @@ public class PublicationService {
 	public BusinessPublicationResponseDTO updatePublication(String id, BusinessPublicationRequestDTO dto,
 			List<MultipartFile> imageFiles, String authenticatedUserEmail) {
 		Publication publication = publicationRepository.findById(id)
-			.orElseThrow(() -> new BadRequestException("Publication not found"));
+			.orElseThrow(() -> new BadRequestException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
 
 		Account user = userRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException("User not found"));
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(user.getId())) {
 			throw new BadRequestException("You are not allowed to update this publication");

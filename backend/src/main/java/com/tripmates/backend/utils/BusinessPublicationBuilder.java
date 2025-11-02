@@ -8,9 +8,10 @@ import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.service.storage.StorageService;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 
-public class PublicationBuilder {
+public class BusinessPublicationBuilder {
 
 	private BusinessPublicationRequestDTO businessPublicationDTO;
 
@@ -20,16 +21,16 @@ public class PublicationBuilder {
 
 	private Account owner;
 
-	public PublicationBuilder(StorageService storageService) {
+	public BusinessPublicationBuilder(StorageService storageService) {
 		this.storageService = storageService;
 	}
 
-	public PublicationBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
+	public BusinessPublicationBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
 		this.businessPublicationDTO = businessPublicationDTO;
 		return this;
 	}
 
-	public PublicationBuilder imageFiles(List<MultipartFile> imageFiles) {
+	public BusinessPublicationBuilder imageFiles(List<MultipartFile> imageFiles) {
 		for (MultipartFile imageFile : imageFiles) {
 			if (imageFile != null && !imageFile.isEmpty()) {
 				String imageUrl = storageService.uploadFile(imageFile);
@@ -37,13 +38,13 @@ public class PublicationBuilder {
 			}
 			else {
 				throw new BadRequestException(
-						"Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
+						ValidationErrorMessage.IMAGE_FILES_BLANK);
 			}
 		}
 		return this;
 	}
 
-	public PublicationBuilder owner(Account owner) {
+	public BusinessPublicationBuilder owner(Account owner) {
 		this.owner = owner;
 		return this;
 	}
