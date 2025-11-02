@@ -1,6 +1,9 @@
 import { DEFAULT_AVATAR_URL } from "../../constants/DefaultImages";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
+import { VEGAN_RESTAURANT, VEGAN_RESTAURANT_PUBLICATIONS } from "./veganRestaurantMock";
+
+
 const PRIVATE_HOTEL_MAIL_MOCK = "private@hotel.com"
 const PUBLIC_HOTEL_MAIL_MOCK = "public@hotel.com"
 const BUSINESS_HOTEL_ROLE_MOCK = "BUSINESS" as const;
@@ -55,9 +58,20 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
         price: 420.0,
         description: "Suite con vista al lago y balcón privado",
         photosURLs: [
-          "https://cf.bstatic.com/xdata/images/hotel/max1024x768/452123003.jpg?k=...",
+          "https://images.unsplash.com/photo-1727694739145-ae58a7f1c4ca?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1169",
         ],
       },
+      {
+        checkInDate: "2025-12-01",
+        checkOutDate: "2025-12-05",
+        numberOfGuests: 3,
+        services: ["Desayuno incluido", "Almuerzo incluido", "Wi-Fi", "Sauna"],
+        price: 750.0,
+        description: "Suite presidencial",
+        photosURLs: [
+          "https://images.unsplash.com/photo-1565623833408-d77e39b88af6?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1332",
+        ],
+      }
     ],
   },
   {
@@ -110,6 +124,8 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
   },
 
 ];
+MOCK_BUSINESS_SEARCH_RESULTS.push(VEGAN_RESTAURANT);
+
 
 export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponseDTO[]> = new Map<string, BusinessPublicationResponseDTO[]>([
   ["1", [
@@ -229,4 +245,6 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
     }
   ]]  
 ]);
+MOCK_BUSINESS_PUBLICATIONS.set(VEGAN_RESTAURANT.id, VEGAN_RESTAURANT_PUBLICATIONS);
+
   
