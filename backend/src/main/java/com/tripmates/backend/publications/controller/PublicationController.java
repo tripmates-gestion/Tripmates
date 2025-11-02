@@ -16,7 +16,7 @@ import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import java.util.List;
 
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
-import com.tripmates.backend.common.service.pasring.ObjectParsingService;
+import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;

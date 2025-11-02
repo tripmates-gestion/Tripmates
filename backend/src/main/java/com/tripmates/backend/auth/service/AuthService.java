@@ -8,7 +8,7 @@ import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
 

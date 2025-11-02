@@ -1,5 +1,7 @@
 package com.tripmates.backend.utils.updateMe;
 
+import com.tripmates.backend.common.types.HotelType;
+import com.tripmates.backend.common.types.RestaurantType;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 import com.tripmates.backend.utils.updateMe.command.UpdateDescription;
 import com.tripmates.backend.utils.updateMe.command.UpdateName;
@@ -15,11 +17,12 @@ import com.tripmates.backend.utils.updateMe.command.DeletePhotosUrls;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.AveragePrice;
-import java.util.List;
-
 import com.tripmates.backend.common.exception.BadRequestException;
-import java.time.DayOfWeek;
 import com.tripmates.backend.common.service.storage.StorageService;
+
+
+import java.util.List;
+import java.time.DayOfWeek;
 
 public class UpdateCommandFactory {
 
@@ -33,8 +36,8 @@ public class UpdateCommandFactory {
 		return switch (fieldName) {
 			case "name" -> new UpdateName((String) value);
 			case "description" -> new UpdateDescription((String) value);
-			case "restaurantType" -> new UpdateRestaurantType((String) value);
-			case "hotelType" -> new UpdateHotelType((String) value);
+			case "restaurantType" -> new UpdateRestaurantType((RestaurantType) value);
+			case "hotelType" -> new UpdateHotelType((HotelType) value);
 			case "location" -> new UpdateLocation((String) value);
 			case "phoneNumber" -> new UpdatePhoneNumber((String) value);
 			case "publicEmail" -> new UpdatePublicEmail((String) value);
@@ -57,10 +60,8 @@ public class UpdateCommandFactory {
 	}
 
 	private static <T> void parseAndValidateList(Object value, Class<T> clazz) {
-		if (!(value instanceof List<?> list) || (!list.isEmpty() && !clazz.isInstance(list.get(0)))) {
+		if (!(value instanceof List<?> list) || (!list.isEmpty() && !clazz.isInstance(list.get(0))))
 			throw new BadRequestException(ValidationErrorMessage.NOT_VALID_DAY);
-		}
-
 	}
 
 }

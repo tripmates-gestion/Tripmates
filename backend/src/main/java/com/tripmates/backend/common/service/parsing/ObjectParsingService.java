@@ -1,4 +1,4 @@
-package com.tripmates.backend.common.service.pasring;
+package com.tripmates.backend.common.service.parsing;
 
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,6 @@ public class ObjectParsingService {
 	 * @param <T> Tipo del DTO
 	 * @return DTO deserializado y validado
 	 * @throws ConstraintViolationException si hay errores de validación
-	 * @throws com.fasterxml.jackson.core.JsonProcessingException si el JSON es inválido
 	 */
 	public <T> T parseAndValidate(String json, Class<T> clazz) {
 		T object;
@@ -41,9 +40,9 @@ public class ObjectParsingService {
 		}
 
 		Set<ConstraintViolation<T>> violations = validator.validate(object);
-		if (!violations.isEmpty()) {
+		if (!violations.isEmpty())
 			throw new ConstraintViolationException(violations);
-		}
+
 		return object;
 	}
 

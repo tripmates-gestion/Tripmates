@@ -75,7 +75,7 @@ public class PatchMeTest {
 				  "phoneNumber": "+541112345678",
 				  "publicEmail": "contact@hostel.com",
 				  "averagePrice": "$$",
-				  "restaurantType": "Comida peruana",
+				  "restaurantType": "PERUANO",
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
 				      "closingTime": "18:00"
@@ -88,7 +88,7 @@ public class PatchMeTest {
 				requestJson.getBytes(StandardCharsets.UTF_8));
 
 		mockMvc.perform(multipart("/users/me").file(dataPart).with(request -> {
-			request.setMethod("PATCH"); // 🔹 fuerza el método PATCH
+			request.setMethod("PATCH");
 			return request;
 		})).andExpect(status().isForbidden()).andDo(print());
 
@@ -100,7 +100,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
 		String requestJson = """
 				{
-				  "hotelType": "Hotel de lujo"
+				  "hotelType": "LUJO"
 				}
 				""";
 
@@ -126,7 +126,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 		String requestJson = """
 				{
-				"restaurantType": "Comida peruana"
+				"restaurantType": "PERUANO"
 				}
 				""";
 
@@ -208,7 +208,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"hotelType": "Comida peruana"
+				"hotelType": "LUJO"
 				}
 				""";
 
@@ -234,7 +234,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"restaurantType": "Comida peruana"
+				"restaurantType": "PERUANO"
 				}
 				""";
 
@@ -579,7 +579,7 @@ public class PatchMeTest {
 		String requestJson = """
 				{
 				"name": "New Name",
-				"hotelType": "Hotel de lujo"
+				"hotelType": "LUJO"
 				}
 				""";
 
@@ -607,7 +607,7 @@ public class PatchMeTest {
 			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
 			.andExpect(jsonPath("$.openingDays", is(nullValue())))
 			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is("Hotel de lujo")))
+			.andExpect(jsonPath("$.hotelType", is("LUJO")))
 			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
 			.andDo(print());
 	}
