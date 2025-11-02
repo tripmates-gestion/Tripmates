@@ -1,7 +1,7 @@
 package com.tripmates.backend.users.dto;
 
 import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,9 +14,7 @@ import org.springframework.validation.annotation.Validated;
  * @param name nombre de usuario
  * @param email email del usuario
  * @param password contraseña del usuario
- * @param description descripción o biografía del usuario
  * @param role rol del usuario
- * @param avatarURL URL del avatar del usuario
  */
 @Validated
 public record UserCreationRequestDTO(

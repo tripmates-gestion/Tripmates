@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.entity;
+package com.tripmates.backend.common.types;
 
 /** Representa los distintos tipos de roles que puede tomar un usuario. */
 public enum Role {

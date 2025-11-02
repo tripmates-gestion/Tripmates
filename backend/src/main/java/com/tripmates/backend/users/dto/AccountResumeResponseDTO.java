@@ -1,11 +1,6 @@
 package com.tripmates.backend.users.dto;
 
-import com.tripmates.backend.common.types.AttentionSchedule;
-import com.tripmates.backend.common.types.AveragePrice;
-import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.common.types.MenuItem;
-import com.tripmates.backend.common.types.RoomPack;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.users.entity.mongo.Account;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.DayOfWeek;
@@ -23,13 +18,18 @@ public record AccountResumeResponseDTO(@Schema(description = "Account's ID") Str
 		@Schema(description = "Business account's profile image URLs") List<String> profileImageUrls,
 		@Schema(description = "Business account's business type") BusinessType businessType,
 		@Schema(description = "Business account's average price") AveragePrice averagePrice,
-		@Schema(description = "Restaurant account's type") String restaurantType,
+		@Schema(description = "Restaurant account's type") RestaurantType restaurantType,
 		@Schema(description = "Restaurant account's attention schedule") AttentionSchedule attentionSchedule,
 		@Schema(description = "Restaurant account's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant account's menu") List<MenuItem> menu,
-		@Schema(description = "Hotel account's type") String hotelType,
+		@Schema(description = "Hotel account's type") HotelType hotelType,
 		@Schema(description = "Hotel account's room packs") List<RoomPack> roomPacks) {
 
+	/**
+	 * Retorna un resumen de los atributos claves de {@link Account}.
+	 * @param account cuenta de usuario del sistema.
+	 * @return {@link AccountResumeResponseDTO}.
+	 */
 	public static AccountResumeResponseDTO fromAccount(Account account) {
 		return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
 				account.getEmail(), account.getRole(), account.getDescription(), account.getLocation(),
