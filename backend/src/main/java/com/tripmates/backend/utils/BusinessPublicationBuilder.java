@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
-import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+import com.tripmates.backend.publications.dto.PublicationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.service.storage.StorageService;
@@ -13,7 +13,7 @@ import com.tripmates.backend.common.exception.BadRequestException;
 
 public class BusinessPublicationBuilder {
 
-	private BusinessPublicationRequestDTO businessPublicationDTO;
+	private PublicationRequestDTO businessPublicationDTO;
 
 	private final List<String> imageUrls = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public class BusinessPublicationBuilder {
 		this.storageService = storageService;
 	}
 
-	public BusinessPublicationBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
+	public BusinessPublicationBuilder publicationDetails(PublicationRequestDTO businessPublicationDTO) {
 		this.businessPublicationDTO = businessPublicationDTO;
 		return this;
 	}

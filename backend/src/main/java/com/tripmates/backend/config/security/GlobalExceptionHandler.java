@@ -8,6 +8,10 @@ import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.FileUploadException;
+import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.publications.exception.PublicationNotFoundException;
+import com.tripmates.backend.publications.exception.PublicationOwnerException;
+import com.tripmates.backend.common.exception.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -18,8 +22,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import com.tripmates.backend.common.exception.NotFoundException;
-import com.tripmates.backend.common.exception.UnauthorizedException;
 
 import java.util.stream.Collectors;
 
@@ -73,20 +75,6 @@ public class GlobalExceptionHandler {
 					String.valueOf(request.getRequestURI())));
 	}
 
-	@ExceptionHandler(UserAlreadyExistsException.class)
-	public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
-		return ResponseEntity.status(HttpStatus.CONFLICT)
-			.body(new ErrorDTO("about:blank", "User already exists", HttpStatus.CONFLICT.value(), e.getMessage(),
-					"auth/register"));
-	}
-
-	@ExceptionHandler(UserNotFoundException.class)
-	public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException e) {
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.NOT_FOUND.value(), e.getMessage(),
-					"auth/login"));
-	}
-
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -120,6 +108,34 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
 					e.getMessage(), String.valueOf(request.getRequestURI())));
+	}
+
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+			.body(new ErrorDTO("about:blank", "User Already Exists", HttpStatus.CONFLICT.value(), e.getMessage(),
+					"auth/register"));
+	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.NOT_FOUND.value(), e.getMessage(),
+					"auth/login"));
+	}
+
+	@ExceptionHandler(PublicationOwnerException.class)
+	public ResponseEntity<?> handlePublicationOwnerException(PublicationOwnerException e) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					"publications/**"));
+	}
+
+	@ExceptionHandler(PublicationNotFoundException.class)
+	public ResponseEntity<?> handlePublicationNotFoundException(PublicationNotFoundException e) {
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+			.body(new ErrorDTO("about:blank", "Publication Not Found", HttpStatus.NOT_FOUND.value(), e.getMessage(),
+					"publications/**"));
 	}
 
 }
