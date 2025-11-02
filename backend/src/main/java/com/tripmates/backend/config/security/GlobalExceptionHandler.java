@@ -8,7 +8,9 @@ import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.FileUploadException;
+import com.tripmates.backend.common.exception.NotFoundException;
 
+import com.tripmates.backend.publications.exception.PublicationOwnerException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
@@ -18,7 +20,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import com.tripmates.backend.common.exception.NotFoundException;
 
 import java.util.stream.Collectors;
 
@@ -112,6 +113,13 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
 					e.getMessage(), String.valueOf(request.getRequestURI())));
+	}
+
+	@ExceptionHandler(PublicationOwnerException.class)
+	public ResponseEntity<?> handlePublicationOwnerException(PublicationOwnerException e) {
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+					"publications/delete"));
 	}
 
 }

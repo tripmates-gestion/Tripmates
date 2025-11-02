@@ -1,4 +1,4 @@
-package com.tripmates.backend.publications.repository;
+package com.tripmates.backend.publications.repository.mongo;
 
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
