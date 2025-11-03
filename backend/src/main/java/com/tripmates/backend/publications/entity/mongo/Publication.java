@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.Review;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ public class Publication {
 
 	private Date createdAt = new Date();
 
+	private List<Review> reviews = new ArrayList<>();
+
 	public Publication() {
 	}
 
@@ -69,6 +73,10 @@ public class Publication {
 		this.ownerUsername = ownerUsername;
 		this.ownerAvatarUrl = ownerAvatarUrl;
 		this.createdAt = createdAt;
+	}
+
+	public void addReview(Review review) {
+		this.reviews.add(review);
 	}
 
 }

@@ -15,8 +15,8 @@ import { deleteBusinessPublication, getBusinessPublications } from '../services/
 import PublicationGrid from "../components/publications/PublicationGrid";
 import { BUSINESS_TYPES } from '../constants/Rol';
 import type { BusinessUser, BusinessCommon, RestaurantExtras } from "../context/TypesUser";
-import HotelEditDialog from '../components/profile/businessProfile/HotelEditDialog';
-import RestaurantEditDialog from '../components/profile/businessProfile/RestaurantEditDialog';
+import HotelEditDialog from '../components/profile/businessPublicProfile/HotelEditDialog';
+import RestaurantEditDialog from '../components/profile/businessPublicProfile/RestaurantEditDialog';
 
 
 
