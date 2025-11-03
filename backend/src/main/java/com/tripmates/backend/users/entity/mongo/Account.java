@@ -2,7 +2,7 @@ package com.tripmates.backend.users.entity.mongo;
 
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.common.types.Role;
-import com.tripmates.backend.plans.entity.mongo.Plan;
+import com.tripmates.backend.common.types.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.util.Collection;

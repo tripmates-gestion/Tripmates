@@ -5,11 +5,10 @@ import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
-import com.tripmates.backend.users.dto.AccountSearchRequestDTO;
-import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
+import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +55,8 @@ public class UserService {
 		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
 		Account account = accountRespository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-		for (AccountUpdateCommand command : commands)
+
+        for (AccountUpdateCommand command : commands)
 			account = command.apply(account);
 
 		updateAvatar(account, avatar);
@@ -114,4 +114,22 @@ public class UserService {
 		account.setProfileImageUrls(imageUrls);
 	}
 
+    /**
+     * Crea un nuevo plan de usuario según lo especificado.
+     *
+     * @param email email del usuario.
+     * @param planCreationRequestDTO DTO que contiene la información con la cual crear el plan.
+     * @return {@link PlanResumeResponseDTO}.
+     */
+    public PlanResumeResponseDTO createPlan(String email, PlanCreationRequestDTO planCreationRequestDTO) {
+        Account account = accountRespository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+        PlanBuilder planBuilder = new PlanBuilder().planDetails(planCreationRequestDTO).owner(account);
+
+        account.getPlansList().add(planBuilder.build());
+        accountRespository.save(account);
+
+        return PlanResumeResponseDTO.fromPlan(planBuilder.build());
+    }
 }
