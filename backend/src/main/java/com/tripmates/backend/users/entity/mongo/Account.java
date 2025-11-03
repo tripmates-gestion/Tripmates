@@ -2,6 +2,7 @@ package com.tripmates.backend.users.entity.mongo;
 
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.common.types.Role;
+import com.tripmates.backend.plans.entity.mongo.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.util.Collection;
@@ -76,6 +77,17 @@ public class Account implements UserDetails {
 
 	/** Account's profile pictures URLs. Only allowed in BUSINESS account */
 	private List<String> profileImageUrls;
+
+	/**
+	 * Account's plans where he is owner. Only allowed in USER account
+	 */
+	private List<Plan> plansList;
+
+	/**
+	 * Account's plans ID where he participates, but it's not an owner. Only allowed in
+	 * USER account.
+	 */
+	private List<String> plansIdList;
 
 	/** Account's business type. Only allowed in BUSINESS account. */
 	@NotNull
