@@ -10,7 +10,7 @@ export const ENDPOINTS = {
     PATCH_BUSINESS_PUBLICATION: '/publications/',
     DELETE_BUSINESS_PUBLICATION: '/publications/',
     SEARCH: '/users/search',
-    HOTEL_ROOMPACK: '/users/me/hosting/',
+    HOTEL_ROOMPACK: '/users/me/hosting',
     RESTAURANT_MENU: '/users/me/restaurant',
   };
   

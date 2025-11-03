@@ -1,6 +1,11 @@
 import * as React from "react";
 import {
-  Box, Button, Stack, Typography, Backdrop, CircularProgress
+  Box,
+  Button,
+  Stack,
+  Typography,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import RestaurantMenuGrid from "./RestaurantMenuGrid";
@@ -19,6 +24,12 @@ type Props = {
   onBusinessReload?: (nextBusiness: any) => void;
 };
 
+type UpdatePayload = {
+  data: Partial<Omit<MenuItem, "photosURLs">>;
+  files: File[];
+  deletePhotoIndexes?: number[];
+};
+
 export default function RestaurantMenuTab({
   accessToken,
   initialMenu,
@@ -35,7 +46,6 @@ export default function RestaurantMenuTab({
   }, [initialMenu]);
 
   const setFromBusiness = (res: any) => {
-    // el back devuelve el Business completo
     setItems(res?.menu ?? res?.menuItems ?? []);
     onBusinessReload?.(res);
   };
@@ -46,43 +56,55 @@ export default function RestaurantMenuTab({
   }) => {
     try {
       setLoading(true);
-      const res = await appendMenuItem(accessToken, payload.data, payload.files);
+      const res = await appendMenuItem(
+        accessToken,
+        payload.data,
+        payload.files
+      );
       setFromBusiness(res);
       enqueueSnackbar("Plato agregado", { variant: "success" });
       setOpenNew(false);
     } catch (e: any) {
-      enqueueSnackbar(e?.message || "Error al agregar plato", { variant: "error" });
+      enqueueSnackbar(e?.message || "Error al agregar plato", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdate = async (
-    index: number,
-    payload: { data: Partial<Omit<MenuItem, "photosURLs">>; files: File[] }
-  ) => {
+  const handleUpdate = async (index: number, payload: UpdatePayload) => {
     try {
       setLoading(true);
 
-      // ⚠️ Si no hay nuevas fotos, mandamos las actuales para conservarlas
-      const current = items[index];
-      const currentPhotos = payload.files.length === 0
-        ? current?.photosURLs ?? []
-        : current?.photosURLs ?? []; // igual las paso: el back hace append
+      const noData = !payload.data || Object.keys(payload.data).length === 0;
+      const noFiles = payload.files.length === 0;
+      const noDeletes =
+        !payload.deletePhotoIndexes ||
+        payload.deletePhotoIndexes.length === 0;
+
+      if (noData && noFiles && noDeletes) {
+        enqueueSnackbar("No hay cambios para guardar", { variant: "info" });
+        return;
+      }
+
+      console.log("indices a borrar:", payload.deletePhotoIndexes);
 
       const res = await updateMenuItem(
         accessToken,
         index,
         payload.data,
         payload.files,
-        currentPhotos // <- clave
+        payload.deletePhotoIndexes ?? []
       );
 
       setFromBusiness(res);
       enqueueSnackbar("Plato actualizado", { variant: "success" });
       setEditIndex(null);
     } catch (e: any) {
-      enqueueSnackbar(e?.message || "Error al actualizar plato", { variant: "error" });
+      enqueueSnackbar(e?.message || "Error al actualizar plato", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -95,7 +117,9 @@ export default function RestaurantMenuTab({
       setFromBusiness(res);
       enqueueSnackbar("Plato eliminado", { variant: "success" });
     } catch (e: any) {
-      enqueueSnackbar(e?.message || "Error al eliminar plato", { variant: "error" });
+      enqueueSnackbar(e?.message || "Error al eliminar plato", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -106,9 +130,26 @@ export default function RestaurantMenuTab({
   return (
     <Box sx={{ position: "relative" }}>
       {/* Header */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-        <Typography variant="h6" fontWeight={700}>Menú</Typography>
-        <Button variant="contained" onClick={() => setOpenNew(true)} disabled={loading}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        sx={{ mb: 2 }}
+      >
+        <Box>
+          <Typography variant="h6" fontWeight={700}>
+            Menú
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Agregar los detalles de tu menú como nombre, descripción y fotos atractivas para tus clientes.
+          </Typography>
+        </Box>
+
+        <Button
+          variant="contained"
+          onClick={() => setOpenNew(true)}
+          disabled={loading}
+        >
           Agregar plato
         </Button>
       </Stack>
@@ -141,12 +182,17 @@ export default function RestaurantMenuTab({
         open={editIndex != null}
         onClose={() => setEditIndex(null)}
         initial={current ?? undefined}
-        onSubmit={({ data, files }) => handleUpdate(editIndex!, { data, files })}
+        onSubmit={({ data, files, deletePhotoIndexes }) =>
+          handleUpdate(editIndex!, { data, files, deletePhotoIndexes })
+        }
         title="Editar plato"
       />
 
       {/* Loading global */}
-      <Backdrop open={loading} sx={{ color: "#fff", zIndex: (t) => t.zIndex.modal + 1 }}>
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (t) => t.zIndex.modal + 1 }}
+      >
         <CircularProgress color="inherit" />
       </Backdrop>
     </Box>

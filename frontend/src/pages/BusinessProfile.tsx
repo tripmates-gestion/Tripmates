@@ -19,6 +19,7 @@ import RestaurantEditDialog from '../components/profile/businessProfile/Restaura
 import { InfoRow } from '../components/profile/businessProfile/BusinessPubProfileLayout';
 import { PriceBadge, OpeningDaysRow} from "../components/profile/businessProfile/Utils";
 import RestaurantMenuTab from '../components/profile/businessProfile/restaurant/RestaurantMenuTab';
+import HotelRoomsTab from '../components/profile/businessProfile/hotel/HotelRoomsTab';
 
 
 const BASE_TABS = [
@@ -275,9 +276,14 @@ export default function BusinessProfile() {
               />
             )}
 
-            {currentTabKey === 'habitaciones' && business.businessType === BUSINESS_TYPES.hotel && (
-              <HotelRoomsEditor roomPacks={business.roomPacks ?? []} />
-            )}
+            {currentTabKey === "habitaciones" && business.businessType === BUSINESS_TYPES.hotel && (
+                <HotelRoomsTab
+                  accessToken={accessToken!}
+                  roomPacks={business.roomPacks ?? []}
+                  onBusinessReload={refreshProfile}
+                />
+              )}
+
           </Box>
         </Card>
       </Box>
@@ -290,29 +296,6 @@ export default function BusinessProfile() {
 
 
 
-function HotelRoomsEditor({ roomPacks }: { roomPacks: any[] }) {
-  return (
-    <Stack spacing={1}>
-      <Typography variant="h6">Habitaciones</Typography>
-      {roomPacks.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          Aún no cargaste habitaciones/paquetes.
-        </Typography>
-      ) : (
-        roomPacks.map((r, i) => (
-          <Stack key={i} spacing={0.5}>
-            <Typography variant="body2" fontWeight={700}>
-              {r.description ?? 'Pack'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {r.checkInDate} → {r.checkOutDate} · {r.numberOfGuests} huéspedes · $ {r.price}
-            </Typography>
-          </Stack>
-        ))
-      )}
-    </Stack>
-  );
-}
 
 
 

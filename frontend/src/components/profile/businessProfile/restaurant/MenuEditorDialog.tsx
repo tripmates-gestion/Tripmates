@@ -1,16 +1,30 @@
 // src/components/restaurant/MenuEditorDialog.tsx
 import * as React from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Stack, Typography, Box, Chip, IconButton
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Stack,
+  Typography,
+  Box,
+  IconButton,
 } from "@mui/material";
-import { DeleteOutline, CloudUpload } from "@mui/icons-material";
+import { DeleteOutline, Close } from "@mui/icons-material";
+import { NewImagesDropzone } from "../common/Utils";
 import type { MenuItem } from "../../../../types/Restaurant";
+import { InputAdornment } from "@mui/material";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (payload: { data: Omit<MenuItem, "photosURLs">; files: File[] }) => Promise<void>;
+  onSubmit: (payload: {
+    data: Omit<MenuItem, "photosURLs">;
+    files: File[];
+    deletePhotoIndexes?: number[];
+  }) => Promise<void>;
   initial?: MenuItem | null;
   title?: string;
 };
@@ -22,14 +36,24 @@ type Errors = {
   images?: string;
 };
 
-export default function MenuEditorDialog({ open, onClose, onSubmit, initial, title }: Props) {
+export default function MenuEditorDialog({
+  open,
+  onClose,
+  onSubmit,
+  initial,
+  title,
+}: Props) {
   const [foodName, setFoodName] = React.useState(initial?.foodName ?? "");
   const [price, setPrice] = React.useState<number>(initial?.price ?? 0);
-  const [description, setDescription] = React.useState(initial?.description ?? "");
+  const [description, setDescription] = React.useState(
+    initial?.description ?? ""
+  );
   const [files, setFiles] = React.useState<File[]>([]);
   const [previews, setPreviews] = React.useState<string[]>([]);
   const [saving, setSaving] = React.useState(false);
   const [errors, setErrors] = React.useState<Errors>({});
+  const [deletePhotoIndexes, setDeletePhotoIndexes] =
+    React.useState<number[]>([]);
 
   React.useEffect(() => {
     setFoodName(initial?.foodName ?? "");
@@ -38,6 +62,7 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
     setFiles([]);
     setPreviews([]);
     setErrors({});
+    setDeletePhotoIndexes([]);
   }, [initial, open]);
 
   const readPreviews = (fs: File[]) => {
@@ -45,17 +70,23 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
     setPreviews((prev) => [...prev, ...urls]);
   };
 
-  const handleFiles = (incoming: FileList | null) => {
-    if (!incoming || incoming.length === 0) return;
-    const selected = Array.from(incoming).filter((f) => f.type.startsWith("image/"));
+  const handleFiles = (incoming: FileList | File[]) => {
+    const arr = Array.from(incoming as any) as File[];
+    const selected = arr.filter((f) => f.type.startsWith("image/"));
     if (selected.length === 0) return;
     setFiles((prev) => [...prev, ...selected]);
     readPreviews(selected);
   };
 
-  const removeImageAt = (idx: number) => {
+  const removeNewAt = (idx: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== idx));
     setPreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const toggleDeleteExisting = (idx: number) => {
+    setDeletePhotoIndexes((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    );
   };
 
   const validate = (): boolean => {
@@ -63,9 +94,16 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
     if (!foodName.trim()) e.foodName = "El nombre del plato es obligatorio.";
     if (!Number.isFinite(price) || price <= 0) e.price = "Precio inválido.";
     if (!description.trim()) e.description = "La descripción es obligatoria.";
-    // Requerir al menos 1 imagen SOLO si estamos creando (en edición el back hace append)
-    const isCreate = !initial;
-    if (isCreate && files.length === 0) e.images = "Subí al menos una imagen.";
+
+    const existingCount = initial?.photosURLs?.length ?? 0;
+    const remaining = existingCount - deletePhotoIndexes.length + files.length;
+
+    if (!initial) {
+      if (files.length === 0) e.images = "Subí al menos una imagen.";
+    } else {
+      if (remaining < 1) e.images = "Debe quedar al menos una imagen.";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -74,7 +112,13 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
     if (!validate()) return;
     setSaving(true);
     try {
-      await onSubmit({ data: { foodName, price, description }, files });
+      await onSubmit({
+        data: { foodName, price, description },
+        files,
+        deletePhotoIndexes: deletePhotoIndexes.length
+          ? deletePhotoIndexes
+          : undefined,
+      });
       onClose();
     } finally {
       setSaving(false);
@@ -82,11 +126,17 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
   };
 
   return (
-    <Dialog open={open} onClose={saving ? undefined : onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{title ?? (initial ? "Editar plato" : "Nuevo plato")}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={saving ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        {title ?? (initial ? "Editar plato" : "Nuevo plato")}
+      </DialogTitle>
       <DialogContent>
         <Stack spacing={2.5} sx={{ mt: 1 }}>
-          {/* Campos */}
           <TextField
             label="Nombre del plato"
             value={foodName}
@@ -96,6 +146,8 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
             error={!!errors.foodName}
             helperText={errors.foodName}
           />
+          
+          
           <TextField
             label="Precio"
             type="number"
@@ -103,10 +155,17 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
             onChange={(e) => setPrice(Number(e.target.value))}
             fullWidth
             required
-            inputProps={{ min: 0, step: "0.01" }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            }}
+            inputProps={{
+              min: 0, step: "0.01"
+            }}
             error={!!errors.price}
             helperText={errors.price}
           />
+
+
           <TextField
             label="Descripción"
             value={description}
@@ -119,67 +178,33 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
             helperText={errors.description}
           />
 
-          {/* Uploader múltiple con estilo de tu ImageUploader */}
-          <Stack spacing={1}>
-            <Typography variant="subtitle2" fontWeight={700}>Imágenes</Typography>
+          {/* nuevas imágenes */}
+          <NewImagesDropzone
+            previews={previews}
+            error={errors.images}
+            onFilesSelected={handleFiles}
+            onRemoveAt={removeNewAt}
+          />
 
-            {/* Zona drop / click */}
-            <Box
-              sx={(t) => ({
-                width: "100%",
-                minHeight: 140,
-                borderRadius: 2,
-                border: "2px dashed",
-                borderColor: "divider",
-                display: "grid",
-                placeItems: "center",
-                position: "relative",
-                bgcolor: t.palette.background.default,
-                cursor: "pointer",
-              })}
-            >
-              <Stack alignItems="center" spacing={0.5} sx={{ pointerEvents: "none" }}>
-                <CloudUpload color="action" />
-                <Typography variant="body2" color="text.secondary">
-                  Arrastrá o hacé click para subir (podés elegir varias)
-                </Typography>
-              </Stack>
-
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ position: "absolute", inset: 0, opacity: 0, cursor: "pointer" }}
-                onChange={(e) => handleFiles(e.target.files)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  handleFiles(e.dataTransfer.files);
-                }}
-                onDragOver={(e) => e.preventDefault()}
-              />
-            </Box>
-
-            {/* Error de imágenes */}
-            {!!errors.images && (
-              <Typography variant="caption" color="error">
-                {errors.images}
+          {/* existentes (marcar para borrar en edición) */}
+          {!!initial?.photosURLs?.length && (
+            <Stack spacing={1} sx={{ mt: 1 }}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Fotos actuales
               </Typography>
-            )}
-
-            {/* Previews nuevas */}
-            {previews.length > 0 && (
-              <Stack spacing={1}>
-                <Typography variant="caption" color="text.secondary">
-                  Vista previa ({previews.length})
-                </Typography>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-                    gap: 1,
-                  }}
-                >
-                  {previews.map((src, i) => (
+              <Typography variant="caption" color="text.secondary">
+                Podés marcar para borrar. Las nuevas se agregan.
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                  gap: 1,
+                }}
+              >
+                {initial.photosURLs.map((src, i) => {
+                  const marked = deletePhotoIndexes.includes(i);
+                  return (
                     <Box
                       key={i}
                       sx={{
@@ -191,11 +216,15 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
                         backgroundImage: `url(${src})`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
+                        filter: marked
+                          ? "grayscale(1) brightness(0.7)"
+                          : "none",
+                        outline: marked ? "2px solid #ef5350" : "none",
                       }}
                     >
                       <IconButton
                         size="small"
-                        onClick={() => removeImageAt(i)}
+                        onClick={() => toggleDeleteExisting(i)}
                         sx={{
                           position: "absolute",
                           top: 4,
@@ -204,51 +233,28 @@ export default function MenuEditorDialog({ open, onClose, onSubmit, initial, tit
                           "&:hover": { bgcolor: "rgba(255,255,255,1)" },
                         }}
                       >
-                        <DeleteOutline fontSize="small" />
+                        {marked ? (
+                          <Close fontSize="small" />
+                        ) : (
+                          <DeleteOutline fontSize="small" />
+                        )}
                       </IconButton>
                     </Box>
-                  ))}
-                </Box>
-              </Stack>
-            )}
-
-            {/* En edición: mostrar fotos actuales (informativo) */}
-            {!!initial?.photosURLs?.length && (
-              <Stack spacing={1} sx={{ mt: 1 }}>
-                <Typography variant="caption" color="text.secondary">
-                  Fotos actuales (se mantendrán; las nuevas se agregan)
-                </Typography>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
-                    gap: 1,
-                  }}
-                >
-                  {initial.photosURLs.map((src, i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        borderRadius: 1,
-                        overflow: "hidden",
-                        boxShadow: 1,
-                        height: 90,
-                        backgroundImage: `url(${src})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Stack>
-            )}
-          </Stack>
+                  );
+                })}
+              </Box>
+            </Stack>
+          )}
         </Stack>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} disabled={saving}>Cancelar</Button>
-        <Button onClick={submit} disabled={saving} variant="contained">Guardar</Button>
+        <Button onClick={onClose} disabled={saving}>
+          Cancelar
+        </Button>
+        <Button onClick={submit} disabled={saving} variant="contained">
+          Guardar
+        </Button>
       </DialogActions>
     </Dialog>
   );
