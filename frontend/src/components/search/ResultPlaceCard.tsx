@@ -5,27 +5,49 @@ import * as React from "react";
 import {
   Card, CardMedia, CardContent, Typography, Stack, Box, Chip,
 } from "@mui/material";
-import type { BusinessPlaceDTO } from "../../types/place";
 import { sanitizeImages, computeOpenNow, DAYS_ORDER, DAY_LABEL } from "./utils/placeHelpers";
+import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
-  place: BusinessPlaceDTO;
-  onView: (p: BusinessPlaceDTO) => void;
+  businessAccountData: BusinessPubAccountDataDTO;
 };
 
-export default function PlaceCard({ place, onView }: Props) {
-  const imgs = sanitizeImages(place);
-  const open = React.useMemo(() => computeOpenNow(place, new Date()), [place]);
+export default function PlaceCard({ businessAccountData }: Props) {
+  const imgs = sanitizeImages(businessAccountData);
+  const navigate = useNavigate();
+  //retorna null si es un hotel (desconocido)
+  const open = React.useMemo(() => computeOpenNow(businessAccountData, new Date()), [businessAccountData]);
 
+  const handleSeeDetails = () => {
+    if (businessAccountData.businessType === "HOTEL") {
+      navigate(`/hotel/${businessAccountData.id}`, { 
+        state: { 
+          account: businessAccountData
+        } 
+      });
+    }else{
+      navigate(`/restaurant/${businessAccountData.id}`, { 
+        state: { 
+          account: businessAccountData
+        } 
+      });
+    }
+  }
   return (
     <Card
-      onClick={() => onView(place)}
+      onClick={handleSeeDetails}
       sx={{
         cursor: "pointer",
         borderRadius: 3,
         overflow: "hidden",
         transition: "0.25s",
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
+        height: "100%",
+        width: "100%",           // ⬅️ NUEVO: ocupa todo el ancho disponible
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,                 // ⬅️ NUEVO: garantiza que se estire dentro del Grid
       }}
     >
       <Box sx={{ position: "relative" }}>
@@ -33,7 +55,7 @@ export default function PlaceCard({ place, onView }: Props) {
           component="img"
           height="200"
           image={imgs[0]}
-          alt={place.title}
+          alt={businessAccountData.name}
           sx={{ objectFit: "cover" }}
         />
         <Box
@@ -62,15 +84,15 @@ export default function PlaceCard({ place, onView }: Props) {
         </Stack>
       </Box>
 
-      <CardContent sx={{ p: 2 }}>
-        <Typography variant="h6" fontWeight={800} noWrap>{place.title}</Typography>
-        {place.description ? (
+      <CardContent sx={{ p: 2, flexGrow: 1 }}>
+        <Typography variant="h6" fontWeight={800} noWrap>{businessAccountData.name}</Typography>
+        {businessAccountData.description ? (
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", mt: 0.5 }}
           >
-            {place.description}
+            {businessAccountData.description}
           </Typography>
         ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -79,13 +101,13 @@ export default function PlaceCard({ place, onView }: Props) {
         )}
 
         <Stack direction="row" spacing={1} alignItems="center" mt={1.25}>
-          <Typography variant="caption" color="text.secondary">📍 {place.location || "Ubicación no disponible"}</Typography>
+          <Typography variant="caption" color="text.secondary">📍 {businessAccountData.location || "Ubicación no disponible"}</Typography>
         </Stack>
 
-        {place.openingDays?.length ? (
+        {businessAccountData.openingDays?.length ? (
           <Stack direction="row" spacing={0.75} mt={1}>
             {DAYS_ORDER.map((d) => {
-              const active = place.openingDays?.includes(d);
+              const active = businessAccountData.openingDays?.includes(d);
               return (
                 <Chip
                   key={d}
@@ -101,7 +123,7 @@ export default function PlaceCard({ place, onView }: Props) {
         ) : null}
 
         <Stack spacing={0.3} mt={1.25}>
-          <Typography variant="caption" color="text.secondary">☎ {place.phoneNumber || place.email || "Contacto no disponible"}</Typography>
+          <Typography variant="caption" color="text.secondary">☎ {businessAccountData.phoneNumber || businessAccountData.email || "Contacto no disponible"}</Typography>
         </Stack>
       </CardContent>
     </Card>

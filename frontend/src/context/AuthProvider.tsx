@@ -1,42 +1,49 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
-import { type CommonUsersInformation } from "../types/user";
+import { type CurrentUser } from "./TypesUser";
 import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";
 
+
+
 interface AuthProviderProps {
     children: ReactNode;
-  }
-//OJO: Chequear que el login solo devuelve los tokens
+
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
+  // Estados globales del AuthContext.
+  // Lazy init: lee tokens de localStorage una sola vez al montar.
   const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("token"));
   const [refreshToken, setRefreshToken] = useState<string | null>(() => localStorage.getItem("refreshToken"));
-  const [user, setUser] = useState<CommonUsersInformation | null>(null);
+  const [user, setUser] = useState<CurrentUser | null>(null);
 
+  // Inicia sesión: pide tokens al backend y los guarda en storage + estado.
+  // No carga al usuario acá, lo hace el useEffect cuando detecta el nuevo token.
   const loginHandler = async (email: string, password: string) => {
     console.log("[AuthProvider] LOGGING IN with:", email, password);
     const data = await loginApi(email, password);
-    console.log("[AuthProvider] LOGGING IN, Access token antes", localStorage.getItem("token"));
-    console.log("[AuthProvider] LOGGING IN, Refresh token antes", localStorage.getItem("refreshToken"));
     localStorage.setItem("token", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
     setAccessToken(data.accessToken);
     setRefreshToken(data.refreshToken);
-    //no actualizo info de usuario pq lo hace el useEffect
-    console.log("[AuthProvider] LOGGING IN, Access token despues", data.accessToken);
-    console.log("[AuthProvider] LOGGING IN, Refresh token despues", data.refreshToken);
+
+    console.log("[AuthProvider] Login successful, tokens stored.", data.accessToken, '\n' ,data.refreshToken);
   };
 
+  // Cierra sesión: limpia storage y estados, y luego intenta notificar al backend.
+  // useCallback evita recrear la función si no cambian sus dependencias.
   const logoutHandler = useCallback(async () => {
-    console.log("[AuthProvider] Deslogeando");
-    // Clear tokens from state and storage first
+
+    // 1) Limpia local (estado + localStorage)
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
-    // Make the API call last, but don't wait for it
+
+    // 2) Si aún tengo tokens en memoria, aviso al backend (best-effort).
     if (accessToken && refreshToken) {
       try {
         await logoutApi(accessToken, refreshToken, user?.email);
@@ -46,6 +53,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [accessToken, refreshToken, user?.email]);
 
+  // Refresca el access token usando el refresh token.
+  // Si falla, hace logout para limpiar sesión inválida.
   const refreshAccessTokenHandler = useCallback(async () => {
     if (!accessToken || !refreshToken) return;
     try {
@@ -58,34 +67,55 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [accessToken, refreshToken, user?.email, logoutHandler]);
 
-  const updateUser = (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null  ) => {
+  // Actualiza campos simples del usuario en memoria (sin pegarle al backend).
+  // Usa setState funcional + nullish coalescing para “conservar si no vino valor nuevo”.
+  const updateUser = (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null) => {
     setUser((prev) => ({
-      ...prev!,
+      ...prev!, // copia todo lo anterior (asumimos que prev no es null)
       username: newUserName ?? prev?.username ?? '',
       description: newDescription ?? prev?.description ?? '',
       avatarURL: newAvatarURL ?? prev?.avatarURL ?? '',
     }));
   };
-  
 
+  // Efecto que reacciona a cambios en accessToken:
+  // - Si hay token, trae el usuario (GET /users/me).
+  // - Si el token es inválido, intenta refrescarlo.
   useEffect(() => {
-    //siempre que no haya un token seteado se está saliendo
-    if (!accessToken) return;
+    if (!accessToken) return; // sin token no hay nada que hacer
 
-    console.log("[ACTUALIZACIÓN EN ACCESS TOKEN]")
-    getCurrentUser(accessToken)//tira excepción si el token es inválido
-      .then(mapUser)
-      .then(setUser)
-      .catch(async (err) => {
+    console.log("[ACTUALIZACIÓN EN ACCESS TOKEN]");
+    getCurrentUser(accessToken)   // puede tirar error si el token es inválido
+      .then((data) => {
+        let res = mapUser(data)
+        console.log("[AuthProvider] Usuario obtenido:", res);
+        return res;     // mapea JSON crudo a tu tipo CurrentUser
+      })
+      .then((data) => {
+        let res = setUser(data);
+        console.log("[AuthProvider] Usuario seteado en estado:", user);
+        return res;
+
+      })              // guarda el usuario en estado
+      .catch(async (err) => {     // si falla, intenta refresh
         console.log(`[Auth] ${err} Intentando refrescar token ...`);
         await refreshAccessTokenHandler();
       });
+
   }, [accessToken, refreshAccessTokenHandler]);
 
+  // Expone el contexto a toda la app: tokens, usuario y handlers.
   return (
-    <AuthContext.Provider value={{ token: accessToken, refreshToken, user, login: loginHandler, logout: logoutHandler, refreshAccessToken: refreshAccessTokenHandler, updateUser }}>
+    <AuthContext.Provider value={{
+      accessToken,
+      refreshToken,
+      user,
+      login: loginHandler,
+      logout: logoutHandler,
+      refreshAccessToken: refreshAccessTokenHandler,
+      updateUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
-

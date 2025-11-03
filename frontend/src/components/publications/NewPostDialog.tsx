@@ -91,7 +91,7 @@ export function parseHours(scheduleString: string): AttentionSchedule {
 
 // ---------------------- Componente ----------------------
 export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) {
-  const { token: accessToken } = useAuth()
+  const { accessToken } = useAuth()
   const [form, setForm] = useState<FormState>(initialFormState)
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})

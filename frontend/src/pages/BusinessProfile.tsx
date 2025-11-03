@@ -1,253 +1,532 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import * as React from 'react';
 import {
-  Avatar,
-  Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
+  Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
+  Tabs, Tab, Button, Grid, CardMedia,
+  DialogTitle, DialogContent, DialogActions, Dialog, CircularProgress
 } from '@mui/material';
-
-import Edit from '@mui/icons-material/Edit';
-import ComplementBusinessProfileDialog from '../components/profile/businessProfile/ComplementProfileDialog';
-import type { UpdateProfileFormState } from '../types/business';
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
-import { DEFAULT_STATS } from '../constants/DefaultStats'
+import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { Alert } from "@mui/material";
 import type { BusinessPublicationResponseDTO } from "../types/business";
-import { Stat } from '../components/profile/stats';
-import { EmptyState } from '../components/profile/EmptyState';
-import type { CommonUsersInformation } from '../types/user';
-import type { CompleteBusinessProfile } from '../types/business';
-import { DEFAULT_OPENING_DAYS } from '../types/business';
-import { updateBusinessUser } from '../services/userService';
-import type { BusinessUpdateRequestDTO } from '../types/business';
-import { parseHours } from '../types/business';
-import { dataURLtoFile } from '../components/publications/utils/imageHelpers';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
 import PublicationGrid from "../components/publications/PublicationGrid";
-// ----- defaults hardcodeados cuando el back no los provee -----
-const DEFAULT_COVER_URL = 'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg'; // si querés una imagen placeholder poné acá la URL
-const businessRoleChipColor = 'warning';
-const tabs = [
-  { key: 'mi presentacion', label: 'Mi Presentación' },
-  {key: 'publicaciones', label: 'Publicaciones'},
+import { BUSINESS_TYPES } from '../constants/Rol';
+import type { BusinessUser, BusinessCommon, RestaurantExtras } from "../context/TypesUser";
+import HotelEditDialog from '../components/profile/businessPublicProfile/HotelEditDialog';
+import RestaurantEditDialog from '../components/profile/businessPublicProfile/RestaurantEditDialog';
+
+
+
+
+
+
+
+
+
+// ---------- helpers UI ----------
+const labelDays: Record<string, string> = {
+  MONDAY: 'Lun', TUESDAY: 'Mar', WEDNESDAY: 'Mié', THURSDAY: 'Jue',
+  FRIDAY: 'Vie', SATURDAY: 'Sáb', SUNDAY: 'Dom'
+};
+
+type TimeLike =
+  | string
+  | { hour: number; minute?: number | null }
+  | null
+  | undefined;
+
+function parseTimeLike(t: TimeLike): { h: number; m: number } | null {
+  if (!t) return null;
+  if (typeof t === 'string') {
+    const m = t.match(/^(\d{1,2}):(\d{2})$/);
+    if (!m) return null;
+    return { h: Number(m[1]), m: Number(m[2]) };
+  }
+  if (typeof t === 'object' && 'hour' in t) {
+    return { h: Number(t.hour), m: Number(t.minute ?? 0) };
+  }
+  return null;
+}
+
+export function formatHours(att?: {
+  openingTime?: TimeLike;
+  closingTime?: TimeLike;
+}) {
+  const o = parseTimeLike(att?.openingTime);
+  const c = parseTimeLike(att?.closingTime);
+  if (!o || !c) return '—';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(o.h)}:${pad(o.m)}–${pad(c.h)}:${pad(c.m)}`;
+}
+
+const BASE_TABS = [
+  { key: 'mi-presentacion', label: 'Mi Presentación' },
+  { key: 'publicaciones', label: 'Publicaciones' },
   { key: 'fotos', label: 'Fotos' },
 ];
 
 
-// ----- util: mapea CommonUsersInformation (información básica de autenticación) -> CompleteBusinessProfile (estado del perfil en front) -----
-function toUserProfile(u: CommonUsersInformation | null | undefined, prev?: CompleteBusinessProfile): CompleteBusinessProfile {
-  return {
-    name:                   u?.username ?? prev?.name ?? '',
-    description:            u?.description ?? prev?.description ?? '',
-    openningDays:           prev?.openningDays ?? DEFAULT_OPENING_DAYS,
-    openingHours:           prev?.openingHours ?? null,
-    location:               prev?.location ?? '',
-    phone:                  prev?.phone ?? '',
-    onCloudPhotos:          prev?.onCloudPhotos ?? [],
 
-    avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
-      ? u.avatarURL 
-      : (prev?.avatarUrl),
-    coverUrl: prev?.coverUrl ?? DEFAULT_COVER_URL,
-    stats: prev?.stats ?? DEFAULT_STATS,
-  };
+
+function isRestaurant(
+  b: BusinessUser
+): b is BusinessCommon & { businessType: "RESTAURANT" } & RestaurantExtras {
+  return b.businessType === "RESTAURANT";
 }
 
 
-export default function BusinessProfile() {
-  const [tab, setTab] = React.useState(0);
-  const [editOpen, setEditOpen] = React.useState(false);
-  const { user, token ,updateUser} = useAuth();
 
-  //posiblemente se borre el estado de perfil cada vez que se quiera editar los datos (aun cuand se cancelan los cambios)
-  const [completeProfile, setCompleteProfile] = React.useState<CompleteBusinessProfile>(() => toUserProfile(user));
 
+
+
+
+
+
+
+
+
+
+
+
+/* ===================== componentes chicos ===================== */
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
+        {title}
+      </Typography>
+      {children}
+    </Box>
+  );
+}
+
+function InfoRow({ icon, text }: { icon: React.ReactNode; text?: string | null }) {
+  if (!text) return null;
+  return (
+    <Stack direction="row" spacing={1} alignItems="center" sx={{ py: 0.5 }}>
+      {icon}
+      <Typography variant="body2">{text}</Typography>
+    </Stack>
+  );
+}
+
+/** Carrusel simple sin dependencias externas */
+/** Carrusel simple sin dependencias externas (fix incluido) */
+function ImageCarousel({
+  images,
+  height = 300,
+  rounded = 2,
+}: { images: string[]; height?: number; rounded?: number }) {
+  const [i, setI] = React.useState(0);
+  const count = images.length;
+
+  // // autoplay
   // React.useEffect(() => {
-  //   setCompleteProfile((prev) => toUserProfile(user, prev));
-  // }, [user]);
+  //   if (count < 2) return;
+  //   const id = setInterval(() => setI((v) => (v + 1) % count), 3000);
+  //   return () => clearInterval(id);
+  // }, [count]);
 
+  // reset index si cambia la cantidad de imágenes
+  React.useEffect(() => {
+    setI(0);
+  }, [count]);
 
-  // ayuda para saber si el tab actual es "publicaciones"
-  const currentTabKey = tabs[tab]?.key;
-  const saveChangesInBackend = async (formContent: UpdateProfileFormState) => { 
-       
-    if (!token) {
-      console.error('No auth token available; skipping remote update');
-      return;
-    }
+  if (count === 0) return null;
 
-    try{
-      const data : BusinessUpdateRequestDTO = {
-        name: formContent.name.trim(),
-        description: formContent.description,
-        openingDays: formContent.openningDays.filter(Boolean),
-        attentionSchedule: parseHours(formContent.openingHours),
-        location: formContent.location.trim(),
-        phoneNumber: formContent.phone.trim(),
-      }
-
-      const files: File[] = formContent.uploadingPhotos
-        .filter(Boolean)
-        .map((photo, i) => dataURLtoFile(photo, `photo_${i + 1}.jpg`));
-      
-      const avatarFile = formContent.avatar
-        ? dataURLtoFile(formContent.avatar, "avatar.jpg")
-        : null;  
-      console.log("Avatar base64 (primeros 200 caracteres):", formContent.avatar?.slice(0, 200));
-      console.log("AvatarFile:", avatarFile);
-      
-      const response = await updateBusinessUser(data, avatarFile, files, token);
-
-      console.log("ANTES (avatar URL):", completeProfile.avatarUrl);
-      console.log("RESPUESTA BACK (avatar URL):", response.avatarURL);
-
-      
-      // console.log(response)
-
-      const updatedProfile: CompleteBusinessProfile = {
-        ...completeProfile, // mantenemos los campos no modificados
-        name: response.name,
-        description: response.description,
-        openningDays: response.openingDays,
-        openingHours: response.attentionSchedule,
-        location: response.location,
-        phone: response.phoneNumber,
-        avatarUrl: response.avatarURL ? response.avatarURL : completeProfile.avatarUrl, // nota: el backend devuelve `avatarURL` (camel case distinto)
-        onCloudPhotos: response.profileImageUrls, // corresponde a las imágenes subidas
-        stats: completeProfile.stats, // se conserva el objeto de estadísticas local
-      };
-      setCompleteProfile(updatedProfile);
-      //Actualizo información básica de auth
-      updateUser(response.name, response.description, response.avatarURL);
-      console.log("Perfil actualizado correctamente:", updatedProfile);
-      setTimeout(() => {
-        console.log("DESPUÉS:", completeProfile.avatarUrl);
-      }, 1000);
-
-    } catch(error){
-      console.error('Error updating profile:', error);
-    }
-  };
+  const next = () => setI((v) => (v + 1) % count);
+  const prev = () => setI((v) => (v - 1 + count) % count);
 
   return (
-    <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-      {/* Banner de fondo */}
+    <Box sx={{ position: 'relative', width: '100%', borderRadius: rounded, overflow: 'hidden', boxShadow: 1 }}>
       <Box
         sx={{
-          minHeight: { xs: '38vh', md: '30vh' },
-          position: 'relative',
-          backgroundImage: completeProfile.coverUrl ? `url(${completeProfile.coverUrl})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          display: 'flex',
+          width: `${count * 100}%`,
+          height,
+          transform: `translateX(-${(i * 100) / count}%)`, // FIX
+          transition: 'transform 400ms ease',
         }}
-      />
-
-      {/* Card */}
-      <Box sx={{ position: 'relative' }}>
-        <Card
-          elevation={1}
-          sx={{
-            maxWidth: 1180, width: '100%', mx: 'auto',
-            mt: { xs: -8, md: -10 }, borderRadius: 2, overflow: 'visible',
-          }}
-        >
-          <CardContent sx={{ pb: 1.5 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-              <Avatar
-                src={completeProfile.avatarUrl}
-                alt={completeProfile.name}
-                sx={{
-                  width: 96, height: 96, mt: { xs: -6, md: -8 },
-                  border: (t) => `4px solid ${t.palette.background.paper}`,
-                }}
-              />
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5" fontWeight={800}>{completeProfile.name}</Typography>
-                  {!!user?.role && (
-                    <Chip
-                      size="small"
-                      label={user.role}
-                      color={businessRoleChipColor}
-                      variant="outlined"
-                      sx={{ ml: 0.5 }}
-                    />
-                  )}
-                </Stack>
-
-                {completeProfile.description && (
-                  <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
-                    {completeProfile.description}
-                  </Typography>
-                )}
-              </Box>
-
-              <ButtonGroup variant="outlined" size="large">
-                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Completá los datos de tu negocio!</Button>
-                {/* <Button startIcon={<Settings />}>Configuración</Button> */}
-              </ButtonGroup>
-            </Stack>
-
-            {/* Stats */}
-            <Stack direction="row" spacing={4} alignItems="center" sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-              <Stat label="Aportes" value={completeProfile.stats.aportes} />
-              <Stat label="Seguidores" value={completeProfile.stats.seguidores} />
-              <Stat label="Siguiendo" value={completeProfile.stats.siguiendo} />
-            </Stack>
-          </CardContent>
-
-          <Divider />
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v)}
-              variant="scrollable"
-              allowScrollButtonsMobile
-              sx={{ px: { xs: 1, sm: 2, md: 3 } }}
-            >
-              {tabs.map((t) => <Tab key={t.key} label={t.label} />)}
-            </Tabs>
-          <Divider />
-
-          <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {currentTabKey === 'mi presentacion'  && <EmptyState title="Presentación de mi negocio" />}
-            {currentTabKey === 'fotos'            && <EmptyState title="Fotos" />}
-            {currentTabKey === 'publicaciones'    && (
-              <BusinessPublicationsTab token={token} />
-            )}
+      >
+        {images.map((src, idx) => (
+          <Box
+            key={idx}
+            sx={{
+              flex: `0 0 ${100 / count}%`, // cada slide ocupa su proporción
+              height,
+            }}
+          >
+            <Box
+              component="img"
+              src={src}
+              alt={`foto-${idx + 1}`}
+              onError={(e: any) => (e.currentTarget.style.visibility = 'hidden')}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
           </Box>
-        </Card>
+        ))}
       </Box>
 
-      {/* Modal de edición */}
-      <ComplementBusinessProfileDialog
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        completeProfile={completeProfile}
-        onSave={saveChangesInBackend}
-      />
+      {/* Controles */}
+      {count > 1 && (
+        <>
+          <Button
+            onClick={prev}
+            aria-label="Anterior"
+            startIcon={<ChevronLeft />}
+            sx={{
+              minWidth: 0,
+              position: 'absolute',
+              top: '50%',
+              left: 8,
+              transform: 'translateY(-50%)',
+              bgcolor: 'rgba(0,0,0,0.4)',
+              color: 'common.white',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' },
+            }}
+          />
+          <Button
+            onClick={next}
+            aria-label="Siguiente"
+            startIcon={<ChevronRight />}
+            sx={{
+              minWidth: 0,
+              position: 'absolute',
+              top: '50%',
+              right: 8,
+              transform: 'translateY(-50%)',
+              bgcolor: 'rgba(0,0,0,0.4)',
+              color: 'common.white',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' },
+            }}
+          />
+          {/* Puntos */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              gap: 1,
+              justifyContent: 'center',
+            }}
+          >
+            {images.map((_, idx) => (
+              <Box
+                key={idx}
+                onClick={() => setI(idx)}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: idx === i ? 'primary.main' : 'rgba(255,255,255,0.75)',
+                  border: (t) => `1px solid ${t.palette.common.white}`,
+                  cursor: 'pointer',
+                }}
+              />
+            ))}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }
 
 
 
-export function BusinessPublicationsTab({ token }: { token: string | null }) {
+
+
+/* ===================== principal ===================== */
+
+export default function BusinessProfile() {
+  const { user , accessToken} = useAuth();
+  const { business, loading } = useBusinessProfile();
+
+  const [tab, setTab] = React.useState(0);
+  const [editOpen, setEditOpen] = React.useState(false);
+
+  // Tabs dinámicas
+  const tabs =
+    business?.businessType === BUSINESS_TYPES.restaurant
+      ? [...BASE_TABS, { key: 'menu', label: 'Menú' }]
+      : business?.businessType === BUSINESS_TYPES.hotel
+      ? [...BASE_TABS, { key: 'habitaciones', label: 'Habitaciones' }]
+      : BASE_TABS;
+
+  const currentTabKey = tabs[tab]?.key;
+
+  if (loading) return <Box sx={{ p: 3 }}>Cargando perfil…</Box>;
+  if (!user || user.role !== 'BUSINESS') return <Box sx={{ p: 3 }}>Este perfil es solo para cuentas de negocio.</Box>;
+  if (!business) return <Box sx={{ p: 3 }}>No hay datos del negocio aún.</Box>;
+
+  return (
+    <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+      {/* Portada */}
+      <Box
+        sx={{
+          minHeight: { xs: '38vh', md: '30vh' },
+          position: 'relative',
+          backgroundImage: `url('https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+
+      {/* Card principal */}
+      <Box sx={{ position: 'relative' }}>
+        <Card elevation={1} sx={{ maxWidth: 1180, mx: 'auto', mt: { xs: -8, md: -10 }, borderRadius: 2 }}>
+          {/* ===== Header minimalista ===== */}
+          <CardContent sx={{ pb: 1.5 }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', md: 'center' }} sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+              <Avatar
+                src={business.avatarURL}
+                alt={business.name}
+                sx={{
+                  width: 96, height: 96, mt: { xs: -6, md: -8 },
+                  border: (t) => `4px solid ${t.palette.background.paper}`,
+                }}
+              />
+
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                  <Typography variant="h5" fontWeight={800}>{business.name || 'Mi negocio'}</Typography>
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={business.businessType === BUSINESS_TYPES.restaurant ? 'Restaurante' : 'Hotel'}
+                    color='success'
+                    sx={{ ml: 0.5 }}
+                  />
+                  {/* Chip adicional relevante */}
+                  {business.businessType === BUSINESS_TYPES.restaurant && business.averagePrice && (
+                    <Chip size="small" label={`Precio: ${business.averagePrice}`} sx={{ ml: 0.5 }} />
+                  )}
+                  {business.businessType === BUSINESS_TYPES.hotel && business.hotelType && (
+                    <Chip size="small" label={business.hotelType} sx={{ ml: 0.5 }} />
+                  )}
+                </Stack>
+
+                {/* Contacto compacto */}
+                <Stack direction="row" spacing={2} sx={{ mt: 1.25 }} flexWrap="wrap">
+                  {business.location && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Room fontSize="small" />
+                      <Typography variant="caption">{business.location}</Typography>
+                    </Stack>
+                  )}
+                  {business.phoneNumber && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Phone fontSize="small" />
+                      <Typography variant="caption">{business.phoneNumber}</Typography>
+                    </Stack>
+                  )}
+                  {business.publicEmail && (
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <Email fontSize="small" />
+                      <Typography variant="caption">{business.publicEmail}</Typography>
+                    </Stack>
+                  )}
+                </Stack>
+              </Box>
+
+              <Button startIcon={<Edit />} variant="outlined" onClick={() => setEditOpen(true)}>
+                Editar
+              </Button>
+            </Stack>
+          </CardContent>
+
+          <Divider />
+
+          {/* Tabs */}
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            allowScrollButtonsMobile
+            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+          >
+            {tabs.map((t) => <Tab key={t.key} label={t.label} />)}
+          </Tabs>
+
+          <Divider />
+
+          {/* Contenido por tab */}
+          <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            {/* ===== MI PRESENTACIÓN ===== */}
+            {currentTabKey === 'mi-presentacion' && (
+              <Stack spacing={3}>
+                {/* Carrusel arriba */}
+                <Box>
+                  <ImageCarousel images={business.profileImageUrls ?? []} height={300} rounded={2} />
+                  {(!business.profileImageUrls || business.profileImageUrls.length === 0) && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Aún no subiste fotos a tu perfil.
+                    </Typography>
+                  )}
+                </Box>
+
+                <Grid container spacing={3} alignItems="flex-start">
+                  {/* Columna izquierda: Descripción + Atención */}
+                  <Grid item xs={12} md={7}>
+                    {business.description && (
+                      <Section title="Descripción">
+                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                          {business.description}
+                        </Typography>
+                      </Section>
+                    )}
+
+                    {isRestaurant(business) && (
+                      <Section title="Atención">
+                        <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 1 }}>
+                          {(business.openingDays ?? []).map((d) => (
+                            <Chip
+                              key={d}
+                              size="small"
+                              label={labelDays[d as keyof typeof labelDays] ?? d}
+                              sx={{ mb: 1 }}
+                            />
+                          ))}
+                          {business.attentionSchedule && (
+                            <Chip size="small" variant="outlined" label={formatHours(business.attentionSchedule)} sx={{ mb: 1 }} />
+                          )}
+                        </Stack>
+
+                        {/* Etiquetas estilo TripAdvisor */}
+                        <Stack direction="row" spacing={1} flexWrap="wrap">
+                          {business.restaurantType && (
+                            <Chip size="small" variant="outlined" label={business.restaurantType} />
+                          )}
+                          {business.averagePrice && (
+                            <Chip size="small" variant="outlined" label={`Precio: ${business.averagePrice}`} />
+                          )}
+                        </Stack>
+                      </Section>
+                    )}
+                  </Grid>
+
+                  {/* Columna derecha: Contacto */}
+                  <Grid item xs={12} md={5}>
+                    <Section title="Contacto">
+                      <InfoRow icon={<Room fontSize="small" />} text={business.location} />
+                      <InfoRow icon={<Phone fontSize="small" />} text={business.phoneNumber} />
+                      <InfoRow icon={<Email fontSize="small" />} text={business.publicEmail} />
+                    </Section>
+                  </Grid>
+                </Grid>
+              </Stack>
+            )}
+
+            {/* ===== PUBLICACIONES (placeholder: reemplazá por tu componente si lo tenés) ===== */}
+            {currentTabKey === 'publicaciones' && (
+         
+              <BusinessPublicationsTab accessToken={accessToken} />
+            )}
+
+            {/* ===== FOTOS (grid secundario, además del carrusel en Mi Presentación) ===== */}
+            {currentTabKey === 'fotos' && (
+              <Grid container spacing={2}>
+                {(business.profileImageUrls ?? []).map((url, i) => (
+                  <Grid item xs={12} sm={6} md={4} key={`${url}-${i}`}>
+                    <Card variant="outlined">
+                      <CardMedia component="img" image={url} height={220} sx={{ objectFit: 'cover' }} />
+                    </Card>
+                  </Grid>
+                ))}
+                {(!business.profileImageUrls || business.profileImageUrls.length === 0) && (
+                  <Typography variant="body2" color="text.secondary">
+                    Aún no subiste fotos a tu perfil.
+                  </Typography>
+                )}
+              </Grid>
+            )}
+
+            {/* ===== MENÚ / HABITACIONES ===== */}
+            {currentTabKey === 'menu' && business.businessType === BUSINESS_TYPES.restaurant && (
+              <RestaurantMenuEditor menu={business.menu ?? []} />
+            )}
+
+            {currentTabKey === 'habitaciones' && business.businessType === BUSINESS_TYPES.hotel && (
+              <HotelRoomsEditor roomPacks={business.roomPacks ?? []} />
+            )}
+          </Box>
+        </Card>
+      </Box>
+
+      {/* Diálogos de edición por tipo */}
+      <RestaurantEditDialog
+        open={editOpen && business.businessType === BUSINESS_TYPES.restaurant}
+        onClose={() => setEditOpen(false)}
+      />
+      <HotelEditDialog
+        open={editOpen && business.businessType === BUSINESS_TYPES.hotel}
+        onClose={() => setEditOpen(false)}
+      />
+    </Box>
+  );
+}
+
+/* ===================== placeholders de tabs específicas ===================== */
+
+function RestaurantMenuEditor({ menu }: { menu: Array<any> }) {
+  return (
+    <Stack spacing={1}>
+      <Typography variant="h6">Menú</Typography>
+      {menu.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">Aún no cargaste platos.</Typography>
+      ) : (
+        menu.map((m, i) => (
+          <Stack key={i} direction="row" spacing={2} alignItems="center">
+            <Typography variant="body2" sx={{ minWidth: 220 }}>{m.foodName}</Typography>
+            <Chip label={`$ ${m.price}`} />
+          </Stack>
+        ))
+      )}
+    </Stack>
+  );
+}
+
+function HotelRoomsEditor({ roomPacks }: { roomPacks: Array<any> }) {
+  return (
+    <Stack spacing={1}>
+      <Typography variant="h6">Habitaciones</Typography>
+      {roomPacks.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">Aún no cargaste habitaciones/paquetes.</Typography>
+      ) : (
+        roomPacks.map((r, i) => (
+          <Stack key={i} spacing={0.5}>
+            <Typography variant="body2" fontWeight={700}>{r.description ?? 'Pack'}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {r.checkInDate} → {r.checkOutDate} · {r.numberOfGuests} huéspedes · $ {r.price}
+            </Typography>
+          </Stack>
+        ))
+      )}
+    </Stack>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+{/** Tab de publicaciones de negocio, con lógica de carga y borrado */}
+export function BusinessPublicationsTab({ accessToken }: { accessToken: string | null }) {
   const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -258,7 +537,7 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
   const [deleting, setDeleting] = React.useState(false);
 
   const fetchAll = React.useCallback(async () => {
-    if (!token) {
+    if (!accessToken) {
       setError("No estás autenticado.");
       setLoading(false);
       return;
@@ -267,14 +546,14 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
     setError(null);
 
     try {
-      const res = await getBusinessPublications(token);
+      const res = await getBusinessPublications(accessToken);
       setItems(res ?? []);
     } catch (e: any) {
       setError(e?.message || "Error al obtener publicaciones");
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [accessToken]);
 
   React.useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -286,10 +565,10 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
 
   // Confirmar eliminación en el diálogo
   const handleConfirmDelete = async () => {
-    if (!token || !toDeleteId) return;
+    if (!accessToken || !toDeleteId) return;
     setDeleting(true);
     try {
-      await deleteBusinessPublication(token, toDeleteId);
+      await deleteBusinessPublication(accessToken, toDeleteId);
       setItems(prev => prev.filter(p => p.id !== toDeleteId));
 
       enqueueSnackbar('¡Publicación eliminada', { variant: 'success' });
@@ -328,6 +607,7 @@ export function BusinessPublicationsTab({ token }: { token: string | null }) {
       <PublicationGrid
         publications={items}
         onDelete={handleDeleteRequest}  // << ahora abre diálogo "pro"
+        letReview={false}
       />
 
       {/* Diálogo de confirmación */}

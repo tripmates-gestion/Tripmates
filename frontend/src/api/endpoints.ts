@@ -9,6 +9,6 @@ export const ENDPOINTS = {
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',
     PATCH_BUSINESS_PUBLICATION: '/publications/',
     DELETE_BUSINESS_PUBLICATION: '/publications/',
-    SEARCH: '/users/search',
+    SEARCH_BUSINESS: "/users/search/business",
   };
   

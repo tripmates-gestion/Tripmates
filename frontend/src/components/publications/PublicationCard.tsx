@@ -11,19 +11,23 @@ import {
   MenuItem,
   Chip,
   Avatar,
-  Tooltip
+  Tooltip,
+  Alert,
+  Snackbar
 } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
+import { useAuth } from "../../hooks/useAuth";
 
 type Props = {
   publication: BusinessPublicationResponseDTO;
   onView: (p: BusinessPublicationResponseDTO) => void;
   onEdit?: (p: BusinessPublicationResponseDTO) => void;
   onDelete?: (id: string) => void;
+  onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;//opción para guardar en un plan 
 };
-
+const IMG_PLACEHOLDER_URL= "https://images.unsplash.com/photo-1610513320995-1ad4bbf25e55?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070";
 const DAYS_ORDER: Array<"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"> = [
   "MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"
 ];
@@ -69,7 +73,7 @@ function initials(name?: string) {
   return parts.map(p => p[0]?.toUpperCase() ?? "").join("") || "U";
 }
 
-export default function PublicationCard({ publication, onView, onEdit, onDelete }: Props) {
+export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const handleMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
@@ -77,8 +81,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
 
   const now = useMemo(() => new Date(), []);
   const openNow = useMemo(() => isOpenNow(publication, now), [publication, now]);
-
+  const authContext = useAuth();
+  const [showAuthError, setShowAuthError] = useState(false);
+  
   return (
+    <>
     <Card
       onClick={() => onView(publication)}
       sx={{
@@ -89,11 +96,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" }
       }}
     >
-      <Box sx={{ position: "relative" }}>
+      <Box sx={{ position: "relative", height: 220, overflow: "hidden" }}>
         <CardMedia
           component="img"
           height="220"
-          image={publication.imageUrls?.[0] || "/placeholder.jpg"}
+          image={publication.imageUrls?.[0] || IMG_PLACEHOLDER_URL}
           alt={publication.title}
           sx={{ objectFit: "cover" }}
         />
@@ -164,6 +171,20 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
         <Menu anchorEl={anchorEl} open={openMenu} onClose={handleClose} onClick={e => e.stopPropagation()}>
           {onEdit && <MenuItem onClick={() => { handleClose(); onEdit(publication); }}>Editar</MenuItem>}
           {onDelete && <MenuItem onClick={() => { handleClose(); onDelete(publication.id); }}>Eliminar</MenuItem>}
+          {onAddToBoard && (
+          
+          <MenuItem
+            onClick={(e) => {
+              if (authContext.accessToken) {
+                onAddToBoard(e, publication, authContext.accessToken);
+              } else {
+                setShowAuthError(true); // 🆕 muestra el toast
+              }
+            }}
+          >
+            Guardar en un plan
+          </MenuItem>
+)}
         </Menu>
       </Box>
 
@@ -213,7 +234,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
         {!!publication.tags?.length && (
           <Box sx={{ mt: 1.25, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {publication.tags.slice(0, 5).map(t => (
-              <Chip key={t} label={t} size="small" variant="outlined" />
+              <Chip key={t} label={t} size="small" variant="outlined" color="warning" />
             ))}
           </Box>
         )}
@@ -225,5 +246,17 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete 
         </Stack>
       </CardContent>
     </Card>
+    {/* 🆕 Snackbar de error si no hay token */}
+      <Snackbar
+      open={showAuthError}
+      autoHideDuration={4000}
+      onClose={() => setShowAuthError(false)}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+    >
+      <Alert severity="error" onClose={() => setShowAuthError(false)}>
+        Debes iniciar sesión para guardar publicaciones en un plan.
+      </Alert>
+    </Snackbar>
+    </>
   );
 }
