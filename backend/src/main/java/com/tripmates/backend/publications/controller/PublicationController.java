@@ -89,12 +89,13 @@ public class PublicationController {
 			@ApiResponse(responseCode = "401", description = "Invalid credentials",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> update(@PathVariable String publicationId, @RequestPart("data") String data,
-			@RequestPart(value = "files", required = false) List<MultipartFile> files,
+	public ResponseEntity<?> update(@PathVariable String publicationId,
+			@Parameter(description = "Optional JSON string containing updated non-image fields (title, description, phoneNumber, email, location, openingDays, attentionSchedule, exceptionalClosingDays) and deletePhotoIndexes to remove specific photos by 0-based indexes. If omitted, only photos will be modified.") @RequestPart("data") String data,
+			@Parameter(description = "Optional image files to append to the publication photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok()
 			.body(publicationService.updatePublication(publicationId,
-					parsingService.parseAndValidate(data, PublicationRequestDTO.class), files,
+					parsingService.parseAndValidate(data, PublicationUpdateRequestDTO.class), files,
 					userDetails.getUsername()));
 	}
 
