@@ -91,15 +91,18 @@ public class UserController {
 	public ResponseEntity<?> updateMenuItem(@AuthenticationPrincipal UserDetails userDetails,
 			@Parameter(description = "0-based index of the menu item to update") @PathVariable("index") int index,
 			@Parameter(
-					description = "Optional JSON string containing updated non-image fields (foodName, price, description). If omitted, only photos will be modified.") @RequestPart(
+					description = "Optional JSON string containing updated non-image fields (foodName, price, description) and deletePhotoIndexes to remove specific photos by 0-based indexes. If omitted, only photos will be modified.") @RequestPart(
 							value = "data", required = false) String data,
 			@Parameter(
 					description = "Optional image files to append to the item's photos. Supported formats: JPG, PNG, etc.") @RequestPart(
-							value = "files", required = false) List<MultipartFile> files,
-			@Parameter(description = "Optional list of 0-based photo indexes to delete from the item.") @RequestParam(
-					value = "deletePhotoIndexes", required = false) List<Integer> deletePhotoIndexes) {
-		MenuItem item = (data != null && !data.isBlank()) ? parsingService.parseAndValidate(data, MenuItem.class)
+							value = "files", required = false) List<MultipartFile> files) {
+		com.tripmates.backend.users.dto.MenuItemUpdateDTO dto = (data != null && !data.isBlank())
+				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.MenuItemUpdateDTO.class)
 				: null;
+		MenuItem item = (dto != null)
+				? new MenuItem(null, dto.foodName(), dto.price(), dto.description())
+				: null;
+		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
 		return ResponseEntity
 			.ok(userService.updateMenuItem(userDetails.getUsername(), index, item, files, deletePhotoIndexes));
 	}
@@ -152,16 +155,19 @@ public class UserController {
 	public ResponseEntity<?> updateRoomPack(@AuthenticationPrincipal UserDetails userDetails,
 			@Parameter(description = "0-based index of the room pack to update") @PathVariable("index") int index,
 			@Parameter(
-					description = "Optional JSON string containing updated non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description). If omitted, only photos will be modified.") @RequestPart(
+					description = "Optional JSON string containing updated non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description) and deletePhotoIndexes to remove specific photos by 0-based indexes. If omitted, only photos will be modified.") @RequestPart(
 							value = "data", required = false) String data,
 			@Parameter(
 					description = "Optional image files to append to the room pack photos. Supported formats: JPG, PNG, etc.") @RequestPart(
-							value = "files", required = false) List<MultipartFile> files,
-			@Parameter(
-					description = "Optional list of 0-based photo indexes to delete from the room pack.") @RequestParam(
-							value = "deletePhotoIndexes", required = false) List<Integer> deletePhotoIndexes) {
-		RoomPack pack = (data != null && !data.isBlank()) ? parsingService.parseAndValidate(data, RoomPack.class)
+							value = "files", required = false) List<MultipartFile> files) {
+		com.tripmates.backend.users.dto.RoomPackUpdateDTO dto = (data != null && !data.isBlank())
+				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.RoomPackUpdateDTO.class)
 				: null;
+		RoomPack pack = (dto != null)
+				? new RoomPack(dto.checkInDate(), dto.checkOutDate(), dto.numberOfGuests(), dto.services(), dto.price(),
+						dto.description(), null)
+				: null;
+		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
 		return ResponseEntity
 			.ok(userService.updateRoomPack(userDetails.getUsername(), index, pack, files, deletePhotoIndexes));
 	}
