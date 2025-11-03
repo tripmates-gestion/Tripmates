@@ -13,14 +13,10 @@ import com.tripmates.backend.utils.updateMe.command.UpdatePublicEmail;
 import com.tripmates.backend.utils.updateMe.command.UpdateAveragePrice;
 import com.tripmates.backend.utils.updateMe.command.UpdateAttentionSchedule;
 import com.tripmates.backend.utils.updateMe.command.UpdateOpeningDays;
-import com.tripmates.backend.utils.updateMe.command.UpdateMenu;
-import com.tripmates.backend.utils.updateMe.command.UpdateRoomPacks;
 import com.tripmates.backend.utils.updateMe.command.DeletePhotosUrls;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.AveragePrice;
-import com.tripmates.backend.common.types.MenuItem;
-import com.tripmates.backend.common.types.RoomPack;
 import java.util.List;
 
 import com.tripmates.backend.common.exception.BadRequestException;
@@ -51,18 +47,6 @@ public class UpdateCommandFactory {
 				@SuppressWarnings("unchecked")
 				List<DayOfWeek> daysOfWeek = (List<DayOfWeek>) value;
 				yield new UpdateOpeningDays(daysOfWeek);
-			}
-			case "menu" -> {
-				parseAndValidateList(value, MenuItem.class);
-				@SuppressWarnings("unchecked")
-				List<MenuItem> menu = (List<MenuItem>) value;
-				yield new UpdateMenu(menu);
-			}
-			case "roomPacks" -> {
-				parseAndValidateList(value, RoomPack.class);
-				@SuppressWarnings("unchecked")
-				List<RoomPack> packs = (List<RoomPack>) value;
-				yield new UpdateRoomPacks(packs);
 			}
 			case "imageUrlsToDelete" -> {
 				parseAndValidateList(value, String.class);
