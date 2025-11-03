@@ -29,54 +29,54 @@ import com.tripmates.backend.common.service.storage.StorageService;
 
 public class UpdateCommandFactory {
 
-    private final StorageService storageService;
+	private final StorageService storageService;
 
-    public UpdateCommandFactory(StorageService storageService) {
-        this.storageService = storageService;
-    }
+	public UpdateCommandFactory(StorageService storageService) {
+		this.storageService = storageService;
+	}
 
-    public AccountUpdateCommand createCommand(String fieldName, Object value) {
-        return switch (fieldName) {
-            case "name" -> new UpdateName((String) value);
-            case "description" -> new UpdateDescription((String) value);
-            case "restaurantType" -> new UpdateRestaurantType((RestaurantType) value);
-            case "hotelType" -> new UpdateHotelType((HotelType) value);
-            case "location" -> new UpdateLocation((String) value);
-            case "phoneNumber" -> new UpdatePhoneNumber((String) value);
-            case "publicEmail" -> new UpdatePublicEmail((String) value);
-            case "averagePrice" -> new UpdateAveragePrice((AveragePrice) value);
-            case "attentionSchedule" -> new UpdateAttentionSchedule((AttentionSchedule) value);
-            case "openingDays" -> {
-                parseAndValidateList(value, DayOfWeek.class);
-                @SuppressWarnings("unchecked")
-                List<DayOfWeek> daysOfWeek = (List<DayOfWeek>) value;
-                yield new UpdateOpeningDays(daysOfWeek);
-            }
-            case "menu" -> {
-                parseAndValidateList(value, MenuItem.class);
-                @SuppressWarnings("unchecked")
-                List<MenuItem> menu = (List<MenuItem>) value;
-                yield new UpdateMenu(menu);
-            }
-            case "roomPacks" -> {
-                parseAndValidateList(value, RoomPack.class);
-                @SuppressWarnings("unchecked")
-                List<RoomPack> packs = (List<RoomPack>) value;
-                yield new UpdateRoomPacks(packs);
-            }
-            case "imageUrlsToDelete" -> {
-                parseAndValidateList(value, String.class);
-                @SuppressWarnings("unchecked")
-                List<String> imageUrls = (List<String>) value;
-                yield new DeletePhotosUrls(imageUrls, storageService);
-            }
-            default -> throw new IllegalArgumentException("Unknown field: " + fieldName);
-        };
-    }
+	public AccountUpdateCommand createCommand(String fieldName, Object value) {
+		return switch (fieldName) {
+			case "name" -> new UpdateName((String) value);
+			case "description" -> new UpdateDescription((String) value);
+			case "restaurantType" -> new UpdateRestaurantType((RestaurantType) value);
+			case "hotelType" -> new UpdateHotelType((HotelType) value);
+			case "location" -> new UpdateLocation((String) value);
+			case "phoneNumber" -> new UpdatePhoneNumber((String) value);
+			case "publicEmail" -> new UpdatePublicEmail((String) value);
+			case "averagePrice" -> new UpdateAveragePrice((AveragePrice) value);
+			case "attentionSchedule" -> new UpdateAttentionSchedule((AttentionSchedule) value);
+			case "openingDays" -> {
+				parseAndValidateList(value, DayOfWeek.class);
+				@SuppressWarnings("unchecked")
+				List<DayOfWeek> daysOfWeek = (List<DayOfWeek>) value;
+				yield new UpdateOpeningDays(daysOfWeek);
+			}
+			case "menu" -> {
+				parseAndValidateList(value, MenuItem.class);
+				@SuppressWarnings("unchecked")
+				List<MenuItem> menu = (List<MenuItem>) value;
+				yield new UpdateMenu(menu);
+			}
+			case "roomPacks" -> {
+				parseAndValidateList(value, RoomPack.class);
+				@SuppressWarnings("unchecked")
+				List<RoomPack> packs = (List<RoomPack>) value;
+				yield new UpdateRoomPacks(packs);
+			}
+			case "imageUrlsToDelete" -> {
+				parseAndValidateList(value, String.class);
+				@SuppressWarnings("unchecked")
+				List<String> imageUrls = (List<String>) value;
+				yield new DeletePhotosUrls(imageUrls, storageService);
+			}
+			default -> throw new IllegalArgumentException("Unknown field: " + fieldName);
+		};
+	}
 
-    private static <T> void parseAndValidateList(Object value, Class<T> clazz) {
-        if (!(value instanceof List<?> list) || (!list.isEmpty() && !clazz.isInstance(list.get(0))))
-            throw new BadRequestException(ValidationErrorMessage.NOT_VALID_DAY);
-    }
+	private static <T> void parseAndValidateList(Object value, Class<T> clazz) {
+		if (!(value instanceof List<?> list) || (!list.isEmpty() && !clazz.isInstance(list.get(0))))
+			throw new BadRequestException(ValidationErrorMessage.NOT_VALID_DAY);
+	}
 
 }
