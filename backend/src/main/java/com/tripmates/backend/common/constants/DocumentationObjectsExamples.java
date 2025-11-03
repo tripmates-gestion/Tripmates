@@ -41,7 +41,7 @@ public class DocumentationObjectsExamples {
 			Updates an existing publication with JSON data and optional images.
 
 			Multipart request structure:
-			- `data`: (required) JSON with the fields to update.
+			- `data`: (required) JSON with the fields to update. You may include `deletePhotoIndexes` to remove specific photos by 0-based indexes.
 			- `files`: (optional) Images for the publication (JPG, PNG, etc.).
 
 			Example JSON for the `data` part:
@@ -54,9 +54,11 @@ public class DocumentationObjectsExamples {
 			  "location": "123 Address, City",
 			  "openingDays": ["MONDAY", "TUESDAY"],
 			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
-			  "exceptionalClosingDays": ["2025-12-25"]
+			  "exceptionalClosingDays": ["2025-12-25"],
+			  "deletePhotoIndexes": [0, 2]
 			}
-			```""";
+			```
+			""";
 
 	static public final String BUSINESS_PUBLICATION_SEARCH_EXAMPLE = """
 			Filters are received as query params via model attributes.
@@ -130,6 +132,84 @@ public class DocumentationObjectsExamples {
 			  },
 			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
 			  "imageUrlsToDelete": []
+			}
+			```
+			""";
+
+	// Restaurant (Menu Items)
+	static public final String RESTAURANT_APPEND_EXAMPLE = """
+			Appends one menu item with optional images.
+
+			### Request Structure
+			- `data`: (required) JSON with non-image fields (foodName, price, description)
+			- `files`: (optional) Image files (JPG, PNG, etc.). Images are uploaded only via 'files'.
+
+			### Example data (JSON)
+			```json
+			{
+			  "foodName": "Double Burger",
+			  "price": 9.99,
+			  "description": "With cheddar and bacon"
+			}
+			```
+			""";
+
+	static public final String RESTAURANT_UPDATE_EXAMPLE = """
+			Partially updates one menu item by index.
+
+			### Request Structure
+			- `data`: (optional) JSON with non-image fields (foodName, price, description) and `deletePhotoIndexes` to remove specific photos by 0-based indexes. If omitted, only photos are modified.
+			- `files`: (optional) New images to append.
+
+			### Example data (JSON)
+			```json
+			{
+			  "foodName": "Triple Burger",
+			  "price": 11.5,
+			  "description": "With cheddar",
+			  "deletePhotoIndexes": [0, 2]
+			}
+			```
+			""";
+
+	// Hosting (Room Packs)
+	static public final String HOSTING_APPEND_EXAMPLE = """
+			Appends one room pack with optional images.
+
+			### Request Structure
+			- `data`: (required) JSON with non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description)
+			- `files`: (optional) Image files (JPG, PNG, etc.). Images are uploaded only via 'files'.
+
+			### Example data (JSON)
+			```json
+			{
+			  "checkInDate": "2025-11-10",
+			  "checkOutDate": "2025-11-12",
+			  "numberOfGuests": 2,
+			  "services": ["breakfast", "pool"],
+			  "price": 250.0,
+			  "description": "Suite with sea view"
+			}
+			```
+			""";
+
+	static public final String HOSTING_UPDATE_EXAMPLE = """
+			Partially updates one room pack by index.
+
+			### Request Structure
+			- `data`: (optional) JSON with non-image fields and `deletePhotoIndexes` to remove specific photos by 0-based indexes. If omitted, only photos are modified.
+			- `files`: (optional) New images to append.
+
+			### Example data (JSON)
+			```json
+			{
+			  "checkInDate": "2025-11-15",
+			  "checkOutDate": "2025-11-18",
+			  "numberOfGuests": 3,
+			  "services": ["breakfast", "gym"],
+			  "price": 310.0,
+			  "description": "Premium suite",
+			  "deletePhotoIndexes": [1]
 			}
 			```
 			""";
