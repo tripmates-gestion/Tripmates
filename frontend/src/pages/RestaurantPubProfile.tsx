@@ -1,7 +1,7 @@
 // src/pages/RestaurantPubProfile.tsx
 import { useLocation } from "react-router-dom";
-import BusinessPubProfileLayout from "../components/profile/businessProfile/BusinessPubProfileLayout";
-import { RestaurantMenuTab } from "../components/profile/businessProfile/restaurant/RestaurantMenuTab";
+import BusinessPubProfileLayout from "../components/profile/businessPublicProfile/BusinessPubProfileLayout";
+import { RestaurantMenuTab } from "../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 import type { MenuItem } from "../types/Restaurant";
 

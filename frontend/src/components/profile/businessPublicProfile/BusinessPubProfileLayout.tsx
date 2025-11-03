@@ -17,7 +17,7 @@ import {
 import BusinessPublicationsTab from "./BusinessPublicationsTab";
 import ImageCarousel from "../../ui/ImageCarousel";
 import type { BusinessPubAccountDataDTO } from "../../../types/AccountData";
-
+import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
 
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;
@@ -35,7 +35,7 @@ export default function BusinessPubProfileLayout({
   const images =
     business.profileImageUrls?.length > 0
       ? business.profileImageUrls
-      : ["/placeholder.jpg"];
+      : [COMMING_SOON_IMG];
 
   return (
     <Container sx={{ py: 5 }}>
@@ -55,11 +55,12 @@ export default function BusinessPubProfileLayout({
                 {business.name}
               </Typography>
               <Chip
-                label={business.businessType}
+                label={business.businessType?business.businessType:"not available yet"}
                 color="primary"
                 variant="outlined"
               />
             </Stack>
+            {business.averagePrice && (
             <Stack direction="row" alignItems="center" spacing={2}> 
               <Typography variant="subtitle1" color="text.secondary">
                 Precio promedio:
@@ -68,7 +69,9 @@ export default function BusinessPubProfileLayout({
                 {business.averagePrice}
               </Typography>
             </Stack>
-            {business.businessType === "HOSTING" && (
+            )}
+
+            {business.businessType === "HOTEL" && business.hotelType && (
               <Stack direction="row" alignItems="center" spacing={2}> 
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
@@ -76,7 +79,7 @@ export default function BusinessPubProfileLayout({
                 <Chip label={business.hotelType} color="primary" variant="outlined" />
               </Stack>
             )}
-            {business.businessType === "RESTAURANT" && (
+            {business.businessType === "RESTAURANT" && business.restaurantType && (
               <Stack direction="row" alignItems="center" spacing={2}> 
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
@@ -116,9 +119,10 @@ export default function BusinessPubProfileLayout({
                 <Divider sx={{ my: 2 }} />
 
                 <Stack spacing={1.2}>
-                  <InfoRow label="Ubicación" value={business.location} icon="📍" />
-                  <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />
-                  <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />
+                  {business.location && <InfoRow label="Ubicación" value={business.location} icon="📍" />}
+                  {business.phoneNumber && <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />}
+                  {business.publicEmail && <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />}
+                  {business.location == null && business.phoneNumber == null && business.publicEmail == null && <InfoRow label="Comming soon" value="Disculpa las molestias, esta información aun no está disponible." icon="⏳" />}
                 </Stack>
               </CardContent>
             </Card>

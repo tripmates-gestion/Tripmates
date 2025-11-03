@@ -2,6 +2,7 @@ import { DEFAULT_AVATAR_URL } from "../../constants/DefaultImages";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
 import { VEGAN_RESTAURANT, VEGAN_RESTAURANT_PUBLICATIONS } from "./veganRestaurantMock";
+import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
 
 
 const PRIVATE_HOTEL_MAIL_MOCK = "private@hotel.com"
@@ -22,6 +23,40 @@ const PUBLIC_RESTAURANT_MAIL_MOCK = "public@restaurant.com"
 const PRIVATE_RESTAURANT_MAIL_MOCK = "private@restaurant.com"
 const BUSINESS_RESTAURANT_ROLE_MOCK = "BUSINESS" as const;
 
+export function aplyFiltersToMock(businessMock: BusinessPubAccountDataDTO[], filters: SearchBusinessFilters): BusinessPubAccountDataDTO[] {
+  console.log("🔍 Parámetros de búsqueda (mocks):", filters);
+  const res = businessMock.filter((business) => {
+    if (filters.username && business.name !== filters.username) {
+      return false;
+    }
+    if (filters.businessType && business.businessType !== filters.businessType) {
+      return false;
+    }
+    if (filters.hotelType && business.hotelType !== filters.hotelType) {
+      return false;
+    }
+    if (filters.roomPack?.checkInDate && business.roomPacks?.some((roomPack) => roomPack.checkInDate !== filters.roomPack?.checkInDate)) {
+      return false;
+    }
+    if (filters.roomPack?.checkOutDate && business.roomPacks?.some((roomPack) => roomPack.checkOutDate !== filters.roomPack?.checkOutDate)) {
+      return false;
+    }
+    if (filters.roomPack?.numberOfGuests && business.roomPacks?.some((roomPack) => roomPack.numberOfGuests !== filters.roomPack?.numberOfGuests)) {
+      return false;
+    }
+    if (filters.roomPack?.price && business.roomPacks?.some((roomPack) => roomPack.price !== filters.roomPack?.price)) {
+      return false;
+    }
+    if (filters.roomPack?.services && business.roomPacks?.some((roomPack) => roomPack.services?.some((service) => !filters.roomPack?.services?.includes(service)))) {
+      return false;
+    }
+    return true;
+  });
+  if (res== null) {
+    return [];
+  }
+  return res;
+}
 
 
 //NOTA CUANDO LO DEL BACK ESTÉ VOY A TENER QUE MANEJAR EL HECHO DE QUE PROBABLEMENTE HAYAN CAMPOS QUE ME DEVUELVAN A NULL
@@ -38,7 +73,7 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
     phoneNumber: BUSINESS_PHONENUMBER_MOCK,
     publicEmail: PUBLIC_HOTEL_MAIL_MOCK,
     profileImageUrls: BARILOCHE_IMAGES,
-    businessType: "HOSTING",
+    businessType: "HOTEL",
     averagePrice: "$$",
 
     // nulls de restaurant

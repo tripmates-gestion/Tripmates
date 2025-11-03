@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 type Props = {
   businessAccountData: BusinessPubAccountDataDTO;
 };
-//necesito que la placeCard ya no se abra sino que reciba todo el SUPERd
+
 export default function PlaceCard({ businessAccountData }: Props) {
   const imgs = sanitizeImages(businessAccountData);
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ export default function PlaceCard({ businessAccountData }: Props) {
   const open = React.useMemo(() => computeOpenNow(businessAccountData, new Date()), [businessAccountData]);
 
   const handleSeeDetails = () => {
-    if (businessAccountData.businessType === "HOSTING") {
+    if (businessAccountData.businessType === "HOTEL") {
       navigate(`/hotel/${businessAccountData.id}`, { 
         state: { 
           account: businessAccountData
@@ -43,9 +43,11 @@ export default function PlaceCard({ businessAccountData }: Props) {
         overflow: "hidden",
         transition: "0.25s",
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
-        height: "100%", 
-        display: "flex", 
-        flexDirection: "column" 
+        height: "100%",
+        width: "100%",           // ⬅️ NUEVO: ocupa todo el ancho disponible
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,                 // ⬅️ NUEVO: garantiza que se estire dentro del Grid
       }}
     >
       <Box sx={{ position: "relative" }}>
@@ -82,7 +84,7 @@ export default function PlaceCard({ businessAccountData }: Props) {
         </Stack>
       </Box>
 
-      <CardContent sx={{ p: 2 }}>
+      <CardContent sx={{ p: 2, flexGrow: 1 }}>
         <Typography variant="h6" fontWeight={800} noWrap>{businessAccountData.name}</Typography>
         {businessAccountData.description ? (
           <Typography
