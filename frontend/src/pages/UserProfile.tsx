@@ -22,6 +22,7 @@ import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/AccountTypes'
 
 import { Stat } from '../components/profile/stats';
+import UserPlansTab from '../components/profile/userProfile.tsx/UserPlansTab';
 
 
 const userRoleChipColor = 'info';
@@ -68,7 +69,7 @@ export default function UserProfile() {
   // tabs dinámicos: agregamos "Publicaciones" sólo si es business
   const tabs = [
       { key: 'actividad', label: 'Actividad' },
-      { key: 'viajes', label: 'Viajes' },
+      { key: 'planes', label: 'Planes' },
       { key: 'fotos', label: 'Fotos' },
       { key: 'opiniones', label: 'Opiniones' },
     ];
@@ -178,7 +179,9 @@ export default function UserProfile() {
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
+            {currentTabKey === 'planes'        && 
+              <UserPlansTab accessToken={user.accessToken} />
+            }
             {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
             {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
           </Box>
