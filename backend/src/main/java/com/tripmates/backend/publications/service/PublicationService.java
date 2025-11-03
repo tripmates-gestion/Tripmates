@@ -162,7 +162,8 @@ public class PublicationService {
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
 	public PublicationResumeResponseDTO updatePublication(String publicationId,
-			PublicationRequestDTO publicationRequestDTO, List<MultipartFile> imageFiles, String email) {
+			com.tripmates.backend.publications.dto.PublicationUpdateRequestDTO publicationRequestDTO,
+			List<MultipartFile> imageFiles, String email) {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
@@ -196,22 +197,44 @@ public class PublicationService {
 		if (publicationRequestDTO.exceptionalClosingDays() != null)
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
-		if (imageFiles != null && !imageFiles.isEmpty()) {
-			if (publication.getImageUrls() != null) {
-				for (String oldUrl : publication.getImageUrls()) {
-					if (oldUrl != null && !oldUrl.isBlank())
-						storageService.deleteByUrl(oldUrl);
-				}
-			}
+		List<String> existing = publication.getImageUrls();
+		List<String> mergedPhotos = existing != null ? new ArrayList<>(existing) : new ArrayList<>();
 
-			ArrayList<String> urls = new ArrayList<>();
-			for (MultipartFile file : imageFiles) {
-				String url = storageService.uploadFile(file);
-				urls.add(url);
+		List<Integer> idxToDelete = new ArrayList<>();
+		List<Integer> deletePhotoIndexes = publicationRequestDTO.deletePhotoIndexes();
+		if (deletePhotoIndexes != null && !deletePhotoIndexes.isEmpty()) {
+			for (Integer i : deletePhotoIndexes) {
+				if (i != null && i >= 0 && existing != null && i < existing.size())
+					idxToDelete.add(i);
 			}
-
-			publication.setImageUrls(urls);
 		}
+		if (!idxToDelete.isEmpty()) {
+			List<String> urlsToDelete = new ArrayList<>();
+			for (Integer i : idxToDelete) {
+				if (existing != null && i >= 0 && i < existing.size())
+					urlsToDelete.add(existing.get(i));
+			}
+			idxToDelete.sort((a, b) -> Integer.compare(b, a));
+			for (Integer i : idxToDelete) {
+				if (i >= 0 && i < mergedPhotos.size())
+					mergedPhotos.remove((int) i);
+			}
+			for (String url : urlsToDelete) {
+				if (url != null)
+					storageService.deleteByUrl(url);
+			}
+		}
+
+		List<String> newUrls = new ArrayList<>();
+		if (imageFiles != null) {
+			for (MultipartFile file : imageFiles) {
+				if (file == null || file.isEmpty() || file.getSize() == 0)
+					continue;
+				newUrls.add(storageService.uploadFile(file));
+			}
+		}
+		mergedPhotos.addAll(newUrls);
+		publication.setImageUrls(mergedPhotos);
 
 		return PublicationResumeResponseDTO.fromPublication(publicationRepository.save(publication));
 	}
