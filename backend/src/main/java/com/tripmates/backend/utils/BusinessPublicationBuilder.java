@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
-import com.tripmates.backend.publications.dto.BusinessPublicationRequestDTO;
+import com.tripmates.backend.publications.dto.PublicationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.service.storage.StorageService;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 
-public class PublicationBuilder {
+public class BusinessPublicationBuilder {
 
-	private BusinessPublicationRequestDTO businessPublicationDTO;
+	private PublicationRequestDTO businessPublicationDTO;
 
 	private final List<String> imageUrls = new ArrayList<>();
 
@@ -20,30 +21,29 @@ public class PublicationBuilder {
 
 	private Account owner;
 
-	public PublicationBuilder(StorageService storageService) {
+	public BusinessPublicationBuilder(StorageService storageService) {
 		this.storageService = storageService;
 	}
 
-	public PublicationBuilder publicationDetails(BusinessPublicationRequestDTO businessPublicationDTO) {
+	public BusinessPublicationBuilder publicationDetails(PublicationRequestDTO businessPublicationDTO) {
 		this.businessPublicationDTO = businessPublicationDTO;
 		return this;
 	}
 
-	public PublicationBuilder imageFiles(List<MultipartFile> imageFiles) {
+	public BusinessPublicationBuilder imageFiles(List<MultipartFile> imageFiles) {
 		for (MultipartFile imageFile : imageFiles) {
 			if (imageFile != null && !imageFile.isEmpty()) {
 				String imageUrl = storageService.uploadFile(imageFile);
 				imageUrls.add(imageUrl);
 			}
 			else {
-				throw new BadRequestException(
-						"Se proporcionó un archivo de imagen vacío o una lista vacía de archivos de imagen.");
+				throw new BadRequestException(ValidationErrorMessage.IMAGE_FILES_BLANK);
 			}
 		}
 		return this;
 	}
 
-	public PublicationBuilder owner(Account owner) {
+	public BusinessPublicationBuilder owner(Account owner) {
 		this.owner = owner;
 		return this;
 	}
