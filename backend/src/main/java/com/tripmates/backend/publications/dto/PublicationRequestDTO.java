@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
-public record BusinessPublicationRequestDTO(
+public record PublicationRequestDTO(
 		@Schema(description = "Publication title") @NotBlank(
 				message = ValidationErrorMessage.EMPTY_OR_NULL_FIELD) String title,
 
