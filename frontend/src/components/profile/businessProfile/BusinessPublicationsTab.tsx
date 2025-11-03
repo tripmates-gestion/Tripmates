@@ -159,6 +159,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
         open={!!selected}
         onClose={() => setSelected(null)}
         publication={selected}
+        letReview={true}
       />
 
       {/* Snackbar: login requerido */}

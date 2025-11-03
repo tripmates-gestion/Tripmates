@@ -70,20 +70,6 @@ export type BusinessPublicationResponseDTO = {
   tags: string[]
 }
 
-{/* Deprecado */}
-export type UserResumeResponseDTO = {
-  email: string
-  description: string
-  avatarURL: string
-  businessType: BusinessType
-  openingDays: DayOfWeek[]
-  attentionSchedule: AttentionSchedule
-  exceptionalClosingDays: string[]
-  phoneNumber: string
-  location: string
-  imageUrls: string[]
-}
-
 {/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
 export type BusinessUpdateResponseDTO = {
   name: string;
@@ -100,7 +86,7 @@ export type BusinessUpdateResponseDTO = {
   profileImageUrls: string[];
 };
 
-// ---------------------- Tipos de formulario ----------------------
+// ---------------------- Tipos de formulario DE PUBLICACIÓN ----------------------
 export type FormState = {
   title: string;
   description: string;
@@ -127,46 +113,6 @@ export const initialFormState: FormState = {
 
 
 export type UserStats = { aportes: number; seguidores: number; siguiendo: number };
-export type UpdateProfileFormState = {
-  name: string;
-  description: string;
-  openningDays: DayOfWeek[];
-  openingHours: string;
-  location: string;
-  phone: string;
-  avatarUrl?: string;
-  avatar?: string;//uploading
-  uploadingPhotos: string[];
-};
-// ---------------------- Tipos con el contenido del perfil de negocio----------------------
-//Campos que no son seteados por la información de sesión (común) son null
-export type CompleteBusinessProfile = {
-  name: string;
-  description: string;
-  openningDays: DayOfWeek[];
-  // exceptionalClosingDays?:string[];
-  openingHours: AttentionSchedule | null;
-  location:string;
-  phone:string;
-  businessUrlPhotos: string[];//array de links a las fotos
-
-  avatarUrl?: string;
-  coverUrl?: string;
-  stats: UserStats;
-};
-
-
-
-export type BusinessUpdateRequestDTO={
-  name: string;
-  description: string;
-  phoneNumber:string;
-  location:string;
-  openingDays: DayOfWeek[];
-  attentionSchedule: AttentionSchedule;
-  exceptionalClosingDays?:string[];  
-}
-
 
 export const DEFAULT_OPENING_DAYS: DayOfWeek[] = [
   'MONDAY', 

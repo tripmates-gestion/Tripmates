@@ -6,13 +6,14 @@ import {
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
-import ReviewPlace from "../reviews/ReviewPlaceholder";
+import NewReviewPlace from "../reviews/ReviewPlaceholder";
 
 
 type Props = {
   open: boolean;
   onClose: () => void;
   publication: BusinessPublicationResponseDTO | null;
+  letReview: boolean;
 };
 
 const DAYS_ORDER: Array<"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"> =
@@ -49,7 +50,7 @@ function initials(name?: string) {
   return parts.map(p => p[0]?.toUpperCase() ?? "").join("") || "U";
 }
 
-export default function PublicationDetailDialog({ open, onClose, publication }: Props) {
+export default function PublicationDetailDialog({ open, onClose, publication, letReview }: Props) {
   // Hooks SIEMPRE al tope, sin returns condicionales antes
   const [index, setIndex] = useState(0);
   const touchStartX = useRef(0);
@@ -268,7 +269,7 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
                 <Typography variant="subtitle2" fontWeight={700} sx={{ mt: 1 }}>Tags</Typography>
                 <Stack direction="row" spacing={0.75} flexWrap="wrap">
                   {publication.tags.slice(0, 10).map((t) => (
-                    <Chip key={t} label={t} size="small" variant="outlined" />
+                    <Chip key={t} label={t} size="small" variant="outlined" color="warning" />
                   ))}
                 </Stack>
               </>
@@ -277,7 +278,10 @@ export default function PublicationDetailDialog({ open, onClose, publication }: 
         </Stack>
         
         <Divider sx={{ my: 2 }} />
-        <ReviewPlace/>
+        {letReview && <NewReviewPlace/>}
+        <Divider sx={{ my: 2 }} />
+        {/* TODO: Dado el id de la publicacion se debe obtener sus reviews MEDIANTE "GET publication/{idPublication}/reviews" */}
+        {/* <ReviewList/> */}
 
       </DialogContent>
     </Dialog>

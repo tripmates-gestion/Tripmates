@@ -290,31 +290,6 @@ export default function BusinessProfile() {
 
 
 
-
-function RestaurantMenuEditor({ menu }: { menu: any[] }) {
-  return (
-    <Stack spacing={1}>
-      <Typography variant="h6">Menú</Typography>
-      {menu.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          Aún no cargaste platos.
-        </Typography>
-      ) : (
-        menu.map((m, i) => (
-          <Stack key={i} direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2" sx={{ minWidth: 220 }}>
-              {m.foodName}
-            </Typography>
-            <Chip label={`$ ${m.price}`} />
-          </Stack>
-        ))
-      )}
-    </Stack>
-  );
-}
-
-
-
 function HotelRoomsEditor({ roomPacks }: { roomPacks: any[] }) {
   return (
     <Stack spacing={1}>
@@ -421,7 +396,7 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
             Aún no publicaste nada. Tus publicaciones aparecerán aquí.
           </Typography>
         ) : (
-          <PublicationGrid publications={items} onDelete={handleDeleteRequest} />
+          <PublicationGrid publications={items} onDelete={handleDeleteRequest} letReview={false} />
         )}
     
         <Dialog

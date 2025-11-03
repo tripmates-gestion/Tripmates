@@ -175,8 +175,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
           
           <MenuItem
             onClick={(e) => {
-              if (authContext.token) {
-                onAddToBoard(e, publication, authContext.token);
+              if (authContext.accessToken) {
+                onAddToBoard(e, publication, authContext.accessToken);
               } else {
                 setShowAuthError(true); // 🆕 muestra el toast
               }
@@ -234,7 +234,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         {!!publication.tags?.length && (
           <Box sx={{ mt: 1.25, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
             {publication.tags.slice(0, 5).map(t => (
-              <Chip key={t} label={t} size="small" variant="outlined" />
+              <Chip key={t} label={t} size="small" variant="outlined" color="warning" />
             ))}
           </Box>
         )}

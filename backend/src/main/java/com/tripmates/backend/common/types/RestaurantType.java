@@ -2,6 +2,6 @@ package com.tripmates.backend.common.types;
 
 public enum RestaurantType {
 
-	CAFE, VEGANO, VEGETARIANO, PERUANO, ARGENTO, ITALIANO
+	cafe, vegano, vegetariano, peruano, argento, italiano
 
 }
