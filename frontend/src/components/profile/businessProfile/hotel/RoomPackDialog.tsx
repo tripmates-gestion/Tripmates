@@ -13,7 +13,9 @@ import {
   Autocomplete,
   Chip,
   InputAdornment,
+  IconButton
 } from "@mui/material";
+import { DeleteOutline, Close } from "@mui/icons-material";
 import type {
   RoomPack,
   RoomPackPayload,
@@ -335,38 +337,69 @@ export function RoomPackEditorDialog({
           />
 
           {hasInitialPhotos && (
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                Fotos actuales (clic para marcar/eliminar)
+            <Stack spacing={1} sx={{ mt: 1 }}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Fotos actuales
               </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {initial!.photosURLs!.map((url, idx) => (
-                  <Box
-                    key={idx}
-                    component="img"
-                    src={url}
-                    alt={`Foto ${idx + 1}`}
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      objectFit: "cover",
-                      borderRadius: 1,
-                      cursor: "pointer",
-                      outline: deletePhotoIndexes.includes(idx)
-                        ? "3px solid #f44336"
-                        : "2px solid transparent",
-                    }}
-                    onClick={() => toggleDeletePhotoIndex(idx)}
-                  />
-                ))}
+              <Typography variant="caption" color="text.secondary">
+                Podés marcar para borrar. Las nuevas se agregan.
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))",
+                  gap: 1,
+                }}
+              >
+                {initial!.photosURLs!.map((src, i) => {
+                  const marked = deletePhotoIndexes.includes(i);
+                  return (
+                    <Box
+                      key={i}
+                      sx={{
+                        position: "relative",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                        boxShadow: 1,
+                        height: 90,
+                        backgroundImage: `url(${src})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        filter: marked
+                          ? "grayscale(1) brightness(0.7)"
+                          : "none",
+                        outline: marked ? "2px solid #ef5350" : "none",
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        onClick={() => toggleDeletePhotoIndex(i)}
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          bgcolor: "rgba(255,255,255,0.9)",
+                          "&:hover": { bgcolor: "rgba(255,255,255,1)" },
+                        }}
+                      >
+                        {marked ? (
+                          <Close fontSize="small" />
+                        ) : (
+                          <DeleteOutline fontSize="small" />
+                        )}
+                      </IconButton>
+                    </Box>
+                  );
+                })}
               </Box>
               {deletePhotoIndexes.length > 0 && (
                 <Typography variant="caption" color="error">
                   Se eliminarán {deletePhotoIndexes.length} foto(s) al guardar.
                 </Typography>
               )}
-            </Box>
+            </Stack>
           )}
+
         </Stack>
       </DialogContent>
 

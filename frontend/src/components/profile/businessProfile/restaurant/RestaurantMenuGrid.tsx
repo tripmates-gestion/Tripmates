@@ -1,11 +1,9 @@
 // src/components/restaurant/RestaurantMenuGrid.tsx
-import * as React from "react";
 import {
   Typography,
   Grid,
   Card,
   CardContent,
-  CardMedia,
   Chip,
   Box,
   Stack,
@@ -23,6 +21,8 @@ import type {
   MenuItem as MenuItemDTO,
   RestaurantType,
 } from "../../../../types/Restaurant";
+import ImageCarousel from "../../../ui/ImageCarousel";
+
 
 type Props = {
   menu: MenuItemDTO[];
@@ -60,7 +60,6 @@ export default function RestaurantMenuGrid({
   return (
     <Grid container spacing={3} sx={{ p: { xs: 1, sm: 2 } }}>
       {menu.map((item, idx) => {
-        const img = item.photosURLs?.[0];
 
         return (
           <Grid item xs={12} sm={6} md={4} key={`${item.foodName}-${idx}`}>
@@ -77,20 +76,27 @@ export default function RestaurantMenuGrid({
                 position: "relative",
               }}
             >
-              {/* Imagen */}
-              {img && (
-                <CardMedia
-                  component="img"
-                  height="180"
-                  image={img}
-                  alt={item.foodName}
+
+              {/* Carrusel de imágenes */}
+              {item.photosURLs && item.photosURLs.length > 0 && (
+                <Box
                   sx={{
-                    objectFit: "cover",
                     borderBottom: "1px solid",
                     borderColor,
                   }}
-                />
+                >
+                  <ImageCarousel
+                    images={item.photosURLs}
+                    alt={item.foodName}
+                    height={180}        // mismo alto que antes
+                    fit="cover"         // para que se recorte bien
+                    rounded={0}         // que no redondee, ya lo maneja la Card
+                    autoPlay            // si querés autoplay
+                    interval={4000}     // 4s entre cambios
+                  />
+                </Box>
               )}
+
 
               <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
                 {/* Título + ícono */}

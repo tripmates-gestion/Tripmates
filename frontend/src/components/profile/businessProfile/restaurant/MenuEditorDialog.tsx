@@ -243,6 +243,12 @@ export default function MenuEditorDialog({
                   );
                 })}
               </Box>
+
+              {deletePhotoIndexes.length > 0 && (
+                <Typography variant="caption" color="error">
+                  Se eliminarán {deletePhotoIndexes.length} foto(s) al guardar.
+                </Typography>
+              )}
             </Stack>
           )}
         </Stack>

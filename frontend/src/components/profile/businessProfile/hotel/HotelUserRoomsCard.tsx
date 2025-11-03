@@ -20,6 +20,7 @@ import {
   Delete,
 } from "@mui/icons-material";
 import type { RoomPack } from "../../../../types/Hotel";
+import ImageCarousel from "../../../ui/ImageCarousel";
 
 type Props = {
   roomPacks: RoomPack[];
@@ -61,16 +62,21 @@ export function HotelRoomsCard({ roomPacks, onEdit, onDelete }: Props) {
               boxShadow: 3,
             }}
           >
-            {/* Imagen principal */}
-            {pack.photosURLs && pack.photosURLs?.length > 0 && (
-              <CardMedia
-                component="img"
-                height="180"
-                image={pack.photosURLs[0]}
-                alt={pack.description}
-                sx={{ objectFit: "cover" }}
+            
+            {/* Carrusel de imágenes */}
+            {pack.photosURLs && pack.photosURLs.length > 0 && (
+              <ImageCarousel
+                images={pack.photosURLs}
+                alt={pack.description || "Foto de habitación"}
+                height={180}
+                fit="cover"
+                rounded={0}
+                autoPlay
+                interval={4000}
               />
             )}
+
+
 
             <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
               {/* Descripción */}
