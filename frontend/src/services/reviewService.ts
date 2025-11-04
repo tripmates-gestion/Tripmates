@@ -44,3 +44,15 @@ export async function getReviews(publicationId: string, accessToken: string) {
   });
   return response;
 }
+
+export async function getReviewsForUser(accessToken: string, userId: string) {
+  console.log("Fetching reviews for user: ", userId);
+  console.log("Using access token: ", accessToken);
+  const response = await apiFetch(ENDPOINTS.GET_USER_REVIEWS.replace("{id}", userId), {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
+  return response;
+}
