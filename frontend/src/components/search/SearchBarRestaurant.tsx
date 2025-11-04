@@ -22,8 +22,8 @@ import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
 import type { BusinessType } from "../../types/AccountTypes";
 import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
 import type { RestaurantType } from "../../types/Restaurant";
+import { MOCKEAR_RESULTADOS_DE_PERFILES } from "../../constants/UseMOCK";
 
-import { MOCKEAR_RESULTADOS } from "../../pages/Search";
 export const SearchBarRestaurant = ({
   onSearchResults,
 }: {
@@ -55,7 +55,7 @@ export const SearchBarRestaurant = ({
       const restaurants: BusinessPubAccountDataDTO[] = [];
 
       //INYECTO RESULTADOS CON MOCKITO (QUITAR)
-      if (MOCKEAR_RESULTADOS) {
+      if (MOCKEAR_RESULTADOS_DE_PERFILES) {
         restaurants.push(...aplyFiltersToMock(MOCK_BUSINESS_SEARCH_RESULTS, params));
       }
 

@@ -9,3 +9,23 @@ export type Review = {
     publicationId?: string;      // opcional (referencia)
     publicationTitle?: string;   // opcional (referencia visual)
   };
+
+
+export type ReviewListDTO = {
+    reviews: ReviewDTO[];
+};
+
+export type ReviewDTO = {
+  reviewId: string,
+  publicationReviewed: {
+    id: string,
+    title: string
+  },
+  title: string,
+  content: string,
+  rating?: number,
+  imageUrls: string[],
+  reviewerId: string,
+  reviewerUsername: string,
+  reviewerAvatarUrl: string
+}

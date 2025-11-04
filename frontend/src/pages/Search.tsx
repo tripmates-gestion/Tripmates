@@ -14,7 +14,6 @@ import PlaceGrid from "../components/search/ResultsPlaceGrid";
 import { MOCK_BUSINESS_SEARCH_RESULTS } from "../components/mocks/businessMocks";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
-export const MOCKEAR_RESULTADOS = true;
 // ---------------------------------------------------------
 // Componente: Selector y barra de búsqueda (Hotel / Restaurante)
 // ---------------------------------------------------------

@@ -20,6 +20,7 @@ import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/AccountTypes'
+import UserReviewsTab from '../components/profile/userProfile.tsx/UserReviewsTab';
 
 import { Stat } from '../components/profile/stats';
 
@@ -180,7 +181,7 @@ export default function UserProfile() {
             {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
             {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
             {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'opiniones'     && <UserReviewsTab />}
           </Box>
         </Card>
       </Box>

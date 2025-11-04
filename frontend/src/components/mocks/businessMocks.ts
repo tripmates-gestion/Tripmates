@@ -63,9 +63,9 @@ export function aplyFiltersToMock(businessMock: BusinessPubAccountDataDTO[], fil
 export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
   // ──────────────────────── HOTELES ────────────────────────
   {
-    id: "1",
+    id: "1001",
     avatarURL: DEFAULT_AVATAR_URL,
-    name: "Hotel Bariloche Lake",
+    name: "Hotel Bariloche Lake (mockito)",
     email: PRIVATE_HOTEL_MAIL_MOCK,
     role: BUSINESS_HOTEL_ROLE_MOCK,
     description: "Hotel de lujo en Bariloche, vení con tu familia para experimentar la naturaleza de ARgentina!",
@@ -110,9 +110,9 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
     ],
   },
   {
-    id: "2",
+    id: "1002",
     avatarURL: DEFAULT_AVATAR_URL,
-    name: "Central",
+    name: "Central (mockito)",
     email: PRIVATE_RESTAURANT_MAIL_MOCK,
     role: BUSINESS_RESTAURANT_ROLE_MOCK,
     description: "Hotel de lujo en Bariloche, vení con tu familia para experimentar la naturaleza de ARgentina!",
@@ -163,9 +163,9 @@ MOCK_BUSINESS_SEARCH_RESULTS.push(VEGAN_RESTAURANT);
 
 
 export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponseDTO[]> = new Map<string, BusinessPublicationResponseDTO[]>([
-  ["1", [
+  ["1001", [
     {
-      id: '1',
+      id: '1001',
       title: 'Oferta Especial de Verano',
       description: 'Disfruta de un 20% de descuento en todas nuestras habitaciones durante el mes de enero.',
       openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'],
@@ -181,14 +181,14 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
         'https://images.unsplash.com/photo-1620127332082-bae901d0ad76?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687',
         'https://images.unsplash.com/photo-1723709627483-5ba1666615cc?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687'
       ],
-      ownerId: 'owner1',
+      ownerId: '1001',
       ownerUsername: 'hotelboutique',
       ownerAvatarUrl: 'https://source.unsplash.com/random/200x200/?hotel',
       createdAt: '2024-11-01T10:00:00Z',
       tags: ['hotel', 'ofertas', 'verano']
     },
     {
-      id: '2',
+      id: '1002',
       title: 'Paquete Romántico',
       description: 'Incluye una noche en suite con jacuzzi, cena romántica y desayuno en la habitación.',
       openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'],
@@ -204,16 +204,16 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
         'https://plus.unsplash.com/premium_photo-1682800179949-5eec7a950b96?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170',
         'https://images.unsplash.com/photo-1560498965-2862eecaa1c8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=773'
       ],
-      ownerId: 'owner1',
+      ownerId: '1001',
       ownerUsername: 'hotelboutique',
       ownerAvatarUrl: 'https://source.unsplash.com/random/200x200/?hotel',
       createdAt: '2024-10-25T15:30:00Z',
       tags: ['romantico', 'paquete', 'especial']
     }
   ]], 
-  ["2", [
+  ["1002", [
     {
-      id: "3",
+      id: "1003",
       title: "Menú Degustación Peruano",
       description: "Vení a disfrutar de una experiencia gastronómica única con los platos más emblemáticos del Perú: ceviche, lomo saltado y ají de gallina, preparados por nuestro chef principal.",
       openingDays: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"],
@@ -228,14 +228,14 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
       imageUrls: [
         "https://images.unsplash.com/photo-1518963166898-a2590c9f64db?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170"
       ],
-      ownerId: "owner2",
+      ownerId: "1002",
       ownerUsername: "centralresto",
       ownerAvatarUrl: "https://source.unsplash.com/random/200x200/?chef",
       createdAt: "2024-11-01T18:30:00Z",
       tags: ["degustación", "gastronomía", "peruano", "chef"]
     },
     {
-      id: "4",
+      id: "1004",
       title: "Almuerzo Ejecutivo",
       description: "De lunes a viernes, ofrecemos un menú ejecutivo que incluye entrada, plato principal y bebida, ideal para quienes buscan un almuerzo rápido pero sabroso.",
       openingDays: ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
@@ -250,14 +250,14 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
       imageUrls: [
         "https://plus.unsplash.com/premium_photo-1661718977247-f8b63cedc622?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170"
       ],
-      ownerId: "owner2",
+      ownerId: "1002",
       ownerUsername: "centralresto",
       ownerAvatarUrl: "https://source.unsplash.com/random/200x200/?restaurant",
       createdAt: "2024-10-20T13:00:00Z",
       tags: ["almuerzo", "menu", "ejecutivo", "oferta"]
     },
     {
-      id: "5",
+      id: "1005",
       title: "Noche Criolla en Central",
       description: "Este sábado te esperamos con música criolla en vivo y una selección especial de platos típicos peruanos. Un ambiente cálido y auténtico para disfrutar con amigos.",
       openingDays: ["SATURDAY"],
@@ -272,7 +272,7 @@ export const MOCK_BUSINESS_PUBLICATIONS: Map<string, BusinessPublicationResponse
       imageUrls: [
         "https://plus.unsplash.com/premium_photo-1661317271682-57f7a1c0e533?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170"
       ],
-      ownerId: "owner2",
+      ownerId: "1002",
       ownerUsername: "centralresto",
       ownerAvatarUrl: "https://source.unsplash.com/random/200x200/?music,chef",
       createdAt: "2024-09-30T22:00:00Z",
