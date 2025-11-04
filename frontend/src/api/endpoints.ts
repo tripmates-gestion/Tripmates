@@ -9,7 +9,7 @@ export const ENDPOINTS = {
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',
     PATCH_BUSINESS_PUBLICATION: '/publications/',
     DELETE_BUSINESS_PUBLICATION: '/publications/',
-    SEARCH: '/users/search',
+    SEARCH: '/users/search/business',
     HOTEL_ROOMPACK: '/users/me/hosting',
     RESTAURANT_MENU: '/users/me/restaurant',
   };

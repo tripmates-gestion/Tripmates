@@ -36,41 +36,46 @@ export async function appendMenuItem(
 
 // UPDATE (PATCH multipart)
 export async function updateMenuItem(
-    token: string,
-    index: number,
-    data: Partial<Omit<MenuItem, 'photosURLs'>>,
-    files: File[] = [],
-    deletePhotoIndexes: number[] = []
-  ) {
-    const fd = new FormData();
-  
-    // Siempre mandamos 'data' (aunque sea vacío), muchos backends lo agradecen
-    const hasData = data && Object.keys(data).length > 0;
-    fd.append('data', hasData ? JSON.stringify(data) : '{}');
-  
-    files.forEach((f) => fd.append('files', f));
-  
-    // índices únicos y en descendente para evitar corrimientos
-    const delIdx = Array.from(new Set(deletePhotoIndexes))
-      .filter((n) => Number.isInteger(n) && n >= 0)
-      .sort((a, b) => b - a);
-  
-    const qs = new URLSearchParams();
-    delIdx.forEach((i) => qs.append('deletePhotoIndexes', String(i)));
-  
-    const urlBase = `${ENDPOINTS.RESTAURANT_MENU}/${index}`;  // .../restaurant/0
-    const url = delIdx.length ? `${urlBase}?${qs.toString()}` : urlBase;
-  
-    console.log('[PATCH menu]', { url, data, files: files.length, delIdx });
-  
-    const business = await apiFetch(url, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}` }, // NO setees Content-Type con FormData
-      body: fd,
-    });
-  
-    return business;
+  token: string,
+  index: number,
+  data: Partial<Omit<MenuItem, 'photosURLs'>>,
+  files: File[] = [],
+  deletePhotoIndexes: number[] = []
+) {
+  const fd = new FormData();
+
+  // Siempre mandamos 'data' (aunque sea vacío), muchos backends lo agradecen
+  const hasData = data && Object.keys(data).length > 0;
+  fd.append('data', hasData ? JSON.stringify(data) : '{}');
+
+  files.forEach((f) => fd.append('files', f));
+
+  // índices únicos y en descendente para evitar corrimientos
+  const delIdx = Array.from(new Set(deletePhotoIndexes))
+    .filter((n) => Number.isInteger(n) && n >= 0)
+    .sort((a, b) => b - a);
+
+  const qs = new URLSearchParams();
+  delIdx.forEach((i) => qs.append('deletePhotoIndexes', String(i)));
+
+  const urlBase = `${ENDPOINTS.RESTAURANT_MENU}/${index}`;  // .../restaurant/0
+  const url = delIdx.length ? `${urlBase}?${qs.toString()}` : urlBase;
+
+  console.log('[PATCH menu]', { url, data, files: files.length, delIdx });
+
+  // Print the FormData content
+  for (const [key, value] of fd.entries()) {
+    console.log(`FormData - ${key}:`, value);
   }
+
+  const business = await apiFetch(url, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` }, // NO setees Content-Type con FormData
+    body: fd,
+  });
+
+  return business;
+}
   
 
 

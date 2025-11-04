@@ -14,12 +14,12 @@ import PublicationGrid from '../components/publications/PublicationGrid';
 import type { BusinessPublicationResponseDTO } from '../types/business';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
-import HotelEditDialog from '../components/profile/businessProfile/HotelEditDialog';
-import RestaurantEditDialog from '../components/profile/businessProfile/RestaurantEditDialog';
-import { InfoRow } from '../components/profile/businessProfile/BusinessPubProfileLayout';
-import { PriceBadge, OpeningDaysRow} from "../components/profile/businessProfile/Utils";
-import RestaurantMenuTab from '../components/profile/businessProfile/restaurant/RestaurantMenuTab';
-import HotelRoomsTab from '../components/profile/businessProfile/hotel/HotelRoomsTab';
+import HotelEditDialog from '../components/profile/businessPublicProfile/HotelEditDialog';
+import RestaurantEditDialog from '../components/profile/businessPublicProfile/RestaurantEditDialog';
+import { InfoRow } from '../components/profile/businessPublicProfile/BusinessPubProfileLayout';
+import { PriceBadge, OpeningDaysRow} from "../components/profile/businessPublicProfile/Utils";
+import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
+import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
 
 
 const BASE_TABS = [
