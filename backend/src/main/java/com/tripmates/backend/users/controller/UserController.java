@@ -1,12 +1,13 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
-import com.tripmates.backend.users.dto.AccountSearchRequestDTO;
+import com.tripmates.backend.users.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,21 +17,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springdoc.core.annotations.ParameterObject;
 
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.service.parsing.ObjectParsingService;
-import com.tripmates.backend.users.dto.UserUpdateRequestDTO;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.Parameter;
-import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import org.springdoc.core.annotations.ParameterObject;
 
 @RestController
 @RequestMapping("/users")
@@ -97,11 +95,8 @@ public class UserController {
 					description = "Optional image files to append to the item's photos. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
 		com.tripmates.backend.users.dto.MenuItemUpdateDTO dto = (data != null && !data.isBlank())
-				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.MenuItemUpdateDTO.class)
-				: null;
-		MenuItem item = (dto != null)
-				? new MenuItem(null, dto.foodName(), dto.price(), dto.description())
-				: null;
+				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.MenuItemUpdateDTO.class) : null;
+		MenuItem item = (dto != null) ? new MenuItem(null, dto.foodName(), dto.price(), dto.description()) : null;
 		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
 		return ResponseEntity
 			.ok(userService.updateMenuItem(userDetails.getUsername(), index, item, files, deletePhotoIndexes));
@@ -161,12 +156,9 @@ public class UserController {
 					description = "Optional image files to append to the room pack photos. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
 		com.tripmates.backend.users.dto.RoomPackUpdateDTO dto = (data != null && !data.isBlank())
-				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.RoomPackUpdateDTO.class)
-				: null;
-		RoomPack pack = (dto != null)
-				? new RoomPack(dto.checkInDate(), dto.checkOutDate(), dto.numberOfGuests(), dto.services(), dto.price(),
-						dto.description(), null)
-				: null;
+				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.RoomPackUpdateDTO.class) : null;
+		RoomPack pack = (dto != null) ? new RoomPack(dto.checkInDate(), dto.checkOutDate(), dto.numberOfGuests(),
+				dto.services(), dto.price(), dto.description(), null) : null;
 		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
 		return ResponseEntity
 			.ok(userService.updateRoomPack(userDetails.getUsername(), index, pack, files, deletePhotoIndexes));
@@ -210,8 +202,12 @@ public class UserController {
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Update account profile", description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))) })
+			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateProfileMultipart(@AuthenticationPrincipal UserDetails userDetails,
 			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -220,6 +216,44 @@ public class UserController {
 		return ResponseEntity
 			.ok(userService.updateUser(userDetails.getUsername(), userUpdateRequestDTO, files, avatar));
 
+	}
+
+	@PostMapping("/plans/create")
+	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> createPlan(@RequestBody PlanCreationRequestDTO planCreationRequestDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/plans/list")
+	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
+		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
+
+		if (planResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(planResumeResponseDTOList);
 	}
 
 }

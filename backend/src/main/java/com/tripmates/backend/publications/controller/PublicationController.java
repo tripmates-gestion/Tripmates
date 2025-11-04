@@ -3,6 +3,7 @@ package com.tripmates.backend.publications.controller;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.publications.dto.*;
 import com.tripmates.backend.publications.service.PublicationService;
+import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -73,6 +75,28 @@ public class PublicationController {
 			.body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
 	}
 
+	@GetMapping(value = "/{publicationId}/review")
+	@Operation(summary = "Get publication's reviews")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Get publication's reviews successfully",
+			content = @Content(mediaType = "application/json",
+					schema = @Schema(implementation = ReviewsListDTO.class))) })
+	public ResponseEntity<?> getReviews(@PathVariable String publicationId) {
+		return ResponseEntity.ok(publicationService.getReviewsFromPublication(publicationId));
+	}
+
+	@GetMapping(value = "/users/{userId}/reviews", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Obtains all reviews from the given user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Reviews obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ReviewsListDTO.class)) }),
+
+			@ApiResponse(responseCode = "404", description = "User not found", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> getProfile(@PathVariable String userId) {
+		return ResponseEntity.ok().body(publicationService.getReviewsFromUser(userId));
+	}
+
 	@PatchMapping(value = "/{publicationId}", consumes = "multipart/form-data")
 	@Operation(summary = "Update a publication",
 			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_UPDATE_EXAMPLE)
@@ -89,9 +113,11 @@ public class PublicationController {
 			@ApiResponse(responseCode = "401", description = "Invalid credentials",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> update(@PathVariable String publicationId,
-			@Parameter(description = "Optional JSON string containing updated non-image fields (title, description, phoneNumber, email, location, openingDays, attentionSchedule, exceptionalClosingDays) and deletePhotoIndexes to remove specific photos by 0-based indexes. If omitted, only photos will be modified.") @RequestPart("data") String data,
-			@Parameter(description = "Optional image files to append to the publication photos. Supported formats: JPG, PNG, etc.") @RequestPart(value = "files", required = false) List<MultipartFile> files,
+	public ResponseEntity<?> update(@PathVariable String publicationId, @Parameter(
+			description = "Optional JSON string containing updated non-image fields (title, description, phoneNumber, email, location, openingDays, attentionSchedule, exceptionalClosingDays) and deletePhotoIndexes to remove specific photos by 0-based indexes. If omitted, only photos will be modified.") @RequestPart("data") String data,
+			@Parameter(
+					description = "Optional image files to append to the publication photos. Supported formats: JPG, PNG, etc.") @RequestPart(
+							value = "files", required = false) List<MultipartFile> files,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok()
 			.body(publicationService.updatePublication(publicationId,
