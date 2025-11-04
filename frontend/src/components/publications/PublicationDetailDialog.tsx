@@ -7,6 +7,7 @@ import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
+import { useAuth } from "../../hooks/useAuth";
 
 
 type Props = {
@@ -56,6 +57,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
+  const { user } = useAuth();
 
   // Derivados seguros aunque publication sea null
   const images = publication?.imageUrls?.length ? publication.imageUrls : ["/placeholder.jpg"];
@@ -278,7 +280,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         </Stack>
         
         <Divider sx={{ my: 2 }} />
-        {letReview && <NewReviewPlace publicationId={publication.id} />}
+        {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} />}
         <Divider sx={{ my: 2 }} />
         {/* TODO: Dado el id de la publicacion se debe obtener sus reviews MEDIANTE "GET publication/{idPublication}/reviews" */}
         {/* <ReviewList/> */}
