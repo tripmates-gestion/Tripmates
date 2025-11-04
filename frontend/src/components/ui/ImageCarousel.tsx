@@ -24,7 +24,7 @@ export default function ImageCarousel({
   interval = 4000,
   fit = "contain",
   aspectRatio,
-  rounded = 8,
+  rounded = 3,
 }: ImageCarouselProps) {
   const [index, setIndex] = React.useState(0);
   const max = images.length;

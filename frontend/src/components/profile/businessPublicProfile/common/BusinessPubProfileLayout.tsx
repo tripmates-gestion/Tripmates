@@ -76,7 +76,7 @@ export default function BusinessPubProfileLayout({
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
-                <Chip label={business.hotelType} color="primary" variant="outlined" />
+                <Chip label={business.hotelType} size="small" color="primary" variant="outlined" />
               </Stack>
             )}
             {business.businessType === "RESTAURANT" && business.restaurantType && (
@@ -84,7 +84,7 @@ export default function BusinessPubProfileLayout({
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
-                <Chip label={business.restaurantType} color="primary" variant="outlined" />
+                <Chip label={business.restaurantType} size="small" color="primary" variant="outlined" />
               </Stack>
             )}
           </Grid>
