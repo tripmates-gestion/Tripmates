@@ -134,7 +134,7 @@ public class DocumentationObjectsExamples {
 			```
 			""";
 
-    static public final String USER_PLAN_CREATION = """
+	static public final String USER_PLAN_CREATION = """
 			Creates a new user plan. Some fields are optional, some are not (more to arrive soon).
 
 			### Request Structure
@@ -143,13 +143,16 @@ public class DocumentationObjectsExamples {
 			### PlanCreationRequestDTO fields
 			- `name`: Plan's name
 			- `description`: Plan's description
+			- `publications`: Publications ID
 
 			### Example Request (for Restaurant Type)
 			```json
 			{
 			  "name": "My Best Holidays",
 			  "description": "Europe christmas holidays trip!",
+			  "publications": []
 			}
 			```
 			""";
+
 }

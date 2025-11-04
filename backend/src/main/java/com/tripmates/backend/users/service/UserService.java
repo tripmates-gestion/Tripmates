@@ -1,10 +1,14 @@
 package com.tripmates.backend.users.service;
 
+import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.auth.exception.UserNotFoundException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
+import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.entity.mongo.Publication;
+import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
@@ -27,6 +31,9 @@ public class UserService {
 
 	@Autowired
 	private AccountRespository accountRespository;
+
+	@Autowired
+	private PublicationRepository publicationRepository;
 
 	@Autowired
 	private StorageService storageService;
@@ -56,7 +63,7 @@ public class UserService {
 		Account account = accountRespository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-        for (AccountUpdateCommand command : commands)
+		for (AccountUpdateCommand command : commands)
 			account = command.apply(account);
 
 		updateAvatar(account, avatar);
@@ -114,22 +121,58 @@ public class UserService {
 		account.setProfileImageUrls(imageUrls);
 	}
 
-    /**
-     * Crea un nuevo plan de usuario según lo especificado.
-     *
-     * @param email email del usuario.
-     * @param planCreationRequestDTO DTO que contiene la información con la cual crear el plan.
-     * @return {@link PlanResumeResponseDTO}.
-     */
-    public PlanResumeResponseDTO createPlan(String email, PlanCreationRequestDTO planCreationRequestDTO) {
-        Account account = accountRespository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+	/**
+	 * Crea un nuevo plan de usuario según lo especificado.
+	 * @param email email del usuario.
+	 * @param planCreationRequestDTO DTO que contiene la información con la cual crear el
+	 * plan.
+	 */
+	public void createPlan(String email, PlanCreationRequestDTO planCreationRequestDTO) {
+		Account account = accountRespository.findByEmail(email)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-        PlanBuilder planBuilder = new PlanBuilder().planDetails(planCreationRequestDTO).owner(account);
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		PlanBuilder planBuilder = new PlanBuilder().planDetails(planCreationRequestDTO).owner(account);
+
+        if (account.getPlansList() == null)
+            account.setPlansList(new ArrayList<>());
 
         account.getPlansList().add(planBuilder.build());
-        accountRespository.save(account);
 
-        return PlanResumeResponseDTO.fromPlan(planBuilder.build());
-    }
+        accountRespository.save(account);
+	}
+
+	/**
+	 * Obtains all user's plans.
+	 * @param email user's email.
+	 * @return a list of {@link PlanResumeResponseDTO}.
+	 */
+	public List<PlanResumeResponseDTO> getPlans(String email) {
+		Account account = accountRespository.findByEmail(email)
+			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+        if (account.getPlansList() == null)
+            return new ArrayList<>();
+
+		List<PlanResumeResponseDTO> planResumeResponseDTOList = new ArrayList<>();
+
+		for (Plan plan : account.getPlansList()) {
+			List<PublicationResumeResponseDTO> publicationResumeResponseDTOList = new ArrayList<>();
+
+			for (String publicationId : plan.getPublicationsIdList())
+				publicationRepository.findById(publicationId)
+					.ifPresent(publication -> publicationResumeResponseDTOList
+						.add(PublicationResumeResponseDTO.fromPublication(publication)));
+
+			planResumeResponseDTOList.add(PlanResumeResponseDTO.fromPlan(plan, publicationResumeResponseDTOList));
+		}
+
+		return planResumeResponseDTOList;
+	}
+
 }

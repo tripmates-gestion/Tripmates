@@ -113,16 +113,42 @@ public class UserController {
 
 	}
 
-    @PostMapping("/create/plan")
-    @Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User's plan created successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = PlanResumeResponseDTO.class))),
-            @ApiResponse(responseCode = "404", description = "User not found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))) })
-    public ResponseEntity<?> createPlan(@RequestBody PlanCreationRequestDTO planCreationRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(userService.createPlan(userDetails.getUsername(), planCreationRequestDTO));
-    }
+	@PostMapping("/plans/create")
+	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> createPlan(@RequestBody PlanCreationRequestDTO planCreationRequestDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/plans/list")
+	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
+		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
+
+		if (planResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(planResumeResponseDTOList);
+	}
+
 }

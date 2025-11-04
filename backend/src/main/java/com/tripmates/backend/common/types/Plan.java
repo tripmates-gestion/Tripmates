@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import java.util.List;
+
 @Data
 @Setter
 @Getter
@@ -32,22 +34,28 @@ public class Plan {
 	private String description;
 
 	/**
+	 * Plan's publications ID list.
+	 */
+	private List<String> publicationsIdList;
+
+	/**
 	 * Plan's owner account ID.
 	 */
 	@NotNull
 	@Field(targetType = FieldType.STRING)
 	private String ownerId;
 
-    /**
-     * Retorna un plan según lo especificado.
-     *
-     * @param ownerId ID del usuario dueño del plan.
-     * @param name nombre del plan
-     * @param description descripción del plan.
-     */
-    public Plan(String ownerId, @NotNull String name, String description) {
-        this.ownerId = ownerId;
-        this.name = name;
-        this.description = description;
-    }
+	/**
+	 * Retorna un plan según lo especificado.
+	 * @param ownerId ID del usuario dueño del plan.
+	 * @param name nombre del plan
+	 * @param description descripción del plan.
+	 */
+	public Plan(String ownerId, @NotNull String name, String description, List<String> publicationsIdList) {
+		this.ownerId = ownerId;
+		this.name = name;
+		this.description = description;
+        this.publicationsIdList = publicationsIdList;
+	}
+
 }
