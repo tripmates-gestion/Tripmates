@@ -11,5 +11,6 @@ export const ENDPOINTS = {
     DELETE_BUSINESS_PUBLICATION: '/publications/',
     GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
+    POST_REVIEW: "/publications/{id}/review",
   };
   

@@ -278,7 +278,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         </Stack>
         
         <Divider sx={{ my: 2 }} />
-        {letReview && <NewReviewPlace/>}
+        {letReview && <NewReviewPlace publicationId={publication.id} />}
         <Divider sx={{ my: 2 }} />
         {/* TODO: Dado el id de la publicacion se debe obtener sus reviews MEDIANTE "GET publication/{idPublication}/reviews" */}
         {/* <ReviewList/> */}
