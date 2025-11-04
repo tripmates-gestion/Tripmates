@@ -21,6 +21,9 @@ import PublicationCard from "../../publications/PublicationCard";
 import PublicationDetailDialog from "../../publications/PublicationDetailDialog";
 import type { BusinessPublicationResponseDTO } from "../../../types/business";
 import { MOCK_BUSINESS_PUBLICATIONS } from "../../mocks/businessMocks";
+import { apiFetch } from "../../../api/client";
+import { ENDPOINTS } from "../../../api/endpoints";
+import { useAuth } from "../../../hooks/useAuth";
 
 // ──────────────────────────────────────────────
 // Mock: obtiene planes del usuario loggeado
@@ -31,11 +34,24 @@ async function fetchUserBoardsMock(): Promise<string[]> {
 }
 
 // ──────────────────────────────────────────────
-// Mock de publicaciones
+// Función para obtener publicaciones (corregida)
 // ──────────────────────────────────────────────
-function getBusinessPublications(id: string): BusinessPublicationResponseDTO[] {
-  return MOCK_BUSINESS_PUBLICATIONS.get(id) || [];
+async function getBusinessPublications(id: string, accessToken: string): Promise<BusinessPublicationResponseDTO[]> {
+  try {
+    console.log("Fetching business publications for ID:", id);
+    const publications = await apiFetch(
+      ENDPOINTS.GET_OTHER_BUSINESS_PUBLICATIONS + id, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` }
+      }
+    );
+    return publications || [];
+  } catch (error) {
+    console.error('Error fetching business publications:', error);
+    return [];
+  }
 }
+
 
 // ──────────────────────────────────────────────
 // Componente principal
@@ -44,6 +60,9 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
   const [showLoginMsg, setShowLoginMsg] = React.useState(false);
   const [showSuccessMsg, setShowSuccessMsg] = React.useState(false);
+  const {accessToken} = useAuth();
+  const [publications, setPublications] = React.useState<BusinessPublicationResponseDTO[]>([]); // ← Agregar estado
+  const [_, setLoading] = React.useState(true);
 
   const [plans, setPlans] = React.useState<string[]>([]);
   const [plansLoaded, setPlansLoaded] = React.useState(false);
@@ -55,7 +74,27 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   const [openCreateDialog, setOpenCreateDialog] = React.useState(false);
   const [newPlanName, setNewPlanName] = React.useState("");
 
-  const publications = getBusinessPublications(id);
+  React.useEffect(() => {
+    const loadPublications = async () => {
+      if (!id || !accessToken) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const pubs = await getBusinessPublications(id, accessToken);
+        setPublications(pubs);
+      } catch (error) {
+        console.error('Error loading publications:', error);
+        setPublications([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPublications();
+  }, [id, accessToken]);
 
   // ───────────────────────────────
   // Manejo de acción "Agregar a plan"

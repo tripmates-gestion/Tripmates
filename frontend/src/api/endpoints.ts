@@ -9,12 +9,12 @@ export const ENDPOINTS = {
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',
     PATCH_BUSINESS_PUBLICATION: '/publications/',
     DELETE_BUSINESS_PUBLICATION: '/publications/',
+    GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
-    GET_USER_PLANS: "users/plans",
-    POST_REVIEW: '/reviews/publication/{id}',
-    GET_PUBLICATION_REVIEWS: '/reviews/publication/{id}',
-    GET_USER_REVIEWS: '/reviews/user/{id}',
     CREATE_PLAN: "/users/plans/create",
     GET_PLANS: "/users/plans/list",
+    POST_REVIEW: "/publications/{id}/review",
+    GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
+    GET_USER_REVIEWS: "/publications/users/{id}/reviews",
   };
   
