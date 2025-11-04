@@ -6,8 +6,9 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Review } from "../../types/review";
-import { saveReview } from "../../services/reviewService";
+import { saveReview, getReviews } from "../../services/reviewService";
 import { useAuth } from "../../hooks/useAuth";
+import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";
 
 type Props = {
   /** Nombre a mostrar como autor (placeholder) */
@@ -27,17 +28,17 @@ export default function NewReviewPlace({
   publicationTitle,
   onCreate,
 }: Props) {
+  const { accessToken } = useAuth();
+
   const [items, setItems] = React.useState<Review[]>([]);
   const [open, setOpen] = React.useState(false);
 
-  // form state
   const [title, setTitle] = React.useState("");
   const [text, setText] = React.useState("");
   const [rating, setRating] = React.useState<number | null>(null);
   const [images, setImages] = React.useState<string[]>([]);
   const [touched, setTouched] = React.useState(false);
 
-  const {accessToken} = useAuth();
 
   const [snack, setSnack] = React.useState<{ open: boolean; msg: string; sev: "success" | "error" }>({
     open: false,
@@ -65,6 +66,26 @@ export default function NewReviewPlace({
     setOpen(true);
   };
 
+  React.useEffect(() => {
+    const loadReviews = async () => {
+      if (!publicationId || !accessToken) {
+        return;
+      }
+
+      try {
+        const reviewsDTO = await getReviews(publicationId, accessToken);
+        const reviews = mapReviewListDTOToReviews(reviewsDTO);
+        setItems(reviews || []);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        setItems([]);
+        setSnack({ open: true, msg: "Error al cargar las reseñas", sev: "error" });
+      } 
+    };
+
+    loadReviews();
+  }, [publicationId, accessToken]);
+
   const handleCreate = async () => {
     
     setTouched(true);
@@ -85,7 +106,7 @@ export default function NewReviewPlace({
     };
     try {
       console.log(publicationId)
-      saveReview(r, accessToken);
+      saveReview(r, accessToken, images);
     } catch (error) {
       setSnack({ open: true, msg: "Error al guardar la reseña. Intentá nuevamente.", sev: "error" });
       return;

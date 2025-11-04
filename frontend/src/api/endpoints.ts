@@ -12,5 +12,6 @@ export const ENDPOINTS = {
     GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
     POST_REVIEW: "/publications/{id}/review",
+    GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
   };
   
