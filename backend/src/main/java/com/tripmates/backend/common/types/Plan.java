@@ -55,7 +55,7 @@ public class Plan {
 		this.ownerId = ownerId;
 		this.name = name;
 		this.description = description;
-        this.publicationsIdList = publicationsIdList;
+		this.publicationsIdList = publicationsIdList;
 	}
 
 }

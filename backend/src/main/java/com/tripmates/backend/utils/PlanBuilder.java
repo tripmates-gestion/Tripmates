@@ -43,7 +43,8 @@ public class PlanBuilder {
 	 * @return {@link Plan}.
 	 */
 	public Plan build() {
-		return new Plan(owner.getId(), planCreationRequestDTO.name(), planCreationRequestDTO.description(), new ArrayList<>());
+		return new Plan(owner.getId(), planCreationRequestDTO.name(), planCreationRequestDTO.description(),
+				new ArrayList<>());
 	}
 
 }

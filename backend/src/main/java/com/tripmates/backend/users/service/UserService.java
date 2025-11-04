@@ -413,12 +413,12 @@ public class UserService {
 
 		PlanBuilder planBuilder = new PlanBuilder().planDetails(planCreationRequestDTO).owner(account);
 
-        if (account.getPlansList() == null)
-            account.setPlansList(new ArrayList<>());
+		if (account.getPlansList() == null)
+			account.setPlansList(new ArrayList<>());
 
-        account.getPlansList().add(planBuilder.build());
+		account.getPlansList().add(planBuilder.build());
 
-        accountRespository.save(account);
+		accountRespository.save(account);
 	}
 
 	/**
@@ -433,8 +433,8 @@ public class UserService {
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
-        if (account.getPlansList() == null)
-            return new ArrayList<>();
+		if (account.getPlansList() == null)
+			return new ArrayList<>();
 
 		List<PlanResumeResponseDTO> planResumeResponseDTOList = new ArrayList<>();
 
@@ -450,8 +450,8 @@ public class UserService {
 		}
 
 		return planResumeResponseDTOList;
-  }
-    
+	}
+
 	public AccountResumeResponseDTO updateRestaurantMenu(String email, List<MenuItem> menu, List<MultipartFile> files) {
 		Account account = accountRespository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));

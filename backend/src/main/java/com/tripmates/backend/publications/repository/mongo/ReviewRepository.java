@@ -5,5 +5,7 @@ import java.util.List;
 import com.tripmates.backend.common.types.Review;
 
 public interface ReviewRepository {
-    List<Review> findByOwnerId(String ownerId);
+
+	List<Review> findByOwnerId(String ownerId);
+
 }

@@ -61,13 +61,13 @@ public class AccountPlanTest {
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testCreatePlanAsUser() throws Exception {
 		Account fran = new Account();
-        fran.setName("Fran Infanti");
-        fran.setEmail("franInfanti@gmail.com.ar");
-        fran.setPassword("123456789");
-        fran.setRole(Role.USER);
-        accountRespository.save(fran);
+		fran.setName("Fran Infanti");
+		fran.setEmail("franInfanti@gmail.com.ar");
+		fran.setPassword("123456789");
+		fran.setRole(Role.USER);
+		accountRespository.save(fran);
 
-        String createPlanRequest = """
+		String createPlanRequest = """
 				{
 				  "name": "Fishing Trip 2026",
 				  "description": "Going fishing to Villa Paranacito next summer 2026"

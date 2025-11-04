@@ -214,7 +214,6 @@ public class DocumentationObjectsExamples {
 			```
 			""";
 
-        
 	static public final String USER_PLAN_CREATION = """
 			Creates a new user plan. Some fields are optional, some are not (more to arrive soon).
 
@@ -235,4 +234,5 @@ public class DocumentationObjectsExamples {
 			}
 			```
 			""";
+
 }
