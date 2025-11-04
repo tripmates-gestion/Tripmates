@@ -1,4 +1,3 @@
-// src/components/auth/AuthDialog.tsx
 import * as React from 'react';
 import {
   Dialog, DialogContent, DialogActions, Tabs, Tab,
@@ -20,31 +19,24 @@ type AuthDialogProps = {
 };
 
 export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDialogProps) {
+  // const theme = useTheme();
   const { login } = useAuth();
-  // Estado para manejar la pestaña seleccionada (login o register)
-  const [tab, setTab] = React.useState<AuthTab>('LOGIN');
 
-  // Estado para manejar la visibilidad de la contraseña en el formulario de login
+  const [tab, setTab] = React.useState<AuthTab>('LOGIN');
   const [showPass, setShowPass] = React.useState(false);
-  
-  // Estados para el formulario de login
   const [loginEmail, setLoginEmail] = React.useState('');
   const [loginPassword, setLoginPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
 
-  // Estado para manejar el tipo de cuenta en el formulario de registro
   const [accountType, setAccountType] = React.useState<AccountType>('USER');
-  // Estado para manejar el tipo de negocio en el formulario de registro
   const [businessType, setBusinessType] = React.useState<BusinessType | null>(null); 
-
-  // Estado para almacenar los datos del formulario de registro
   const [registerData, setRegisterData] = React.useState({
     name: '',
     email: '',
     password: '',
   });
-  
+
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleRegister = async () => {
@@ -52,15 +44,12 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
     setLoading(true);
     
     if (formRef.current && !formRef.current.checkValidity()) {
-      console.log('Formulario de registro inválido');
-      formRef.current.reportValidity(); // Muestra mensajes de validación nativos
+      formRef.current.reportValidity();
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Formulario completado automáticamente:', registerData);
-      
       await registerUserApi(
         registerData.name,
         registerData.email, 
@@ -69,17 +58,14 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
         accountType === 'BUSINESS' ? businessType : null
       );      
 
-      // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);
-      console.log("[AuthDialog] Login successful");
-      onRegisterSuccess();   // <-- Agregado para mostrar sugerencia de complementar perfil
+      onRegisterSuccess();
       onClose();
 
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Error al crear usuario, por favor intenta de nuevo';
+      const msg = error instanceof Error ? error.message : 'Error al crear usuario, por favor intenta de nuevo';
       console.error(error);
-      setError(errorMessage);
-
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -92,7 +78,6 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
     try {
       await login(loginEmail, loginPassword);
       onClose();
-      // Limpiar formulario
       setLoginEmail('');
       setLoginPassword('');
     } catch (error) {
@@ -103,29 +88,54 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
     }
   };
 
-  // Callback para recibir los datos del formulario de registro
   const handleRegisterDataChange = React.useCallback(
     (data: { name: string; email: string; password: string }) => {
       setRegisterData(data);
     },
     []
   );
-  const closeDialog=()=>{
+
+  const closeDialog = () => {
     onClose();
     setError(null);
-  }
-  // Textos de título y subtítulo según la pestaña seleccionada (login o register)
-  const title = tab === 'LOGIN' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle;
-  const subtitle = tab === 'LOGIN' ? AUTH_TEXT.loginSubtitle : AUTH_TEXT.registerSubtitle;
+  };
 
-  // Renderizado del diálogo de autenticación
+  // Colores de iluminación según el tipo de cuenta
+  const glowColor =
+    accountType === 'BUSINESS'
+      ? 'rgba(255, 140, 0, 0.45)' // naranja suave
+      : 'rgba(0, 150, 255, 0.35)'; // celeste suave
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogContent sx={{ textAlign: 'center', pt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3,
+          transition: 'box-shadow 0.4s ease-in-out',
+          boxShadow: `0 0 35px 8px ${tab === 'REGISTER' ? glowColor : 'rgba(0,0,0,0.25)'}`,
+        },
+      }}
+    >
+      <DialogContent
+        sx={{
+          textAlign: 'center',
+          pt: 4,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+          {tab === 'LOGIN' ? AUTH_TEXT.loginTitle : AUTH_TEXT.registerTitle}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {tab === 'LOGIN' ? AUTH_TEXT.loginSubtitle : AUTH_TEXT.registerSubtitle}
+        </Typography>
 
-        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>{title}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{subtitle}</Typography>
-        
         {error && (
           <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
             {error}
@@ -133,52 +143,50 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
         )}
 
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-          <Tab value='LOGIN' label="Iniciar sesión" />
-          <Tab value='REGISTER' label="Crear cuenta" />
+          <Tab value="LOGIN" label="Iniciar sesión" />
+          <Tab value="REGISTER" label="Crear cuenta" />
         </Tabs>
 
-        {/* Renderizado del formulario de login o registro según la pestaña seleccionada */}
         {tab === 'LOGIN' ? (
-            <LoginForm 
-              showPass={showPass} 
-              setShowPass={setShowPass}
-              email={loginEmail}
-              setEmail={setLoginEmail}
-              password={loginPassword}
-              setPassword={setLoginPassword}
-            />
-          ) : (
-            <RegisterForm
-              accountType={accountType}
-              setAccountType={setAccountType}
-              businessType={businessType}
-              setBusinessType={setBusinessType}
-              showPass={showPass}
-              setShowPass={setShowPass}
-              onDataChange={handleRegisterDataChange}
-              onSubmit={handleRegister}
-              formRef={formRef}
-            />
+          <LoginForm
+            showPass={showPass}
+            setShowPass={setShowPass}
+            email={loginEmail}
+            setEmail={setLoginEmail}
+            password={loginPassword}
+            setPassword={setLoginPassword}
+          />
+        ) : (
+          <RegisterForm
+            accountType={accountType}
+            setAccountType={setAccountType}
+            businessType={businessType}
+            setBusinessType={setBusinessType}
+            showPass={showPass}
+            setShowPass={setShowPass}
+            onDataChange={handleRegisterDataChange}
+            onSubmit={handleRegister}
+            formRef={formRef}
+          />
         )}
       </DialogContent>
 
-      {/* Panel de acciones del diálogo */}
       <DialogActions sx={{ px: 3, py: 2 }}>
-        {/* Botón para cerrar el diálogo */}
-        <Button onClick={closeDialog} variant="text">Cerrar</Button>
+        <Button onClick={closeDialog} variant="text">
+          Cerrar
+        </Button>
 
-        {/* Botón para enviar el formulario según la pestaña seleccionada */}
         {tab === 'LOGIN' ? (
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleLogin}
             disabled={loading || !loginEmail || !loginPassword}
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </Button>
         ) : (
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             type="submit"
             onClick={() => handleRegister()}
             disabled={loading}
