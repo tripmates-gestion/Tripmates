@@ -6,10 +6,11 @@ import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.PublicationRequestDTO;
 import com.tripmates.backend.publications.dto.ReviewCreationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
-import com.tripmates.backend.publications.dto.PublicationsReviewsDTO;
+import com.tripmates.backend.publications.dto.ReviewsListDTO;
 import com.tripmates.backend.publications.exception.PublicationNotFoundException;
 import com.tripmates.backend.publications.exception.PublicationOwnerException;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
+import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
@@ -40,6 +41,9 @@ public class PublicationService {
 
 	@Autowired
 	private PublicationRepository publicationRepository;
+
+	@Autowired
+	private ReviewRepository reviewRepository;
 
 	@Autowired
 	private AccountRespository accountRespository;
@@ -101,7 +105,7 @@ public class PublicationService {
 		return ReviewResponseDTO.fromEntities(review, publication, user);
 	}
 
-	public PublicationsReviewsDTO getReviews(String publicationId) {
+	public ReviewsListDTO getReviewsFromPublication(String publicationId) {
 		var publication = publicationRepository.findById(publicationId)
 				.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
 
@@ -111,7 +115,21 @@ public class PublicationService {
 					.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 			reviews.add(ReviewResponseDTO.fromEntities(review, publication, user));
 		}
-		return new PublicationsReviewsDTO(reviews);
+		return new ReviewsListDTO(reviews);
+	}
+
+	public ReviewsListDTO getReviewsFromUser(String userId) {
+		Account owner = accountRespository.findById(userId)
+				.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		List<ReviewResponseDTO> reviews = new ArrayList<>();
+
+		for (Review review : reviewRepository.findByOwnerId(userId)) {
+			var publication = publicationRepository.findById(review.getPublicationId())
+					.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
+			reviews.add(ReviewResponseDTO.fromEntities(review, publication, owner));
+		}
+		return new ReviewsListDTO(reviews);
 	}
 
 	/**
