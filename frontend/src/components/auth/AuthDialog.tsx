@@ -13,19 +13,13 @@ import { registerUserApi } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
 import type { BusinessType } from '../../types/AccountTypes';
 
-// Componente de diálogo de autenticación
-// Recibe una prop "open" para controlar si el diálogo está abierto o cerrado
-// Recibe una prop "onClose" para manejar el cierre del diálogo
-// Maneja dos pestañas: "login" y "register"
-// Muestra un formulario de login o registro según la pestaña seleccionada
-// Se encarga de manejar el estado de las pestañas y las propiedades de los formularios
-// Muestra un botón para cerrar el diálogo y un botón para enviar el formulario según la pestaña seleccionada
 type AuthDialogProps = { 
   open: boolean; 
   onClose: () => void;
+  onRegisterSuccess: () => void;
 };
 
-export default function AuthDialog({ open, onClose }: AuthDialogProps) {
+export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDialogProps) {
   const { login } = useAuth();
   // Estado para manejar la pestaña seleccionada (login o register)
   const [tab, setTab] = React.useState<AuthTab>('LOGIN');
@@ -78,6 +72,7 @@ export default function AuthDialog({ open, onClose }: AuthDialogProps) {
       // Después de crear la cuenta, hacer login automáticamente
       await login(registerData.email, registerData.password);
       console.log("[AuthDialog] Login successful");
+      onRegisterSuccess();   // <-- Agregado para mostrar sugerencia de complementar perfil
       onClose();
 
     } catch (error) {
