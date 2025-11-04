@@ -127,7 +127,20 @@ export default function HotelEditDialog({ open, onClose }: Props) {
         <CircularProgress />
       </Backdrop>
 
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth={false} // desactiva los límites predefinidos
+        fullWidth
+        PaperProps={{
+          sx: {
+            width: "60vw",   // ocupa el 80% del ancho de la ventana
+            maxWidth: "1200px",
+            height: "80vh",  // opcional: limita también la altura
+            borderRadius: 1.2,
+          },
+        }}
+      >
         <DialogTitle>Editar hotel</DialogTitle>
         <DialogContent dividers>
         <Stack spacing={3} sx={{ mt: 1 }}>
