@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { CurrentUser } from "./TypesUser";
+import type { CurrentUser } from "./PrivateUserProfilesTypes";
 
 
 

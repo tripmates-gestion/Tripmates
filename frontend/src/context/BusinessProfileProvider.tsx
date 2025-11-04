@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BusinessProfileContext } from "./BusinessProfileContext";
 import { useAuth } from "../hooks/useAuth";
 import { getCurrentUser } from "../services/userService";
-import type { BusinessUser } from "./TypesUser";
+import type { BusinessUser } from "./PrivateUserProfilesTypes";
 import {ACCOUNT_TYPES, BUSINESS_TYPES} from "../constants/Rol";
 
 // Helpers bien chicos para mapear en forma segura

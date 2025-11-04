@@ -19,7 +19,7 @@ export type BusinessCommonForm = {
 
 
 export const RESTAURANT_TYPE_OPTIONS: RestaurantType[] = [
-  'cafe', 'vegano', 'vegetariano', 'peruano', 'argento', 'italiano'
+  'Cafe', 'Vegano', 'Vegetariano', 'Peruano', 'Argento', 'Italiano'
 ];
 
 export type RestaurantForm = BusinessCommonForm & {
@@ -40,21 +40,21 @@ export const MAX_GALLERY_IMAGES = 10;
 
 // ====== ENUMS HOTEL ======
 export const HOTEL_TYPE_OPTIONS: HotelType[] = [
-  'hotel',
-  'hostel',
-  'departamento',
-  'cabaña',
-  'camping',
-  'LUJO',
+  'Hotel',
+  'Hostel',
+  'Departamento',
+  'Cabaña',
+  'Camping',
+  'Lujo',
 ];
 
 export const HOTEL_TYPE_LABEL: Record<HotelType, string> = {
-  hotel: 'Hotel',
-  hostel: 'Hostel',
-  departamento: 'Departamento',
-  cabaña: 'Cabaña',
-  camping: 'Camping',
-  LUJO: 'Lujo',
+  Hotel: 'Hotel',
+  Hostel: 'Hostel',
+  Departamento: 'Departamento',
+  Cabaña: 'Cabaña',
+  Camping: 'Camping',
+  Lujo: 'Lujo',
 };
 
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
-import { type CurrentUser } from "./TypesUser";
+import { type CurrentUser } from "./PrivateUserProfilesTypes";
 import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";

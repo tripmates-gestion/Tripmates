@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -34,21 +35,21 @@ export default function HotelEditDialog({ open, onClose }: Props) {
   const { accessToken, updateUser } = useAuth();
   const { business, refreshProfile } = useBusinessProfile();
 
-  if (!business || business.businessType !== BUSINESS_TYPES.hotel) return null;
 
   const initialExisting =
-    business.profileImageUrls?.length
-      ? business.profileImageUrls
+    business?.profileImageUrls?.length
+      ? business?.profileImageUrls
       : [];
 
   const initial: HotelForm = {
-    name: business.name ?? '',
-    description: business.description ?? '',
-    location: business.location ?? '',
-    phoneNumber: business.phoneNumber ?? '',
-    publicEmail: business.publicEmail ?? '',
+    name: business?.name ?? '',
+    description: business?.description ?? '',
+    location: business?.location ?? '',
+    phoneNumber: business?.phoneNumber ?? '',
+    publicEmail: business?.publicEmail ?? '',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hotelType: (business as any).hotelType as HotelType | undefined,
-    avatarUrl: business.avatarURL ?? '',
+    avatarUrl: business?.avatarURL ?? '',
     avatar: null,
     existingPhotos: initialExisting,
     uploadingPhotos: [],
@@ -60,6 +61,7 @@ export default function HotelEditDialog({ open, onClose }: Props) {
 
   const [errors, setErrors] = React.useState<HotelErrors>({})
 
+
   React.useEffect(() => {
     if (open) {
       setForm(initial)
@@ -67,6 +69,9 @@ export default function HotelEditDialog({ open, onClose }: Props) {
       setErrors({})
     }
   }, [open])
+
+  if (!business || business.businessType !== BUSINESS_TYPES.hotel) return null;
+
 
   const setField = <K extends keyof HotelForm>(k: K, v: HotelForm[K]) => {
     setForm(p => ({ ...p, [k]: v }))
