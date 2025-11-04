@@ -60,7 +60,8 @@ export default function NewReviewPlace({
     setOpen(true);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    
     setTouched(true);
     if (title.trim().length === 0 || text.trim().length === 0) {
       setSnack({ open: true, msg: "Completá todos los campos obligatorios.", sev: "error" });
@@ -77,7 +78,13 @@ export default function NewReviewPlace({
       publicationId,
       publicationTitle,
     };
-    setItems((prev) => [r, ...prev]);
+    try {
+      console.log(publicationId)
+    } catch (error) {
+      setSnack({ open: true, msg: "Error al guardar la reseña. Intentá nuevamente.", sev: "error" });
+      return;
+    }
+    setItems((prev: any[]) => [r, ...prev]);
     onCreate?.(r);
     setOpen(false);
     setSnack({ open: true, msg: "¡Reseña publicada!", sev: "success" });
