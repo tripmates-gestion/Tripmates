@@ -210,12 +210,8 @@ public class UserController {
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Update account profile", description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateProfileMultipart(@AuthenticationPrincipal UserDetails userDetails,
 			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files) {

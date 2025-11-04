@@ -5,18 +5,7 @@ import {
   CardMedia, Avatar, Chip, Grid, IconButton
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
-export type Review = {
-  id: string;
-  author: string;
-  title: string;               // nuevo campo obligatorio
-  rating?: number;
-  text: string;                // obligatorio
-  images: string[];            // opcional (máx. 6)
-  createdAt: string;
-  publicationId?: string;      // opcional (referencia)
-  publicationTitle?: string;   // opcional (referencia visual)
-};
+import type { Review } from "../../types/review";
 
 type Props = {
   /** Nombre a mostrar como autor (placeholder) */
@@ -29,7 +18,7 @@ type Props = {
   onCreate?: (r: Review) => void;
 };
 
-export default function ReviewPlace({
+export default function NewReviewPlace({
   currentUserName = "Vos",
   publicationId,
   publicationTitle,
@@ -99,9 +88,9 @@ export default function ReviewPlace({
       {/* Header + CTA */}
       {items.length === 0 ? (
         <Box sx={{ py: 2, textAlign: "center" }}>
-          <Typography variant="subtitle1" fontWeight={700}>Próximamente reseñas</Typography>
+          <Typography variant="subtitle1" fontWeight={700}>¿Haz estado en este lugar y probado este item?</Typography>
           <Typography variant="body2" color="text.secondary">
-            Aquí los usuarios podrán dejar comentarios y valoraciones.
+            Compartí tu experiencia con tus TripMates!
           </Typography>
           <Button variant="contained" sx={{ mt: 2 }} onClick={handleOpen}>
             Escribir reseña
