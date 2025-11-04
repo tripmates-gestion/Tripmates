@@ -2,7 +2,7 @@
 // components/places/PlaceGrid.tsx
 // ──────────────────────────────────────────────────────────────────────────────
 import { Grid } from "@mui/material";
-import PlaceCard from "./PlaceCard";
+import PlaceCard from "./ResultPlaceCard";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 
 type Props = {

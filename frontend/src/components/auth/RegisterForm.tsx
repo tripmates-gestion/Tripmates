@@ -116,10 +116,8 @@ export default function RegisterForm({
             >
               <MenuItem value="RESTAURANT">Restaurante</MenuItem>
               <MenuItem value="HOTEL">Alojamiento</MenuItem>
-              <MenuItem value="TOURISM">Turismo</MenuItem>
             </TextField>
           </>
-          
         )}
 
         <FormControlLabel control={<Checkbox defaultChecked />} label={

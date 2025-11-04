@@ -1,11 +1,11 @@
 package com.tripmates.backend.users;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.common.types.*;
+import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
-import com.tripmates.backend.users.entity.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRespository;
 import org.junit.jupiter.api.*;
@@ -16,12 +16,14 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.lang.Nullable;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.util.UriComponentsBuilder;
 // import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,7 +44,7 @@ public class SearchAccountTest {
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
-	private AccountRespository userRepository;
+	private AccountRespository accountRespository;
 
 	private String baseUrl() {
 		return "http://localhost:" + port;
@@ -62,39 +64,36 @@ public class SearchAccountTest {
 	public record PageResponse<T>(List<T> content, int totalPages, long totalElements, int number, int size) {
 	}
 
-	// @Test
-	// void searchWithFiltersButWithNoUsersShouldReturnNothing() {
-	// String url = baseUrl()
-	// + "/users/search?name=Fran Infanti&location=Buenos Aires, 3 de
-	// Febrero&role=BUSINESS&businessType=TOURISM";
+	private <T> ResponseEntity<T> post(String url, @Nullable String requestBody,
+			ParameterizedTypeReference<T> responseType) {
 
-	// ResponseEntity<PageResponse<UserResumeResponseDTO>> response =
-	// restTemplate.exchange(url, HttpMethod.GET, null,
-	// new ParameterizedTypeReference<>() {
-	// });
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
-	// assertEquals(HttpStatus.OK, response.getStatusCode());
+		HttpEntity<String> entity = requestBody != null ? new HttpEntity<>(requestBody, headers)
+				: new HttpEntity<>(headers);
 
-	// PageResponse<UserResumeResponseDTO> page = response.getBody();
-
-	// Assertions.assertNotNull(page);
-	// Assertions.assertEquals(0, page.totalElements());
-	// Assertions.assertTrue(page.content().isEmpty());
-	// }
+		return restTemplate.exchange(url, HttpMethod.POST, entity, responseType);
+	}
 
 	@Test
-	void searchWithNoFiltersShouldReturnAllUsers() {
-		Account fran = new Account();
-		fran.setEmail("fran@fi.uba.ar");
-		fran.setName("FranInfanti");
-		fran.setPassword("1234");
-		fran.setRole(Role.USER);
+	void testSearchWithFiltersButWithNoUsers() {
+	}
 
-		userRepository.saveAll(List.of(fran));
+	@Test
+	void testSearchWithNoneFilters() {
+		Account kansas = new Account();
+		kansas.setEmail("kansas@gmail.com.ar");
+		kansas.setName("Kansas");
+		kansas.setPassword("123456789");
+		kansas.setBusinessType(BusinessType.RESTAURANT);
+		kansas.setRole(Role.BUSINESS);
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate
-			.exchange(baseUrl() + "/users/search", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-			});
+		accountRespository.saveAll(List.of(kansas));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
+				"{}", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -102,93 +101,50 @@ public class SearchAccountTest {
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(fran)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(kansas)), page.content());
 	}
 
-	// @Test
-	// void filterByRoleUserReturnsOnlyUsersAccounts() {
-	// Account markZuckerberg = new Account();
-	// markZuckerberg.setEmail("mark@facebook.com");
-	// markZuckerberg.setName("Mark Zuckerberg");
-	// markZuckerberg.setPassword("1234678");
-	// markZuckerberg.setRole(Role.USER);
+	@Test
+	void testSearchWithBusinessTypeFilter() {
+		Account sigaLaVaca = new Account();
+		sigaLaVaca.setEmail("sigaLaVaca@gmail.com");
+		sigaLaVaca.setName("Siga La Vaca");
+		sigaLaVaca.setPassword("12345678");
+		sigaLaVaca.setBusinessType(BusinessType.RESTAURANT);
+		sigaLaVaca.setRole(Role.BUSINESS);
 
-	// Account louvre = new Account();
-	// louvre.setEmail("louvre@museum.com.fr");
-	// louvre.setName("Louvre Museum");
-	// louvre.setPassword("12345678");
-	// louvre.setBusinessType(BusinessType.TOURISM);
-	// louvre.setRole(Role.BUSINESS);
+		Account pfchang = new Account();
+		pfchang.setEmail("pfchangs@gmail.com.ar");
+		pfchang.setName("P.F Chang's");
+		pfchang.setPassword("123456789");
+		pfchang.setBusinessType(BusinessType.RESTAURANT);
+		pfchang.setRole(Role.BUSINESS);
 
-	// userRepository.saveAll(List.of(markZuckerberg, louvre));
+		Account rosmarie = new Account();
+		rosmarie.setEmail("rosmarie@gmail.com.ar");
+		rosmarie.setName("Rosmarie");
+		rosmarie.setPassword("12345678");
+		rosmarie.setBusinessType(BusinessType.HOTEL);
+		rosmarie.setRole(Role.BUSINESS);
 
-	// String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
-	// .queryParam("role", "USER")
-	// .toUriString();
+		accountRespository.saveAll(List.of(sigaLaVaca, pfchang, rosmarie));
 
-	// ResponseEntity<PageResponse<UserResumeResponseDTO>> response =
-	// restTemplate.exchange(url, HttpMethod.GET, null,
-	// new ParameterizedTypeReference<>() {
-	// });
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
+				"{ \"businessType\": \"RESTAURANT\" }", new ParameterizedTypeReference<>() {
+				});
 
-	// assertEquals(HttpStatus.OK, response.getStatusCode());
+		assertEquals(HttpStatus.OK, response.getStatusCode());
 
-	// PageResponse<UserResumeResponseDTO> page = response.getBody();
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 
-	// Assertions.assertNotNull(page);
-	// Assertions.assertEquals(1, page.totalElements());
-	// Assertions.assertEquals(List.of(UserResumeResponseDTO.fromUser(markZuckerberg)),
-	// page.content());
-	// }
-
-	// @Test
-	// void filterByBusinessTypeReturnsOnlyBusinessTypesBusinessAccounts() {
-	// Account sigaLaVaca = new Account();
-	// sigaLaVaca.setEmail("sigaLaVaca@gmail.com");
-	// sigaLaVaca.setName("Siga La Vaca");
-	// sigaLaVaca.setPassword("12345678");
-	// sigaLaVaca.setBusinessType(BusinessType.RESTAURANT);
-	// sigaLaVaca.setRole(Role.BUSINESS);
-
-	// Account kansas = new Account();
-	// kansas.setEmail("kansas@gmail.com.ar");
-	// kansas.setName("Kansas");
-	// kansas.setPassword("123456789");
-	// kansas.setBusinessType(BusinessType.RESTAURANT);
-	// kansas.setRole(Role.BUSINESS);
-
-	// Account rosmarie = new Account();
-	// rosmarie.setEmail("rosmarie@gmail.com.ar");
-	// rosmarie.setName("Rosmarie");
-	// rosmarie.setPassword("12345678");
-	// rosmarie.setBusinessType(BusinessType.HOSTING);
-	// rosmarie.setRole(Role.BUSINESS);
-
-	// userRepository.saveAll(List.of(sigaLaVaca, kansas, rosmarie));
-
-	// String url = UriComponentsBuilder.fromHttpUrl(baseUrl() + "/users/search")
-	// .queryParam("businessType", "RESTAURANT")
-	// .toUriString();
-
-	// ResponseEntity<PageResponse<UserResumeResponseDTO>> response =
-	// restTemplate.exchange(url, HttpMethod.GET, null,
-	// new ParameterizedTypeReference<>() {
-	// });
-
-	// assertEquals(HttpStatus.OK, response.getStatusCode());
-
-	// PageResponse<UserResumeResponseDTO> page = response.getBody();
-
-	// Assertions.assertNotNull(page);
-	// Assertions.assertEquals(2, page.totalElements());
-	// Assertions.assertEquals(
-	// List.of(UserResumeResponseDTO.fromUser(sigaLaVaca),
-	// UserResumeResponseDTO.fromUser(kansas)),
-	// page.content());
-	// }
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(2, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(sigaLaVaca),
+				AccountResumeResponseDTO.fromAccount(pfchang)), page.content());
+	}
 
 	@Test
-	void filterByLocationReturnsOnlyBusinessAccountsWithThatLocation() {
+	void testSearchWithLocationFilter() {
 		Account mcDonalds = new Account();
 		mcDonalds.setEmail("McDonalds@gmail.com.ar");
 		mcDonalds.setName("McDonald's");
@@ -205,13 +161,14 @@ public class SearchAccountTest {
 		burgerKing.setBusinessType(BusinessType.RESTAURANT);
 		burgerKing.setRole(Role.BUSINESS);
 
-		userRepository.saveAll(List.of(mcDonalds, burgerKing));
+		accountRespository.saveAll(List.of(mcDonalds, burgerKing));
 
-		String url = baseUrl() + "/users/search?location=Buenos Aires, Martinez Unicenter";
-
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null, new ParameterizedTypeReference<>() {
-				});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
+				    {
+				      "location": "Buenos Aires, Martinez Unicenter"
+				    }
+				""", new ParameterizedTypeReference<>() {
+		});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -223,7 +180,7 @@ public class SearchAccountTest {
 	}
 
 	@Test
-	void filterWithMultipleFiltersReturnsOnlyValidAccounts() {
+	void testSearchWithUsernameFilter() {
 		Account wendys = new Account();
 		wendys.setEmail("Wendys@gmail.com.us");
 		wendys.setName("Wendy's");
@@ -232,19 +189,22 @@ public class SearchAccountTest {
 		wendys.setBusinessType(BusinessType.RESTAURANT);
 		wendys.setRole(Role.BUSINESS);
 
-		Account alanTuring = new Account();
-		alanTuring.setEmail("alanTuring@gmail.com");
-		alanTuring.setName("Alan Turing");
-		alanTuring.setPassword("123456789");
-		alanTuring.setRole(Role.USER);
+		Account hutch = new Account();
+		hutch.setEmail("hutch@gmail.com.ar");
+		hutch.setName("Hutch");
+		hutch.setPassword("123456789");
+		hutch.setLocation("Ciudad Jardin, Lomas del Palomar");
+		hutch.setBusinessType(BusinessType.RESTAURANT);
+		hutch.setRole(Role.BUSINESS);
 
-		userRepository.saveAll(List.of(wendys, alanTuring));
+		accountRespository.saveAll(List.of(wendys, hutch));
 
-		String url = baseUrl() + "/users/search?role=BUSINESS&location=England, London&businessType=RESTAURANT";
-
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null, new ParameterizedTypeReference<>() {
-				});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
+				    {
+				      "username": "Hutch"
+				    }
+				""", new ParameterizedTypeReference<>() {
+		});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -252,32 +212,37 @@ public class SearchAccountTest {
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(wendys)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(hutch)), page.content());
 	}
 
 	@Test
-	void filterByUsernameReturnsOnlyValidAccounts() {
-		Account billGates = new Account();
-		billGates.setEmail("billGates@microsoft.com");
-		billGates.setName("TheBill's Gates");
-		billGates.setPassword("12345678");
-		billGates.setLocation("California, Los Angeles");
-		billGates.setRole(Role.USER);
+	void testSearchWithAveragePriceFilter() {
+		Account sheraton = new Account();
+		sheraton.setEmail("shearton@gmail.com");
+		sheraton.setName("Sheraton");
+		sheraton.setPassword("123456789");
+		sheraton.setLocation("Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires");
+		sheraton.setBusinessType(BusinessType.HOTEL);
+		sheraton.setAveragePrice(AveragePrice.$$$);
+		sheraton.setRole(Role.BUSINESS);
 
-		Account timCook = new Account();
-		timCook.setEmail("timCook@apple.com");
-		timCook.setName("Tim Cook");
-		timCook.setPassword("12345678");
-		timCook.setLocation("California, Los Angeles");
-		timCook.setRole(Role.USER);
+		Account graff = new Account();
+		graff.setEmail("graff@gmail.com.ar");
+		graff.setName("Graff");
+		graff.setPassword("123456789");
+		graff.setLocation("Ciudad Jardin, Lomas del Palomar");
+		graff.setBusinessType(BusinessType.RESTAURANT);
+		graff.setAveragePrice(AveragePrice.$);
+		graff.setRole(Role.BUSINESS);
 
-		userRepository.saveAll(List.of(timCook, billGates));
+		accountRespository.saveAll(List.of(sheraton, graff));
 
-		String url = baseUrl() + "/users/search?username=Tim Cook&location=California, Los Angeles";
-
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = restTemplate.exchange(url, HttpMethod.GET,
-				null, new ParameterizedTypeReference<>() {
-				});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
+				    {
+				      "averagePrice": "$$$"
+				    }
+				""", new ParameterizedTypeReference<>() {
+		});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -285,7 +250,78 @@ public class SearchAccountTest {
 
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(timCook)), page.content());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(sheraton)), page.content());
+	}
+
+	@Test
+	void testSearchWithAttentionScheduleFilter() {
+		Account ypfAtalaya = new Account();
+		ypfAtalaya.setEmail("ypfAtalaya@gmail.com.ar");
+		ypfAtalaya.setName("YPF Atalaya");
+		ypfAtalaya.setPassword("123456");
+		ypfAtalaya.setLocation("Ruta 9 Kilometro 84,5, Zárate Argentina");
+		ypfAtalaya.setBusinessType(BusinessType.RESTAURANT);
+		ypfAtalaya.setRole(Role.BUSINESS);
+		ypfAtalaya.setAttentionSchedule(new AttentionSchedule(LocalTime.of(8, 0), LocalTime.of(18, 0)));
+
+		accountRespository.saveAll(List.of(ypfAtalaya));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
+				    {
+				      "attentionSchedule": {
+				        "openingTime": "09:00",
+				        "closingTime": "18:00"
+				      }
+				    }
+				""", new ParameterizedTypeReference<>() {
+		});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(ypfAtalaya)), page.content());
+	}
+
+	@Test
+	void testSearchWithRoomPacksFilter() {
+		Account hiltonPilar = new Account();
+		hiltonPilar.setEmail("hiltonPilar@gmail.com");
+		hiltonPilar.setName("Hilton Pilar");
+		hiltonPilar.setPassword("123456");
+		hiltonPilar.setLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina");
+		hiltonPilar.setBusinessType(BusinessType.HOTEL);
+		hiltonPilar.setRole(Role.BUSINESS);
+		hiltonPilar.setRoomPacks(List.of(new RoomPack(LocalDate.of(2025, 11, 1), LocalDate.of(2025, 11, 5), 2,
+				List.of("WiFi", "Desayuno"), 306531f,
+				"Las habitaciones incluyen frigorífico y aire acondicionado, y es posible permanecer conectado, ya que hay wifi gratuito disponible, para que disfrutes de tu descanso con comodidad.",
+				null)));
+
+		accountRespository.saveAll(List.of(hiltonPilar));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
+				{
+				  "roomPacks": [
+				    {
+				      "numberOfGuests": 2,
+				      "price": 306531.0
+				    }
+				  ]
+				}
+				""", new ParameterizedTypeReference<>() {
+		});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(hiltonPilar)), page.content());
+	}
+
+	@Test
+	void testSearchWithMultipleFilters() {
 	}
 
 }

@@ -14,7 +14,7 @@ import java.util.Map;
 import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.users.entity.Role;
+import com.tripmates.backend.common.types.Role;
 
 @ActiveProfiles("test")
 public class TestHelper {
