@@ -9,6 +9,7 @@ import type { Review } from "../../types/review";
 import { saveReview, getReviews } from "../../services/reviewService";
 import { useAuth } from "../../hooks/useAuth";
 import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";
+import { ACCOUNT_TYPES } from "../../constants/Rol";
 
 type Props = {
   /** Nombre a mostrar como autor (placeholder) */
@@ -28,7 +29,7 @@ export default function NewReviewPlace({
   publicationTitle,
   onCreate,
 }: Props) {
-  const { accessToken } = useAuth();
+  const { user, accessToken } = useAuth();
 
   const [items, setItems] = React.useState<Review[]>([]);
   const [open, setOpen] = React.useState(false);
@@ -120,7 +121,7 @@ export default function NewReviewPlace({
   return (
     <Box sx={{ mt: 3 }}>
       {/* Header + CTA */}
-      {items.length === 0 ? (
+      {(items.length === 0 && user?.role === ACCOUNT_TYPES.user) ? (
         <Box sx={{ py: 2, textAlign: "center" }}>
           <Typography variant="subtitle1" fontWeight={700}>¿Haz estado en este lugar y probado este item?</Typography>
           <Typography variant="body2" color="text.secondary">
@@ -132,10 +133,10 @@ export default function NewReviewPlace({
         </Box>
       ) : (
         <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          {user?.role === ACCOUNT_TYPES.user && (<Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h6" fontWeight={800}>Reseñas</Typography>
             <Button variant="contained" onClick={handleOpen}>Escribir reseña</Button>
-          </Stack>
+          </Stack>)}
 
           {/* Lista */}
           <Grid container spacing={2}>
