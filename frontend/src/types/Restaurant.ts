@@ -1,4 +1,4 @@
-export type RestaurantType = 'Cafe'|'Vegano'|'Vegetariano'|'Peruano' |'Argento' | 'Italiano'
+export type RestaurantType = 'Cafe'|'Vegano'|'Vegetariano'|'Peruano' |'Argentino' | 'Italiano'
 
 export type MenuItem = {
     photosURLs: string[];

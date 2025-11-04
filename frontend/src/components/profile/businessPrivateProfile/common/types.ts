@@ -19,7 +19,7 @@ export type BusinessCommonForm = {
 
 
 export const RESTAURANT_TYPE_OPTIONS: RestaurantType[] = [
-  'Cafe', 'Vegano', 'Vegetariano', 'Peruano', 'Argento', 'Italiano'
+  'Cafe', 'Vegano', 'Vegetariano', 'Peruano', 'Argentino', 'Italiano'
 ];
 
 export type RestaurantForm = BusinessCommonForm & {
