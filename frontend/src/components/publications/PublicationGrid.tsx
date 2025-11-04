@@ -9,9 +9,10 @@ type Props = {
   publications: BusinessPublicationResponseDTO[]
   onEdit?: (p: BusinessPublicationResponseDTO) => void
   onDelete?: (id: string) => void
+  letReview: boolean
 }
 
-export default function PublicationGrid({ publications, onEdit, onDelete }: Props) {
+export default function PublicationGrid({ publications, onEdit, onDelete, letReview }: Props) {
   const [selected, setSelected] = useState<BusinessPublicationResponseDTO | null>(null)
 
   return (
@@ -33,6 +34,7 @@ export default function PublicationGrid({ publications, onEdit, onDelete }: Prop
         open={!!selected}
         onClose={() => setSelected(null)}
         publication={selected}
+        letReview={letReview}
       />
     </>
   )

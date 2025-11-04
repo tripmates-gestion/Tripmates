@@ -1,11 +1,11 @@
 package com.tripmates.backend.common.types;
 
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public record RoomPack(

@@ -5,9 +5,9 @@ import {
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import type { AccountType } from '../../types/auth';
+import type { AccountType } from '../../types/AccountTypes';
 import { ACCOUNT_TYPES, AUTH_TEXT } from '../../constants/Auth';
-import type { BusinessType } from '../../types/businessType';
+import type { BusinessType } from '../../types/AccountTypes';
 
 type Props = {
   accountType: AccountType;
@@ -18,7 +18,7 @@ type Props = {
   setShowPass: (v: boolean) => void;
   onDataChange: (data: { name: string; email: string; password: string; accountType: AccountType }) => void;
   onSubmit: (e: React.FormEvent) => void; // Nueva prop para manejar submit
-  formRef: React.RefObject<HTMLFormElement>; // Ref del formulario
+  formRef: React.RefObject<HTMLFormElement | null>; // Ref del formulario
 };
 
 export default function RegisterForm({
@@ -115,11 +115,9 @@ export default function RegisterForm({
               required
             >
               <MenuItem value="RESTAURANT">Restaurante</MenuItem>
-              <MenuItem value="HOSTING">Alojamiento</MenuItem>
-              <MenuItem value="TOURISM">Turismo</MenuItem>
+              <MenuItem value="HOTEL">Alojamiento</MenuItem>
             </TextField>
           </>
-          
         )}
 
         <FormControlLabel control={<Checkbox defaultChecked />} label={
