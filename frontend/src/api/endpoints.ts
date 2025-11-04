@@ -1,4 +1,3 @@
-//TODO: Verificar los endpoints
 export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
@@ -9,6 +8,8 @@ export const ENDPOINTS = {
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',
     PATCH_BUSINESS_PUBLICATION: '/publications/',
     DELETE_BUSINESS_PUBLICATION: '/publications/',
+    HOTEL_ROOMPACK: '/users/me/hosting',
+    RESTAURANT_MENU: '/users/me/restaurant',
     GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
     POST_REVIEW: "/publications/{id}/review",

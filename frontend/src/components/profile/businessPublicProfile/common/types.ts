@@ -1,3 +1,6 @@
+import type { RestaurantType } from '../../../../types/Restaurant';
+import type { HotelType, HotelService } from '../../../../types/Hotel';
+
 export type TimeLike = string | { hour?: number; minute?: number | null } | null | undefined;
 
 export type BusinessCommonForm = {
@@ -14,16 +17,16 @@ export type BusinessCommonForm = {
   uploadingPhotos: string[];
 };
 
-export type RestaurantTypes = 'CAFE'|'VEGANO'|'VEGETARIANO'|'PERUANO'|'ARGENTINO'|'ITALIANO';
-export const RESTAURANT_TYPE_OPTIONS: RestaurantTypes[] = [
-  'CAFE','VEGANO','VEGETARIANO','PERUANO','ARGENTINO','ITALIANO'
+
+export const RESTAURANT_TYPE_OPTIONS: RestaurantType[] = [
+  'cafe', 'vegano', 'vegetariano', 'peruano', 'argento', 'italiano'
 ];
 
 export type RestaurantForm = BusinessCommonForm & {
   openingDays: string[];
   openingHours: string;
   averagePrice?: '$'|'$$'|'$$$';
-  restaurantType?: RestaurantTypes;
+  restaurantType?: RestaurantType;
 };
 
 export type HotelForm = BusinessCommonForm & {
@@ -36,31 +39,64 @@ export const MAX_GALLERY_IMAGES = 10;
 
 
 // ====== ENUMS HOTEL ======
-export type HotelType =
-  | 'HOSTEL'
-  | 'BOUTIQUE'
-  | 'SPA'
-  | 'RESORT'
-  | 'BUSINESS'
-  | 'APART'
-  | 'BED_AND_BREAKFAST';
-
 export const HOTEL_TYPE_OPTIONS: HotelType[] = [
-  'HOSTEL',
-  'BOUTIQUE',
-  'SPA',
-  'RESORT',
-  'BUSINESS',
-  'APART',
-  'BED_AND_BREAKFAST',
+  'hotel',
+  'hostel',
+  'departamento',
+  'cabaña',
+  'camping',
+  'LUJO',
 ];
 
 export const HOTEL_TYPE_LABEL: Record<HotelType, string> = {
-  HOSTEL: 'Hostel',
-  BOUTIQUE: 'Boutique',
-  SPA: 'Spa',
-  RESORT: 'Resort',
-  BUSINESS: 'Business/Corporativo',
-  APART: 'Apart/Departamento',
-  BED_AND_BREAKFAST: 'Bed & Breakfast',
+  hotel: 'Hotel',
+  hostel: 'Hostel',
+  departamento: 'Departamento',
+  cabaña: 'Cabaña',
+  camping: 'Camping',
+  LUJO: 'Lujo',
+};
+
+
+// Opciones y labels “lindos” para mostrar
+export const HOTEL_SERVICE_OPTIONS: HotelService[] = [
+  "wifi",
+  "desayuno",
+  "piscina",
+  "gimnasio",
+  "estacionamiento",
+  "spa",
+  "restaurante",
+  "bar",
+  "aire_acondicionado",
+  "transporte_aeropuerto",
+  "admite_mascotas",
+  "servicio_habitaciones",
+  "lavanderia",
+  "centro_negocios",
+  "sala_reuniones",
+  "club_infantil",
+  "vista_al_mar",
+  "todo_incluido",
+];
+
+export const HOTEL_SERVICE_LABEL: Record<HotelService, string> = {
+  wifi: "Wi-Fi",
+  desayuno: "Desayuno",
+  piscina: "Piscina",
+  gimnasio: "Gimnasio",
+  estacionamiento: "Estacionamiento",
+  spa: "Spa",
+  restaurante: "Restaurante",
+  bar: "Bar",
+  aire_acondicionado: "Aire acondicionado",
+  transporte_aeropuerto: "Transporte al aeropuerto",
+  admite_mascotas: "Admite mascotas",
+  servicio_habitaciones: "Servicio a la habitación",
+  lavanderia: "Lavandería",
+  centro_negocios: "Centro de negocios",
+  sala_reuniones: "Sala de reuniones",
+  club_infantil: "Club infantil",
+  vista_al_mar: "Vista al mar",
+  todo_incluido: "Todo incluido",
 };

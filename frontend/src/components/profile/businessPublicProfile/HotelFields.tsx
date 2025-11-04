@@ -1,5 +1,6 @@
 import { Stack, TextField, MenuItem } from '@mui/material'
-import { HOTEL_TYPE_OPTIONS, HOTEL_TYPE_LABEL, type HotelType } from './common/types'
+import { HOTEL_TYPE_OPTIONS, HOTEL_TYPE_LABEL } from './common/types'
+import { type HotelType } from '../../../types/Hotel';
 
 export type HotelFieldsErrors = Partial<{ hotelType: string }>
 

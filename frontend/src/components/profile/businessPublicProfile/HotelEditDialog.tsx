@@ -12,7 +12,7 @@ import { updateBusinessUser } from '../../../services/userService';
 import BusinessCommonFields from './common/BusinessCommonFields';
 import GalleryManager from './common/GalleryManager';
 import HotelFields from './HotelFields';
-import { type HotelType } from './common/types';
+import { type HotelType } from '../../../types/Hotel';
 import { validateHotel, type HotelErrors } from '../../../hooks/useUpdateBusinessUserValidation';
 
 type Props = { open: boolean; onClose: () => void };

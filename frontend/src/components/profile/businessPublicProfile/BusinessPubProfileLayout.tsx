@@ -154,7 +154,7 @@ export default function BusinessPubProfileLayout({
 /* ────────────────────────────────
  * Subcomponente InfoRow
  * ──────────────────────────────── */
-function InfoRow({
+export function InfoRow({
   label,
   value,
   icon,

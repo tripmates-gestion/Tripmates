@@ -1,131 +1,207 @@
-// src/components/hotel/HotelRoomsTab.tsx
+// src/components/hotel/HotelRoomsEditor.tsx
+import { useState } from "react";
 import {
   Box,
-  Typography,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
-  Divider,
+  Button,
   Stack,
+  Typography,
+  Backdrop,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
+import type { RoomPack } from "../../../../types/Hotel";
 import {
-  CalendarToday,
-  People,
-  AttachMoney,
-} from "@mui/icons-material";
-import type { RoomPackDTO } from "../../../../types/Hotel";
+  appendRoomPack,
+  updateRoomPack,
+  deleteRoomPack,
+} from "../../../../services/hotelRoomPacks";
+import { RoomPackEditorDialog } from "./RoomPackDialog";
+import { HotelRoomsCard } from "./HotelUserRoomsCard";
 
-export function HotelRoomsTab({ roomPacks }: { roomPacks: RoomPackDTO[] }) {
-  if (!roomPacks || roomPacks.length === 0)
-    return (
-      <Box sx={{ textAlign: "center", py: 6, color: "text.secondary" }}>
-        <Typography variant="h6" fontWeight={600}>
-          No hay habitaciones disponibles.
-        </Typography>
-        <Typography variant="body2">
-          Actualmente no se encontraron opciones de alojamiento para las fechas seleccionadas.
-        </Typography>
-      </Box>
-    );
+type Props = {
+  accessToken: string;
+  roomPacks: RoomPack[];
+  onBusinessReload?: () => void | Promise<void>;
+};
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("es-AR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+export default function HotelRoomsTab({
+  accessToken,
+  roomPacks,
+  onBusinessReload,
+}: Props) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // diálogo de confirmación de borrado
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDeleteIndex, setToDeleteIndex] = useState<number | null>(null);
+
+  const openCreate = () => {
+    setEditingIndex(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (idx: number) => {
+    setEditingIndex(idx);
+    setDialogOpen(true);
+  };
+
+  // antes borrabas directo; ahora solo abre el diálogo
+  const handleDeleteRequest = (idx: number) => {
+    if (loading) return;
+    setToDeleteIndex(idx);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmClose = () => {
+    if (loading) return;
+    setConfirmOpen(false);
+    setToDeleteIndex(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (toDeleteIndex == null) return;
+    try {
+      setLoading(true);
+      await deleteRoomPack(accessToken, toDeleteIndex);
+      if (onBusinessReload) await onBusinessReload();
+    } finally {
+      setLoading(false);
+      setConfirmOpen(false);
+      setToDeleteIndex(null);
+    }
+  };
+
+  const handleSubmit = async (payload: {
+    data: RoomPack;
+    files: File[];
+    deletePhotoIndexes?: number[];
+  }) => {
+    try {
+      setLoading(true);
+      if (editingIndex === null) {
+        await appendRoomPack(accessToken, payload.data, payload.files);
+      } else {
+        await updateRoomPack(
+          accessToken,
+          editingIndex,
+          payload.data,
+          payload.files,
+          payload.deletePhotoIndexes ?? []
+        );
+      }
+      if (onBusinessReload) await onBusinessReload();
+      setDialogOpen(false);
+      setEditingIndex(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initialForDialog =
+    editingIndex === null ? null : roomPacks[editingIndex] ?? null;
+
+  const toDeletePack =
+    toDeleteIndex == null ? undefined : roomPacks[toDeleteIndex];
 
   return (
-    <Grid container spacing={3} sx={{ p: { xs: 1, sm: 2 } }}>
-      {roomPacks.map((pack, idx) => (
-        <Grid item xs={12} sm={6} md={4} key={idx}>
-          <Card
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              borderRadius: 3,
-              overflow: "hidden",
-              boxShadow: 3
-            }}
-          >
-            {/* Imagen principal */}
-            {pack.photosURLs?.length > 0 && (
-              <CardMedia
-                component="img"
-                height="180"
-                image={pack.photosURLs[0]}
-                alt={pack.description}
-                sx={{ objectFit: "cover" }}
-              />
+    <Box sx={{ p: { xs: 1, sm: 2 }, position: "relative" }}>
+      {/* Loading global */}
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (t) => t.zIndex.drawer + 1 }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Box>
+          <Typography variant="h6" fontWeight={700}>
+            Paquetes de habitaciones
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Configurá las fechas, capacidad, servicios, precio y fotos de tus
+            paquetes de alojamiento.
+          </Typography>
+        </Box>
+
+        <Button variant="contained" onClick={openCreate} disabled={loading}>
+          Agregar paquete
+        </Button>
+      </Stack>
+
+      {/* Grid de tarjetas, con acciones de editar/borrar */}
+      <HotelRoomsCard
+        roomPacks={roomPacks}
+        onEdit={openEdit}
+        onDelete={handleDeleteRequest}  // 👈 ahora abre el diálogo
+      />
+
+      <RoomPackEditorDialog
+        open={dialogOpen}
+        onClose={() => !loading && setDialogOpen(false)}
+        onSubmit={handleSubmit}
+        initial={initialForDialog ?? undefined}
+        title={
+          editingIndex === null
+            ? "Nuevo paquete de habitación"
+            : "Editar paquete de habitación"
+        }
+      />
+
+      {/* Diálogo de confirmación de borrado */}
+      <Dialog
+        open={confirmOpen}
+        onClose={handleConfirmClose}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar paquete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {toDeletePack ? (
+              <>
+                ¿Seguro que querés eliminar el paquete{" "}
+                <strong>{toDeletePack.description ?? "sin descripción"}</strong>
+                ? Esta acción no se puede deshacer.
+              </>
+            ) : (
+              "¿Seguro que querés eliminar este paquete? Esta acción no se puede deshacer."
             )}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmClose} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={loading}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-            <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
-              {/* Descripción */}
-              <Typography variant="h6" fontWeight={700} gutterBottom>
-                {pack.description}
-              </Typography>
+      {/* Loading global */}
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (t) => t.zIndex.modal + 1 }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
 
-              {/* Fechas y huéspedes */}
-              <Stack spacing={0.6} mb={1.5}>
-                <Stack direction="row" spacing={1.2} alignItems="center">
-                  <CalendarToday fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    {formatDate(pack.checkInDate)} — {formatDate(pack.checkOutDate)}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={1.2} alignItems="center">
-                  <People fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    {pack.numberOfGuests} huésped{pack.numberOfGuests > 1 ? "es" : ""}
-                  </Typography>
-                </Stack>
-              </Stack>
-
-              <Divider sx={{ my: 1.5 }} />
-
-              {/* Servicios */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-                {pack.services.slice(0, 6).map((s, i) => (
-                  <Chip
-                    key={i}
-                    label={s}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      fontWeight: 500,
-                      borderRadius: "8px",
-                    }}
-                  />
-                ))}
-              </Box>
-            </CardContent>
-
-            {/* Precio */}
-            <Box
-              sx={{
-                px: 2.5,
-                pb: 2,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <AttachMoney color="success" fontSize="medium" />
-                <Typography variant="h6" fontWeight={700}>
-                  {pack.price.toLocaleString("es-AR")}
-                </Typography>
-              </Stack>
-              <Typography variant="body2" color="text.secondary">
-                por noche
-              </Typography>
-            </Box>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+    </Box>
   );
 }
