@@ -65,7 +65,7 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
   {
     id: "1001",
     avatarURL: DEFAULT_AVATAR_URL,
-    name: "Hotel Bariloche Lake",
+    name: "Hotel Bariloche Lake (mockito)",
     email: PRIVATE_HOTEL_MAIL_MOCK,
     role: BUSINESS_HOTEL_ROLE_MOCK,
     description: "Hotel de lujo en Bariloche, vení con tu familia para experimentar la naturaleza de ARgentina!",
@@ -112,7 +112,7 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
   {
     id: "1002",
     avatarURL: DEFAULT_AVATAR_URL,
-    name: "Central",
+    name: "Central (mockito)",
     email: PRIVATE_RESTAURANT_MAIL_MOCK,
     role: BUSINESS_RESTAURANT_ROLE_MOCK,
     description: "Hotel de lujo en Bariloche, vení con tu familia para experimentar la naturaleza de ARgentina!",

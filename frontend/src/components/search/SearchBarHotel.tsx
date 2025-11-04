@@ -27,7 +27,7 @@ import type { HotelType } from "../../types/Hotel";
 //TODO cambiar su ubicación
 import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
 import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
-import { MOCKEAR_RESULTADOS } from "../../pages/Search";
+import { MOCKEAR_RESULTADOS_DE_PERFILES } from "../../constants/UseMOCK";
 
 export const SearchBarHotel = ({
   onSearchResults,
@@ -90,7 +90,7 @@ export const SearchBarHotel = ({
       const hotels: BusinessPubAccountDataDTO[] = [];
       
       //INYECTO RESULTADOS CON MOCKITO (QUITAR)
-      if (MOCKEAR_RESULTADOS) {
+      if (MOCKEAR_RESULTADOS_DE_PERFILES) {
         hotels.push(...aplyFiltersToMock(MOCK_BUSINESS_SEARCH_RESULTS, params));
       }
       if (response != null) {

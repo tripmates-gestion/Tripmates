@@ -37,7 +37,7 @@ const BUSINESS_PHONENUMBER_MOCK = "11-6543-9876";
 export const VEGAN_RESTAURANT: BusinessPubAccountDataDTO = {
   id: "1003",
   avatarURL: VEGAN_RESTAURANT_AVATAR,
-  name: "Verde Vida Café",
+  name: "Verde Vida Café (mockito)",
   email: PRIVATE_VEGAN_MAIL_MOCK,
   role: BUSINESS_VEGAN_ROLE_MOCK,
   description:

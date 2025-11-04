@@ -20,38 +20,17 @@ import {
 import PublicationCard from "../../publications/PublicationCard";
 import PublicationDetailDialog from "../../publications/PublicationDetailDialog";
 import type { BusinessPublicationResponseDTO } from "../../../types/business";
-import { MOCK_BUSINESS_PUBLICATIONS } from "../../mocks/businessMocks";
-import { apiFetch } from "../../../api/client";
-import { ENDPOINTS } from "../../../api/endpoints";
+
 import { useAuth } from "../../../hooks/useAuth";
+import { getBusinessPublicationsPublic } from "../../../services/businessPublications";
 
 // ──────────────────────────────────────────────
 // Mock: obtiene planes del usuario loggeado
 // ──────────────────────────────────────────────
 async function fetchUserBoardsMock(): Promise<string[]> {
   await new Promise((res) => setTimeout(res, 300));
-  return ["Favoritos", "Restaurantes para visitar", "Hoteles soñados"];
+  return ["Favoritos", "Imperdibles Perú 2025", "Verano 2026"];
 }
-
-// ──────────────────────────────────────────────
-// Función para obtener publicaciones (corregida)
-// ──────────────────────────────────────────────
-async function getBusinessPublications(id: string, accessToken: string): Promise<BusinessPublicationResponseDTO[]> {
-  try {
-    console.log("Fetching business publications for ID:", id);
-    const publications = await apiFetch(
-      ENDPOINTS.GET_OTHER_BUSINESS_PUBLICATIONS + id, {
-        method: 'GET',
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` }
-      }
-    );
-    return publications || [];
-  } catch (error) {
-    console.error('Error fetching business publications:', error);
-    return [];
-  }
-}
-
 
 // ──────────────────────────────────────────────
 // Componente principal
@@ -83,7 +62,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
 
       setLoading(true);
       try {
-        const pubs = await getBusinessPublications(id, accessToken);
+        const pubs = await getBusinessPublicationsPublic(id, accessToken);
         setPublications(pubs);
       } catch (error) {
         console.error('Error loading publications:', error);
