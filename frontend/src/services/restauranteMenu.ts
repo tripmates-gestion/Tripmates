@@ -34,49 +34,58 @@ export async function appendMenuItem(
     return extractMenu(business);
 }
 
+// services/restauranteMenu.ts
+
 // UPDATE (PATCH multipart)
 export async function updateMenuItem(
   token: string,
   index: number,
-  data: Partial<Omit<MenuItem, 'photosURLs'>>,
+  data: Partial<Omit<MenuItem, "photosURLs">> = {},
   files: File[] = [],
   deletePhotoIndexes: number[] = []
 ) {
   const fd = new FormData();
 
-  // Siempre mandamos 'data' (aunque sea vacío), muchos backends lo agradecen
-  const hasData = data && Object.keys(data).length > 0;
-  fd.append('data', hasData ? JSON.stringify(data) : '{}');
-
-  files.forEach((f) => fd.append('files', f));
-
-  // índices únicos y en descendente para evitar corrimientos
+  // normalizamos índices
   const delIdx = Array.from(new Set(deletePhotoIndexes))
-    .filter((n) => Number.isInteger(n) && n >= 0)
-    .sort((a, b) => b - a);
+    .filter((n) => Number.isInteger(n) && n >= 0);
 
-  const qs = new URLSearchParams();
-  delIdx.forEach((i) => qs.append('deletePhotoIndexes', String(i)));
+  // armamos el payload que va en "data"
+  const merged: any = { ...data };
+  if (delIdx.length > 0) {
+    merged.deletePhotoIndexes = delIdx;
+  }
 
-  const urlBase = `${ENDPOINTS.RESTAURANT_MENU}/${index}`;  // .../restaurant/0
-  const url = delIdx.length ? `${urlBase}?${qs.toString()}` : urlBase;
+  // solo mandamos "data" si hay algo que enviar
+  if (Object.keys(merged).length > 0) {
+    fd.append("data", JSON.stringify(merged));
+  }
 
-  console.log('[PATCH menu]', { url, data, files: files.length, delIdx });
+  // nuevas imágenes (si hay)
+  files.forEach((f) => fd.append("files", f));
 
-  // Print the FormData content
+  const url = `${ENDPOINTS.RESTAURANT_MENU}/${index}`; // p.ej. /users/me/restaurant/0
+
+  console.log("[PATCH menu]", {
+    url,
+    merged,
+    files: files.length,
+  });
+
+  // (opcional) debug de FormData
   for (const [key, value] of fd.entries()) {
     console.log(`FormData - ${key}:`, value);
   }
 
   const business = await apiFetch(url, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${token}` }, // NO setees Content-Type con FormData
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` }, // no seteamos Content-Type
     body: fd,
   });
 
   return business;
 }
-  
+
 
 
 // DELETE

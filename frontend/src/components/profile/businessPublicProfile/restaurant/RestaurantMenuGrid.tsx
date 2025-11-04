@@ -9,7 +9,7 @@ import {
   Stack,
   Divider,
   IconButton,
-} from "@mui/material";
+  Tooltip } from "@mui/material";
 import {
   Restaurant,
   LocalDining,
@@ -39,6 +39,7 @@ export default function RestaurantMenuGrid({
   onEditItem,
   onDeleteItem,
 }: Props) {
+  console.log("Rendering RestaurantItemMenuCard with menu:", menu);
   if (!menu || menu.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 6, color: "text.secondary" }}>
@@ -152,19 +153,24 @@ export default function RestaurantMenuGrid({
 
                 {isOwner && (
                   <Stack direction="row" spacing={0.5}>
-                    <IconButton
-                      size="small"
-                      onClick={() => onEditItem?.(idx)}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => onDeleteItem?.(idx)}
-                    >
-                      <Delete fontSize="small" />
-                    </IconButton>
+                    
+                    <Tooltip title="Editar">
+                      <IconButton
+                        size="small"
+                        onClick={() => onEditItem?.(idx)}
+                      >
+                        <Edit fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => onDeleteItem?.(idx)}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
                 )}
               </Box>

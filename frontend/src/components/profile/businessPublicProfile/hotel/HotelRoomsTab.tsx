@@ -7,6 +7,10 @@ import {
   Typography,
   Backdrop,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import type { RoomPack } from "../../../../types/Hotel";
 import {
@@ -32,6 +36,10 @@ export default function HotelRoomsTab({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // diálogo de confirmación de borrado
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDeleteIndex, setToDeleteIndex] = useState<number | null>(null);
+
   const openCreate = () => {
     setEditingIndex(null);
     setDialogOpen(true);
@@ -42,16 +50,29 @@ export default function HotelRoomsTab({
     setDialogOpen(true);
   };
 
-  const handleDelete = async (idx: number) => {
-    const ok = window.confirm("¿Eliminar este paquete de habitación?");
-    if (!ok) return;
+  // antes borrabas directo; ahora solo abre el diálogo
+  const handleDeleteRequest = (idx: number) => {
+    if (loading) return;
+    setToDeleteIndex(idx);
+    setConfirmOpen(true);
+  };
 
+  const handleConfirmClose = () => {
+    if (loading) return;
+    setConfirmOpen(false);
+    setToDeleteIndex(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (toDeleteIndex == null) return;
     try {
       setLoading(true);
-      await deleteRoomPack(accessToken, idx);
+      await deleteRoomPack(accessToken, toDeleteIndex);
       if (onBusinessReload) await onBusinessReload();
     } finally {
       setLoading(false);
+      setConfirmOpen(false);
+      setToDeleteIndex(null);
     }
   };
 
@@ -74,6 +95,8 @@ export default function HotelRoomsTab({
         );
       }
       if (onBusinessReload) await onBusinessReload();
+      setDialogOpen(false);
+      setEditingIndex(null);
     } finally {
       setLoading(false);
     }
@@ -82,10 +105,17 @@ export default function HotelRoomsTab({
   const initialForDialog =
     editingIndex === null ? null : roomPacks[editingIndex] ?? null;
 
+  const toDeletePack =
+    toDeleteIndex == null ? undefined : roomPacks[toDeleteIndex];
+
   return (
     <Box sx={{ p: { xs: 1, sm: 2 }, position: "relative" }}>
-      <Backdrop open={loading} sx={{ zIndex: (t) => t.zIndex.drawer + 1 }}>
-        <CircularProgress />
+      {/* Loading global */}
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (t) => t.zIndex.drawer + 1 }}
+      >
+        <CircularProgress color="inherit" />
       </Backdrop>
 
       <Stack
@@ -103,8 +133,8 @@ export default function HotelRoomsTab({
             paquetes de alojamiento.
           </Typography>
         </Box>
-        
-        <Button variant="contained" onClick={openCreate}>
+
+        <Button variant="contained" onClick={openCreate} disabled={loading}>
           Agregar paquete
         </Button>
       </Stack>
@@ -113,12 +143,12 @@ export default function HotelRoomsTab({
       <HotelRoomsCard
         roomPacks={roomPacks}
         onEdit={openEdit}
-        onDelete={handleDelete}
+        onDelete={handleDeleteRequest}  // 👈 ahora abre el diálogo
       />
 
       <RoomPackEditorDialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
+        onClose={() => !loading && setDialogOpen(false)}
         onSubmit={handleSubmit}
         initial={initialForDialog ?? undefined}
         title={
@@ -127,6 +157,51 @@ export default function HotelRoomsTab({
             : "Editar paquete de habitación"
         }
       />
+
+      {/* Diálogo de confirmación de borrado */}
+      <Dialog
+        open={confirmOpen}
+        onClose={handleConfirmClose}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar paquete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {toDeletePack ? (
+              <>
+                ¿Seguro que querés eliminar el paquete{" "}
+                <strong>{toDeletePack.description ?? "sin descripción"}</strong>
+                ? Esta acción no se puede deshacer.
+              </>
+            ) : (
+              "¿Seguro que querés eliminar este paquete? Esta acción no se puede deshacer."
+            )}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmClose} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={loading}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Loading global */}
+      <Backdrop
+        open={loading}
+        sx={{ color: "#fff", zIndex: (t) => t.zIndex.modal + 1 }}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
     </Box>
   );
 }

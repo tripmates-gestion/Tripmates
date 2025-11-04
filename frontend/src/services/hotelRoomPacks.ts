@@ -33,27 +33,27 @@ export async function appendRoomPack(
 export async function updateRoomPack(
   token: string,
   index: number,
-  data?: Partial<RoomPackPayload>,
+  data: Partial<RoomPackPayload> = {},
   files: File[] = [],
   deletePhotoIndexes: number[] = []
 ): Promise<RoomPack[]> {
   const fd = new FormData();
 
-  // Swagger dice que data es opcional: si se omite, solo se modifican fotos
-  if (data && Object.keys(data).length > 0) {
-    fd.append("data", JSON.stringify(data));
+  // Mezclamos los campos normales con los índices a borrar
+  const merged: any = { ...data };
+  if (deletePhotoIndexes.length > 0) {
+    merged.deletePhotoIndexes = deletePhotoIndexes;
   }
 
+  // Si hay algo que mandar en data, lo serializamos
+  if (Object.keys(merged).length > 0) {
+    fd.append("data", JSON.stringify(merged));
+  }
+
+  // Nuevas fotos (si hay)
   files.forEach((f) => fd.append("files", f));
 
-  // ?deletePhotoIndexes=0&deletePhotoIndexes=2 ...
-  const qs = new URLSearchParams();
-  deletePhotoIndexes.forEach((i) =>
-    qs.append("deletePhotoIndexes", String(i))
-  );
-
-  const url =
-    `${ENDPOINTS.HOTEL_ROOMPACK}/${index}` + (qs.toString() ? `?${qs}` : "");
+  const url = `${ENDPOINTS.HOTEL_ROOMPACK}/${index}`;
 
   const business = await apiFetch(url, {
     method: "PATCH",
@@ -63,6 +63,7 @@ export async function updateRoomPack(
 
   return business;
 }
+
 
 // Borrar un room pack entero
 export async function deleteRoomPack(

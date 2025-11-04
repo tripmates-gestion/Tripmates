@@ -1,3 +1,4 @@
+// src/components/restaurant/RestaurantMenuTab.tsx
 import * as React from "react";
 import {
   Box,
@@ -6,6 +7,10 @@ import {
   Typography,
   Backdrop,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { enqueueSnackbar } from "notistack";
 import RestaurantMenuGrid from "./RestaurantMenuGrid";
@@ -39,6 +44,11 @@ export default function RestaurantMenuTab({
   const [openNew, setOpenNew] = React.useState(false);
   const [editIndex, setEditIndex] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(false);
+
+  // estado para confirmación de borrado
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [toDeleteIndex, setToDeleteIndex] = React.useState<number | null>(null);
+
   const { business } = useBusinessProfile();
 
   React.useEffect(() => {
@@ -125,7 +135,29 @@ export default function RestaurantMenuTab({
     }
   };
 
+  // cuando el usuario hace click en el ícono de eliminar en la card
+  const handleDeleteRequest = (index: number) => {
+    if (loading) return;
+    setToDeleteIndex(index);
+    setConfirmOpen(true);
+  };
+
+  const handleCloseConfirm = () => {
+    if (loading) return; // mientras borra, no dejamos cerrar a clic
+    setConfirmOpen(false);
+    setToDeleteIndex(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (toDeleteIndex == null) return;
+    await handleDelete(toDeleteIndex);
+    setConfirmOpen(false);
+    setToDeleteIndex(null);
+  };
+
   const current = editIndex != null ? items[editIndex] : null;
+  const toDeleteItem =
+    toDeleteIndex != null ? items[toDeleteIndex] : undefined;
 
   return (
     <Box sx={{ position: "relative" }}>
@@ -141,7 +173,8 @@ export default function RestaurantMenuTab({
             Menú
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Agregar los detalles de tu menú como nombre, descripción y fotos atractivas para tus clientes.
+            Agregá los detalles de tu menú como nombre, descripción y fotos
+            atractivas para tus clientes.
           </Typography>
         </Box>
 
@@ -165,7 +198,7 @@ export default function RestaurantMenuTab({
           restaurantType={(business as any)?.restaurantType}
           isOwner
           onEditItem={(i) => !loading && setEditIndex(i)}
-          onDeleteItem={(i) => !loading && handleDelete(i)}
+          onDeleteItem={handleDeleteRequest}   // 👈 ahora abre el diálogo
         />
       )}
 
@@ -187,6 +220,42 @@ export default function RestaurantMenuTab({
         }
         title="Editar plato"
       />
+
+      {/* Diálogo de confirmación de borrado */}
+      <Dialog
+        open={confirmOpen}
+        onClose={handleCloseConfirm}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar plato</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {toDeleteItem ? (
+              <>
+                ¿Seguro que querés eliminar{" "}
+                <strong>{toDeleteItem.foodName}</strong>? Esta acción no se
+                puede deshacer.
+              </>
+            ) : (
+              "¿Seguro que querés eliminar este plato? Esta acción no se puede deshacer."
+            )}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={loading}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Loading global */}
       <Backdrop
