@@ -3,6 +3,8 @@ import { Grid, Typography, Box, Stack, Button, Dialog, DialogTitle, DialogConten
 import AddIcon from '@mui/icons-material/Add';
 import type { BusinessPublicationResponseDTO } from '../../../types/business';
 import PublicationCard from '../../publications/PublicationCard';
+import { useAuth } from '../../../hooks/useAuth';
+import { createPlan, getPlans } from '../../../services/plansService';
 
 type PlanContent = BusinessPublicationResponseDTO[];
 
@@ -12,6 +14,7 @@ interface Plan {
   planContent: PlanContent;
 }
 
+/* 
 function getPlans(token: string): Plan[] {
   // Aquí iría la lógica para obtener los planes del usuario usando el token
   // Por ahora, devolvemos un array de ejemplo
@@ -43,14 +46,38 @@ function getPlans(token: string): Plan[] {
     }
   ];
 }
+  */
 
-export default function UserPlansTab({ accessToken }: { accessToken: string }) {
-  const [planes, setPlanes] = useState<Plan[]>(getPlans(accessToken));
+export default function UserPlansTab() {
+  const { user, accessToken } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
   const [newPlanDescription, setNewPlanDescription] = useState('');
 
-  const handleCreatePlan = () => {
+  const fetchPlans = async () => {
+      try {
+        const plans = await getPlans(accessToken);
+        console.log('Fetched plans:', plans);
+        setPlans(plans);
+      } catch (error) {
+        console.error('Error fetching plans:', error);
+      }
+    };
+
+  React.useEffect(() => {
+    fetchPlans();
+
+    if (user?.id) {
+      fetchPlans();
+    } else {
+      console.log('No user ID available, skipping fetch of plans.');
+    }
+  }, [accessToken, user?.id]);
+
+
+
+  const handleCreatePlan = async () => {
     if (newPlanName.trim()) {
       // Aquí agregar lógica para crear el plan en la API
       console.log('Creando plan:', { name: newPlanName, description: newPlanDescription });
@@ -61,7 +88,13 @@ export default function UserPlansTab({ accessToken }: { accessToken: string }) {
         description: newPlanDescription.trim(),
         planContent: []
       };
-      setPlanes([...planes, newPlan]);
+      try {
+        await createPlan(accessToken, newPlan.name, newPlan.description);
+        await fetchPlans();
+      } catch (error) {
+        console.error('Error creating plan:', error);
+        return;
+      }
       
       // Limpiar y cerrar
       setNewPlanName('');
@@ -158,9 +191,9 @@ export default function UserPlansTab({ accessToken }: { accessToken: string }) {
           p: { xs: 1, sm: 2 },
         }}
       >
-        {planes.length > 0 ? (
+        {plans.length > 0 ? (
           <Grid item xs={12}>
-            {planes.map((plan, index) => (
+            {plans.map((plan, index) => (
               <Box key={index} sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   {plan.name}
@@ -171,8 +204,8 @@ export default function UserPlansTab({ accessToken }: { accessToken: string }) {
                   </Typography>
                 )}
                 <Stack spacing={1}>
-                  {plan.planContent.length > 0 ? (
-                    plan.planContent.map((publication) => (
+                  {plan.publications.length > 0 ? (
+                    plan.publications.map((publication) => (
                       <PublicationCard 
                         key={publication.id}
                         publication={publication} 
