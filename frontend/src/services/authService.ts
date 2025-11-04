@@ -30,7 +30,7 @@ export async function refreshAccessTokenApi(token: string, refreshToken: string,
   });
 }
 
-export async function registerUserApi(name: string, email: string, password: string,  role: 'USER' | 'BUSINESS', businessType: 'RESTAURANT' | 'HOSTING' | 'TOURISM' | null){
+export async function registerUserApi(name: string, email: string, password: string,  role: 'USER' | 'BUSINESS', businessType: 'RESTAURANT' | 'HOTEL' | null){
   const requestBody = {
     name,
     email,

@@ -1,32 +1,13 @@
-import { apiFetch } from "../api/client";
-import { ENDPOINTS } from "../api/endpoints";
+import { apiFetch } from "../api/client"
+import { ENDPOINTS } from "../api/endpoints"
+import type { SearchBusinessFilters } from "../types/searchBusinessFilters"
 
-export async function searchHotels(token: string, queryParams: { location: string; }) {
-    let endpoint = ENDPOINTS.SEARCH + '?businessType=HOSTING';
-    
-    if (queryParams.location && queryParams.location.trim() !== '') {
-        endpoint += `&location=${encodeURIComponent(queryParams.location.trim())}`;
-    }   
-
-    console.log('Searching hotels at endpoint:', endpoint);
-
-    return apiFetch(endpoint, {
-        method: 'GET',
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    });
-}
-
-export async function searchRestaurants(token: string, queryParams: { location: string; }){
-    let endpoint = ENDPOINTS.SEARCH + '?businessType=RESTAURANT';
-    
-    if (queryParams.location && queryParams.location.trim() !== '') {
-        endpoint += `&location=${encodeURIComponent(queryParams.location.trim())}`;
-    }    
-    
-    console.log('Searching restaurants at endpoint:', endpoint);
-
-    return apiFetch(endpoint, {
-        method: 'GET',
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    });
+// QUITAR CUANDO SEA PUBLICO
+export async function searchBusiness(accesstoken: string,filters: SearchBusinessFilters = {}) {
+  const response = apiFetch(ENDPOINTS.SEARCH_BUSINESS, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accesstoken}` },
+    body: JSON.stringify(filters),
+  })
+  return response
 }

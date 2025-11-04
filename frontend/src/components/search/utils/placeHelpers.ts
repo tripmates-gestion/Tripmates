@@ -1,9 +1,9 @@
 // ──────────────────────────────────────────────────────────────────────────────
 // utils/placeHelpers.ts
 // ──────────────────────────────────────────────────────────────────────────────
-import type { DayOfWeek } from "../../../types/place";
+import type { DayOfWeek } from "../../../types/business";
 import type {BusinessPubAccountDataDTO} from "../../../types/AccountData";
-
+import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
 
 
 const DAYS_ORDER: DayOfWeek[] = [
@@ -18,7 +18,7 @@ const DAY_LABEL: Record<DayOfWeek, string> = {
 export function sanitizeImages(place: BusinessPubAccountDataDTO): string[] {
   const fromArray = (place.profileImageUrls || []).filter(Boolean) as string[];
   const unique = [...new Set([...fromArray])];
-  return unique.length ? unique : ["/placeholder.jpg"]; // fallback seguro
+  return unique.length ? unique : [COMMING_SOON_IMG]; // fallback seguro
 }
 
 function toMinutes(t: string) {

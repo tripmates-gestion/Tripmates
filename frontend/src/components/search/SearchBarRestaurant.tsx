@@ -1,80 +1,72 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
-import SearchIcon from '@mui/icons-material/Search';
-import { useAuth } from '../../hooks/useAuth';
-import { searchRestaurants } from '../../services/searchService';
-import { useState } from 'react';
-import type{ BusinessPubAccountDataDTO } from '../../types/AccountData';
+// SearchBarRestaurant.tsx
+import React, { useState } from "react";
+import {
+  Stack,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  InputAdornment,
+} from "@mui/material";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import type { SelectChangeEvent } from "@mui/material";
+import type {CommonFilters} from "./utils/BaseSearchBar";
+import { BaseSearchBar } from "./utils/BaseSearchBar";
+//QUITAR CUANDO YA SEA PUBLICO
+import { useAuth } from "../../hooks/useAuth";
+import { searchBusiness } from "../../services/searchService";
+import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
+import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
+import type { BusinessType } from "../../types/AccountTypes";
+import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
+import type { RestaurantType } from "../../types/Restaurant";
 
-interface SearchBarRestaurantProps {
-  onSearchResults: (restaurants: BusinessPubAccountDataDTO[]) => void; // Callback para enviar resultados al padre
-}
-
-function mapRestaurant(restaurant: any): BusinessPubAccountDataDTO {
-  return {
-      id: restaurant.id,
-      avatarURL: restaurant.avatarURL,
-      name: restaurant.name,
-      email: restaurant.email,
-      role: restaurant.role,
-      description: restaurant.description,
-      location: restaurant.location,
-      phoneNumber: restaurant.phoneNumber,
-      publicEmail: restaurant.publicEmail,
-      profileImageUrls: restaurant.profileImageUrls,
-      businessType: restaurant.businessType,
-      averagePrice: restaurant.averagePrice,
-      // Restaurant specific
-      restaurantType: restaurant.restaurantType,
-      attentionSchedule: restaurant.attentionSchedule,
-      openingDays: restaurant.openingDays,
-      menu: restaurant.menu || [],
-      
-      // Hotel specific (required by type but not used for restaurants)
-      hotelType: null,
-      roomPacks: null
-  };
-}
-
-export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProps) {
+import { MOCKEAR_RESULTADOS } from "../../pages/Search";
+export const SearchBarRestaurant = ({
+  onSearchResults,
+}: {
+  onSearchResults: (restaurants: BusinessPubAccountDataDTO[]) => void;
+}) => {
   const { accessToken } = useAuth();
+  const [filters, setFilters] = useState<SearchBusinessFilters>({});
+  
+
   const [loading, setLoading] = useState(false);
-  const [location, setLocation] = useState('');
-  const [name, setName] = useState('');
 
-  const handleSearch = async () => {
-    if (!accessToken) {
-      console.error('No access token available');
-      onSearchResults([]);
-      return;
-    }
-
-    setLoading(true);
+  const handleSearch = async (commonFilters: CommonFilters) => {
+    //QUITAR CUANDO SEA PUBLICO
+    if (!accessToken) return;
+    setLoading(true)
     try {
-        const restaurantsResponse = await searchRestaurants(accessToken, { "location": location }); 
-        const restaurants = restaurantsResponse?.content ?? [];
-        console.log('Restaurants found:', restaurants);
+      const params : SearchBusinessFilters ={
+        ...commonFilters,
+        businessType: "RESTAURANT" as BusinessType,
+        ...(filters.restaurantType && { restaurantType: filters.restaurantType }),
+        ...(filters.attentionSchedule?.openingTime && { attentionSchedule: {openingTime: filters.attentionSchedule.openingTime} }),
+        ...(filters.attentionSchedule?.closingTime && { attentionSchedule: {closingTime: filters.attentionSchedule.closingTime} }),
+      };
 
-        let filteredRestaurants = restaurants;
-        if (name && name.trim() !== '') {
-          filteredRestaurants = restaurants.filter((restaurant: any) =>
-            restaurant.name && restaurant.name.toLowerCase().includes(name.toLowerCase())
-          );
-        }
+      console.log("🔍 Parámetros de búsqueda (restaurants):", params);
+      // QUITAR CUANDO SEA PUBLICO
+      const response = await searchBusiness(accessToken,params);
+      console.log("¡¡¡ Response de búsqueda de la api(restaurants):", response);
+      const restaurants: BusinessPubAccountDataDTO[] = [];
 
-        const restaurantsProfiles = filteredRestaurants.map(mapRestaurant);
-        console.log('Restaurants found:', restaurantsProfiles);
+      //INYECTO RESULTADOS CON MOCKITO (QUITAR)
+      if (MOCKEAR_RESULTADOS) {
+        restaurants.push(...aplyFiltersToMock(MOCK_BUSINESS_SEARCH_RESULTS, params));
+      }
 
-        onSearchResults(restaurantsProfiles);
+      if (response != null) {
+        restaurants.push(...response.content);
+      }
+      
+      onSearchResults(restaurants);
 
-    } catch (error) {
-      console.error('Error searching restaurants:', error);
+    } catch (err) {
+      console.error(err);
       onSearchResults([]);
     } finally {
       setLoading(false);
@@ -82,64 +74,44 @@ export function SearchBarRestaurant({ onSearchResults }: SearchBarRestaurantProp
   };
 
   return (
-    <Box
-      sx={{
-        bgcolor: "white",
-        borderRadius: "50px",
-        p: 2,
-        boxShadow: 2,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minWidth: "100%",
-        minHeight: "80px",
-        maxHeight: "80px",
-      }}
-    >
-      <Stack direction="row" spacing={1} alignItems="center">
-        <TextField
-          name="restaurante"
-          placeholder="Ciudad"
-          variant="outlined"
-          size="small"
-          onChange={(e) => setLocation(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <LocationOnIcon color="action" />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 250 }}
-        />
+    <BaseSearchBar
+      loading={loading}
+      onSearch={handleSearch}
+      renderExtraFilters={() => (
+        <Stack spacing={2}>
+          <FormControl size="small">
+            <InputLabel id="restaurant-type-label">Tipo de restaurante</InputLabel>
+            <Select
+              labelId="restaurant-type-label"
+              value={filters.restaurantType??""}
+              onChange={(e: SelectChangeEvent) => setFilters({...filters, restaurantType: e.target.value as RestaurantType})}
+              label="Tipo de restaurante"
+            >
+              <MenuItem value="">Todos</MenuItem>
+              <MenuItem value="cafe">Café</MenuItem>
+              <MenuItem value="vegano">Vegano</MenuItem>
+              <MenuItem value="vegetariano">Vegetariano</MenuItem>
+              <MenuItem value="peruano">Peruano</MenuItem>
+              <MenuItem value="argento">Argentino</MenuItem>
+              <MenuItem value="italiano">Italiano</MenuItem>
+            </Select>
+          </FormControl>
 
-        <TextField
-            name="nombre"
-            placeholder="Nombre"
-            variant="outlined"
+          <TextField
+            label="Horario de atención (ej. 9:00-10:00)"
             size="small"
-            onChange={(e) => setName(e.target.value)}
-            sx={{ borderRadius: "50px", bgcolor: "#f7f7f7", minWidth: 50 }}
-        />
-
-
-        <Button
-          variant="contained"
-          startIcon={<SearchIcon />}
-          sx={{
-            borderRadius: "50px",
-            bgcolor: "primary.main",
-            color: "white",
-            textTransform: "none",
-            px: 3,
-            fontWeight: "bold",
-            "&:hover": { bgcolor: "primary.dark" },
-          }}
-            onClick={handleSearch}
-        >
-          Buscar
-        </Button>
-      </Stack>
-    </Box>
+            value={filters.attentionSchedule?.openingTime??""}
+            onChange={(e) => setFilters({...filters, attentionSchedule: {...filters.attentionSchedule, openingTime: e.target.value}})}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AccessTimeIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
+      )}
+    />
   );
-}
+};

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // api/core.ts
 const API_BASE_URL = "http://localhost:8080";
 const CODE_403 = 403;

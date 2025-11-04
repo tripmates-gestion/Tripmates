@@ -41,7 +41,7 @@ public class DocumentationObjectsExamples {
 			Updates an existing publication with JSON data and optional images.
 
 			Multipart request structure:
-			- `data`: (required) JSON with the fields to update.
+			- `data`: (required) JSON with the fields to update. You may include `deletePhotoIndexes` to remove specific photos by 0-based indexes.
 			- `files`: (optional) Images for the publication (JPG, PNG, etc.).
 
 			Example JSON for the `data` part:
@@ -54,9 +54,11 @@ public class DocumentationObjectsExamples {
 			  "location": "123 Address, City",
 			  "openingDays": ["MONDAY", "TUESDAY"],
 			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
-			  "exceptionalClosingDays": ["2025-12-25"]
+			  "exceptionalClosingDays": ["2025-12-25"],
+			  "deletePhotoIndexes": [0, 2]
 			}
-			```""";
+			```
+			""";
 
 	static public final String BUSINESS_PUBLICATION_SEARCH_EXAMPLE = """
 			Filters are received as query params via model attributes.
