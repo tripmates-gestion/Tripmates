@@ -15,9 +15,9 @@ import {
   CardContent,
 } from "@mui/material";
 import BusinessPublicationsTab from "./BusinessPublicationsTab";
-import ImageCarousel from "../../ui/ImageCarousel";
-import type { BusinessPubAccountDataDTO } from "../../../types/AccountData";
-import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
+import ImageCarousel from "../../../ui/ImageCarousel";
+import type { BusinessPubAccountDataDTO } from "../../../../types/AccountData";
+import {COMMING_SOON_IMG} from "../../../../constants/DefaultImages";
 
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;

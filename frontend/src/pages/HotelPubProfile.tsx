@@ -1,6 +1,6 @@
 // src/pages/HotelPubProfile.tsx
 import { useLocation } from "react-router-dom";
-import BusinessPubProfileLayout from "../components/profile/businessPublicProfile/BusinessPubProfileLayout";
+import BusinessPubProfileLayout from "../components/profile/businessPublicProfile/common/BusinessPubProfileLayout";
 import { HotelRoomsCard } from "../components/profile/businessPublicProfile/hotel/HotelUserRoomsCard";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 import type { RoomPack } from "../types/Hotel";

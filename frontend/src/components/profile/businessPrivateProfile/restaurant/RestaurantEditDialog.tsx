@@ -1,18 +1,18 @@
 import * as React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Backdrop, CircularProgress } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusinessProfile } from '../../../hooks/useBusinessProfile';
-import { BUSINESS_TYPES } from '../../../constants/Rol';
-import { dataURLtoFile } from './common/Utils';
-import { updateBusinessUser } from '../../../services/userService';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
+import { BUSINESS_TYPES } from '../../../../constants/Rol';
+import { dataURLtoFile } from '../common/Utils';
+import { updateBusinessUser } from '../../../../services/userService';
 
-import { type RestaurantForm } from './common/types';
-import { formatScheduleForInput, scheduleFromInput } from './common/schedule';
-import BusinessCommonFields from './common/BusinessCommonFields';
-import GalleryManager from './common/GalleryManager';
+import { type RestaurantForm } from '../common/types';
+import { formatScheduleForInput, scheduleFromInput } from '../common/schedule';
+import BusinessCommonFields from '../common/BusinessCommonFields';
+import GalleryManager from '../common/GalleryManager';
 import RestaurantFields from './RestaurantFields';
-import { validateRestaurant, type RestaurantErrors } from '../../../hooks/useUpdateBusinessUserValidation';
+import { validateRestaurant, type RestaurantErrors } from '../../../../hooks/useUpdateBusinessUserValidation';
 
 type Props = { open: boolean; onClose: () => void };
 

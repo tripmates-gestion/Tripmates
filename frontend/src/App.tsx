@@ -5,7 +5,7 @@ import NavBar from './components/navbar/NavBar';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
-import BusinessProfile from './pages/BusinessProfile';
+import BusinessProfile from './pages/BusinessPrivateProfile';
 import type { AppProps } from './types/theme';
 import { PAGES_ROUTE } from './constants/Pages';
 import { Toolbar } from '@mui/material';

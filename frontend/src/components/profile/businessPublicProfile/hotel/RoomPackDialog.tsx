@@ -24,8 +24,8 @@ import type {
 import {
   HOTEL_SERVICE_OPTIONS,
   HOTEL_SERVICE_LABEL,
-} from "../common/types";
-import { NewImagesDropzone } from "../common/Utils";
+} from "../../businessPrivateProfile/common/types";
+import { NewImagesDropzone } from "../../businessPrivateProfile/common/Utils";
 
 type Props = {
   open: boolean;

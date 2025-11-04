@@ -13,7 +13,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { DeleteOutline, Close } from "@mui/icons-material";
-import { NewImagesDropzone } from "../common/Utils";
+import { NewImagesDropzone } from "../../businessPrivateProfile/common/Utils";
 import type { MenuItem } from "../../../../types/Restaurant";
 import { InputAdornment } from "@mui/material";
 

@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
-import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
+import EditProfileDialog, { type UserProfile } from '../components/profile/businessPrivateProfile/common/EditProfileDialog';
 import { useAuth } from '../hooks/useAuth';
 import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'

@@ -4,7 +4,7 @@ import type { Review } from '../../../types/review';
 import { useAuth } from '../../../hooks/useAuth';
 import { getReviewsForUser } from '../../../services/reviewService';
 import { mapReviewListDTOToReviews } from '../../../services/mappers/reviewsMapper';
-import { EmptyState } from '../EmptyState';
+import { EmptyState } from '../../EmptyState';
 import { ReviewGrid } from '../../reviews/ReviewGrid';
 
 export default function UserReviewsTab() {

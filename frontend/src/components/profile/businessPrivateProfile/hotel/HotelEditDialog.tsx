@@ -4,16 +4,16 @@ import {
   Button, Stack, Backdrop, CircularProgress
 } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusinessProfile } from '../../../hooks/useBusinessProfile';
-import { BUSINESS_TYPES } from '../../../constants/Rol';
-import { dataURLtoFile } from './common/Utils';
-import { updateBusinessUser } from '../../../services/userService';
-import BusinessCommonFields from './common/BusinessCommonFields';
-import GalleryManager from './common/GalleryManager';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
+import { BUSINESS_TYPES } from '../../../../constants/Rol';
+import { dataURLtoFile } from '../common/Utils';
+import { updateBusinessUser } from '../../../../services/userService';
+import BusinessCommonFields from '../common/BusinessCommonFields';
+import GalleryManager from '../common/GalleryManager';
 import HotelFields from './HotelFields';
-import { type HotelType } from '../../../types/Hotel';
-import { validateHotel, type HotelErrors } from '../../../hooks/useUpdateBusinessUserValidation';
+import { type HotelType } from '../../../../types/Hotel';
+import { validateHotel, type HotelErrors } from '../../../../hooks/useUpdateBusinessUserValidation';
 
 type Props = { open: boolean; onClose: () => void };
 

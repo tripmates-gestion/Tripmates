@@ -1,8 +1,8 @@
 import { Stack, TextField, MenuItem, FormControl, FormHelperText } from '@mui/material'
-import DaysSelector from './common/DaysSelector'
-import ScheduleInput from './common/ScheduleInput'
-import { PRICE_OPTIONS, RESTAURANT_TYPE_OPTIONS } from './common/types'
-import { type RestaurantType } from '../../../types/Restaurant';
+import DaysSelector from '../common/DaysSelector'
+import ScheduleInput from '../common/ScheduleInput'
+import { PRICE_OPTIONS, RESTAURANT_TYPE_OPTIONS } from '../common/types'
+import { type RestaurantType } from '../../../../types/Restaurant';
 
 export type RestaurantFieldsErrors = Partial<{
   openingDays: string

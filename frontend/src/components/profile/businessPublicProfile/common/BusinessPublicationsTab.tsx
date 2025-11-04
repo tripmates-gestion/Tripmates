@@ -17,12 +17,12 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import PublicationCard from "../../publications/PublicationCard";
-import PublicationDetailDialog from "../../publications/PublicationDetailDialog";
-import type { BusinessPublicationResponseDTO } from "../../../types/business";
+import PublicationCard from "../../../publications/PublicationCard";
+import PublicationDetailDialog from "../../../publications/PublicationDetailDialog";
+import type { BusinessPublicationResponseDTO } from "../../../../types/business";
 
-import { useAuth } from "../../../hooks/useAuth";
-import { getBusinessPublicationsPublic } from "../../../services/businessPublications";
+import { useAuth } from "../../../../hooks/useAuth";
+import { getBusinessPublicationsPublic } from "../../../../services/businessPublications";
 
 // ──────────────────────────────────────────────
 // Mock: obtiene planes del usuario loggeado

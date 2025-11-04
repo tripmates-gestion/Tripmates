@@ -7,9 +7,9 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import { PROFILE_LIMITS } from '../../constants/UserProfile'
-import CountedTextField from '../ui/CountedTextField'
-import ImageUploader  from '../ui/ImageUploader'
+import { PROFILE_LIMITS } from '../../../../constants/UserProfile'
+import CountedTextField from '../../../ui/CountedTextField'
+import ImageUploader  from '../../../ui/ImageUploader'
  
 
 export type UserStats = { aportes: number; seguidores: number; siguiendo: number };
