@@ -6,6 +6,11 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Review } from "../../types/review";
+import { saveReview, getReviews } from "../../services/reviewService";
+import { useAuth } from "../../hooks/useAuth";
+import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";
+import { ACCOUNT_TYPES } from "../../constants/Rol";
+import { ReviewGrid } from "./ReviewGrid";
 
 type Props = {
   /** Nombre a mostrar como autor (placeholder) */
@@ -18,21 +23,24 @@ type Props = {
   onCreate?: (r: Review) => void;
 };
 
+
 export default function NewReviewPlace({
   currentUserName = "Vos",
   publicationId,
   publicationTitle,
   onCreate,
 }: Props) {
+  const { user, accessToken } = useAuth();
+
   const [items, setItems] = React.useState<Review[]>([]);
   const [open, setOpen] = React.useState(false);
 
-  // form state
   const [title, setTitle] = React.useState("");
   const [text, setText] = React.useState("");
   const [rating, setRating] = React.useState<number | null>(null);
   const [images, setImages] = React.useState<string[]>([]);
   const [touched, setTouched] = React.useState(false);
+
 
   const [snack, setSnack] = React.useState<{ open: boolean; msg: string; sev: "success" | "error" }>({
     open: false,
@@ -60,7 +68,28 @@ export default function NewReviewPlace({
     setOpen(true);
   };
 
-  const handleCreate = () => {
+  React.useEffect(() => {
+    const loadReviews = async () => {
+      if (!publicationId || !accessToken) {
+        return;
+      }
+
+      try {
+        const reviewsDTO = await getReviews(publicationId, accessToken);
+        const reviews = mapReviewListDTOToReviews(reviewsDTO);
+        setItems(reviews || []);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+        setItems([]);
+        setSnack({ open: true, msg: "Error al cargar las reseñas", sev: "error" });
+      } 
+    };
+
+    loadReviews();
+  }, [publicationId, accessToken]);
+
+  const handleCreate = async () => {
+    
     setTouched(true);
     if (title.trim().length === 0 || text.trim().length === 0) {
       setSnack({ open: true, msg: "Completá todos los campos obligatorios.", sev: "error" });
@@ -77,7 +106,14 @@ export default function NewReviewPlace({
       publicationId,
       publicationTitle,
     };
-    setItems((prev) => [r, ...prev]);
+    try {
+      console.log(publicationId)
+      saveReview(r, accessToken, images);
+    } catch (error) {
+      setSnack({ open: true, msg: "Error al guardar la reseña. Intentá nuevamente.", sev: "error" });
+      return;
+    }
+    setItems((prev: any[]) => [r, ...prev]);
     onCreate?.(r);
     setOpen(false);
     setSnack({ open: true, msg: "¡Reseña publicada!", sev: "success" });
@@ -86,7 +122,7 @@ export default function NewReviewPlace({
   return (
     <Box sx={{ mt: 3 }}>
       {/* Header + CTA */}
-      {items.length === 0 ? (
+      {(items.length === 0 && user?.role === ACCOUNT_TYPES.user) ? (
         <Box sx={{ py: 2, textAlign: "center" }}>
           <Typography variant="subtitle1" fontWeight={700}>¿Haz estado en este lugar y probado este item?</Typography>
           <Typography variant="body2" color="text.secondary">
@@ -98,65 +134,13 @@ export default function NewReviewPlace({
         </Box>
       ) : (
         <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          {user?.role === ACCOUNT_TYPES.user && (<Stack direction="row" justifyContent="space-between" alignItems="center">
             <Typography variant="h6" fontWeight={800}>Reseñas</Typography>
             <Button variant="contained" onClick={handleOpen}>Escribir reseña</Button>
-          </Stack>
+          </Stack>)}
 
           {/* Lista */}
-          <Grid container spacing={2}>
-            {items.map((r) => (
-              <Grid key={r.id} item xs={12}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                      <Avatar>{r.author.slice(0, 1).toUpperCase()}</Avatar>
-                      <Stack spacing={0}>
-                        <Typography variant="subtitle2" fontWeight={700}>{r.author}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {new Date(r.createdAt).toLocaleString()}
-                        </Typography>
-                      </Stack>
-                      {!!r.rating && (
-                        <Chip
-                          size="small"
-                          label={<><strong>{r.rating.toFixed(1)}</strong> ★</>}
-                          sx={{ ml: "auto" }}
-                        />
-                      )}
-                    </Stack>
-
-                    {/* Referencia a la publicación (opcional) */}
-                    {r.publicationTitle && (
-                      <Chip
-                        label={`Sobre: ${r.publicationTitle}`}
-                        size="small"
-                        variant="outlined"
-                        sx={{ mb: 1 }}
-                      />
-                    )}
-
-                    {/* Título + texto */}
-                    <Typography variant="subtitle1" fontWeight={700}>{r.title}</Typography>
-                    <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{r.text}</Typography>
-
-                    {/* Galería */}
-                    {r.images.length > 0 && (
-                      <Grid container spacing={1} sx={{ mt: 1 }}>
-                        {r.images.map((img, i) => (
-                          <Grid key={i} item xs={6} sm={4} md={3}>
-                            <Card variant="outlined" sx={{ position: "relative" }}>
-                              <CardMedia component="img" image={img} height={120} />
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+          <ReviewGrid items={items} />
         </Stack>
       )}
 
