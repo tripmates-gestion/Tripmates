@@ -15,18 +15,17 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 public class ReviewRespositoryImpl implements ReviewRepository {
-    private final MongoTemplate mongoTemplate;
 
-    @Override
-    public List<Review> findByOwnerId(String ownerId) {
-        Aggregation agg = Aggregation.newAggregation(
-                Aggregation.unwind("reviews"),
-                Aggregation.match(Criteria.where("reviews.ownerId").is(ownerId)),
-                Aggregation.replaceRoot("reviews"));
+	private final MongoTemplate mongoTemplate;
 
-        AggregationResults<Review> results = mongoTemplate.aggregate(agg, "publications", Review.class);
+	@Override
+	public List<Review> findByOwnerId(String ownerId) {
+		Aggregation agg = Aggregation.newAggregation(Aggregation.unwind("reviews"),
+				Aggregation.match(Criteria.where("reviews.ownerId").is(ownerId)), Aggregation.replaceRoot("reviews"));
 
-        return results.getMappedResults();
-    }
+		AggregationResults<Review> results = mongoTemplate.aggregate(agg, "publications", Review.class);
+
+		return results.getMappedResults();
+	}
 
 }
