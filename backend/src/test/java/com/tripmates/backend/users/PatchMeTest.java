@@ -75,7 +75,7 @@ public class PatchMeTest {
 				  "phoneNumber": "+541112345678",
 				  "publicEmail": "contact@hostel.com",
 				  "averagePrice": "$$",
-				  "restaurantType": "PERUANO",
+				  "restaurantType": "Peruano",
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
 				      "closingTime": "18:00"
@@ -100,7 +100,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
 		String requestJson = """
 				{
-				  "hotelType": "LUJO"
+				  "hotelType": "Lujo"
 				}
 				""";
 
@@ -126,7 +126,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 		String requestJson = """
 				{
-				"restaurantType": "PERUANO"
+				"restaurantType": "Peruano"
 				}
 				""";
 
@@ -208,7 +208,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"hotelType": "LUJO"
+				"hotelType": "Lujo"
 				}
 				""";
 
@@ -234,7 +234,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"restaurantType": "PERUANO"
+				"restaurantType": "Peruano"
 				}
 				""";
 
