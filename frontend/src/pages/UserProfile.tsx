@@ -181,7 +181,7 @@ export default function UserProfile() {
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
             {currentTabKey === 'planes'        && 
-              <UserPlansTab accessToken={user.accessToken} />
+              <UserPlansTab/>
             }
             {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
             {currentTabKey === 'opiniones'     && <UserReviewsTab />}

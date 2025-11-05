@@ -55,6 +55,10 @@ export default function UserPlansTab() {
   const [newPlanName, setNewPlanName] = useState('');
   const [newPlanDescription, setNewPlanDescription] = useState('');
 
+  if (!accessToken) {
+    return <Typography variant="h6">Debes iniciar sesión para ver tus planes de viaje.</Typography>;
+  }
+
   const fetchPlans = async () => {
       try {
         const plans = await getPlans(accessToken);
@@ -191,21 +195,21 @@ export default function UserPlansTab() {
           p: { xs: 1, sm: 2 },
         }}
       >
-        {plans.length > 0 ? (
+        {plans && plans.length > 0 ? (
           <Grid item xs={12}>
-            {plans.map((plan, index) => (
+            {plans && plans.map((plan, index) => (
               <Box key={index} sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   {plan.name}
                 </Typography>
-                {plan.description && (
+                {plans && plan.description && (
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
                     {plan.description}
                   </Typography>
                 )}
                 <Stack spacing={1}>
-                  {plan.publications.length > 0 ? (
-                    plan.publications.map((publication) => (
+                  {plan.planContent && plan.planContent.length > 0 ? (
+                    plan.planContent.map((publication) => (
                       <PublicationCard 
                         key={publication.id}
                         publication={publication} 
