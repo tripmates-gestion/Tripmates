@@ -28,10 +28,10 @@ import { Stat } from '../components/profile/stats';
 const userRoleChipColor = 'info';
 
 
-// ----- tipo User que viene del back (como lo describiste) -----
+// ----- tipo User que viene del back -----
 type BackendUser = {
   id: string;
-  username: string;
+  name: string;
   email: string;
   role: AccountType;
   description: string;
@@ -41,8 +41,8 @@ type BackendUser = {
 // ----- util: mapea User (back) -> UserProfile (UI) -----
 function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
   return {
-    name: u?.username ?? prev?.name ?? '',
-    username: u?.username ?? prev?.username ?? '',
+    name: u?.name ?? prev?.name ?? '',
+    username: u?.name ?? prev?.username ?? '',
     description: u?.description ?? prev?.description ?? '',
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 

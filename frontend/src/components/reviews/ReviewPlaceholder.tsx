@@ -1,8 +1,8 @@
 import * as React from "react";
 import {
   Box, Stack, Typography, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Rating, Snackbar, Alert, Card, CardContent,
-  CardMedia, Avatar, Chip, Grid, IconButton
+  DialogActions, TextField, Rating, Snackbar, Alert,
+  CardMedia, Chip, Grid, IconButton
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Review } from "../../types/review";
@@ -89,6 +89,10 @@ export default function NewReviewPlace({
   }, [publicationId, accessToken]);
 
   const handleCreate = async () => {
+
+    if (!publicationId || !accessToken) {
+      return;
+    }
     
     setTouched(true);
     if (title.trim().length === 0 || text.trim().length === 0) {

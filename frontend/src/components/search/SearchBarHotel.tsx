@@ -73,13 +73,13 @@ export const SearchBarHotel = ({
     if (!accessToken) return;
     setLoading(true);
     try {
-      const params : SearchBusinessFilters = {
+      const params: SearchBusinessFilters = {
         ...commonFilters,
         businessType: "HOTEL" as BusinessType,
         ...(filters.hotelType && { hotelType: filters.hotelType }),
         ...(filters.roomPack?.checkInDate && { checkin: filters.roomPack?.checkInDate }),
         ...(filters.roomPack?.checkOutDate && { checkout: filters.roomPack?.checkOutDate }),
-        ...(filters.roomPack?.numberOfGuests && { guests: filters.roomPack?.numberOfGuests }),
+        ...(filters.roomPack?.numberOfGuests && { numberOfGuests: filters.roomPack?.numberOfGuests }),
         ...(filters.roomPack?.services?.length && { services: filters.roomPack?.services }),
       };
       console.log("🔍 Parámetros de búsqueda (hoteles):", params);
