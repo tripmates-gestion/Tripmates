@@ -7,9 +7,9 @@ import org.springframework.validation.annotation.Validated;
 
 @Validated
 public record AuthLoginRequestDTO(
-        @Schema(description = "User's email") @NotBlank(message = "The user's email cannot be empty to register a user.")
-        @Email String email,
-
-        @Schema(description = "User's password") @NotBlank(message = "The user's password cannot be empty to register a user.")
-        String password
-) { }
+		@Schema(description = "User's email") @NotBlank(
+				message = "The user's email cannot be empty to register a user.") @Email(
+						message = "The provided email is not valid.") String email,
+		@Schema(description = "User's password") @NotBlank(
+				message = "The user's password cannot be empty to register a user.") String password) {
+}

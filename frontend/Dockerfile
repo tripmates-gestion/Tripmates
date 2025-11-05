@@ -1,17 +1,18 @@
+# Etapa base
 FROM node:22-bookworm-slim
 
 WORKDIR /app
 
+# Copiamos solo los archivos de dependencias para aprovechar la caché
 COPY package*.json ./
 
-# Limpia cache y fuerza reinstalación completa
-RUN npm cache clean --force && rm -rf node_modules package-lock.json
+# Instalamos dependencias (sin limpiar la caché aún)
+RUN npm ci
 
-# Instala dependencias y fuerza binarios de rolldown
-RUN npm install --force
-
+# Copiamos el resto del proyecto
 COPY . .
 
 EXPOSE 5173
 
+# Comando por defecto: modo desarrollo
 CMD ["npm", "run", "dev"]

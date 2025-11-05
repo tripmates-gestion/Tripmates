@@ -1,25 +1,28 @@
 import * as React from 'react';
 import {
   Stack, TextField, IconButton, InputAdornment, FormControl, FormLabel,
-  RadioGroup, FormControlLabel, Radio, Typography, Checkbox, Box
+  RadioGroup, FormControlLabel, Radio, Typography, Checkbox, Box, MenuItem
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import type { AccountType } from '../../types/auth';
+import type { AccountType } from '../../types/AccountTypes';
 import { ACCOUNT_TYPES, AUTH_TEXT } from '../../constants/Auth';
+import type { BusinessType } from '../../types/AccountTypes';
 
 type Props = {
   accountType: AccountType;
   setAccountType: (t: AccountType) => void;
+  businessType: BusinessType | null;
+  setBusinessType: (t: BusinessType | null) => void;
   showPass: boolean;
   setShowPass: (v: boolean) => void;
   onDataChange: (data: { name: string; email: string; password: string; accountType: AccountType }) => void;
   onSubmit: (e: React.FormEvent) => void; // Nueva prop para manejar submit
-  formRef: React.RefObject<HTMLFormElement>; // Ref del formulario
+  formRef: React.RefObject<HTMLFormElement | null>; // Ref del formulario
 };
 
 export default function RegisterForm({
-  accountType, setAccountType, showPass, setShowPass, onDataChange, onSubmit, formRef
+  accountType, setAccountType, businessType, setBusinessType,showPass, setShowPass, onDataChange, onSubmit, formRef
 }: Props) {
 
   const [name, setName] = React.useState('');
@@ -41,12 +44,12 @@ export default function RegisterForm({
             value={accountType}
             onChange={(e) => setAccountType(e.target.value as AccountType)}
           >
-            <FormControlLabel value="user" control={<Radio />} label={ACCOUNT_TYPES.user.label} />
-            <FormControlLabel value="business" control={<Radio />} label={ACCOUNT_TYPES.business.label} />
+            <FormControlLabel value="USER" control={<Radio color='info'/>} label={ACCOUNT_TYPES.user.label} />
+            <FormControlLabel value="BUSINESS" control={<Radio color='warning'/>} label={ACCOUNT_TYPES.business.label} />
           </RadioGroup>
         </FormControl>
 
-        {accountType === 'business' && (
+        {accountType === 'BUSINESS' && (
           <TextField 
             label="Nombre de la empresa" 
             fullWidth 
@@ -57,7 +60,7 @@ export default function RegisterForm({
           />
         )}
 
-        {accountType === 'user' && (
+        {accountType === 'USER' && (
           <TextField 
             label="Nombre" 
             fullWidth 
@@ -99,10 +102,21 @@ export default function RegisterForm({
         />
 
         {/* Solo empresa */}
-        {accountType === 'business' && (
+        {accountType === 'BUSINESS' && (
           <>
-            <TextField label="CUIT / NIF" fullWidth />
-            <TextField label="Dirección comercial" fullWidth />
+            {/* <TextField label="CUIT / NIF" fullWidth /> */}
+            {/* <TextField label="Dirección comercial" fullWidth /> */}
+            <TextField
+              select
+              label="Tipo de negocio"
+              value={businessType ?? ''}
+              onChange={(e) => setBusinessType(e.target.value as BusinessType)}
+              fullWidth
+              required
+            >
+              <MenuItem value="RESTAURANT">Restaurante</MenuItem>
+              <MenuItem value="HOTEL">Alojamiento</MenuItem>
+            </TextField>
           </>
         )}
 

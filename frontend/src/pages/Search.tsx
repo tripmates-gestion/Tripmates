@@ -1,113 +1,170 @@
-// src/pages/Search.tsx
-import { useMemo } from 'react';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
-import SearchBar from '../components/SearchBar';
-import PlaceCard, { type Place } from '../components/PlaceCard';
-import { useLocation, useNavigate } from 'react-router-dom';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { useLocation } from "react-router-dom";
+import { SearchBarHotel } from "../components/search/SearchBarHotel";
+import { SearchBarRestaurant } from "../components/search/SearchBarRestaurant";
+import PlaceGrid from "../components/search/ResultsPlaceGrid";
+import { MOCK_BUSINESS_SEARCH_RESULTS } from "../components/mocks/businessMocks";
+import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
-// Esto deberia ir en la BDD xD, las fotos son elegidas de forma random
-const MOCK: Place[] = [
-  {
-    id: '1',
-    name: 'Hotel Bariloche Lake',
-    city: 'Bariloche',
-    country: 'Argentina',
-    rating: 4.5,
-    priceLabel: '$$',
-    photoUrl: 'https://club-catedral-spa-resort.hotelesenpatagonia.com/data/Images/OriginalPhoto/16110/1611086/1611086305/image-san-carlos-de-bariloche-hotel-catedral-ski-wellness-23.JPEG',
-  },
-  {
-    id: '2',
-    name: 'Cabañas del Bosque',
-    city: 'Villa La Angostura',
-    country: 'Argentina',
-    rating: 4.2,
-    priceLabel: '$$',
-    photoUrl: 'https://amigos-del-bosque.hotelesenpatagonia.com/data/Images/OriginalPhoto/16308/1630875/1630875450/image-villa-la-angostura-el-bosque-by-dot-tradition-1.JPEG',
-  },
-  {
-    id: '3',
-    name: 'Restó Patagonia',
-    city: 'San Martín de los Andes',
-    country: 'Argentina',
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/29/4d/32/46/frente-de-restaurante.jpg?w=1100&h=1100&s=1',
-  },
-  {
-    id: '4', 
-    name: 'London', 
-    city: 'London', 
-    country: 'United Kingdom', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.londoninfoguide.com/images/oxford-street-in-london-england-uk.webp' 
-  },
-  {
-    id: '5', 
-    name: 'Helsinki', 
-    city: 'Helsinki', 
-    country: 'Finland', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://content.r9cdn.net/rimg/dimg/30/00/adff18cf-city-7232-16480d2ee82.jpg?crop=true&width=1020&height=498' 
-  },
-  { 
-    id: '6', 
-    name: 'Santorini', 
-    city: 'Santorini', 
-    country: 'Greece', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.greekexclusiveproperties.com/wp-content/uploads/2019/10/Santorini-Declared-No1-Island-in-the-World-.jpg' 
-  },
-];
-
-
-export default function Search() {
-  // Hook para navegar a otra URL sin recargar la página
-  const nav = useNavigate();
-
-  // Obtiene el texto de búsqueda (q) desde la URL actual
-  const q = new URLSearchParams(useLocation().search).get('q') || '';
-
-  // Filtra la lista MOCK según el texto buscado (ignora mayúsculas/minúsculas) esto es O(n)
-  const items = useMemo(
-    () => MOCK.filter(p =>
-      !q ? true : (
-        p.name.toLowerCase().includes(q.toLowerCase()) ||
-        p.city.toLowerCase().includes(q.toLowerCase())
-      )
-    ),
-    [q] // se recalcula solo si cambia "q"
-  );
+// ---------------------------------------------------------
+// Componente: Selector y barra de búsqueda (Hotel / Restaurante)
+// ---------------------------------------------------------
+function SearchBoxContainer({
+  onResults,
+}: {
+  onResults: (results: BusinessPubAccountDataDTO[]) => void;
+}) {
+  const [mode, setMode] = useState<"hotel" | "restaurant">("hotel");
+  const theme = useTheme();
 
   return (
-    // Contenedor vertical con separación entre elementos
-    <Stack spacing={3}>
-      {/* Título dinámico que muestra la búsqueda actual */}
-      <Typography variant="h5">Resultados {q && `para “${q}”`}</Typography>
-
-      {/* Barra de búsqueda: al enviar, cambia la URL con el nuevo texto */}
-      <SearchBar onSubmit={(next) => nav(`/search?q=${encodeURIComponent(next)}`)} />
-
-      {/* Grilla responsiva con las tarjetas de los lugares */}
-      <Box
-        display="grid"
-        gridTemplateColumns={{
-          xs: '1fr',          // 1 por fila en móviles
-          sm: 'repeat(2, 1fr)', // 2 por fila en tablets
-          md: 'repeat(3, 1fr)', // 3 por fila en escritorio
+    <Stack spacing={4} alignItems="center">
+      {/* Título */}
+      <Typography
+        variant="h3"
+        sx={{
+          fontStyle: "oblique",
+          fontWeight: 800,
+          color: theme.palette.text.secondary,
+          textAlign: "center",
+          letterSpacing: "0.05em",
+          mb: 2,
+          textShadow: "7px 7px 5px rgba(55, 82, 106, 0.1)",
         }}
-        gap={4} // espacio entre PlaceCards
+        
       >
-        {items.map((p) => (
-          <PlaceCard key={p.id} place={p} />
-        ))}
+        ¿Buscando una nueva experiencia?
+      </Typography>
+
+      {/* Botones de modo */}
+      <Stack direction="row" spacing={2}>
+        <Button
+          variant={mode === "hotel" ? "contained" : "outlined"}
+          onClick={() => setMode("hotel")}
+          sx={{
+            borderRadius: "50px",
+            textTransform: "none",
+            px: 4,
+            fontSize: "1rem",
+            fontWeight: mode === "hotel" ? 600 : 400,
+          }}
+        >
+          Hoteles
+        </Button>
+        <Button
+          variant={mode === "restaurant" ? "contained" : "outlined"}
+          onClick={() => setMode("restaurant")}
+          sx={{
+            borderRadius: "50px",
+            textTransform: "none",
+            px: 4,
+            fontSize: "1rem",
+            fontWeight: mode === "restaurant" ? 600 : 400,
+          }}
+        >
+          Restaurantes
+        </Button>
+      </Stack>
+
+      {/* Barra de búsqueda dinámica */}
+      <Box width="100%" maxWidth="900px">
+        {mode === "hotel" ? (
+          <SearchBarHotel onSearchResults={onResults} />
+        ) : (
+          <SearchBarRestaurant onSearchResults={onResults} />
+        )}
       </Box>
-      
+    </Stack>
+  );
+}
+
+
+// ---------------------------------------------------------
+// Página principal de búsqueda
+// ---------------------------------------------------------
+export default function Search() {
+  const q = new URLSearchParams(useLocation().search).get("q") || "";
+  const [searchResults, setSearchResults] = useState<BusinessPubAccountDataDTO[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearchResults = (results: BusinessPubAccountDataDTO[]) => {
+    setSearchResults(results);
+    setIsSearching(true);
+  };
+
+  const resetSearch = () => {
+    setSearchResults([]);
+    setIsSearching(false);
+  };
+
+  const items = useMemo(() => {
+    if (isSearching) {
+      return searchResults;
+    }
+  
+    // Si no hay búsqueda activa, mostrar los mocks filtrados
+    return MOCK_BUSINESS_SEARCH_RESULTS.filter((p) =>
+      !q
+        ? true
+        : p.name.toLowerCase().includes(q.toLowerCase()) ||
+          p.location.toLowerCase().includes(q.toLowerCase())
+    );
+  }, [q, searchResults, isSearching]);
+  
+
+  const theme = useTheme();
+
+  return (
+    <Stack spacing={5} sx={{ px: { xs: 2, sm: 4 }, py: 4 }}>
+      {/* Barra de búsqueda */}
+      <SearchBoxContainer onResults={handleSearchResults} />
+
+      {/* Título dinámico */}
+      <Typography
+        variant="h6"
+        textAlign="center"
+        sx={{
+          color: theme.palette.text.secondary,
+          fontStyle: "italic",
+          mt: 4,
+        }}
+      >
+        {isSearching
+          ? `Resultados de búsqueda (${searchResults.length} encontrados)`
+          : q
+          ? `Resultados para “${q}”`
+          : "Explora nuestras opciones"}
+      </Typography>
+
+      {/* Resultados */}
+      {isSearching ? (
+        items.length > 0 ? (
+          <PlaceGrid businessAccounts={items} />
+        ) : (
+          <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
+            <Typography variant="h6" color="text.secondary" fontStyle="italic">
+              No se encontraron resultados
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Intenta con otros términos o una ubicación distinta.
+            </Typography>
+            <Button variant="outlined" onClick={resetSearch} sx={{ mt: 2 }}>
+              Ver todas las opciones
+            </Button>
+          </Stack>
+        )
+      ) : (
+        <PlaceGrid businessAccounts={items} />
+      )}
+
     </Stack>
   );
 }

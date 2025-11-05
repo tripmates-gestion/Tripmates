@@ -154,3 +154,11 @@ Para ver los logs de la aplicación en tiempo real:
 
 ```bash
 docker compose logs -f backend -->
+
+## Tests
+
+Para correr los tests ejecutar
+
+```bash
+.\mvnw spring-javaformat:apply clean test
+```
