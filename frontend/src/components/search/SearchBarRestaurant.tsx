@@ -40,13 +40,17 @@ export const SearchBarRestaurant = ({
     if (!accessToken) return;
     setLoading(true)
     try {
-      const params : SearchBusinessFilters ={
-        ...commonFilters,
+      // Construcción dinámica del objeto de filtros
+      const params: Record<string, any> = {
         businessType: "RESTAURANT" as BusinessType,
-        ...(filters.restaurantType && { restaurantType: filters.restaurantType }),
-        ...(filters.attentionSchedule?.openingTime && { attentionSchedule: {openingTime: filters.attentionSchedule.openingTime} }),
-        ...(filters.attentionSchedule?.closingTime && { attentionSchedule: {closingTime: filters.attentionSchedule.closingTime} }),
       };
+      if (commonFilters.username?.trim()) params.username = commonFilters.username.trim();
+      if (commonFilters.location?.trim()) params.location = commonFilters.location.trim();
+      if (commonFilters.averagePrice) params.averagePrice = commonFilters.averagePrice;
+      
+      if (filters.restaurantType) params.restaurantType = filters.restaurantType;
+      if (filters.attentionSchedule?.openingTime) params.attentionSchedule = {openingTime: filters.attentionSchedule.openingTime};
+      if (filters.attentionSchedule?.closingTime) params.attentionSchedule = {closingTime: filters.attentionSchedule.closingTime};
 
       console.log("🔍 Parámetros de búsqueda (restaurants):", params);
       // QUITAR CUANDO SEA PUBLICO
@@ -88,12 +92,12 @@ export const SearchBarRestaurant = ({
               label="Tipo de restaurante"
             >
               <MenuItem value="">Todos</MenuItem>
-              <MenuItem value="cafe">Café</MenuItem>
-              <MenuItem value="vegano">Vegano</MenuItem>
-              <MenuItem value="vegetariano">Vegetariano</MenuItem>
-              <MenuItem value="peruano">Peruano</MenuItem>
-              <MenuItem value="argento">Argentino</MenuItem>
-              <MenuItem value="italiano">Italiano</MenuItem>
+              <MenuItem value="Cafe">Café</MenuItem>
+              <MenuItem value="Vegano">Vegano</MenuItem>
+              <MenuItem value="Vegetariano">Vegetariano</MenuItem>
+              <MenuItem value="Peruano">Peruano</MenuItem>
+              <MenuItem value="Argentino">Argentino</MenuItem>
+              <MenuItem value="Italiano">Italiano</MenuItem>
             </Select>
           </FormControl>
 
