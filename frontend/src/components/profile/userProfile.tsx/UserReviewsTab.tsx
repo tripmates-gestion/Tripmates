@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Card, CardContent, CardMedia, Avatar, Chip, Stack } from '@mui/material';
+import { useState, useEffect } from 'react';
 import type { Review } from '../../../types/review';
 import { useAuth } from '../../../hooks/useAuth';
 import { getReviewsForUser } from '../../../services/reviewService';
@@ -13,9 +12,14 @@ export default function UserReviewsTab() {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
+
+    if (!user || !accessToken) {
+      return;
+    } 
+
     const fetchReviews = async () => {
       try {
-        console.log(user.id);
+        console.log(user?.id);
         const reviewsDTO = await getReviewsForUser(accessToken, user.id);
         const reviews = mapReviewListDTOToReviews(reviewsDTO);
         setReviews(reviews);

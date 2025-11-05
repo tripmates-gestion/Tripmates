@@ -12,6 +12,8 @@ export const ENDPOINTS = {
     RESTAURANT_MENU: '/users/me/restaurant',
     GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
+    CREATE_PLAN: "/users/plans/create",
+    GET_PLANS: "/users/plans/list",
     POST_REVIEW: "/publications/{id}/review",
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",

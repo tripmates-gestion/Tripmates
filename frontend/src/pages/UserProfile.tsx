@@ -23,15 +23,16 @@ import { type AccountType } from '../types/AccountTypes'
 import UserReviewsTab from '../components/profile/userProfile.tsx/UserReviewsTab';
 
 import { Stat } from '../components/profile/stats';
+import UserPlansTab from '../components/profile/userProfile.tsx/UserPlansTab';
 
 
 const userRoleChipColor = 'info';
 
 
-// ----- tipo User que viene del back (como lo describiste) -----
+// ----- tipo User que viene del back -----
 type BackendUser = {
   id: string;
-  username: string;
+  name: string;
   email: string;
   role: AccountType;
   description: string;
@@ -41,8 +42,8 @@ type BackendUser = {
 // ----- util: mapea User (back) -> UserProfile (UI) -----
 function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
   return {
-    name: u?.username ?? prev?.name ?? '',
-    username: u?.username ?? prev?.username ?? '',
+    name: u?.name ?? prev?.name ?? '',
+    username: u?.name ?? prev?.username ?? '',
     description: u?.description ?? prev?.description ?? '',
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
@@ -69,7 +70,7 @@ export default function UserProfile() {
   // tabs dinámicos: agregamos "Publicaciones" sólo si es business
   const tabs = [
       { key: 'actividad', label: 'Actividad' },
-      { key: 'viajes', label: 'Viajes' },
+      { key: 'planes', label: 'Planes' },
       { key: 'fotos', label: 'Fotos' },
       { key: 'opiniones', label: 'Opiniones' },
     ];
@@ -179,7 +180,9 @@ export default function UserProfile() {
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
+            {currentTabKey === 'planes'        && 
+              <UserPlansTab accessToken={user.accessToken} />
+            }
             {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
             {currentTabKey === 'opiniones'     && <UserReviewsTab />}
           </Box>
