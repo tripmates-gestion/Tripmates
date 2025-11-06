@@ -335,8 +335,7 @@ public class AuthControllerTest {
 				request, AuthLoginResponseDTO.class);
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(
-				Objects.requireNonNull(accountRepository.findByEmail(kansas.getEmail()).orElse(null)).getToken());
+		assertNotNull(Objects.requireNonNull(accountRepository.findByEmail(kansas.getEmail()).orElse(null)).getToken());
 	}
 
 	@Test

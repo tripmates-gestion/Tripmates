@@ -48,4 +48,10 @@ public class ValidationErrorMessage {
 
 	public static final String PUBLICATION_NOT_FOUND = "La publicacion no se encontró";
 
+	public static final String INDEX_OUT_OF_RANGE = "Indice fuera de ranfo";
+
+	public static final String NOTHING_TO_UPDATE = "No existe una entidad para actualizar";
+
+	public static final String NOTHING_TO_DELETE = "No existe una entidad para eliminar";
+
 }

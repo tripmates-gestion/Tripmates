@@ -1,22 +1,16 @@
 package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.users.entity.mongo.Account;
-import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-/**
- * Representa las queries personalizadas que podemos realizar sobre el documento de
- * {@link com.tripmates.backend.users.entity.mongo.Account User} en MongoDB.
- *
- * @see org.springframework.data.mongodb.repository.MongoRepository
- * @see com.tripmates.backend.users.entity.mongo.Account
- */
+import java.util.Optional;
+
 public interface AccountRepository extends MongoRepository<Account, String>, AccountRepositoryCustom {
 
 	/**
-	 * Devuelve el usuario asociado al email.
-	 * @param email email del usuario.
-	 * @return {@link com.tripmates.backend.users.entity.mongo.Account User} o Null.
+	 * Returns a user account from its email.
+	 * @param email user's email.
+	 * @return {@link Account}.
 	 */
 	Optional<Account> findByEmail(String email);
 
