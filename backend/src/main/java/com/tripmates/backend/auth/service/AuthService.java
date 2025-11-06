@@ -10,7 +10,7 @@ import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +24,7 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 public class AuthService {
 
 	@Autowired
-	private AccountRespository userRepository;
+	private AccountRepository userRepository;
 
 	@Autowired
 	private JwtService jwtService;

@@ -10,7 +10,7 @@ import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.common.types.Role;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,7 @@ public class AuthControllerTest {
 	private TestRestTemplate restTemplate;
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -325,7 +325,7 @@ public class AuthControllerTest {
 		kansas.setPassword(passwordEncoder.encode("123456789"));
 		kansas.setBusinessType(BusinessType.RESTAURANT);
 		kansas.setRole(Role.BUSINESS);
-		accountRespository.save(kansas);
+		accountRepository.save(kansas);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthLoginRequestDTO> request = new HttpEntity<>(
@@ -336,7 +336,7 @@ public class AuthControllerTest {
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertNotNull(
-				Objects.requireNonNull(accountRespository.findByEmail(kansas.getEmail()).orElse(null)).getToken());
+				Objects.requireNonNull(accountRepository.findByEmail(kansas.getEmail()).orElse(null)).getToken());
 	}
 
 	@Test
@@ -347,7 +347,7 @@ public class AuthControllerTest {
 		kansas.setPassword(passwordEncoder.encode("123456789"));
 		kansas.setBusinessType(BusinessType.RESTAURANT);
 		kansas.setRole(Role.BUSINESS);
-		accountRespository.save(kansas);
+		accountRepository.save(kansas);
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<AuthLoginRequestDTO> login = new HttpEntity<>(

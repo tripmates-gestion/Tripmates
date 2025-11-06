@@ -3,7 +3,6 @@ package com.tripmates.backend.users.repository.mongo;
 import com.tripmates.backend.users.entity.mongo.Account;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
 
 /**
  * Representa las queries personalizadas que podemos realizar sobre el documento de
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Repository;
  * @see org.springframework.data.mongodb.repository.MongoRepository
  * @see com.tripmates.backend.users.entity.mongo.Account
  */
-public interface AccountRespository extends MongoRepository<Account, String>, AccountRepositoryCustom {
+public interface AccountRepository extends MongoRepository<Account, String>, AccountRepositoryCustom {
 
 	/**
 	 * Devuelve el usuario asociado al email.

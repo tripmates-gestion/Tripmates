@@ -11,7 +11,7 @@ import com.tripmates.backend.publications.exception.PublicationNotFoundException
 import com.tripmates.backend.publications.exception.PublicationOwnerException;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
@@ -46,7 +46,7 @@ public class PublicationService {
 	private ReviewRepository reviewRepository;
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
 
 	@Autowired
 	private StorageService storageService;
@@ -61,7 +61,7 @@ public class PublicationService {
 	public PublicationResumeResponseDTO createPublication(PublicationRequestDTO publicationRequestDTO,
 			List<MultipartFile> imageFiles, String email) {
 
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		BusinessPublicationBuilder businessPublicationBuilder = new BusinessPublicationBuilder(storageService)
@@ -80,7 +80,7 @@ public class PublicationService {
 
 	) {
 
-		Account user = accountRespository.findByEmail(authenticatedUserEmail)
+		Account user = accountRepository.findByEmail(authenticatedUserEmail)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (user.getRole() != Role.USER)
@@ -109,7 +109,7 @@ public class PublicationService {
 
 		List<ReviewResponseDTO> reviews = new ArrayList<>();
 		for (Review review : publication.getReviews()) {
-			var user = accountRespository.findById(review.getOwnerId())
+			var user = accountRepository.findById(review.getOwnerId())
 				.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 			reviews.add(ReviewResponseDTO.fromEntities(review, publication, user));
 		}
@@ -117,7 +117,7 @@ public class PublicationService {
 	}
 
 	public ReviewsListDTO getReviewsFromUser(String userId) {
-		Account owner = accountRespository.findById(userId)
+		Account owner = accountRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		List<ReviewResponseDTO> reviews = new ArrayList<>();
@@ -139,7 +139,7 @@ public class PublicationService {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))
@@ -161,7 +161,7 @@ public class PublicationService {
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
 	public List<PublicationResumeResponseDTO> getPublicationAuthenticated(String email) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(account.getId())
@@ -176,7 +176,7 @@ public class PublicationService {
 	 * @return {@link PublicationResumeResponseDTO}.
 	 */
 	public List<PublicationResumeResponseDTO> getPublicationNoneAuthenticated(String userId) {
-		accountRespository.findById(userId)
+		accountRepository.findById(userId)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(userId)
@@ -199,7 +199,7 @@ public class PublicationService {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))

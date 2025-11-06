@@ -6,11 +6,10 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
-import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
@@ -34,7 +33,7 @@ import java.util.regex.Matcher;
 public class UserService {
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
 
 	@Autowired
 	private PublicationRepository publicationRepository;
@@ -48,7 +47,7 @@ public class UserService {
 	 * @return {@link Account User}
 	 */
 	public AccountResumeResponseDTO getUser(String email) {
-		Account user = accountRespository.findByEmail(email)
+		Account user = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException("User not found"));
 
 		return AccountResumeResponseDTO.fromAccount(user);
@@ -56,7 +55,7 @@ public class UserService {
 
 	public AccountResumeResponseDTO updateMenuItem(String email, int index, MenuItem item, List<MultipartFile> files,
 			List<Integer> deletePhotoIndexes) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -111,11 +110,11 @@ public class UserService {
 				: currentItem.description();
 		current.set(index, new MenuItem(mergedPhotos, foodName, price, description));
 		account.setMenu(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO deleteMenuItem(String email, int index) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -134,12 +133,12 @@ public class UserService {
 		}
 		current.remove(index);
 		account.setMenu(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO updateRoomPack(String email, int index, RoomPack pack, List<MultipartFile> files,
 			List<Integer> deletePhotoIndexes) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -203,11 +202,11 @@ public class UserService {
 		current.set(index, new RoomPack(checkInDate, checkOutDate, numberOfGuests, services, priceVal, descriptionVal,
 				mergedPhotos));
 		account.setRoomPacks(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO deleteRoomPack(String email, int index) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -227,11 +226,11 @@ public class UserService {
 		}
 		current.remove(index);
 		account.setRoomPacks(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO addMenuItem(String email, MenuItem item, List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -256,11 +255,11 @@ public class UserService {
 		List<MenuItem> current = account.getMenu() != null ? account.getMenu() : new ArrayList<>();
 		current.add(newItem);
 		account.setMenu(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO addRoomPack(String email, RoomPack pack, List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -286,11 +285,11 @@ public class UserService {
 		List<RoomPack> current = account.getRoomPacks() != null ? account.getRoomPacks() : new ArrayList<>();
 		current.add(newPack);
 		account.setRoomPacks(current);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public List<String> uploadRestaurantMenuPhotos(String email, List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -309,7 +308,7 @@ public class UserService {
 	}
 
 	public List<String> uploadHostingRoomPackPhotos(String email, List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -337,7 +336,7 @@ public class UserService {
 	public AccountResumeResponseDTO updateUser(String email, UserUpdateRequestDTO userUpdateRequestDTO,
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
 		List<AccountUpdateCommand> commands = userUpdateRequestDTO.toCommands(storageService);
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		for (AccountUpdateCommand command : commands)
@@ -346,7 +345,7 @@ public class UserService {
 		updateAvatar(account, avatar);
 		updateProfileImages(account, imageFiles);
 
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	/**
@@ -356,7 +355,7 @@ public class UserService {
 	 * @return {@link Page}
 	 */
 	public Page<AccountResumeResponseDTO> search(AccountSearchRequestDTO accountSearchRequestDTO, Pageable pageable) {
-		return accountRespository.searchAccount(accountSearchRequestDTO, pageable)
+		return accountRepository.searchAccount(accountSearchRequestDTO, pageable)
 			.map(AccountResumeResponseDTO::fromAccount);
 	}
 
@@ -405,7 +404,7 @@ public class UserService {
 	 * plan.
 	 */
 	public void createPlan(String email, PlanCreationRequestDTO planCreationRequestDTO) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.USER)
@@ -418,7 +417,7 @@ public class UserService {
 
 		account.getPlansList().add(planBuilder.build());
 
-		accountRespository.save(account);
+		accountRepository.save(account);
 	}
 
 	/**
@@ -427,7 +426,7 @@ public class UserService {
 	 * @return a list of {@link PlanResumeResponseDTO}.
 	 */
 	public List<PlanResumeResponseDTO> getPlans(String email) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.USER)
@@ -453,7 +452,7 @@ public class UserService {
 	}
 
 	public AccountResumeResponseDTO updateRestaurantMenu(String email, List<MenuItem> menu, List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -489,12 +488,12 @@ public class UserService {
 		}
 
 		account.setMenu(newMenu);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	public AccountResumeResponseDTO updateHostingRoomPacks(String email, List<RoomPack> roomPacks,
 			List<MultipartFile> files) {
-		Account account = accountRespository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -531,7 +530,7 @@ public class UserService {
 		}
 
 		account.setRoomPacks(newPacks);
-		return AccountResumeResponseDTO.fromAccount(accountRespository.save(account));
+		return AccountResumeResponseDTO.fromAccount(accountRepository.save(account));
 	}
 
 	private static Map<Integer, Map<Integer, String>> indexByPosition(Map<String, String> uploadedByName,
