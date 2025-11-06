@@ -2,8 +2,10 @@ package com.tripmates.backend.publications.entity.mongo;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.Review;
 
@@ -18,39 +20,86 @@ import java.util.List;
 @Setter
 public class Publication {
 
+	/**
+	 * Publication's ID.
+	 */
 	@Id
 	private String id;
 
+	/**
+	 * Publication's title.
+	 */
 	private String title;
 
+	/**
+	 * Publication's description.
+	 */
 	private String description;
 
+	/**
+	 * Publication's opening days.
+	 */
 	private List<DayOfWeek> openingDays = new ArrayList<>();
 
+	/**
+	 * Publication's attention schedule.
+	 */
 	private AttentionSchedule attentionSchedule;
 
+	/**
+	 * Publication's exceptional closing days.
+	 */
 	private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
 
-	private String phoneNumber;
-
-	private String email;
-
-	private String location;
-
-	private List<String> imageUrls = new ArrayList<>();
-
-	private List<String> tags = new ArrayList<>();
-
-	private String ownerId; // Datos embebidos de la cuenta de negocio (para evitar hacer
-							// joins)
-
-	private String ownerUsername;
-
-	private String ownerAvatarUrl;
-
+	/**
+	 * Publication's creation date.
+	 */
 	private Date createdAt = new Date();
 
+	/**
+	 * Publication's phone number.
+	 */
+	private String phoneNumber;
+
+	/**
+	 * Publication's email.
+	 */
+	private String email;
+
+	/**
+	 * Publication's location.
+	 */
+	private String location;
+
+	/**
+	 * Publication's images URLs.
+	 */
+	private List<String> imageUrls = new ArrayList<>();
+
+	/**
+	 * Publication's tags.
+	 */
+	private List<String> tags = new ArrayList<>();
+
+	/**
+	 * Publication's reviews.
+	 */
 	private List<Review> reviews = new ArrayList<>();
+
+	/**
+	 * Publication's owner ID.
+	 */
+	private String ownerId;
+
+	/**
+	 * Publication's owner username.
+	 */
+	private String ownerUsername;
+
+	/**
+	 * Publication's owner avatar image URL.
+	 */
+	private String ownerAvatarUrl;
 
 	public Publication() {
 	}
@@ -75,6 +124,10 @@ public class Publication {
 		this.createdAt = createdAt;
 	}
 
+	/**
+	 * Adds a review to the publication.
+	 * @param review review made.
+	 */
 	public void addReview(Review review) {
 		this.reviews.add(review);
 	}

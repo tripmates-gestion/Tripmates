@@ -1,7 +1,7 @@
 package com.tripmates.backend.users.service;
 
+import com.tripmates.backend.common.exception.NotFoundException;
 import com.tripmates.backend.common.types.*;
-import com.tripmates.backend.auth.exception.AccountNotFoundException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
@@ -43,7 +43,7 @@ public class UserService {
 	 */
 	public AccountResumeResponseDTO getUserAccount(String email) {
 		Account user = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return AccountResumeResponseDTO.fromAccount(user);
 	}
@@ -60,7 +60,7 @@ public class UserService {
 			List<MultipartFile> imageFiles, MultipartFile avatar) {
 		List<AccountUpdateCommand> commands = accountUpdateRequestDTO.toCommands(storageService);
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		for (AccountUpdateCommand command : commands)
 			account = command.apply(account);
@@ -130,7 +130,7 @@ public class UserService {
 	 */
 	public void createPlan(String email, PlanCreationRequestDTO planCreationRequestDTO) {
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
@@ -152,7 +152,7 @@ public class UserService {
 	 */
 	public List<PlanResumeResponseDTO> getPlans(String email) {
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
@@ -372,7 +372,7 @@ public class UserService {
 	 */
 	private Account getRestaurantAccount(String email) {
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);
@@ -391,7 +391,7 @@ public class UserService {
 	 */
 	private Account getHostingAccount(String email) {
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.BUSINESS)
 			throw new BadRequestException(ValidationErrorMessage.NOT_BUSINESS_ACCOUNT);

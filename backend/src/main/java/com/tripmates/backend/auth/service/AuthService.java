@@ -1,11 +1,10 @@
 package com.tripmates.backend.auth.service;
 
 import com.tripmates.backend.auth.dto.*;
-import com.tripmates.backend.auth.exception.IncorrectPasswordException;
-import com.tripmates.backend.auth.exception.IncorrectTokenException;
-import com.tripmates.backend.auth.exception.AccountAlreadyExistsException;
-import com.tripmates.backend.auth.exception.AccountNotFoundException;
+import com.tripmates.backend.common.exception.ConflictException;
 import com.tripmates.backend.auth.exception.ValidationErrorException;
+import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.common.exception.UnauthorizedException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.common.types.Role;
@@ -37,7 +36,7 @@ public class AuthService {
 	 */
 	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
 		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(account -> {
-			throw new AccountAlreadyExistsException(ValidationErrorMessage.USER_ALREADY_EXISTS);
+			throw new ConflictException(ValidationErrorMessage.USER_ALREADY_EXISTS);
 		});
 
 		Account account = new Account();
@@ -60,10 +59,10 @@ public class AuthService {
 	 */
 	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
 		Account account = userRepository.findByEmail(authLoginRequestDTO.email())
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		if (!passwordEncoder.matches(authLoginRequestDTO.password(), account.getPassword()))
-			throw new IncorrectPasswordException(ValidationErrorMessage.INVALID_CREDENTIALS);
+			throw new UnauthorizedException(ValidationErrorMessage.INVALID_CREDENTIALS);
 
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(account.getEmail(), account.getPassword()));
@@ -83,7 +82,7 @@ public class AuthService {
 	 */
 	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
 		Account account = userRepository.findByEmail(authLogoutRequestDTO.email())
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		account.setToken(null);
 		userRepository.save(account);
@@ -96,10 +95,10 @@ public class AuthService {
 	 */
 	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
 		Account user = userRepository.findByEmail(authRefreshRequestDTO.email())
-			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))
-			throw new IncorrectTokenException(ValidationErrorMessage.INVALID_CREDENTIALS);
+			throw new UnauthorizedException(ValidationErrorMessage.INVALID_CREDENTIALS);
 
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));

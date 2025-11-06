@@ -1,16 +1,11 @@
 package com.tripmates.backend.config.security;
 
-import com.tripmates.backend.auth.exception.IncorrectPasswordException;
-import com.tripmates.backend.auth.exception.IncorrectTokenException;
-import com.tripmates.backend.auth.exception.AccountAlreadyExistsException;
-import com.tripmates.backend.auth.exception.AccountNotFoundException;
+import com.tripmates.backend.common.exception.ConflictException;
 import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.FileUploadException;
 import com.tripmates.backend.common.exception.NotFoundException;
-import com.tripmates.backend.publications.exception.PublicationNotFoundException;
-import com.tripmates.backend.publications.exception.PublicationOwnerException;
 import com.tripmates.backend.common.exception.UnauthorizedException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,25 +77,11 @@ public class GlobalExceptionHandler {
 					String.valueOf(request.getRequestURI())));
 	}
 
-	@ExceptionHandler(IncorrectPasswordException.class)
-	public ResponseEntity<?> handleIncorrectPasswordException(IncorrectPasswordException e) {
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-					"auth/login"));
-	}
-
 	@ExceptionHandler(FileUploadException.class)
 	public ResponseEntity<?> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 			.body(new ErrorDTO("about:blank", "File Upload Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
 					e.getMessage(), String.valueOf(request.getRequestURI())));
-	}
-
-	@ExceptionHandler(IncorrectTokenException.class)
-	public ResponseEntity<?> handleIncorrectTokenException(IncorrectTokenException e) {
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-					"auth/refresh"));
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -110,32 +91,11 @@ public class GlobalExceptionHandler {
 					e.getMessage(), String.valueOf(request.getRequestURI())));
 	}
 
-	@ExceptionHandler(AccountAlreadyExistsException.class)
-	public ResponseEntity<?> handleUserAlreadyExistsException(AccountAlreadyExistsException e) {
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<?> handleConflictException(ConflictException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
-			.body(new ErrorDTO("about:blank", "User Already Exists", HttpStatus.CONFLICT.value(), e.getMessage(),
-					"auth/register"));
-	}
-
-	@ExceptionHandler(AccountNotFoundException.class)
-	public ResponseEntity<?> handleUserNotFoundException(AccountNotFoundException e) {
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.NOT_FOUND.value(), e.getMessage(),
-					"auth/login"));
-	}
-
-	@ExceptionHandler(PublicationOwnerException.class)
-	public ResponseEntity<?> handlePublicationOwnerException(PublicationOwnerException e) {
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-					"publications/**"));
-	}
-
-	@ExceptionHandler(PublicationNotFoundException.class)
-	public ResponseEntity<?> handlePublicationNotFoundException(PublicationNotFoundException e) {
-		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(new ErrorDTO("about:blank", "Publication Not Found", HttpStatus.NOT_FOUND.value(), e.getMessage(),
-					"publications/**"));
+			.body(new ErrorDTO("about:blank", "Conflict", HttpStatus.CONFLICT.value(), e.getMessage(),
+					String.valueOf(request.getRequestURI())));
 	}
 
 }
