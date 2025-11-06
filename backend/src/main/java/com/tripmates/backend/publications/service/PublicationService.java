@@ -1,6 +1,6 @@
 package com.tripmates.backend.publications.service;
 
-import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.auth.exception.AccountNotFoundException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.PublicationRequestDTO;
@@ -62,7 +62,7 @@ public class PublicationService {
 			List<MultipartFile> imageFiles, String email) {
 
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		BusinessPublicationBuilder businessPublicationBuilder = new BusinessPublicationBuilder(storageService)
 			.publicationDetails(publicationRequestDTO)
@@ -81,7 +81,7 @@ public class PublicationService {
 	) {
 
 		Account user = accountRepository.findByEmail(authenticatedUserEmail)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (user.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
@@ -140,7 +140,7 @@ public class PublicationService {
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))
 			throw new PublicationOwnerException("No tenes permiso para eliminar esta publicacion");
@@ -162,7 +162,7 @@ public class PublicationService {
 	 */
 	public List<PublicationResumeResponseDTO> getPublicationAuthenticated(String email) {
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(account.getId())
 			.stream()
@@ -177,7 +177,7 @@ public class PublicationService {
 	 */
 	public List<PublicationResumeResponseDTO> getPublicationNoneAuthenticated(String userId) {
 		accountRepository.findById(userId)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		return publicationRepository.findByOwnerId(userId)
 			.stream()
@@ -200,7 +200,7 @@ public class PublicationService {
 			.orElseThrow(() -> new PublicationNotFoundException("Publicacion no encontrada"));
 
 		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new UserNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+			.orElseThrow(() -> new AccountNotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (publication.getOwnerId() != null && !publication.getOwnerId().equals(account.getId()))
 			throw new PublicationOwnerException("No tenes permiso para editar esta publicacion");

@@ -2,8 +2,8 @@ package com.tripmates.backend.config.security;
 
 import com.tripmates.backend.auth.exception.IncorrectPasswordException;
 import com.tripmates.backend.auth.exception.IncorrectTokenException;
-import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
-import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.auth.exception.AccountAlreadyExistsException;
+import com.tripmates.backend.auth.exception.AccountNotFoundException;
 import com.tripmates.backend.auth.exception.ValidationErrorException;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.exception.BadRequestException;
@@ -110,15 +110,15 @@ public class GlobalExceptionHandler {
 					e.getMessage(), String.valueOf(request.getRequestURI())));
 	}
 
-	@ExceptionHandler(UserAlreadyExistsException.class)
-	public ResponseEntity<?> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+	@ExceptionHandler(AccountAlreadyExistsException.class)
+	public ResponseEntity<?> handleUserAlreadyExistsException(AccountAlreadyExistsException e) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 			.body(new ErrorDTO("about:blank", "User Already Exists", HttpStatus.CONFLICT.value(), e.getMessage(),
 					"auth/register"));
 	}
 
-	@ExceptionHandler(UserNotFoundException.class)
-	public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException e) {
+	@ExceptionHandler(AccountNotFoundException.class)
+	public ResponseEntity<?> handleUserNotFoundException(AccountNotFoundException e) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
 			.body(new ErrorDTO("about:blank", "Invalid Credentials", HttpStatus.NOT_FOUND.value(), e.getMessage(),
 					"auth/login"));
