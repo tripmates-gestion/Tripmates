@@ -4,7 +4,7 @@ import type { MenuItem } from "../types/Restaurant";
 type Role = "USER" | "BUSINESS";
 type BusinessType = "RESTAURANT" | "HOTEL";
 
-type CommonUser = {
+export type CommonUser = {
   id: string;
   username: string;
   name: string;
