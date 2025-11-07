@@ -64,6 +64,18 @@ public class Account implements UserDetails {
 	@Field(targetType = FieldType.STRING)
 	private String description;
 
+	/**
+	 * Account's followers. Only allowed in USER account.
+	 */
+	@Field(targetType = FieldType.INT64)
+	private Integer followers = 0;
+
+	/**
+	 * Account's followed. Only allowed in USER account.
+	 */
+	@Field(targetType = FieldType.INT64)
+	private Integer followed = 0;
+
 	/** Account's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
 	private String location;

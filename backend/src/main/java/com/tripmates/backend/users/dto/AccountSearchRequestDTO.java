@@ -9,9 +9,14 @@ import java.util.List;
 
 @Validated
 public record AccountSearchRequestDTO(
+		/* For all accounts types */
+		@Schema(description = "Filter by user's username") String username,
+		/* For user's accounts */
+		@Schema(description = "Filter by user's followers") Integer followers,
+		@Schema(description = "Filter by user's followed") Integer followed,
+		/* For business's accounts */
 		@Schema(description = "Filter by business's average price") AveragePrice averagePrice,
 		@Schema(description = "Filter by business's location") String location,
-		@Schema(description = "Filter by business's username") String username,
 		@Schema(description = "Filter by business's type") BusinessType businessType,
 		@Schema(description = "Filter by restaurant's type") RestaurantType restaurantType,
 		@Schema(description = "Filter by hotel's type") HotelType hotelType,
