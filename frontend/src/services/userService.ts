@@ -1,7 +1,7 @@
 import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 import type { BusinessUpdateResponseDTO } from '../types/business';
-import type { BusinessUser } from '../context/PrivateUserProfilesTypes';
+import type { BusinessUser, CommonUser } from '../context/PrivateUserProfilesTypes';
 
 
 export async function getCurrentUser(token: string) {
@@ -35,3 +35,21 @@ export async function updateBusinessUser(
     signal,
   }) as Promise<BusinessUpdateResponseDTO>;
 }
+
+export async function updateUser(
+  data: Partial<CommonUser>,
+  accessToken: string | null,
+  signal?: AbortSignal
+): Promise<BusinessUpdateResponseDTO> {
+  if (!accessToken) throw new Error("No estás autenticado.");
+
+  console.log("[USER SERVICE]: Sending request with:\n", "Method: PATCH\n", "Endpoint: ", ENDPOINTS.USER_ME, "\n")
+  console.log("Data: ", data)
+
+  return apiFetch(ENDPOINTS.USER_ME, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    signal,
+  }) as Promise<BusinessUpdateResponseDTO>;
+} 

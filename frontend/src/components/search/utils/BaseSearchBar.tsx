@@ -18,6 +18,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import ClearIcon from "@mui/icons-material/Clear";
 import type { SelectChangeEvent } from "@mui/material";
 
 export interface CommonFilters {
@@ -37,21 +38,34 @@ export const BaseSearchBar = ({
   renderExtraFilters,
   loading = false,
 }: BaseSearchBarProps) => {
-
   const theme = useTheme();
   const [filters, setFilters] = useState<CommonFilters>({});
-
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
   const open = Boolean(anchorEl);
   const handleOpenFilters = (event: React.MouseEvent<HTMLElement>) =>
     setAnchorEl(event.currentTarget);
   const handleCloseFilters = () => setAnchorEl(null);
 
-  const handleChangePrecio = (event: SelectChangeEvent<"$" | "$$" | "$$$" | "all">) => {
-    if (event.target.value !== "all") {
+  const handleChangePrecio = (
+    event: SelectChangeEvent<"$" | "$$" | "$$$" | "all">
+  ) => {
+    if (event.target.value === "all") {
+      setFilters((prev) => {
+        const newFilters = { ...prev };
+        delete newFilters.averagePrice;
+        return newFilters;
+      });
+    } else {
       const value = event.target.value as "$" | "$$" | "$$$";
       setFilters((prev) => ({ ...prev, averagePrice: value }));
     }
+  };
+
+  /** 🧹 Limpiar todos los filtros */
+  const handleClearFilters = () => {
+    setFilters({});
+    onSearch({}); // opcional: dispara búsqueda vacía para resetear resultados
   };
 
   return (
@@ -72,8 +86,10 @@ export const BaseSearchBar = ({
           placeholder="Ciudad"
           variant="outlined"
           size="small"
-          value={filters.location}
-          onChange={(e) => setFilters((prev) => ({ ...prev, location: e.target.value }))}
+          value={filters.location ?? ""}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, location: e.target.value }))
+          }
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -92,8 +108,10 @@ export const BaseSearchBar = ({
           placeholder="Nombre"
           variant="outlined"
           size="small"
-          value={filters.username}
-          onChange={(e) => setFilters((prev) => ({ ...prev, username: e.target.value }))}
+          value={filters.username ?? ""}
+          onChange={(e) =>
+            setFilters((prev) => ({ ...prev, username: e.target.value }))
+          }
           sx={{
             flex: 1,
             bgcolor: theme.palette.mode === "dark" ? "#1e1e1e" : "#f7f7f7",
@@ -110,6 +128,18 @@ export const BaseSearchBar = ({
           Filtros
         </Button>
 
+        {/* 🧹 Nuevo botón “Limpiar filtros” */}
+        <Button
+          variant="outlined"
+          startIcon={<ClearIcon />}
+          onClick={handleClearFilters}
+          sx={{
+            borderRadius: "25px",
+            textTransform: "none",
+          }}
+        >
+          Limpiar filtros
+        </Button>
         <Button
           variant="contained"
           startIcon={<SearchIcon />}
