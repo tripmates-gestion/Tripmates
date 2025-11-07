@@ -39,8 +39,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	}
 
 	/**
-	 * Retorna un {@link Criteria} con filtros para el root del documento de Mongo.
-	 * @param accountSearchRequestDTO dto con los filtros a aplicar.
+	 * Returns a {@link Criteria} with the filters that involve attributes that are in the
+	 * root of the document.
+	 * @param accountSearchRequestDTO DTO with the filters.
 	 * @return {@link Criteria}.
 	 */
 	private List<Criteria> buildRootCriteria(AccountSearchRequestDTO accountSearchRequestDTO) {
@@ -78,9 +79,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	}
 
 	/**
-	 * Retorna un {@link Criteria} con filtros para los room packs embebidos en el
-	 * documento de Mongo.
-	 * @param accountSearchRequestDTO dto con los filtros a aplicar.
+	 * Returns a {@link Criteria} with the filters that involve attributes that are
+	 * embedded in the document.
+	 * @param accountSearchRequestDTO DTO with the filters.
 	 * @return {@link Criteria}.
 	 */
 	private List<Criteria> buildRoomPacksCriteria(AccountSearchRequestDTO accountSearchRequestDTO) {

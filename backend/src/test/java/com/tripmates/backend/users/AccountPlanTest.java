@@ -3,7 +3,7 @@ package com.tripmates.backend.users;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class AccountPlanTest {
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -65,7 +65,7 @@ public class AccountPlanTest {
 		fran.setEmail("franInfanti@gmail.com.ar");
 		fran.setPassword("123456789");
 		fran.setRole(Role.USER);
-		accountRespository.save(fran);
+		accountRepository.save(fran);
 
 		String createPlanRequest = """
 				{

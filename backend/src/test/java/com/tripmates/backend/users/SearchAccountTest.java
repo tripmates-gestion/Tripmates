@@ -2,12 +2,11 @@ package com.tripmates.backend.users;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tripmates.backend.common.types.*;
-import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +18,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.util.UriComponentsBuilder;
 // import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
@@ -44,7 +42,7 @@ public class SearchAccountTest {
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
 
 	private String baseUrl() {
 		return "http://localhost:" + port;
@@ -89,7 +87,7 @@ public class SearchAccountTest {
 		kansas.setBusinessType(BusinessType.RESTAURANT);
 		kansas.setRole(Role.BUSINESS);
 
-		accountRespository.saveAll(List.of(kansas));
+		accountRepository.saveAll(List.of(kansas));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
 				"{}", new ParameterizedTypeReference<>() {
@@ -127,7 +125,7 @@ public class SearchAccountTest {
 		rosmarie.setBusinessType(BusinessType.HOTEL);
 		rosmarie.setRole(Role.BUSINESS);
 
-		accountRespository.saveAll(List.of(sigaLaVaca, pfchang, rosmarie));
+		accountRepository.saveAll(List.of(sigaLaVaca, pfchang, rosmarie));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
 				"{ \"businessType\": \"RESTAURANT\" }", new ParameterizedTypeReference<>() {
@@ -161,7 +159,7 @@ public class SearchAccountTest {
 		burgerKing.setBusinessType(BusinessType.RESTAURANT);
 		burgerKing.setRole(Role.BUSINESS);
 
-		accountRespository.saveAll(List.of(mcDonalds, burgerKing));
+		accountRepository.saveAll(List.of(mcDonalds, burgerKing));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
 				    {
@@ -197,7 +195,7 @@ public class SearchAccountTest {
 		hutch.setBusinessType(BusinessType.RESTAURANT);
 		hutch.setRole(Role.BUSINESS);
 
-		accountRespository.saveAll(List.of(wendys, hutch));
+		accountRepository.saveAll(List.of(wendys, hutch));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
 				    {
@@ -235,7 +233,7 @@ public class SearchAccountTest {
 		graff.setAveragePrice(AveragePrice.$);
 		graff.setRole(Role.BUSINESS);
 
-		accountRespository.saveAll(List.of(sheraton, graff));
+		accountRepository.saveAll(List.of(sheraton, graff));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
 				    {
@@ -264,7 +262,7 @@ public class SearchAccountTest {
 		ypfAtalaya.setRole(Role.BUSINESS);
 		ypfAtalaya.setAttentionSchedule(new AttentionSchedule(LocalTime.of(8, 0), LocalTime.of(18, 0)));
 
-		accountRespository.saveAll(List.of(ypfAtalaya));
+		accountRepository.saveAll(List.of(ypfAtalaya));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
 				    {
@@ -298,7 +296,7 @@ public class SearchAccountTest {
 				"Las habitaciones incluyen frigorífico y aire acondicionado, y es posible permanecer conectado, ya que hay wifi gratuito disponible, para que disfrutes de tu descanso con comodidad.",
 				null)));
 
-		accountRespository.saveAll(List.of(hiltonPilar));
+		accountRepository.saveAll(List.of(hiltonPilar));
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
 				{
