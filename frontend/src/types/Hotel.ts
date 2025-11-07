@@ -1,16 +1,19 @@
-export type HotelType = "hotel" | "hostel" | "departamento" | "cabaña" | "camping"
+export type HotelType = "Hotel" | "Hostel" | "Departamento" | "Cabaña" | "Camping" | "Lujo"
+export type HotelService = "wifi" | "desayuno" | "piscina" | "gimnasio" | "estacionamiento" | "spa" | "restaurante" | "bar" | "aire_acondicionado" | "transporte_aeropuerto" | "admite_mascotas" | "servicio_habitaciones" | "lavanderia" | "centro_negocios" | "sala_reuniones" | "club_infantil" | "vista_al_mar" | "todo_incluido"
 
-export type RoomPackDTO = {
-    checkInDate: string;        // formato "yyyy-MM-dd"
-    checkOutDate: string;       // formato "yyyy-MM-dd"
-    numberOfGuests: number;
-    services: string[];
-    price: number;
-    description: string;
-    photosURLs: string[];
-}
+// Paquete de habitación que devuelve el backend
+export type RoomPack = {
+  checkInDate: string;       // "2025-11-15"
+  checkOutDate: string;      // "2025-11-18"
+  numberOfGuests: number;    // 3
+  services?: string[];        // ["breakfast", "gym"]
+  price: number;             // 310
+  description?: string;       // "Premium suite"
+  photosURLs?: string[];     // URLs de las fotos ya guardadas
+};
 
-export type RoomPack = Omit<RoomPackDTO, 'checkInDate' | 'checkOutDate'> & {
-    checkInDate: Date;
-    checkOutDate: Date;
-  };
+
+
+// Payload que mandamos en data (sin fotos)
+export type RoomPackPayload = Omit<RoomPack, "photosURLs">;
+  

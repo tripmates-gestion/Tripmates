@@ -7,6 +7,8 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import { Link as RouterLink } from 'react-router-dom';
+import { PAGES_ROUTE } from '../constants/Pages';
 
 
 // Otro mock que es igual que el que esta en Search.tsx
@@ -82,11 +84,11 @@ export function Hero() {
         </Typography>
 
         <Stack direction="row" spacing={2} mt={4}>
-          <Button variant="contained" color="primary" size="large">
-            Descubre más
-          </Button>
-          <Button variant="outlined" color="primary" size="large">
+          <Button variant="outlined" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.search}>
             Explora destinos
+          </Button>
+          <Button variant="contained" color="primary" size="large">
+            Conecta con otros viajeros
           </Button>
         </Stack>
       </Box>

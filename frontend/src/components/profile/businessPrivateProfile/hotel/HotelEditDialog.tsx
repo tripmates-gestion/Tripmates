@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, Stack, Backdrop, CircularProgress
 } from '@mui/material';
 import { enqueueSnackbar } from 'notistack';
-import { useAuth } from '../../../hooks/useAuth';
-import { useBusinessProfile } from '../../../hooks/useBusinessProfile';
-import { BUSINESS_TYPES } from '../../../constants/Rol';
-import { dataURLtoFile } from './common/Utils';
-import { updateBusinessUser } from '../../../services/userService';
-import BusinessCommonFields from './common/BusinessCommonFields';
-import GalleryManager from './common/GalleryManager';
+import { useAuth } from '../../../../hooks/useAuth';
+import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
+import { BUSINESS_TYPES } from '../../../../constants/Rol';
+import { dataURLtoFile } from '../common/Utils';
+import { updateBusinessUser } from '../../../../services/userService';
+import BusinessCommonFields from '../common/BusinessCommonFields';
+import GalleryManager from '../common/GalleryManager';
 import HotelFields from './HotelFields';
-import { type HotelType } from './common/types';
-import { validateHotel, type HotelErrors } from '../../../hooks/useUpdateBusinessUserValidation';
+import { type HotelType } from '../../../../types/Hotel';
+import { validateHotel, type HotelErrors } from '../../../../hooks/useUpdateBusinessUserValidation';
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -34,21 +35,21 @@ export default function HotelEditDialog({ open, onClose }: Props) {
   const { accessToken, updateUser } = useAuth();
   const { business, refreshProfile } = useBusinessProfile();
 
-  if (!business || business.businessType !== BUSINESS_TYPES.hotel) return null;
 
   const initialExisting =
-    business.profileImageUrls?.length
-      ? business.profileImageUrls
+    business?.profileImageUrls?.length
+      ? business?.profileImageUrls
       : [];
 
   const initial: HotelForm = {
-    name: business.name ?? '',
-    description: business.description ?? '',
-    location: business.location ?? '',
-    phoneNumber: business.phoneNumber ?? '',
-    publicEmail: business.publicEmail ?? '',
+    name: business?.name ?? '',
+    description: business?.description ?? '',
+    location: business?.location ?? '',
+    phoneNumber: business?.phoneNumber ?? '',
+    publicEmail: business?.publicEmail ?? '',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hotelType: (business as any).hotelType as HotelType | undefined,
-    avatarUrl: business.avatarURL ?? '',
+    avatarUrl: business?.avatarURL ?? '',
     avatar: null,
     existingPhotos: initialExisting,
     uploadingPhotos: [],
@@ -60,6 +61,7 @@ export default function HotelEditDialog({ open, onClose }: Props) {
 
   const [errors, setErrors] = React.useState<HotelErrors>({})
 
+
   React.useEffect(() => {
     if (open) {
       setForm(initial)
@@ -67,6 +69,9 @@ export default function HotelEditDialog({ open, onClose }: Props) {
       setErrors({})
     }
   }, [open])
+
+  if (!business || business.businessType !== BUSINESS_TYPES.hotel) return null;
+
 
   const setField = <K extends keyof HotelForm>(k: K, v: HotelForm[K]) => {
     setForm(p => ({ ...p, [k]: v }))
@@ -127,7 +132,20 @@ export default function HotelEditDialog({ open, onClose }: Props) {
         <CircularProgress />
       </Backdrop>
 
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth={false} // desactiva los límites predefinidos
+        fullWidth
+        PaperProps={{
+          sx: {
+            width: "60vw",   // ocupa el 80% del ancho de la ventana
+            maxWidth: "1200px",
+            height: "80vh",  // opcional: limita también la altura
+            borderRadius: 1.2,
+          },
+        }}
+      >
         <DialogTitle>Editar hotel</DialogTitle>
         <DialogContent dividers>
         <Stack spacing={3} sx={{ mt: 1 }}>

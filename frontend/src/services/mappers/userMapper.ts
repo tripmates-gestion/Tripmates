@@ -1,5 +1,5 @@
 import type { CommonUsersInformation } from '../../types/CommonUserInfo';
-import type { CurrentUser } from '../../context/TypesUser';
+import type { CurrentUser } from '../../context/PrivateUserProfilesTypes';
 import { ACCOUNT_TYPES, BUSINESS_TYPES } from '../../constants/Rol';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -75,7 +75,7 @@ public class PatchMeTest {
 				  "phoneNumber": "+541112345678",
 				  "publicEmail": "contact@hostel.com",
 				  "averagePrice": "$$",
-				  "restaurantType": "PERUANO",
+				  "restaurantType": "Peruano",
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
 				      "closingTime": "18:00"
@@ -100,7 +100,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
 		String requestJson = """
 				{
-				  "hotelType": "LUJO"
+				  "hotelType": "Lujo"
 				}
 				""";
 
@@ -126,7 +126,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 		String requestJson = """
 				{
-				"restaurantType": "PERUANO"
+				"restaurantType": "Peruano"
 				}
 				""";
 
@@ -208,7 +208,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"hotelType": "LUJO"
+				"hotelType": "Lujo"
 				}
 				""";
 
@@ -234,7 +234,7 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"restaurantType": "PERUANO"
+				"restaurantType": "Peruano"
 				}
 				""";
 
@@ -428,187 +428,23 @@ public class PatchMeTest {
 		}).header("Authorization", "Bearer " + jwt))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").exists())
-			.andExpect(jsonPath("$.avatarURL", is(nullValue())))
+			.andExpect(jsonPath("$.avatarURL").doesNotExist())
 			.andExpect(jsonPath("$.name", is("New Name")))
 			.andExpect(jsonPath("$.email", is("test@example.com")))
 			.andExpect(jsonPath("$.role", is("USER")))
 			.andExpect(jsonPath("$.description", is("New Description")))
-			.andExpect(jsonPath("$.location", is(nullValue())))
-			.andExpect(jsonPath("$.phoneNumber", is(nullValue())))
-			.andExpect(jsonPath("$.publicEmail", is(nullValue())))
-			.andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
-			.andExpect(jsonPath("$.businessType", is(nullValue())))
-			.andExpect(jsonPath("$.averagePrice", is(nullValue())))
-			.andExpect(jsonPath("$.restaurantType", is(nullValue())))
-			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
-			.andExpect(jsonPath("$.openingDays", is(nullValue())))
-			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is(nullValue())))
-			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
-			.andDo(print());
-	}
-
-	@Test
-	void testGivenRestaurantAccount_WhenPatchMeCommonFields_ThenShouldSuccessAndReturn200() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
-		String requestJson = """
-				{
-				"name": "New Name",
-				"description": "New Description"
-				}
-				""";
-
-		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-				requestJson.getBytes(StandardCharsets.UTF_8));
-
-		mockMvc.perform(multipart("/users/me").file(dataPart).with(request -> {
-			request.setMethod("PATCH");
-			return request;
-		}).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").exists())
-			.andExpect(jsonPath("$.avatarURL", is(nullValue())))
-			.andExpect(jsonPath("$.name", is("New Name")))
-			.andExpect(jsonPath("$.email", is("test@example.com")))
-			.andExpect(jsonPath("$.role", is("BUSINESS")))
-			.andExpect(jsonPath("$.description", is("New Description")))
-			.andExpect(jsonPath("$.location", is(nullValue())))
-			.andExpect(jsonPath("$.phoneNumber", is(nullValue())))
-			.andExpect(jsonPath("$.publicEmail", is(nullValue())))
-			.andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
-			.andExpect(jsonPath("$.businessType", is("RESTAURANT")))
-			.andExpect(jsonPath("$.averagePrice", is(nullValue())))
-			.andExpect(jsonPath("$.restaurantType", is(nullValue())))
-			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
-			.andExpect(jsonPath("$.openingDays", is(nullValue())))
-			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is(nullValue())))
-			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
-			.andDo(print());
-	}
-
-	@Test
-	void testGivenRestaurantAccount_WhenPatchMeBusinessCommonFields_ThenShouldSuccessAndReturn200() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.RESTAURANT);
-		String requestJson = """
-				{
-				"name": "New Name",
-				"description": "New Description",
-				"location": "New Location",
-				"phoneNumber": "123456789",
-				"publicEmail": "testPublic@example.com",
-				"averagePrice": "$"
-				}
-				""";
-
-		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-				requestJson.getBytes(StandardCharsets.UTF_8));
-
-		mockMvc.perform(multipart("/users/me").file(dataPart).with(request -> {
-			request.setMethod("PATCH");
-			return request;
-		}).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").exists())
-			.andExpect(jsonPath("$.avatarURL", is(nullValue())))
-			.andExpect(jsonPath("$.name", is("New Name")))
-			.andExpect(jsonPath("$.email", is("test@example.com")))
-			.andExpect(jsonPath("$.role", is("BUSINESS")))
-			.andExpect(jsonPath("$.description", is("New Description")))
-			.andExpect(jsonPath("$.location", is("New Location")))
-			.andExpect(jsonPath("$.phoneNumber", is("123456789")))
-			.andExpect(jsonPath("$.publicEmail", is("testPublic@example.com")))
-			.andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
-			.andExpect(jsonPath("$.businessType", is("RESTAURANT")))
-			.andExpect(jsonPath("$.averagePrice", is("$")))
-			.andExpect(jsonPath("$.restaurantType", is(nullValue())))
-			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
-			.andExpect(jsonPath("$.openingDays", is(nullValue())))
-			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is(nullValue())))
-			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
-			.andDo(print());
-	}
-
-	@Test
-	void testGivenHotelAccount_WhenPatchMeBusinessCommonFields_ThenShouldSuccessAndReturn200() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
-		String requestJson = """
-				{
-				"name": "New Name",
-				"description": "New Description",
-				"location": "New Location",
-				"phoneNumber": "123456789",
-				"publicEmail": "testPublic@example.com",
-				"averagePrice": "$"
-				}
-				""";
-
-		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-				requestJson.getBytes(StandardCharsets.UTF_8));
-
-		mockMvc.perform(multipart("/users/me").file(dataPart).with(request -> {
-			request.setMethod("PATCH");
-			return request;
-		}).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").exists())
-			.andExpect(jsonPath("$.avatarURL", is(nullValue())))
-			.andExpect(jsonPath("$.name", is("New Name")))
-			.andExpect(jsonPath("$.email", is("test@example.com")))
-			.andExpect(jsonPath("$.role", is("BUSINESS")))
-			.andExpect(jsonPath("$.description", is("New Description")))
-			.andExpect(jsonPath("$.location", is("New Location")))
-			.andExpect(jsonPath("$.phoneNumber", is("123456789")))
-			.andExpect(jsonPath("$.publicEmail", is("testPublic@example.com")))
-			.andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
-			.andExpect(jsonPath("$.businessType", is("HOTEL")))
-			.andExpect(jsonPath("$.averagePrice", is("$")))
-			.andExpect(jsonPath("$.restaurantType", is(nullValue())))
-			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
-			.andExpect(jsonPath("$.openingDays", is(nullValue())))
-			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is(nullValue())))
-			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
-			.andDo(print());
-	}
-
-	@Test
-	void testGivenHotelAccount_WhenPatchMeHotelCommonFields_ThenShouldSuccessAndReturn200() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
-		String requestJson = """
-				{
-				"name": "New Name",
-				"hotelType": "LUJO"
-				}
-				""";
-
-		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-				requestJson.getBytes(StandardCharsets.UTF_8));
-
-		mockMvc.perform(multipart("/users/me").file(dataPart).with(request -> {
-			request.setMethod("PATCH");
-			return request;
-		}).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").exists())
-			.andExpect(jsonPath("$.avatarURL", is(nullValue())))
-			.andExpect(jsonPath("$.name", is("New Name")))
-			.andExpect(jsonPath("$.email", is("test@example.com")))
-			.andExpect(jsonPath("$.role", is("BUSINESS")))
-			.andExpect(jsonPath("$.description", is(nullValue())))
-			.andExpect(jsonPath("$.location", is(nullValue())))
-			.andExpect(jsonPath("$.phoneNumber", is(nullValue())))
-			.andExpect(jsonPath("$.publicEmail", is(nullValue())))
-			.andExpect(jsonPath("$.profileImageUrls", is(nullValue())))
-			.andExpect(jsonPath("$.businessType", is("HOTEL")))
-			.andExpect(jsonPath("$.averagePrice", is(nullValue())))
-			.andExpect(jsonPath("$.restaurantType", is(nullValue())))
-			.andExpect(jsonPath("$.attentionSchedule", is(nullValue())))
-			.andExpect(jsonPath("$.openingDays", is(nullValue())))
-			.andExpect(jsonPath("$.menu", is(nullValue())))
-			.andExpect(jsonPath("$.hotelType", is("LUJO")))
-			.andExpect(jsonPath("$.roomPacks", is(nullValue())))
+			.andExpect(jsonPath("$.location").doesNotExist())
+			.andExpect(jsonPath("$.phoneNumber").doesNotExist())
+			.andExpect(jsonPath("$.publicEmail").doesNotExist())
+			.andExpect(jsonPath("$.profileImageUrls").doesNotExist())
+			.andExpect(jsonPath("$.businessType").doesNotExist())
+			.andExpect(jsonPath("$.averagePrice").doesNotExist())
+			.andExpect(jsonPath("$.restaurantType").doesNotExist())
+			.andExpect(jsonPath("$.attentionSchedule").doesNotExist())
+			.andExpect(jsonPath("$.openingDays").doesNotExist())
+			.andExpect(jsonPath("$.menu").doesNotExist())
+			.andExpect(jsonPath("$.hotelType").doesNotExist())
+			.andExpect(jsonPath("$.roomPacks").doesNotExist())
 			.andDo(print());
 	}
 

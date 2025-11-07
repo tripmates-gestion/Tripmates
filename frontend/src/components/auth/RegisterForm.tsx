@@ -44,8 +44,8 @@ export default function RegisterForm({
             value={accountType}
             onChange={(e) => setAccountType(e.target.value as AccountType)}
           >
-            <FormControlLabel value="USER" control={<Radio />} label={ACCOUNT_TYPES.user.label} />
-            <FormControlLabel value="BUSINESS" control={<Radio />} label={ACCOUNT_TYPES.business.label} />
+            <FormControlLabel value="USER" control={<Radio color='info'/>} label={ACCOUNT_TYPES.user.label} />
+            <FormControlLabel value="BUSINESS" control={<Radio color='warning'/>} label={ACCOUNT_TYPES.business.label} />
           </RadioGroup>
         </FormControl>
 

@@ -35,9 +35,9 @@ const BUSINESS_PHONENUMBER_MOCK = "11-6543-9876";
 // Mock principal del restaurante vegano
 // ──────────────────────────────────────────────
 export const VEGAN_RESTAURANT: BusinessPubAccountDataDTO = {
-  id: "3",
+  id: "1003",
   avatarURL: VEGAN_RESTAURANT_AVATAR,
-  name: "Verde Vida Café",
+  name: "Verde Vida Café (mockito)",
   email: PRIVATE_VEGAN_MAIL_MOCK,
   role: BUSINESS_VEGAN_ROLE_MOCK,
   description:
@@ -93,7 +93,7 @@ export const VEGAN_RESTAURANT: BusinessPubAccountDataDTO = {
 // ──────────────────────────────────────────────
 export const VEGAN_RESTAURANT_PUBLICATIONS: BusinessPublicationResponseDTO[] = [
   {
-    id: "6",
+    id: "1006",
     title: "Noche Vegana Gourmet",
     description:
       "Vení a disfrutar una cena especial con menú degustación vegano de tres pasos. ¡Platos de estación y sabores únicos!",
@@ -107,14 +107,14 @@ export const VEGAN_RESTAURANT_PUBLICATIONS: BusinessPublicationResponseDTO[] = [
     email: PUBLIC_VEGAN_MAIL_MOCK,
     location: "Palermo, Buenos Aires",
     imageUrls: [VEGAN_PUB_IMAGES[0]],
-    ownerId: "owner3",
+    ownerId: "1003",
     ownerUsername: "verdevida_admin",
     ownerAvatarUrl: VEGAN_RESTAURANT_AVATAR,
     createdAt: "2024-11-01T20:00:00Z",
     tags: ["evento", "degustación", "vegano", "gastronomía"],
   },
   {
-    id: "7",
+    id: "1007",
     title: "Taller de Cocina Vegana",
     description:
       "Aprendé a preparar recetas saludables con ingredientes naturales. Cupos limitados, inscribite ahora.",
@@ -128,7 +128,7 @@ export const VEGAN_RESTAURANT_PUBLICATIONS: BusinessPublicationResponseDTO[] = [
     email: PUBLIC_VEGAN_MAIL_MOCK,
     location: "Palermo, Buenos Aires",
     imageUrls: [VEGAN_PUB_IMAGES[1]],
-    ownerId: "owner3",
+    ownerId: "1003",
     ownerUsername: "verdevida_admin",
     ownerAvatarUrl: VEGAN_RESTAURANT_AVATAR,
     createdAt: "2024-10-20T14:00:00Z",

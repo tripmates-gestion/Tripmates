@@ -15,22 +15,26 @@ import {
 } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
-import EditProfileDialog, { type UserProfile } from '../components/profile/EditProfileDialog';
+import EditProfileDialog, { type UserProfile } from '../components/profile/businessPrivateProfile/common/EditProfileDialog';
 import { useAuth } from '../hooks/useAuth';
-import { updateDescription, updateUsername } from '../helpers/profileUpdates';
 import { DEFAULT_STATS } from '../constants/DefaultStats'
 import { type AccountType } from '../types/AccountTypes'
+import UserReviewsTab from '../components/profile/userProfile.tsx/UserReviewsTab';
 
 import { Stat } from '../components/profile/stats';
+import UserPlansTab from '../components/profile/userProfile.tsx/UserPlansTab';
+
+import { updateUser } from '../services/userService';
+import type { CommonUser } from '../context/PrivateUserProfilesTypes';
 
 
 const userRoleChipColor = 'info';
 
 
-// ----- tipo User que viene del back (como lo describiste) -----
+// ----- tipo User que viene del back -----
 type BackendUser = {
   id: string;
-  username: string;
+  name: string;
   email: string;
   role: AccountType;
   description: string;
@@ -40,8 +44,8 @@ type BackendUser = {
 // ----- util: mapea User (back) -> UserProfile (UI) -----
 function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
   return {
-    name: u?.username ?? prev?.name ?? '',
-    username: u?.username ?? prev?.username ?? '',
+    name: u?.name ?? prev?.name ?? '',
+    username: u?.name ?? prev?.username ?? '',
     description: u?.description ?? prev?.description ?? '',
     avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
       ? u.avatarURL 
@@ -68,7 +72,7 @@ export default function UserProfile() {
   // tabs dinámicos: agregamos "Publicaciones" sólo si es business
   const tabs = [
       { key: 'actividad', label: 'Actividad' },
-      { key: 'viajes', label: 'Viajes' },
+      { key: 'planes', label: 'Planes' },
       { key: 'fotos', label: 'Fotos' },
       { key: 'opiniones', label: 'Opiniones' },
     ];
@@ -76,7 +80,7 @@ export default function UserProfile() {
   // ayuda para saber si el tab actual es "publicaciones"
   const currentTabKey = tabs[tab]?.key;
 
-  // REINTEGRADO: persistencia al back como antes
+  // REINTEGRADO: persistencia al back usando updateUser
   const handleSaveUserData = (updated: UserProfile) => {
     if (!accessToken) {
       console.error('No auth token available; skipping remote update');
@@ -84,10 +88,12 @@ export default function UserProfile() {
       return;
     }
 
-    Promise.all([
-      updateDescription(profile.description || '', updated.description || '', accessToken),
-      updateUsername(profile.username, updated.username, accessToken),
-    ])
+    const dataToUpdate: Partial<CommonUser> = {
+      name: updated.username,
+      description: updated.description,
+    };
+
+    updateUser(dataToUpdate, accessToken)
       .then(() => {
         setProfile(updated);
       })
@@ -178,9 +184,11 @@ export default function UserProfile() {
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'viajes'        && <EmptyState title="Viajes" />}
+            {currentTabKey === 'planes'        && 
+              <UserPlansTab/>
+            }
             {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones'     && <EmptyState title="Opiniones" />}
+            {currentTabKey === 'opiniones'     && <UserReviewsTab />}
           </Box>
         </Card>
       </Box>

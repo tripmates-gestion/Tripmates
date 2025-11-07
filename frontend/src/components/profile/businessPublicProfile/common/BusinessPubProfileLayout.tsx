@@ -15,9 +15,9 @@ import {
   CardContent,
 } from "@mui/material";
 import BusinessPublicationsTab from "./BusinessPublicationsTab";
-import ImageCarousel from "../../ui/ImageCarousel";
-import type { BusinessPubAccountDataDTO } from "../../../types/AccountData";
-import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
+import ImageCarousel from "../../../ui/ImageCarousel";
+import type { BusinessPubAccountDataDTO } from "../../../../types/AccountData";
+import {COMMING_SOON_IMG} from "../../../../constants/DefaultImages";
 
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;
@@ -76,7 +76,7 @@ export default function BusinessPubProfileLayout({
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
-                <Chip label={business.hotelType} color="primary" variant="outlined" />
+                <Chip label={business.hotelType} size="small" color="primary" variant="outlined" />
               </Stack>
             )}
             {business.businessType === "RESTAURANT" && business.restaurantType && (
@@ -84,7 +84,7 @@ export default function BusinessPubProfileLayout({
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
-                <Chip label={business.restaurantType} color="primary" variant="outlined" />
+                <Chip label={business.restaurantType} size="small" color="primary" variant="outlined" />
               </Stack>
             )}
           </Grid>
@@ -154,7 +154,7 @@ export default function BusinessPubProfileLayout({
 /* ────────────────────────────────
  * Subcomponente InfoRow
  * ──────────────────────────────── */
-function InfoRow({
+export function InfoRow({
   label,
   value,
   icon,

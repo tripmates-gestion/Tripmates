@@ -2,7 +2,7 @@ import type {AccountType, BusinessType} from "./AccountTypes";
 import type {DayOfWeek} from "./business";
 import type {AttentionSchedule, AveragePrice} from "./business";
 import type {RestaurantType, MenuItem} from "./Restaurant";
-import type { HotelType, RoomPackDTO } from "./Hotel";
+import type { HotelType, RoomPack } from "./Hotel";
 
 /*CONTRATO EN DESARROLLO DE LO QUE DEBERÍA DEVOLVER EL BACK EN UNA BÚSQUEDA DE ALGÚN BUSINESS*/
 // tiene algunos campos opcionales porque dependen de si es un restaurant o si es un hotel
@@ -28,5 +28,5 @@ export type BusinessPubAccountDataDTO = {
     
     // campos si es hotel
     hotelType: HotelType|null;
-    roomPacks: RoomPackDTO[]|null;
+    roomPacks: RoomPack[]|null;
 }

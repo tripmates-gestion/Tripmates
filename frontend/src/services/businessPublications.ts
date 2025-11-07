@@ -4,6 +4,8 @@ import type {
 } from '../types/business'
 import { apiFetch } from "../api/client"; // ruta a tu apiFetch
 import { ENDPOINTS } from "../api/endpoints";
+import { MOCK_BUSINESS_PUBLICATIONS } from "../components/mocks/businessMocks";
+import { MOCKEAR_RESULTADOS_DE_PERFILES } from "../constants/UseMOCK";
 
 // ---------------------- API Client ----------------------
 
@@ -68,4 +70,27 @@ export async function deleteBusinessPublication(
     method: "DELETE",
     headers: { Authorization: `Bearer ${accessToken}` },
   }) as Promise<void>;
+}
+
+// Función para obtener publicaciones de un negocio
+
+export async function getBusinessPublicationsPublic(id: string, accessToken: string): Promise<BusinessPublicationResponseDTO[]> {
+  try {
+    console.log("Fetching business publications for ID:", id);
+    const publications = await apiFetch(
+      ENDPOINTS.GET_OTHER_BUSINESS_PUBLICATIONS + id, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` }
+      }
+    );
+    return publications||[];
+  } catch (error) {
+    //probablemente entramos porque se buscó el perfil de un perfil mockeado
+    if (MOCKEAR_RESULTADOS_DE_PERFILES){
+      return MOCK_BUSINESS_PUBLICATIONS.get(id)||[];
+    }
+    //si no estaba mockeado sí es un error
+    console.error('Error fetching business publications:', error);
+    return [];
+  }
 }

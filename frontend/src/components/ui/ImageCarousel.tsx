@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Box, IconButton, Stack } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 export interface ImageCarouselProps {
   images: string[];
@@ -9,49 +10,54 @@ export interface ImageCarouselProps {
   height?: number;
   autoPlay?: boolean;
   interval?: number;
+  fit?: "cover" | "contain" | "scale-down";
+  aspectRatio?: number;
+  rounded?: number;
 }
 
 export default function ImageCarousel({
   images,
   alt = "imagen",
-  height = 380,
+  // height ahora es opcional: si no viene, usamos aspectRatio
+  height,
   autoPlay = false,
   interval = 4000,
+  fit = "contain",
+  aspectRatio,
+  rounded = 3,
 }: ImageCarouselProps) {
   const [index, setIndex] = React.useState(0);
   const max = images.length;
 
-  const next = React.useCallback(() => {
-    setIndex((i) => (i + 1) % max);
-  }, [max]);
+  const next = React.useCallback(() => setIndex((i) => (i + 1) % max), [max]);
+  const prev = React.useCallback(() => setIndex((i) => (i - 1 + max) % max), [max]);
 
-  const prev = React.useCallback(() => {
-    setIndex((i) => (i - 1 + max) % max);
-  }, [max]);
-
-  // autoplay opcional
   React.useEffect(() => {
-    if (!autoPlay) return;
-    const id = setInterval(() => next(), interval);
+    if (!autoPlay || max < 2) return;
+    const id = setInterval(next, interval);
     return () => clearInterval(id);
-  }, [autoPlay, interval, next]);
+  }, [autoPlay, interval, next, max]);
+
+  const useAspect = aspectRatio != null;          // true si pasaste aspectRatio
+  const heightFallback = height ?? 380;           // si no pasás height, usamos 380
+
+  const containerSx: SxProps<Theme> = {
+    position: "relative",
+    width: "100%",
+    overflow: "hidden",
+    borderRadius: rounded,
+    boxShadow: 3,
+    bgcolor: "background.default",
+    ...(useAspect ? { aspectRatio } : { height: heightFallback }),
+  };
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        height,
-        overflow: "hidden",
-        borderRadius: 2,
-        boxShadow: 3,
-      }}
-    >
-      {/* Contenedor deslizante */}
+    <Box sx={containerSx}>
       <Box
         sx={{
           display: "flex",
           width: `${max * 100}%`,
+          height: "100%",
           transform: `translateX(-${index * (100 / max)}%)`,
           transition: "transform 0.6s ease-in-out",
         }}
@@ -62,18 +68,20 @@ export default function ImageCarousel({
             component="img"
             src={src}
             alt={`${alt} ${i + 1}`}
+            onError={(e: any) => (e.currentTarget.style.visibility = "hidden")}
             sx={{
               width: `${100 / max}%`,
-              height,
-              objectFit: "cover",
+              height: "100%",
+              objectFit: fit,
+              objectPosition: "center",
               userSelect: "none",
               flexShrink: 0,
+              display: "block",
             }}
           />
         ))}
       </Box>
 
-      {/* Botones de navegación */}
       {max > 1 && (
         <>
           <IconButton
@@ -120,7 +128,6 @@ export default function ImageCarousel({
             <ArrowForwardIos fontSize="small" />
           </IconButton>
 
-          {/* Indicadores inferiores */}
           <Stack
             direction="row"
             spacing={1}
