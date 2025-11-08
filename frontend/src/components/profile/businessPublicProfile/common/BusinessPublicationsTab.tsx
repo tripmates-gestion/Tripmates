@@ -23,24 +23,19 @@ import type { BusinessPublicationResponseDTO } from "../../../../types/business"
 
 import { useAuth } from "../../../../hooks/useAuth";
 import { getBusinessPublicationsPublic } from "../../../../services/businessPublications";
+import { getPlans, createPlan } from "../../../../services/plansService"; // 👈 importa tus llamadas reales
 
-// ──────────────────────────────────────────────
-// Mock: obtiene planes del usuario loggeado
-// ──────────────────────────────────────────────
-async function fetchUserBoardsMock(): Promise<string[]> {
-  await new Promise((res) => setTimeout(res, 300));
-  return ["Favoritos", "Imperdibles Perú 2025", "Verano 2026"];
-}
 
-// ──────────────────────────────────────────────
-// Componente principal
-// ──────────────────────────────────────────────
 export default function BusinessPublicationsTab({ id }: { id: string }) {
-  const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
+  const [selected, setSelected] =
+    React.useState<BusinessPublicationResponseDTO | null>(null);
   const [showLoginMsg, setShowLoginMsg] = React.useState(false);
   const [showSuccessMsg, setShowSuccessMsg] = React.useState(false);
-  const {accessToken} = useAuth();
-  const [publications, setPublications] = React.useState<BusinessPublicationResponseDTO[]>([]); // ← Agregar estado
+
+  const { accessToken } = useAuth();
+
+  const [publications, setPublications] =
+    React.useState<BusinessPublicationResponseDTO[]>([]);
   const [_, setLoading] = React.useState(true);
 
   const [plans, setPlans] = React.useState<string[]>([]);
@@ -65,7 +60,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
         const pubs = await getBusinessPublicationsPublic(id, accessToken);
         setPublications(pubs);
       } catch (error) {
-        console.error('Error loading publications:', error);
+        console.error("Error loading publications:", error);
         setPublications([]);
       } finally {
         setLoading(false);
@@ -81,11 +76,11 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   const handleAddToBoard = async (
     event: React.MouseEvent<HTMLElement>,
     publication: BusinessPublicationResponseDTO,
-    token: string
+    _token: string // viene del PublicationCard, pero usamos accessToken del hook
   ) => {
     event.stopPropagation();
 
-    if (!token) {
+    if (!accessToken) {
       setShowLoginMsg(true);
       return;
     }
@@ -93,11 +88,20 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     setTargetPublication(publication);
     setMenuAnchor(event.currentTarget);
 
-    // Solo fetchear si no se cargaron antes
+    // Sólo fetchear si no se cargaron antes
     if (!plansLoaded) {
-      const fetched = await fetchUserBoardsMock();
-      setPlans(fetched);
-      setPlansLoaded(true);
+      try {
+        const response = await getPlans(accessToken);
+        // asumo que el endpoint devuelve o string[] o algo con { name }
+        const fetchedNames: string[] = Array.isArray(response)
+          ? response.map((p: any) => (typeof p === "string" ? p : p.name))
+          : [];
+        setPlans(fetchedNames);
+        setPlansLoaded(true);
+      } catch (error) {
+        console.error("Error fetching plans:", error);
+        setPlans([]);
+      }
     }
   };
 
@@ -110,7 +114,12 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
       return;
     }
 
-    console.log(`📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`);
+    // TODO: acá más adelante vas a hacer el llamado para
+    // agregar la publicación al plan seleccionado en el backend
+    console.log(
+      `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`
+    );
+
     setShowSuccessMsg(true);
     handleCloseBoardsMenu();
   };
@@ -121,16 +130,34 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   };
 
   // ───────────────────────────────
-  // Crear nuevo plan
+  // Crear nuevo plan (llamando al backend)
   // ───────────────────────────────
-  const handleCreatePlan = () => {
-    if (newPlanName.trim()) {
-      setPlans((prev) => [...prev, newPlanName.trim()]);
-      setShowSuccessMsg(true);
+  const handleCreatePlan = async () => {
+    const trimmed = newPlanName.trim();
+
+    if (!trimmed) {
+      return;
     }
-    setOpenCreateDialog(false);
-    setNewPlanName("");
-    handleCloseBoardsMenu();
+
+    if (!accessToken) {
+      setShowLoginMsg(true);
+      return;
+    }
+
+    try {
+      // descripción vacía por ahora; la podés extender más tarde
+      await createPlan(accessToken, trimmed, "");
+      // opcional: actualizar la lista local de planes para que aparezca en el menú
+      setPlans((prev) => [...prev, trimmed]);
+      setShowSuccessMsg(true);
+    } catch (error) {
+      console.error("Error creating plan:", error);
+      // si querés, acá podrías mostrar un Snackbar de error
+    } finally {
+      setOpenCreateDialog(false);
+      setNewPlanName("");
+      handleCloseBoardsMenu();
+    }
   };
 
   if (!publications || publications.length === 0) {
@@ -230,7 +257,10 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
       </Menu>
 
       {/* Diálogo para crear nuevo plan */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
+      <Dialog
+        open={openCreateDialog}
+        onClose={() => setOpenCreateDialog(false)}
+      >
         <DialogTitle>Crear nuevo plan</DialogTitle>
         <DialogContent>
           <TextField
