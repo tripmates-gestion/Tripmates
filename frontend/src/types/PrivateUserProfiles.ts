@@ -1,12 +1,12 @@
 // Tipos base
-import type { MenuItem } from "../types/Restaurant";
+import type { MenuItem } from "./Restaurant";
+import type { RestaurantType } from "./Restaurant";
 
 type Role = "USER" | "BUSINESS";
 type BusinessType = "RESTAURANT" | "HOTEL";
 
 export type CommonUser = {
   id: string;
-  username: string;
   name: string;
   email: string;
   avatarURL?: string;
@@ -16,7 +16,6 @@ export type CommonUser = {
 
 export type BusinessCommon = {
   id: string;
-  username: string;
   name: string;
   email: string;
   avatarURL?: string;
@@ -33,7 +32,7 @@ export type BusinessCommon = {
 
 // Especializaciones por tipo de negocio
 export type RestaurantExtras = {
-  restaurantType?: string;
+  restaurantType?: RestaurantType;
   openingDays?: string[]; // ["MONDAY", ...]
   attentionSchedule?: {
     openingTime: { hour: number; minute: number };
