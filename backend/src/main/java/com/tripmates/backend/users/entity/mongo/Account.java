@@ -5,6 +5,7 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -65,16 +66,14 @@ public class Account implements UserDetails {
 	private String description;
 
 	/**
-	 * Account's followers. Only allowed in USER account.
+	 * Account's following users. Only allowed in USER account.
 	 */
-	@Field(targetType = FieldType.INT64)
-	private Integer followers = 0;
+	private List<String> following = new ArrayList<>();
 
 	/**
-	 * Account's followed. Only allowed in USER account.
+	 * Account's follower. Only allowed in USER account.
 	 */
-	@Field(targetType = FieldType.INT64)
-	private Integer followed = 0;
+	private List<String> followers = new ArrayList<>();
 
 	/** Account's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
@@ -178,6 +177,22 @@ public class Account implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	/**
+	 * Gets the account following count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowingCount() {
+		return this.following.size();
+	}
+
+	/**
+	 * Gets the account followers count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowersCount() {
+		return this.followers.size();
 	}
 
 }

@@ -13,7 +13,7 @@ public record AccountSearchRequestDTO(
 		@Schema(description = "Filter by user's username") String username,
 		/* For user's accounts */
 		@Schema(description = "Filter by user's followers") Integer followers,
-		@Schema(description = "Filter by user's followed") Integer followed,
+		@Schema(description = "Filter by user's followings") Integer followings,
 		/* For business's accounts */
 		@Schema(description = "Filter by business's average price") AveragePrice averagePrice,
 		@Schema(description = "Filter by business's location") String location,
