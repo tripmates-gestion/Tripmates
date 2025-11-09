@@ -3,7 +3,6 @@ package com.tripmates.backend.publications.controller;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.publications.dto.*;
 import com.tripmates.backend.publications.service.PublicationService;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 

@@ -2,7 +2,6 @@ package com.tripmates.backend.publications.dto;
 
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.entity.mongo.Publication;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import io.swagger.v3.oas.annotations.media.Schema;
 

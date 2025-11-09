@@ -26,7 +26,6 @@ import java.util.List;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 
-import java.util.List;
 import java.time.DayOfWeek;
 
 public class UpdateCommandFactory {

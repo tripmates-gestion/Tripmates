@@ -261,4 +261,28 @@ public class UserController {
 		return ResponseEntity.ok(userService.deleteRoomPack(userDetails.getUsername(), index));
 	}
 
+
+  @PostMapping(value = "/{userId}/follow")
+  @Operation(summary = "Follow a user", description = "Follow a user by their ID.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "204", description = "User followed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> followUser(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("userId") String userId) {
+    userService.followUser(userDetails.getUsername(), userId);
+    return ResponseEntity.noContent().build();
+  }
+
+
+  @PostMapping(value = "/{userId}/unfollow")
+  @Operation(summary = "Unfollow a user", description = "Unfollow a user by their ID.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "204", description = "User unfollowed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> unfollowUser(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("userId") String userId) {
+    userService.unfollowUser(userDetails.getUsername(), userId);
+    return ResponseEntity.noContent().build();
+  }
+
 }
