@@ -1,17 +1,20 @@
 package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
-import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
 import com.tripmates.backend.users.dto.AccountSearchRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
+
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.MongoExpression;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -34,8 +37,12 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 
 		Query query = new Query(criteria).with(pageable);
 
-		return new PageImpl<>(mongoTemplate.find(query, Account.class), pageable,
-				mongoTemplate.count(query, Account.class));
+		List<Account> accountList = mongoTemplate.find(query, Account.class)
+			.stream()
+			.sorted(Comparator.comparing(Account::getFollowersCount).reversed())
+			.toList();
+
+		return new PageImpl<>(accountList, pageable, accountList.size());
 	}
 
 	/**
@@ -47,6 +54,12 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	private List<Criteria> buildRootCriteria(AccountSearchRequestDTO accountSearchRequestDTO) {
 		List<Criteria> criteria = new ArrayList<>();
 
+		if (accountSearchRequestDTO.followings() != null)
+			criteria.add(Criteria.where("following." + (accountSearchRequestDTO.followings() - 1)).exists(true));
+
+		if (accountSearchRequestDTO.followers() != null)
+			criteria.add(Criteria.where("followers." + (accountSearchRequestDTO.followers() - 1)).exists(true));
+
 		if (accountSearchRequestDTO.averagePrice() != null)
 			criteria.add(Criteria.where("averagePrice").is(accountSearchRequestDTO.averagePrice()));
 
@@ -54,7 +67,7 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 			criteria.add(Criteria.where("location").is(accountSearchRequestDTO.location()));
 
 		if (accountSearchRequestDTO.username() != null)
-			criteria.add(Criteria.where("name").is(accountSearchRequestDTO.username()));
+			criteria.add(Criteria.where("name").regex(accountSearchRequestDTO.username(), "i"));
 
 		if (accountSearchRequestDTO.businessType() != null)
 			criteria.add(Criteria.where("businessType").is(accountSearchRequestDTO.businessType()));

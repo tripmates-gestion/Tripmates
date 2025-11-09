@@ -85,8 +85,27 @@ public class UserController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
 	public ResponseEntity<?> searchBusiness(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
-			.searchBusinessAccount(accountSearchRequestDTO, pageable);
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchAccount(accountSearchRequestDTO,
+				pageable);
+		if (accountResumeResponseDTOPage.getTotalElements() == 0)
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
+	}
+
+	@PostMapping(value = "/search/user", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Search user's accounts")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
+			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
+	public ResponseEntity<?> searchUser(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
+			@ParameterObject @PageableDefault Pageable pageable) {
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchAccount(accountSearchRequestDTO,
+				pageable);
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
 

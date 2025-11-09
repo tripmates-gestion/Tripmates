@@ -72,12 +72,12 @@ public class UserService {
 	}
 
 	/**
-	 * Returns a page with business's accounts that match the filters.
+	 * Returns a page with accounts that match the filters.
 	 * @param accountSearchRequestDTO filters.
 	 * @param pageable pages configuration.
 	 * @return a page of {@link AccountResumeResponseDTO}.
 	 */
-	public Page<AccountResumeResponseDTO> searchBusinessAccount(AccountSearchRequestDTO accountSearchRequestDTO,
+	public Page<AccountResumeResponseDTO> searchAccount(AccountSearchRequestDTO accountSearchRequestDTO,
 			Pageable pageable) {
 		return accountRepository.searchAccount(accountSearchRequestDTO, pageable)
 			.map(AccountResumeResponseDTO::fromAccount);

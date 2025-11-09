@@ -9,7 +9,7 @@ public interface AccountRepositoryCustom {
 
 	/**
 	 * Returns all users accounts that match the filter, if there are no filters then it
-	 * returns all of the users accounts.
+	 * returns all the users accounts.
 	 * @param accountSearchRequestDTO DTO with the filters.
 	 * @param pageable page configuration.
 	 * @return a page of {@link Account}.
