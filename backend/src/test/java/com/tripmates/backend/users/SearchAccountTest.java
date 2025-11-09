@@ -325,7 +325,7 @@ public class SearchAccountTest {
 		fran.setName("Fran Infanti");
 		fran.setPassword("12345678");
 		fran.setRole(Role.USER);
-		fran.setFollowing(List.of("1", "2", "3"));
+		fran.setFollowings(List.of("1", "2", "3"));
 		fran.setFollowers(List.of("1", "2", "3"));
 
 		Account oli = new Account();
@@ -333,7 +333,7 @@ public class SearchAccountTest {
 		oli.setName("Oli");
 		oli.setPassword("12345678");
 		oli.setRole(Role.USER);
-		oli.setFollowing(List.of("1"));
+		oli.setFollowings(List.of("1"));
 		oli.setFollowers(List.of("1"));
 
 		Account jeffBezos = new Account();
@@ -341,7 +341,7 @@ public class SearchAccountTest {
 		jeffBezos.setName("Jeff Bezos");
 		jeffBezos.setPassword("12345678");
 		jeffBezos.setRole(Role.USER);
-		jeffBezos.setFollowing(List.of("1", "2", "3", "4", "5", "6"));
+		jeffBezos.setFollowings(List.of("1", "2", "3", "4", "5", "6"));
 		jeffBezos.setFollowers(List.of("1", "2", "3", "4", "5", "6"));
 
 		accountRepository.saveAll(List.of(oli, jeffBezos, fran));
@@ -366,7 +366,7 @@ public class SearchAccountTest {
 		juan.setName("Juan Perez");
 		juan.setPassword("12345678");
 		juan.setRole(Role.USER);
-		juan.setFollowing(List.of("1", "2", "3"));
+		juan.setFollowings(List.of("1", "2", "3"));
 		juan.setFollowers(List.of("1", "2", "3", "4"));
 
 		Account martin = new Account();
@@ -374,7 +374,7 @@ public class SearchAccountTest {
 		martin.setName("Gonzales Martin");
 		martin.setPassword("12345678");
 		martin.setRole(Role.USER);
-		martin.setFollowing(List.of("1", "2", "3"));
+		martin.setFollowings(List.of("1", "2", "3"));
 		martin.setFollowers(List.of("1", "2", "3", "4", "5", "6"));
 
 		accountRepository.saveAll(List.of(martin, juan));
