@@ -281,8 +281,6 @@ public class FollowUserTest {
 
   @Test
   void testGivenUserAccount_WhenFollowItSelf_ThenShouldFailAndReturnError400() throws Exception {
-
-
     String jwt = testHelper.getUserTestingJwt("other@example.com");
     Account me = accountRepository.findByEmail("other@example.com").orElse(null);
     HttpHeaders headers = new HttpHeaders();
@@ -303,6 +301,92 @@ public class FollowUserTest {
       "\"instance\":\"/users/" + me.getId() + "/follow\"" +
       "}";
     JSONAssert.assertEquals(expectedJson, response.getBody(),true);
+  }
+
+  @Test
+  void testGivenUserAccount_WhenUnfollowItSelf_ThenShouldFailAndReturnError400() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("other@example.com");
+    Account me = accountRepository.findByEmail("other@example.com").orElse(null);
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+    ResponseEntity<String> response = restTemplate.exchange(
+        testHelper.url("/users/" + me.getId() + "/unfollow"),
+        HttpMethod.POST,
+        entity,
+        String.class
+    );
+    assertEquals(400, response.getStatusCode().value());
+    String expectedJson = "{" +
+      "\"type\":\"about:blank\"," +
+      "\"title\":\"Bad Request\"," +
+      "\"status\":400," +
+      "\"detail\":\"No puedes dejar de seguirte/seguirte a ti mismo\"," +
+      "\"instance\":\"/users/" + me.getId() + "/unfollow\"" +
+      "}";
+    JSONAssert.assertEquals(expectedJson, response.getBody(),true);
+  }
+
+  @Test
+  void testGivenUserAccount_WhenUnfollowAnotherUserNotFollowed_ThenShouldFailAndReturnError400() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("other@example.com");
+    Account userAccount = new Account();
+		userAccount.setEmail("leti@gmail.com.ar");
+		userAccount.setName("Leti");
+		userAccount.setPassword("123456");
+		userAccount.setRole(Role.USER);
+    Account userAccountSaved = accountRepository.save(userAccount);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+    ResponseEntity<String> response = restTemplate.exchange(
+        testHelper.url("/users/" + userAccountSaved.getId() + "/unfollow"),
+        HttpMethod.POST,
+        entity,
+        String.class
+    );
+    assertEquals(400, response.getStatusCode().value());
+    String expectedJson = "{" +
+      "\"type\":\"about:blank\"," +
+      "\"title\":\"Bad Request\"," +
+      "\"status\":400," +
+      "\"detail\":\"No puedes dejar de seguir a alguien que no sigues\"," +
+      "\"instance\":\"/users/" + userAccountSaved.getId() + "/unfollow\"" +
+      "}";
+    JSONAssert.assertEquals(expectedJson, response.getBody(),true);
+  }
+
+  
+  @Test
+  void testGivenUserAccount_WhenUnfollowAnotherUserFollowed_ThenShouldSuccessAndReturn204() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("other@example.com");
+    Account userAccount = new Account();
+		userAccount.setEmail("leti@gmail.com.ar");
+		userAccount.setName("Leti");
+		userAccount.setPassword("123456");
+		userAccount.setRole(Role.USER);
+    Account userAccountSaved = accountRepository.save(userAccount);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+
+    ResponseEntity<String> responseFollow = restTemplate.exchange(
+        testHelper.url("/users/" + userAccountSaved.getId() + "/follow"),
+        HttpMethod.POST,
+        entity,
+        String.class
+    );
+    assertEquals(204, responseFollow.getStatusCode().value());
+    
+    ResponseEntity<String> responseUnfollow = restTemplate.exchange(
+        testHelper.url("/users/" + userAccountSaved.getId() + "/unfollow"),
+        HttpMethod.POST,
+        entity,
+        String.class
+    );
+    assertEquals(204, responseUnfollow.getStatusCode().value());
   }
 
   private void followUser(String followerEmail, String followedUserId) {
