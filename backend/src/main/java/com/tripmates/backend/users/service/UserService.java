@@ -117,6 +117,11 @@ public class UserService {
     removeFollowingInfoOnAccount(unfollower.getId(), unfollowedUserId);
   }
 
+  /**
+   * Checks if the interaction (follow / unfollow) between two users is valid.
+   * @param follower follower's account.
+   * @param followed followed user's account.
+   */
   private void checkFollowingInteractionBetweenTwoUsers(Account follower, Account followed) {
     if (follower.getId().equals(followed.getId()))
       throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_UNFOLLOW_YOURSELF);
