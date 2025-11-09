@@ -190,23 +190,4 @@ public class Account implements UserDetails {
     return this.followers.size();
   }
 
-
-  // public void addFollower(String userId) {
-  //   this.followers.add(userId);
-  // }
-
-  // public void removeFollower(String userId) {
-  //   this.followers.remove(userId);
-  // }
-
-
-  // public void addFollowing(String userId) {
-  //   this.following.add(userId);
-  // }
-
-
-  // public void removeFollowing(String userId) {
-  //   this.following.remove(userId);
-  // }
-
 }
