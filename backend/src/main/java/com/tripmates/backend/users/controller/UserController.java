@@ -131,6 +131,24 @@ public class UserController {
 
 		return ResponseEntity.noContent().build();
 	}
+	@PatchMapping("/plans/{id}")
+	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))),
+			@ApiResponse(responseCode = "401", description = "Invalid credentials",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
+			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
+		return ResponseEntity.noContent().build();
+	}
 	@DeleteMapping("/plans/{id}")
 	@Operation(summary = "Delete user's plan by id")
 	@ApiResponses(value = {
