@@ -5,6 +5,7 @@ import com.tripmates.backend.users.dto.PlanCreationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PlanBuilder {
 
@@ -43,8 +44,14 @@ public class PlanBuilder {
 	 * @return {@link Plan}.
 	 */
 	public Plan build() {
+
+		List<String> publicationsIdList = new ArrayList<String>();
+		if (planCreationRequestDTO.publicationsIdList() != null) {
+			publicationsIdList = planCreationRequestDTO.publicationsIdList();
+		}
+
 		return new Plan(owner.getId(), planCreationRequestDTO.name(), planCreationRequestDTO.description(),
-				new ArrayList<>());
+				publicationsIdList);
 	}
 
 }

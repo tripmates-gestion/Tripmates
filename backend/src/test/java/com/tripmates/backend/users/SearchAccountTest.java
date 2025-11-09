@@ -319,7 +319,79 @@ public class SearchAccountTest {
 	}
 
 	@Test
-	void testSearchWithMultipleFilters() {
+	void testSearchUserReturnsInCorrectOrder() {
+		Account fran = new Account();
+		fran.setEmail("fran.infanti@gmail.com.ar");
+		fran.setName("Fran Infanti");
+		fran.setPassword("12345678");
+		fran.setRole(Role.USER);
+		fran.setFollowing(List.of("1", "2", "3"));
+		fran.setFollowers(List.of("1", "2", "3"));
+
+		Account oli = new Account();
+		oli.setEmail("oli@gmail.com.ar");
+		oli.setName("Oli");
+		oli.setPassword("12345678");
+		oli.setRole(Role.USER);
+		oli.setFollowing(List.of("1"));
+		oli.setFollowers(List.of("1"));
+
+		Account jeffBezos = new Account();
+		jeffBezos.setEmail("jeff.bezos@amazon.com");
+		jeffBezos.setName("Jeff Bezos");
+		jeffBezos.setPassword("12345678");
+		jeffBezos.setRole(Role.USER);
+		jeffBezos.setFollowing(List.of("1", "2", "3", "4", "5", "6"));
+		jeffBezos.setFollowers(List.of("1", "2", "3", "4", "5", "6"));
+
+		accountRepository.saveAll(List.of(oli, jeffBezos, fran));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/user", "{}",
+				new ParameterizedTypeReference<>() {
+				});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(3, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(jeffBezos),
+				AccountResumeResponseDTO.fromAccount(fran), AccountResumeResponseDTO.fromAccount(oli)), page.content());
+	}
+
+	@Test
+	void testSearchUserWithFollowersFilter() {
+		Account juan = new Account();
+		juan.setEmail("juan.perez@gmail.com.ar");
+		juan.setName("Juan Perez");
+		juan.setPassword("12345678");
+		juan.setRole(Role.USER);
+		juan.setFollowing(List.of("1", "2", "3"));
+		juan.setFollowers(List.of("1", "2", "3", "4"));
+
+		Account martin = new Account();
+		martin.setEmail("gonzales.martin@amazon.com");
+		martin.setName("Gonzales Martin");
+		martin.setPassword("12345678");
+		martin.setRole(Role.USER);
+		martin.setFollowing(List.of("1", "2", "3"));
+		martin.setFollowers(List.of("1", "2", "3", "4", "5", "6"));
+
+		accountRepository.saveAll(List.of(martin, juan));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/user", """
+				{
+				    "followers": 5
+				}
+				""", new ParameterizedTypeReference<>() {
+		});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(martin)), page.content());
 	}
 
 }

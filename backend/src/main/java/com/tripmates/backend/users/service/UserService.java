@@ -72,12 +72,12 @@ public class UserService {
 	}
 
 	/**
-	 * Returns a page with business's accounts that match the filters.
+	 * Returns a page with accounts that match the filters.
 	 * @param accountSearchRequestDTO filters.
 	 * @param pageable pages configuration.
 	 * @return a page of {@link AccountResumeResponseDTO}.
 	 */
-	public Page<AccountResumeResponseDTO> searchBusinessAccount(AccountSearchRequestDTO accountSearchRequestDTO,
+	public Page<AccountResumeResponseDTO> searchAccount(AccountSearchRequestDTO accountSearchRequestDTO,
 			Pageable pageable) {
 		return accountRepository.searchAccount(accountSearchRequestDTO, pageable)
 			.map(AccountResumeResponseDTO::fromAccount);
@@ -528,5 +528,35 @@ public class UserService {
 		imageURLsList.addAll(uploadImages(multipartFileList));
 		return imageURLsList;
 	}
+	public void deletePlan(String email, String planId) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		List<Plan> plans = account.getPlansList();
+		if (plans == null || plans.isEmpty())
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_DELETE);
+
+		int index = -1;
+		for (int i = 0; i < plans.size(); i++) {
+			Plan p = plans.get(i);
+			if (p != null && Objects.equals(p.getId(), planId)) {
+				if (!Objects.equals(p.getOwnerId(), account.getId()))
+					throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+				index = i;
+				break;
+			}
+		}
+
+		if (index == -1)
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_DELETE);
+
+		plans.remove(index);
+		account.setPlansList(plans);
+		accountRepository.save(account);
+	}
 
 }
+

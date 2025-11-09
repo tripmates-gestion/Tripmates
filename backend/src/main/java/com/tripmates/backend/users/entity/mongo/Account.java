@@ -65,6 +65,16 @@ public class Account implements UserDetails {
 	@Field(targetType = FieldType.STRING)
 	private String description;
 
+	/**
+	 * Account's following users. Only allowed in USER account.
+	 */
+	private List<String> following = new ArrayList<>();
+
+	/**
+	 * Account's follower. Only allowed in USER account.
+	 */
+	private List<String> followers = new ArrayList<>();
+
 	/** Account's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
 	private String location;
@@ -180,14 +190,20 @@ public class Account implements UserDetails {
 		return true;
 	}
 
-  
-  public int getFollowingCount() {
-    return this.followings.size();
-  }
+	/**
+	 * Gets the account following count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowingCount() {
+		return this.following.size();
+	}
 
-
-  public int getFollowersCount() {
-    return this.followers.size();
-  }
+	/**
+	 * Gets the account followers count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowersCount() {
+		return this.followers.size();
+	}
 
 }
