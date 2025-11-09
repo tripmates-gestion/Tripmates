@@ -7,7 +7,7 @@ export function updateDescription(current: string, updated: string, accessToken:
         return;
     }
     console.log('Updating description from', current, 'to', updated);
-    fetch('http://localhost:8080/users/me/description', {
+    fetch('http://localhost:8080/users/me', {
         headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
         method: 'PATCH',
         body: JSON.stringify({ description: updated }),
@@ -27,7 +27,7 @@ export function updateUsername(current: string, updated: string, accessToken: st
         return;
     }
     console.log('Updating username from', current, 'to', updated);
-    fetch('http://localhost:8080/users/me/username', {
+    fetch('http://localhost:8080/users/me', {
         headers: { "Authorization": `Bearer ${accessToken}`, "Content-Type": "application/json" },
         method: 'PATCH',
         body: JSON.stringify({ username: updated }),

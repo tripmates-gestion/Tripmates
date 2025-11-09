@@ -2,8 +2,10 @@ package com.tripmates.backend.users;
 
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.publications.entity.mongo.Publication;
+import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +19,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -38,7 +42,10 @@ public class AccountPlanTest {
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
-	private AccountRespository accountRespository;
+	private AccountRepository accountRepository;
+
+	@Autowired
+	private PublicationRepository publicationRepository;
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -65,32 +72,31 @@ public class AccountPlanTest {
 		fran.setEmail("franInfanti@gmail.com.ar");
 		fran.setPassword("123456789");
 		fran.setRole(Role.USER);
-		accountRespository.save(fran);
+		accountRepository.save(fran);
 
-		String createPlanRequest = """
+		Publication publication = new Publication();
+		publication.setTitle("Fishing Trip Publication");
+		publication.setDescription("Going now to Villa Paranacito");
+		publicationRepository.save(publication);
+
+		String createPlanRequest = String.format("""
 				{
 				  "name": "Fishing Trip 2026",
-				  "description": "Going fishing to Villa Paranacito next summer 2026"
+				  "description": "Going fishing to Villa Paranacito next summer 2026",
+				  "publicationsIdList": ["%s"]
 				}
-				""";
+				""", publication.getId());
 
 		mockMvc.perform(post("/users/plans/create").contentType(MediaType.APPLICATION_JSON).content(createPlanRequest))
+			.andDo(print())
 			.andExpect(status().isNoContent());
-
-		String expectedResponse = """
-				[
-				    {
-				      "name": "Fishing Trip 2026",
-				      "description": "Going fishing to Villa Paranacito next summer 2026",
-				      "publications": []
-				    }
-				]
-				""";
 
 		mockMvc.perform(get("/users/plans/list").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
-			.andExpect(content().contentType("application/json"))
-			.andExpect(content().json(expectedResponse, false));
+			.andExpect(jsonPath("$[0].name").value("Fishing Trip 2026"))
+			.andExpect(jsonPath("$[0].description").value("Going fishing to Villa Paranacito next summer 2026"))
+			.andExpect(jsonPath("$[0].publications[0].title").value("Fishing Trip Publication"))
+			.andExpect(jsonPath("$[0].publications[0].description").value("Going now to Villa Paranacito"));
 	}
 
 }

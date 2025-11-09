@@ -48,4 +48,18 @@ public class ValidationErrorMessage {
 
 	public static final String PUBLICATION_NOT_FOUND = "La publicacion no se encontró";
 
+	public static final String INDEX_OUT_OF_RANGE = "Indice fuera de ranfo";
+
+	public static final String NOTHING_TO_UPDATE = "No existe una entidad para actualizar";
+
+	public static final String NOTHING_TO_DELETE = "No existe una entidad para eliminar";
+
+  public static final String CANNOT_FOLLOW_UNFOLLOW_YOURSELF = "No puedes dejar de seguirte/seguirte a ti mismo";
+
+  public static final String CANNOT_FOLLOW_UNFOLLOW_BUSINESS = "No puedes seguir/dejar de seguir a un cuenta de negocio";
+  
+  public static final String CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING = "No puedes dejar de seguir a alguien que no sigues";
+
+  public static final String CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING = "No puedes seguir a alguien que ya sigues";
+
 }

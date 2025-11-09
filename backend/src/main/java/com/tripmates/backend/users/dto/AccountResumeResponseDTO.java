@@ -7,38 +7,37 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.DayOfWeek;
 import java.util.List;
 
-@Schema(description = "Account profile response DTO")
+@Schema(description = "Account resume profile response DTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record AccountResumeResponseDTO(@Schema(description = "Account's ID") String id,
 		@Schema(description = "Account's avatar URL") String avatarURL,
 		@Schema(description = "Account's name") String name, @Schema(description = "Account's email") String email,
 		@Schema(description = "Account's role") Role role,
 		@Schema(description = "Business account's description") String description,
-		/* Para negocios */
+		/* For business's accounts */
 		@Schema(description = "Business account's business type") BusinessType businessType,
 		@Schema(description = "Business account's location") String location,
 		@Schema(description = "Business account's phone number") String phoneNumber,
 		@Schema(description = "Business account's public email") String publicEmail,
 		@Schema(description = "Business account's profile image URLs") List<String> profileImageUrls,
 		@Schema(description = "Business account's average price") AveragePrice averagePrice,
-		/* Para restaurantes */
+		/* For business's restaurant accounts */
 		@Schema(description = "Restaurant account's type") RestaurantType restaurantType,
 		@Schema(description = "Restaurant account's attention schedule") AttentionSchedule attentionSchedule,
 		@Schema(description = "Restaurant account's opening days") List<DayOfWeek> openingDays,
 		@Schema(description = "Restaurant account's menu") List<MenuItem> menu,
-		/* Para hoteles */
+		/* For business's hosting accounts */
 		@Schema(description = "Hotel account's type") HotelType hotelType,
 		@Schema(description = "Hotel account's room packs") List<RoomPack> roomPacks) {
 
 	/**
-	 * Retorna un resumen de los atributos claves de {@link Account}.
-	 * @param account cuenta de usuario del sistema.
+	 * Returns a resume from the attributes of a user account.
+	 * @param account user account.
 	 * @return {@link AccountResumeResponseDTO}.
 	 */
 	public static AccountResumeResponseDTO fromAccount(Account account) {
 		Role role = account.getRole();
 
-		// Perfil de usuario no negocio: solo comunes, resto null
 		if (role != Role.BUSINESS) {
 			return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
 					account.getEmail(), role, account.getDescription(), null, // businessType
@@ -56,42 +55,30 @@ public record AccountResumeResponseDTO(@Schema(description = "Account's ID") Str
 			);
 		}
 
-		// Perfil de negocio: comunes de negocio
-		BusinessType bt = account.getBusinessType();
-		String loc = account.getLocation();
-		String phone = account.getPhoneNumber();
-		String pubEmail = account.getPublicEmail();
-		List<String> images = account.getProfileImageUrls();
+		BusinessType businessType = account.getBusinessType();
+		String location = account.getLocation();
+		String phoneNumber = account.getPhoneNumber();
+		String publicEmail = account.getPublicEmail();
+		List<String> imageURLsList = account.getProfileImageUrls();
 
-		// Específicos por tipo de negocio
-		if (bt == BusinessType.RESTAURANT) {
+		if (businessType == BusinessType.RESTAURANT) {
 			return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
-					account.getEmail(), role, account.getDescription(), bt, loc, phone, pubEmail, images,
-					account.getAveragePrice(), account.getRestaurantType(), account.getAttentionSchedule(),
-					account.getOpeningDays(), account.getMenu(), null, // hotelType
+					account.getEmail(), role, account.getDescription(), businessType, location, phoneNumber,
+					publicEmail, imageURLsList, account.getAveragePrice(), account.getRestaurantType(),
+					account.getAttentionSchedule(), account.getOpeningDays(), account.getMenu(), null, // hotelType
 					null // roomPacks
 			);
 		}
-		else if (bt == BusinessType.HOTEL) {
+		else {
 			return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
-					account.getEmail(), role, account.getDescription(), bt, loc, phone, pubEmail, images, null, // averagePrice
+					account.getEmail(), role, account.getDescription(), businessType, location, phoneNumber,
+					publicEmail, imageURLsList, null, // averagePrice
 					null, // restaurantType
 					null, // attentionSchedule
 					null, // openingDays
 					null, // menu
 					account.getHotelType(), account.getRoomPacks());
 		}
-
-		// Negocio sin tipo definido: devolver solo comunes de negocio
-		return new AccountResumeResponseDTO(account.getId(), account.getAvatarURL(), account.getName(),
-				account.getEmail(), role, account.getDescription(), bt, loc, phone, pubEmail, images, null, // averagePrice
-				null, // restaurantType
-				null, // attentionSchedule
-				null, // openingDays
-				null, // menu
-				null, // hotelType
-				null // roomPacks
-		);
 	}
 
 }
