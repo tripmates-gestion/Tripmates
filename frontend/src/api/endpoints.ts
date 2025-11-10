@@ -17,5 +17,6 @@ export const ENDPOINTS = {
     POST_REVIEW: "/publications/{id}/review",
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
+    DELETE_PLAN: "/users/plans/{id}",
   };
   

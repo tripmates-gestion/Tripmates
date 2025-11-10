@@ -26,3 +26,16 @@ export async function createPlan(accessToken: string, name: string, description:
   });
   return response;
 }
+
+export async function deletePlan(accessToken: string, planId: string) {
+  console.log("Deleting plan with ID:", planId);
+  console.log("Using access token:", accessToken);
+  const endpoint = ENDPOINTS.DELETE_PLAN.replace("{id}", planId);
+  const response = await apiFetch(endpoint, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
+  return response;
+}

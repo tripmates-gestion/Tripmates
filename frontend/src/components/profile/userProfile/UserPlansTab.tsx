@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Grid, Typography, Box, Stack, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import React, { useState, useCallback } from 'react';
+import { Grid, DialogContentText, Typography, Box, Stack, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import type { BusinessPublicationResponseDTO } from '../../../types/business';
 import PublicationCard from '../../publications/PublicationCard';
 import { useAuth } from '../../../hooks/useAuth';
-import { createPlan, getPlans } from '../../../services/plansService';
+import { createPlan, getPlans, deletePlan } from '../../../services/plansService';
+import { Delete } from '@mui/icons-material';
 
 type PlanContent = BusinessPublicationResponseDTO[];
 
@@ -14,96 +15,74 @@ interface Plan {
   planContent: PlanContent;
 }
 
-/* 
-function getPlans(token: string): Plan[] {
-  // Aquí iría la lógica para obtener los planes del usuario usando el token
-  // Por ahora, devolvemos un array de ejemplo
-  return [
-    {
-      name: "Viaje a Europa",
-      description: "Plan para recorrer las principales ciudades europeas",
-      planContent: [{
-        id: '1', title: 'Hotel en París', description: 'Hotel céntrico en París', 
-        openingDays: [], attentionSchedule: {openingTime: '', closingTime: ''}, 
-        exceptionalClosingDays: [], phoneNumber: '', email: '', location: 'París, Francia', 
-        imageUrls: [], ownerId: '', ownerUsername: '', ownerAvatarUrl: '', createdAt: '', tags: []
-      }]
-    },
-    {
-      name: "Fin de semana en Buenos Aires",
-      description: "Escapada corta por la capital argentina",
-      planContent: [{
-        id: '2', title: 'Restaurante en Palermo', description: 'Restaurante de autor', 
-        openingDays: [], attentionSchedule: {openingTime: '', closingTime: ''}, 
-        exceptionalClosingDays: [], phoneNumber: '', email: '', location: 'Buenos Aires, Argentina', 
-        imageUrls: [], ownerId: '', ownerUsername: '', ownerAvatarUrl: '', createdAt: '', tags: []
-      }]
-    },
-    {
-      name: "Aventura en Bariloche",
-      description: "Turismo aventura en la Patagonia",
-      planContent: []
-    }
-  ];
-}
-  */
-
 export default function UserPlansTab() {
   const { user, accessToken } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
   const [newPlanDescription, setNewPlanDescription] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
 
   if (!accessToken) {
     return <Typography variant="body1">Debes iniciar sesión para ver tus planes de viaje.</Typography>;
   }
 
-  const fetchPlans = async () => {
-      try {
-        const plans = await getPlans(accessToken);
-        console.log('Fetched plans:', plans);
-        setPlans(plans);
-      } catch (error) {
-        console.error('Error fetching plans:', error);
-      }
-    };
+  const fetchPlans = useCallback(async () => {
+    try {
+      const plans = await getPlans(accessToken);
+      console.log('Fetched plans:', plans);
+      setPlans(plans);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  }, [accessToken]);
 
   React.useEffect(() => {
-    fetchPlans();
-
     if (user?.id) {
       fetchPlans();
     } else {
       console.log('No user ID available, skipping fetch of plans.');
     }
-  }, [accessToken, user?.id]);
+  }, [fetchPlans, user?.id]);
 
+  const handleDeletePlan = async () => {
+    if (!planToDelete) return;
+    
+    try {
+      const id = planToDelete.id; 
+      console.log('Deleting plan with id:', id);
+      await deletePlan(accessToken, id);
+      
+      // Actualizar la lista de planes
+      await fetchPlans();
+      
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+    }
+  };
 
+  const openDeleteDialog = (plan: Plan) => {
+    setPlanToDelete(plan);
+    setDeleteDialogOpen(true);
+  };
 
   const handleCreatePlan = async () => {
     if (newPlanName.trim()) {
-      // Aquí agregar lógica para crear el plan en la API
       console.log('Creando plan:', { name: newPlanName, description: newPlanDescription });
       
-      // Por ahora, agregar un plan vacío al estado local
-      const newPlan: Plan = {
-        name: newPlanName.trim(),
-        description: newPlanDescription.trim(),
-        planContent: []
-      };
       try {
-        await createPlan(accessToken, newPlan.name, newPlan.description);
+        await createPlan(accessToken, newPlanName.trim(), newPlanDescription.trim());
         await fetchPlans();
+        
+        setNewPlanName('');
+        setNewPlanDescription('');
+        setOpenDialog(false);
       } catch (error) {
         console.error('Error creating plan:', error);
-        return;
       }
-      
-      // Limpiar y cerrar
-      setNewPlanName('');
-      setNewPlanDescription('');
-      setOpenDialog(false);
     }
   };
 
@@ -198,8 +177,34 @@ export default function UserPlansTab() {
         {plans && plans.length > 0 ? (
           <Grid item xs={12}>
             {plans.map((plan, index) => (
-              <Box key={index} sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box 
+                key={index} 
+                sx={{ 
+                  mb: 3,
+                  p: 2,
+                  borderRadius: 2,
+                  boxShadow: 1,
+                  backgroundColor: 'background.paper',
+                  position: 'relative'
+                }}
+              >
+                <IconButton
+                  onClick={() => openDeleteDialog(plan)}
+                  sx={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    color: 'error.main',
+                    '&:hover': {
+                      backgroundColor: 'error.light',
+                      color: 'error.contrastText'
+                    }
+                  }}
+                  size="small"
+                >
+                  <Delete />
+                </IconButton>
+                <Typography variant="h6" gutterBottom sx={{ pr: 5 }}>
                   {plan.name}
                 </Typography>
                 {plan && plan.description && (
@@ -236,6 +241,34 @@ export default function UserPlansTab() {
           </Grid>
         )}
       </Grid>
+
+      {/* Diálogo de confirmación para eliminar */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar plan</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que quieres eliminar el plan "{planToDelete?.name}"? 
+            Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="inherit">
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleDeletePlan} 
+            color="error" 
+            variant="contained"
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
