@@ -33,19 +33,30 @@ const TravelersSearchPage: React.FC = () => {
 
   const handleSearch = async () => {
     if (!authContext.accessToken) {
-    // Handle the case where there's no access token
-    console.error('No access token available');
-    return;
-  }
-    const results = await searchTravelers(authContext.accessToken, searchTerm, searchType);
+      // Handle the case where there's no access token
+      console.error('No access token available');
+      return;
+    }
+    const resultsSearch: any[] = [];
+   
+    if (searchType==="name") {
+      const response = await searchTravelers(authContext.accessToken, searchTerm,null);
+      if (response!=null){
+        resultsSearch.push(...response.content);
+      }
+    } else {
+      const response = await searchTravelers(authContext.accessToken, null, searchTerm);
+      if (response!=null){
+        resultsSearch.push(...response.content);
+      }
+    }
 
-
-    // const dummyResults = [
+    // const resultsSearch = [
     //   {
     //     id: 1,
     //     name: "Lucía Fernández",
-    //     username: "@lucia_travels",
-    //     avatar: "/avatars/lucia.jpg",
+    //     avatarURL: "@lucia_travels",
+    //     avatar: "/avatars/mlucia.jpg",
     //     bio: "Amante de la montaña y los viajes culturales 🌍",
     //   },
     //   {
@@ -57,7 +68,7 @@ const TravelersSearchPage: React.FC = () => {
     //   },
     // ];
 
-    setResults(results);
+    setResults(resultsSearch);
   };
 
   const handleUserClick = (user: any) => {

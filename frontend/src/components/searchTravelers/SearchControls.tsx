@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Box,
   Stack,
   Chip,
   Paper,
@@ -30,6 +29,7 @@ const SearchControls: React.FC<Props> = ({
   <>
     <Stack direction="row" justifyContent="center" spacing={2} mb={2}>
       <Chip
+        size="medium"
         label="Por nombre"
         color="primary"
         variant={searchType === "name" ? "filled" : "outlined"}
@@ -37,6 +37,7 @@ const SearchControls: React.FC<Props> = ({
         sx={{ fontWeight: searchType === "name" ? 600 : 400 }}
       />
       <Chip
+        size="medium"
         label="Por ubicación"
         color="primary"
         variant={searchType === "location" ? "filled" : "outlined"}
@@ -82,12 +83,6 @@ const SearchControls: React.FC<Props> = ({
           Buscar
         </Button>
       </Stack>
-
-      {searchTerm && (
-        <Box mt={2}>
-          <Chip label={`Filtro: "${searchTerm}"`} variant="outlined" color="primary" />
-        </Box>
-      )}
     </Paper>
   </>
 );

@@ -9,8 +9,10 @@ interface Props {
 }
 
 const SearchResults: React.FC<Props> = ({ results, onUserClick }) => {
-  if (results.length === 0) return null;
-
+  if (results.length === 0){
+    return
+  }
+  console.log("Resultados devueltos por el back en busqueda de usuarios", results);
   return (
     <Box sx={{ width: "100%", maxWidth: 800, mt: 5, px: { xs: 2, sm: 4 } }}>
       <Typography variant="h6" sx={{ mb: 2, color: "white" }}>
