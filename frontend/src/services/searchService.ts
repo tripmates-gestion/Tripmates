@@ -11,3 +11,22 @@ export async function searchBusiness(accesstoken: string,filters: SearchBusiness
   })
   return response
 }
+
+export async function searchTravelers(accesstoken: string, username?: string, location?: string): Promise<any> {
+  const params = new URLSearchParams();
+  
+  if (username) params.append('username', username);
+  if (location) params.append('location', location);
+  
+  const queryString = params.toString();
+  const uri = queryString 
+    ? `${ENDPOINTS.SEARCH_TRAVELERS}?${queryString}`
+    : ENDPOINTS.SEARCH_TRAVELERS;
+    
+  const response = apiFetch(uri, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accesstoken}` },
+  });
+  return response;
+}
+

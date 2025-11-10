@@ -12,6 +12,7 @@ export const ENDPOINTS = {
     RESTAURANT_MENU: '/users/me/restaurant',
     GET_OTHER_BUSINESS_PUBLICATIONS: '/publications/',
     SEARCH_BUSINESS: "/users/search/business",
+    SEARCH_TRAVELERS: "/users/search/travelers",
     CREATE_PLAN: "/users/plans/create",
     GET_PLANS: "/users/plans/list",
     POST_REVIEW: "/publications/{id}/review",
