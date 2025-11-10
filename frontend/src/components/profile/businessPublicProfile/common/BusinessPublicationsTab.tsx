@@ -23,8 +23,12 @@ import type { BusinessPublicationResponseDTO } from "../../../../types/business"
 
 import { useAuth } from "../../../../hooks/useAuth";
 import { getBusinessPublicationsPublic } from "../../../../services/businessPublications";
-import { getPlans, createPlan } from "../../../../services/plansService"; // 👈 importa tus llamadas reales
+import { getPlans, createPlan, addPublicationToPlan } from "../../../../services/plansService"; // 👈 importa tus llamadas reales
 
+type PlanInfo = {
+  name: string;
+  id: string
+}
 
 export default function BusinessPublicationsTab({ id }: { id: string }) {
   const [selected, setSelected] =
@@ -38,7 +42,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     React.useState<BusinessPublicationResponseDTO[]>([]);
   const [_, setLoading] = React.useState(true);
 
-  const [plans, setPlans] = React.useState<string[]>([]);
+  const [plans, setPlans] = React.useState<PlanInfo[]>([]);
   const [plansLoaded, setPlansLoaded] = React.useState(false);
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const [targetPublication, setTargetPublication] =
@@ -92,11 +96,15 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     if (!plansLoaded) {
       try {
         const response = await getPlans(accessToken);
-        // asumo que el endpoint devuelve o string[] o algo con { name }
-        const fetchedNames: string[] = Array.isArray(response)
-          ? response.map((p: any) => (typeof p === "string" ? p : p.name))
-          : [];
-        setPlans(fetchedNames);
+
+        const fetchedPlans: PlanInfo[] = Array.isArray(response)
+        ? response.map((p: any) => ({
+            name: typeof p === "string" ? p : p.name,
+            id: typeof p === "string" ? p : p.id
+          }))
+        : [];
+
+        setPlans(fetchedPlans);
         setPlansLoaded(true);
       } catch (error) {
         console.error("Error fetching plans:", error);
@@ -108,14 +116,14 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   // ───────────────────────────────
   // Manejo de selección de plan
   // ───────────────────────────────
-  const handleSelectBoard = (boardName: string) => {
+  const handleSelectBoard = (boardName: string, planId: string, publicationId: string) => {
     if (boardName === "➕ Crear nuevo plan") {
       setOpenCreateDialog(true);
       return;
     }
 
-    // TODO: acá más adelante vas a hacer el llamado para
-    // agregar la publicación al plan seleccionado en el backend
+    addPublicationToPlan(accessToken, planId, publicationId);
+
     console.log(
       `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`
     );
@@ -245,13 +253,13 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
           horizontal: "right",
         }}
       >
-        <MenuItem onClick={() => handleSelectBoard("➕ Crear nuevo plan")}>
+        <MenuItem onClick={() => handleSelectBoard("➕ Crear nuevo plan", undefined!, targetPublication?.id!)}>
           ➕ Crear nuevo plan
         </MenuItem>
         <Divider />
-        {plans.map((p) => (
-          <MenuItem key={p} onClick={() => handleSelectBoard(p)}>
-            {p}
+        {plans.map((plan: PlanInfo) => (
+          <MenuItem key={plan.id} onClick={() => handleSelectBoard(plan.name, plan.id, targetPublication?.id!)}>
+            {plan.name}
           </MenuItem>
         ))}
       </Menu>

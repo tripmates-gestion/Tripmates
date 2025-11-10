@@ -178,7 +178,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
               if (authContext.accessToken) {
                 onAddToBoard(e, publication, authContext.accessToken);
               } else {
-                setShowAuthError(true); // 🆕 muestra el toast
+                setShowAuthError(true); 
               }
             }}
           >

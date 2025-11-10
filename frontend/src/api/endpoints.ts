@@ -18,5 +18,6 @@ export const ENDPOINTS = {
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
+    PATCH_PLAN: "/users/plans/{id}",
   };
   

@@ -1,18 +1,19 @@
 import React, { useState, useCallback } from 'react';
-import { Grid, DialogContentText, Typography, Box, Stack, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Grid, DialogContentText, Typography, Box, Stack, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Collapse, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { Delete, ExpandMore, ExpandLess } from '@mui/icons-material';
 import type { BusinessPublicationResponseDTO } from '../../../types/business';
 import PublicationCard from '../../publications/PublicationCard';
 import { useAuth } from '../../../hooks/useAuth';
 import { createPlan, getPlans, deletePlan } from '../../../services/plansService';
-import { Delete } from '@mui/icons-material';
 
 type PlanContent = BusinessPublicationResponseDTO[];
 
 interface Plan {
+  id?: string;
   name: string;
   description: string;
-  planContent: PlanContent;
+  publications: PlanContent;
 }
 
 export default function UserPlansTab() {
@@ -23,6 +24,7 @@ export default function UserPlansTab() {
   const [newPlanDescription, setNewPlanDescription] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
+  const [expandedPlans, setExpandedPlans] = useState<Set<number>>(new Set());
 
   if (!accessToken) {
     return <Typography variant="body1">Debes iniciar sesión para ver tus planes de viaje.</Typography>;
@@ -46,13 +48,24 @@ export default function UserPlansTab() {
     }
   }, [fetchPlans, user?.id]);
 
+  const togglePlanExpansion = (planIndex: number) => {
+    setExpandedPlans(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(planIndex)) {
+        newSet.delete(planIndex);
+      } else {
+        newSet.add(planIndex);
+      }
+      return newSet;
+    });
+  };
+
   const handleDeletePlan = async () => {
-    if (!planToDelete) return;
+    if (!planToDelete || !planToDelete.id) return;
     
     try {
-      const id = planToDelete.id; 
-      console.log('Deleting plan with id:', id);
-      await deletePlan(accessToken, id);
+      console.log('Deleting plan with id:', planToDelete.id);
+      await deletePlan(accessToken, planToDelete.id);
       
       // Actualizar la lista de planes
       await fetchPlans();
@@ -176,59 +189,103 @@ export default function UserPlansTab() {
       >
         {plans && plans.length > 0 ? (
           <Grid item xs={12}>
-            {plans.map((plan, index) => (
-              <Box 
-                key={index} 
-                sx={{ 
-                  mb: 3,
-                  p: 2,
-                  borderRadius: 2,
-                  boxShadow: 1,
-                  backgroundColor: 'background.paper',
-                  position: 'relative'
-                }}
-              >
-                <IconButton
-                  onClick={() => openDeleteDialog(plan)}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    color: 'error.main',
-                    '&:hover': {
-                      backgroundColor: 'error.light',
-                      color: 'error.contrastText'
-                    }
+            {plans.map((plan, index) => {
+              const isExpanded = expandedPlans.has(index);
+              const publicationCount = plan.publications?.length || 0;
+              
+              return (
+                <Box 
+                  key={index} 
+                  sx={{ 
+                    mb: 3,
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    backgroundColor: 'background.paper',
+                    position: 'relative',
+                    overflow: 'hidden'
                   }}
-                  size="small"
                 >
-                  <Delete />
-                </IconButton>
-                <Typography variant="h6" gutterBottom sx={{ pr: 5 }}>
-                  {plan.name}
-                </Typography>
-                {plan && plan.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontStyle: 'italic' }}>
-                    {plan.description}
-                  </Typography>
-                )}
-                <Stack spacing={1}>
-                  {plan.planContent && plan.planContent.length > 0 ? (
-                    plan.planContent.map((publication) => (
-                      <PublicationCard 
-                        key={publication.id}
-                        publication={publication} 
-                        onView={() => {}} 
-                      />
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic' }}>
-                      Plan vacío - Agrega publicaciones desde la sección de búsqueda
-                    </Typography>
-                  )}
-                </Stack>
-              </Box>
-            ))}
+                  {/* Header del plan - siempre visible */}
+                  <Box
+                    sx={{
+                      p: 2,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'action.hover'
+                      }
+                    }}
+                    onClick={() => togglePlanExpansion(index)}
+                  >
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteDialog(plan);
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        color: 'error.main',
+                        '&:hover': {
+                          backgroundColor: 'error.light',
+                          color: 'error.contrastText'
+                        }
+                      }}
+                      size="small"
+                    >
+                      <Delete />
+                    </IconButton>
+
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ pr: 6 }}>
+                      <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        {plan.name}
+                      </Typography>
+                      
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Chip 
+                          label={`${publicationCount} ${publicationCount === 1 ? 'publicación' : 'publicaciones'}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                        <IconButton size="small">
+                          {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Stack>
+                    </Stack>
+
+                    {plan.description && (
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+                        {plan.description}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Contenido desplegable */}
+                  <Collapse in={isExpanded}>
+                    <Box sx={{ px: 2, pb: 2 }}>
+                      {plan.publications && plan.publications.length > 0 ? (
+                        <Grid container spacing={2}>
+                          {plan.publications.map((publication: BusinessPublicationResponseDTO, pubIndex) => (
+                            <Grid item xs={12} sm={6} key={pubIndex}>
+                              <Box>
+                                <PublicationCard 
+                                  publication={publication}
+                                  onView={() => {}}
+                                />
+                              </Box>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic', textAlign: 'center' }}>
+                          Plan vacío - Agrega publicaciones desde la sección de búsqueda
+                        </Typography>
+                      )}
+                    </Box>
+                  </Collapse>
+                </Box>
+              );
+            })}
           </Grid>
         ) : (
           <Grid item xs={12}>
