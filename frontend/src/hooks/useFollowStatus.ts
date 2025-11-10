@@ -4,25 +4,37 @@ import { useAuth } from './useAuth';
 
 interface UseFollowStatusOptions {
   autoFetch?: boolean;
+  initialIsFollowing?: boolean;
 }
 
-
-{/* Devuelve el estado de seguimiento de un usuario objetivo */ }
 export function useFollowStatus(
   targetUserId: string | null | undefined,
   options?: UseFollowStatusOptions
 ) {
   const { accessToken, user } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(Boolean(options?.initialIsFollowing));
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(Boolean(options?.initialIsFollowing));
   const [error, setError] = useState<string | null>(null);
 
-  const { autoFetch = true } = options ?? {};
+  const { autoFetch = true, initialIsFollowing } = options ?? {};
   const canFollow = useMemo(
-    () => Boolean(accessToken && targetUserId && user?.id !== targetUserId),
-    [accessToken, targetUserId, user?.id]
+    () =>
+      Boolean(
+        accessToken &&
+          targetUserId &&
+          user?.id !== targetUserId &&
+          user?.role === 'USER'
+      ),
+    [accessToken, targetUserId, user?.id, user?.role]
   );
+
+  useEffect(() => {
+    if (initialIsFollowing !== undefined) {
+      setIsFollowing(initialIsFollowing);
+      setIsInitialized(true);
+    }
+  }, [initialIsFollowing]);
 
   const refresh = useCallback(async () => {
     if (!canFollow) {

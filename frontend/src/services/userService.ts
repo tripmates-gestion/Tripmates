@@ -49,7 +49,7 @@ export async function updateUser(
   avatar: File | null,
   accessToken: string | null,
   signal?: AbortSignal
-): Promise<any> {
+): Promise<unknown> {
   const token = ensureToken(accessToken);
 
   const fd = new FormData();

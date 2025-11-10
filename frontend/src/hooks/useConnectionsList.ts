@@ -69,5 +69,6 @@ export function useConnectionsList(
     loading,
     error,
     refresh: fetchData,
+    removeItem,
   } as const;
 }

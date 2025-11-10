@@ -10,7 +10,7 @@ export const ENDPOINTS = {
     USER_FOLLOWINGS: (userId: string) => `/users/${userId}/followings`,
     FOLLOW_USER: (userId: string) => `/users/${userId}/follow`,
     UNFOLLOW_USER: (userId: string) => `/users/${userId}/unfollow`,
-    
+
     REFRESH_TOKEN: '/auth/refresh',
     PUBLISH_BUSINESS: '/publications/business',
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',

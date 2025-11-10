@@ -12,10 +12,12 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemSecondaryAction,
   ListItemText,
   Stack,
   Typography,
 } from '@mui/material';
+import type { ReactNode } from 'react';
 import type { CommonUser } from '../../types/PrivateUserProfiles';
 
 
@@ -28,6 +30,7 @@ type ConnectionsListDialogProps = {
   error?: string | null;
   onRefresh?: () => void;
   emptyMessage?: string;
+  renderAction?: (account: CommonUser) => ReactNode;
 };
 
 const TITLES = {
@@ -40,11 +43,6 @@ const EMPTY_MESSAGES = {
   followings: 'Todavía no sigues a nadie.',
 } as const;
 
-const BUSINESS_LABEL: Record<string, string> = {
-  HOTEL: 'Hotel',
-  RESTAURANT: 'Restaurante',
-};
-
 export function ConnectionsListDialog({
   open,
   onClose,
@@ -54,6 +52,7 @@ export function ConnectionsListDialog({
   error = null,
   onRefresh,
   emptyMessage,
+  renderAction,
 }: ConnectionsListDialogProps) {
   const title = TITLES[type];
   const resolvedEmptyMessage = emptyMessage ?? EMPTY_MESSAGES[type];
@@ -97,7 +96,6 @@ export function ConnectionsListDialog({
           <List sx={{ py: 0 }}>
             {items.map((account) => {
               const avatarFallback = account.name ? account.name[0]?.toUpperCase() : '?';
-              // const showBusinessChip = account.role === 'BUSINESS' && account.businessType;
               return (
                 <ListItem key={account.id} divider disableGutters sx={{ px: 2 }}>
                   <ListItemAvatar>
@@ -106,18 +104,11 @@ export function ConnectionsListDialog({
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
+                    sx={{ pr: renderAction ? 8 : 0 }}
                     primary={
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant="subtitle1" fontWeight={600} noWrap>
-                          {account.name}
-                        </Typography>
-                        {/* {showBusinessChip && (
-                          <Chip
-                            size="small"
-                            label={BUSINESS_LABEL[String(account.businessType)] ?? 'Negocio'}
-                          />
-                        )} */}
-                      </Stack>
+                      <Typography variant="subtitle1" fontWeight={600} noWrap>
+                        {account.name}
+                      </Typography>
                     }
                     secondary={account.description || account.email}
                     secondaryTypographyProps={{
@@ -125,6 +116,9 @@ export function ConnectionsListDialog({
                       color: 'text.secondary',
                     }}
                   />
+                  {renderAction && (
+                    <ListItemSecondaryAction>{renderAction(account)}</ListItemSecondaryAction>
+                  )}
                 </ListItem>
               );
             })}

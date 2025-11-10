@@ -33,6 +33,7 @@ import type {
 } from '../types/PrivateUserProfiles';
 import { useConnectionsList } from '../hooks/useConnectionsList';
 import { ConnectionsListDialog } from '../components/social/ConnectionsListDialog';
+import { FollowButton } from '../components/social/FollowButton';
 
 const userRoleChipColor = 'info';
 
@@ -51,6 +52,16 @@ export default function UserProfile() {
 
   const followersList = useConnectionsList('followers');
   const followingsList = useConnectionsList('followings');
+
+  const handleFollowingChange = React.useCallback(
+    (accountId: string, nextIsFollowing: boolean) => {
+      if (!nextIsFollowing) {
+        followingsList.removeItem(accountId);
+        void followingsList.refresh();
+      }
+    },
+    [followingsList]
+  );
 
   const tabs = [
     { key: 'actividad', label: 'Actividad' },
@@ -269,6 +280,18 @@ export default function UserProfile() {
         loading={followingsList.loading}
         error={followingsList.error}
         onRefresh={followingsList.refresh}
+        renderAction={(account) => (
+          <FollowButton
+            targetUserId={account.id}
+            size="small"
+            variant="outlined"
+            color="inherit"
+            autoFetch={false}
+            initialIsFollowing
+            onFollowChange={(next) => handleFollowingChange(account.id, next)}
+            sx={{ minWidth: 140 }}
+          />
+        )}
       />
     </Box>
   );
