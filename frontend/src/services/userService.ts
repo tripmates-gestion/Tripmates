@@ -78,13 +78,18 @@ export async function updateUser(
     console.log('No avatar file attached');
   }
 
-    return apiFetch(ENDPOINTS.USER_ME, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}` }, // SIN Content-Type
-      body: fd,
-      signal,
-    });
+  return apiFetch(ENDPOINTS.USER_ME, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` }, // SIN Content-Type
+    body: fd,
+    signal,
+  });
 }
+
+
+
+
+{/* Sistemas de seguidores */}
 
 type FollowersResponse = { followers: CommonUser[] } | null;
 type FollowingsResponse = { followings: CommonUser[] } | null;

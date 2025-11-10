@@ -14,6 +14,7 @@ interface UseConnectionsListOptions {
   enabled?: boolean;
 }
 
+{/* Devuelve la lista de seguidores - seguidos */ }
 export function useConnectionsList(
   type: ConnectionsType,
   targetUserId?: string | null,
@@ -62,10 +63,6 @@ export function useConnectionsList(
       fetchData();
     }
   }, [enabled, fetchData]);
-
-  const removeItem = useCallback((userId: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== userId));
-  }, []);
 
   return {
     items,

@@ -3,6 +3,7 @@ import {
   Avatar,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
 } from '@mui/material';
 import type { ReactNode } from 'react';
 import type { CommonUser } from '../../types/PrivateUserProfiles';
+
 
 type ConnectionsListDialogProps = {
   open: boolean;
