@@ -62,7 +62,7 @@ public class SearchAccountTest {
 	public record PageResponse<T>(List<T> content, int totalPages, long totalElements, int number, int size) {
 	}
 
-	private <T> ResponseEntity<T> post(String url, @Nullable String requestBody,
+	private <T> ResponseEntity<T> searchBusiness(String url, @Nullable String requestBody,
 			ParameterizedTypeReference<T> responseType) {
 
 		HttpHeaders headers = new HttpHeaders();
@@ -74,9 +74,13 @@ public class SearchAccountTest {
 		return restTemplate.exchange(url, HttpMethod.POST, entity, responseType);
 	}
 
-	@Test
-	void testSearchWithFiltersButWithNoUsers() {
-	}
+    private <T> ResponseEntity<T> searchUser(String url, ParameterizedTypeReference<T> responseType) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        return restTemplate.exchange(url, HttpMethod.GET, entity, responseType);
+    }
 
 	@Test
 	void testSearchWithNoneFilters() {
@@ -89,8 +93,8 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(kansas));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
-				"{}", new ParameterizedTypeReference<>() {
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", "{}", new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -127,8 +131,9 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(sigaLaVaca, pfchang, rosmarie));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business",
-				"{ \"businessType\": \"RESTAURANT\" }", new ParameterizedTypeReference<>() {
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", "{ \"businessType\": \"RESTAURANT\" }",
+				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -161,12 +166,13 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(mcDonalds, burgerKing));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
-				    {
-				      "location": "Buenos Aires, Martinez Unicenter"
-				    }
-				""", new ParameterizedTypeReference<>() {
-		});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", """
+						    {
+						      "location": "Buenos Aires, Martinez Unicenter"
+						    }
+						""", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -197,12 +203,13 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(wendys, hutch));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
-				    {
-				      "username": "Hutch"
-				    }
-				""", new ParameterizedTypeReference<>() {
-		});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", """
+						    {
+						      "username": "Hutch"
+						    }
+						""", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -235,12 +242,13 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(sheraton, graff));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
-				    {
-				      "averagePrice": "$$$"
-				    }
-				""", new ParameterizedTypeReference<>() {
-		});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", """
+						    {
+						      "averagePrice": "$$$"
+						    }
+						""", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -264,15 +272,16 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(ypfAtalaya));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
-				    {
-				      "attentionSchedule": {
-				        "openingTime": "09:00",
-				        "closingTime": "18:00"
-				      }
-				    }
-				""", new ParameterizedTypeReference<>() {
-		});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", """
+						    {
+						      "attentionSchedule": {
+						        "openingTime": "09:00",
+						        "closingTime": "18:00"
+						      }
+						    }
+						""", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -298,17 +307,18 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(hiltonPilar));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/business", """
-				{
-				  "roomPacks": [
-				    {
-				      "numberOfGuests": 2,
-				      "price": 306531.0
-				    }
-				  ]
-				}
-				""", new ParameterizedTypeReference<>() {
-		});
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
+				baseUrl() + "/users/search/business", """
+						{
+						  "roomPacks": [
+						    {
+						      "numberOfGuests": 2,
+						      "price": 306531.0
+						    }
+						  ]
+						}
+						""", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -346,9 +356,10 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(oli, jeffBezos, fran));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/user", "{}",
-				new ParameterizedTypeReference<>() {
-				});
+        ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
+                baseUrl() + "/users/search/user",
+                new ParameterizedTypeReference<>() {}
+        );
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -379,12 +390,10 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(martin, juan));
 
-		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = post(baseUrl() + "/users/search/user", """
-				{
-				    "followers": 5
-				}
-				""", new ParameterizedTypeReference<>() {
-		});
+        ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
+                baseUrl() + "/users/search/user?followers=5",
+                new ParameterizedTypeReference<>() {}
+        );
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
