@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.AbstractMap;
 
 @Schema(description = "User update request DTO")
-public record UserUpdateRequestDTO(@Schema(description = "Account's name") String name,
+public record AccountUpdateRequestDTO(@Schema(description = "Account's name") String name,
 		@Schema(description = "Account's description or bio") String description,
 		@Schema(description = "Account's location") String location,
 		@Schema(description = "Account's phone number") String phoneNumber,

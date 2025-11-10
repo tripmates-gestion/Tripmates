@@ -17,13 +17,11 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
-import com.tripmates.backend.common.types.AveragePrice;
 import com.tripmates.backend.common.types.BusinessType;
 
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
