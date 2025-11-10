@@ -74,13 +74,13 @@ public class SearchAccountTest {
 		return restTemplate.exchange(url, HttpMethod.POST, entity, responseType);
 	}
 
-    private <T> ResponseEntity<T> searchUser(String url, ParameterizedTypeReference<T> responseType) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+	private <T> ResponseEntity<T> searchUser(String url, ParameterizedTypeReference<T> responseType) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        return restTemplate.exchange(url, HttpMethod.GET, entity, responseType);
-    }
+		HttpEntity<Void> entity = new HttpEntity<>(headers);
+		return restTemplate.exchange(url, HttpMethod.GET, entity, responseType);
+	}
 
 	@Test
 	void testSearchWithNoneFilters() {
@@ -356,10 +356,9 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(oli, jeffBezos, fran));
 
-        ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
-                baseUrl() + "/users/search/user",
-                new ParameterizedTypeReference<>() {}
-        );
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(baseUrl() + "/users/search/user",
+				new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -390,10 +389,9 @@ public class SearchAccountTest {
 
 		accountRepository.saveAll(List.of(martin, juan));
 
-        ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
-                baseUrl() + "/users/search/user?followers=5",
-                new ParameterizedTypeReference<>() {}
-        );
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
+				baseUrl() + "/users/search/user?followers=5", new ParameterizedTypeReference<>() {
+				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 

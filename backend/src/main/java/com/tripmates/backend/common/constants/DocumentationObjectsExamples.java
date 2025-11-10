@@ -244,35 +244,24 @@ public class DocumentationObjectsExamples {
 			### Example Request
 			```json
 			{
-			    "username": "Some Username",
+			    "username": "string",
 			    "followers": 0,
 			    "following": 0,
-			    "location": "Some Location",
+			    "location": "string"
 			}
 			```
 
 			### Returns
 			This endpoint returns the following JSON.
 			```json
-			{
-			    "id": "",
-			    "avatarURL": "",
-			    "email": "",
-			    "role": "",
-			    "description": "",
-			    "businessType": null,
-			    "location": null,
-			    "phoneNumber": null,
-			    "publicEmail": null,
-			    "profileImageUrls": null,
-			    "averagePrice": null,
-			    "restaurantType": null,
-			    "attentionSchedule": null,
-			    "openingDays": null,
-			    "menu": null,
-			    "hotelType": null,
-			    "roomPacks": null
-			}
+			          {
+			              "id": "string",
+			              "avatarURL": "string",
+			              "name": "string",
+			              "email": "string",
+			              "role": "USER",
+			              "description": "string"
+			          }
 			```
 			""";
 
@@ -296,49 +285,100 @@ public class DocumentationObjectsExamples {
 
 			### Example Request
 			```json
-			{
-			    "username": "",
-			    "averagePrice": "",
-			    "location": "",
-			    "businessType": "",
-			    "hotelType": "",
-			    "restaurantType": "",
-			    "attentionSchedule": {
-			        "openingDays": "HH:mm",
-			        "closingTime": "HH:mm",
-			    }
-			    "roomPacksList": [
-			        {
-			            "checkInDate": "yyyy-MM-dd",
-			            "checkOutDate": "yyyy-MM-dd",
-			            "numberOfGuests": 0
-			        }
-			    ]
-			}
+			         {
+			              "username": "string",
+			              "businessType": "RESTAURANT",
+			              "location": "string",
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                 }
+			              ]
+			          }
 			```
 
 			### Returns
 			This endpoint returns the following JSON.
 			```json
-			{
-			    "id": "",
-			    "avatarURL": "",
-			    "email": "",
-			    "role": "",
-			    "description": "",
-			    "businessType": "",
-			    "location": "",
-			    "phoneNumber": "",
-			    "publicEmail": "",
-			    "profileImageUrls": "",
-			    "averagePrice": "",
-			    "restaurantType": "",
-			    "attentionSchedule": "",
-			    "openingDays": "",
-			    "menu": "",
-			    "hotelType": "",
-			    "roomPacks": ""
-			}
+			          {
+			              "id": "string",
+			              "avatarURL": "string",
+			              "name": "string",
+			              "email": "string",
+			              "role": "BUSINESS",
+			              "description": "string",
+			              "businessType": "RESTAURANT",
+			              "location": "string",
+			              "phoneNumber": "string",
+			              "publicEmail": "string",
+			              "profileImageUrls": [
+			                  "string"
+			              ],
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "openingDays": [
+			                  "MONDAY"
+			              ],
+			              "menu": [
+			                 {
+			                     "photosURLs": [
+			                        "string"
+			                     ],
+			                     "foodName": "string",
+			                     "price": 0,
+			                     "description": "string"
+			                 }
+			              ],
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                     "services": [
+			                         "string"
+			                     ],
+			                     "price": 0,
+			                     "description": "string",
+			                     "photosURLs": [
+			                         "string"
+			                     ]
+			                 }
+			              ]
+			          }
 			```
 			""";
 
