@@ -231,4 +231,115 @@ public class DocumentationObjectsExamples {
 			```
 			""";
 
+	public static final String USER_ACCOUNT_SEARCH_EXAMPLE = """
+			Search a user account by the filters provided.
+
+			### Filters
+			- `username`: Filters by user's username.
+			- `followers`: Filters by this minimum amount of followers.
+			- `following`: Filters by this minimum amount of followings.
+			- `location`: Filters by users that have made a review from a business publication that has
+			this specific location.
+
+			### Example Request
+			```json
+			{
+			    "username": "Some Username",
+			    "followers": 0,
+			    "following": 0,
+			    "location": "Some Location",
+			}
+			```
+
+			### Returns
+			This endpoint returns the following JSON.
+			```json
+			{
+			    "id": "",
+			    "avatarURL": "",
+			    "email": "",
+			    "role": "",
+			    "description": "",
+			    "businessType": null,
+			    "location": null,
+			    "phoneNumber": null,
+			    "publicEmail": null,
+			    "profileImageUrls": null,
+			    "averagePrice": null,
+			    "restaurantType": null,
+			    "attentionSchedule": null,
+			    "openingDays": null,
+			    "menu": null,
+			    "hotelType": null,
+			    "roomPacks": null
+			}
+			```
+			""";
+
+	public static final String BUSINESS_ACCOUNT_SEARCH_EXAMPLE = """
+			Search a business account by the filters provided.
+
+			### Filters
+			- `username`: Filters by business's username.
+			- `averagePrice`: Filters by the average price.
+			- `location`: Filters by business's location.
+			- `businessType`: Filter by the business type.
+			- `restaurantType`: Filter by the restaurant type.
+			- `hotelType`: Filter by the hotel type.
+			- `attentionSchedule`: Filter by the attention schedule.
+			    - `openingTime`: Filter by the opening time.
+			    - `closingTime`: Filter by the closing time.
+			- `roomPacksList`: Filter by business hosting room packs.
+			    - `numberOfGuests`: Filter by number of guests.
+			    - `checkInDate`: Filter by the checkin date.
+			    - `checkOutDate`: Filter by the checkout date.
+
+			### Example Request
+			```json
+			{
+			    "username": "",
+			    "averagePrice": "",
+			    "location": "",
+			    "businessType": "",
+			    "hotelType": "",
+			    "restaurantType": "",
+			    "attentionSchedule": {
+			        "openingDays": "HH:mm",
+			        "closingTime": "HH:mm",
+			    }
+			    "roomPacksList": [
+			        {
+			            "checkInDate": "yyyy-MM-dd",
+			            "checkOutDate": "yyyy-MM-dd",
+			            "numberOfGuests": 0
+			        }
+			    ]
+			}
+			```
+
+			### Returns
+			This endpoint returns the following JSON.
+			```json
+			{
+			    "id": "",
+			    "avatarURL": "",
+			    "email": "",
+			    "role": "",
+			    "description": "",
+			    "businessType": "",
+			    "location": "",
+			    "phoneNumber": "",
+			    "publicEmail": "",
+			    "profileImageUrls": "",
+			    "averagePrice": "",
+			    "restaurantType": "",
+			    "attentionSchedule": "",
+			    "openingDays": "",
+			    "menu": "",
+			    "hotelType": "",
+			    "roomPacks": ""
+			}
+			```
+			""";
+
 }
