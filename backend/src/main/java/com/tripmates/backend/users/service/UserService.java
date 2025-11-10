@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -528,6 +529,7 @@ public class UserService {
 		imageURLsList.addAll(uploadImages(multipartFileList));
 		return imageURLsList;
 	}
+
 	public void deletePlan(String email, String planId) {
 		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -558,5 +560,35 @@ public class UserService {
 		accountRepository.save(account);
 	}
 
+  private List<AccountResumeResponseDTO> formatAccountIdList(List<String> idList){
+    return idList.stream().map((id)->
+      AccountResumeResponseDTO.fromAccount(accountRepository.findById(id)
+        .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND))))
+        .collect(Collectors.toList());
+  }
+
+  public List<AccountResumeResponseDTO> getFollowingsByEmail(String email) {
+    Account account = accountRepository.findByEmail(email)
+      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return formatAccountIdList(account.getFollowings());
+  }
+
+  public List<AccountResumeResponseDTO> getFollowersByEmail(String email) {
+    Account account = accountRepository.findByEmail(email)
+      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return formatAccountIdList(account.getFollowers());
+  }
+
+  public List<AccountResumeResponseDTO> getFollowingsByUserId(String userId) {
+    Account account = accountRepository.findById(userId)
+      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return formatAccountIdList(account.getFollowings());
+  }
+
+  public List<AccountResumeResponseDTO> getFollowersByUserId(String userId) {
+    Account account = accountRepository.findById(userId)
+      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return formatAccountIdList(account.getFollowers());
+  }
 }
 
