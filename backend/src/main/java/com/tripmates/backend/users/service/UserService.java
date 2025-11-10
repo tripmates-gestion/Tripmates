@@ -525,8 +525,112 @@ public class UserService {
 			}
 		}
 
-		imageURLsList.addAll(uploadImages(multipartFileList));
-		return imageURLsList;
+  		imageURLsList.addAll(uploadImages(multipartFileList));
+  		return imageURLsList;
+  	}
+	public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		List<Plan> plans = account.getPlansList();
+		if (plans == null || plans.isEmpty())
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
+
+		Plan target = null;
+		for (Plan p : plans) {
+			if (p != null && Objects.equals(p.getId(), planId)) {
+				target = p;
+				break;
+			}
+		}
+
+		if (target == null)
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
+
+		if (!Objects.equals(target.getOwnerId(), account.getId()))
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		if (planUpdateRequestDTO != null) {
+			if (planUpdateRequestDTO.name() != null)
+				target.setName(planUpdateRequestDTO.name());
+			if (planUpdateRequestDTO.description() != null)
+				target.setDescription(planUpdateRequestDTO.description());
+
+			// delete publications by 0-based indexes if provided (do this first to avoid index shifts)
+			if (planUpdateRequestDTO.deletePublicationIndexes() != null &&
+					!planUpdateRequestDTO.deletePublicationIndexes().isEmpty()) {
+				List<String> pubs = target.getPublicationsIdList();
+				if (pubs == null || pubs.isEmpty())
+					throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
+
+				// remove in descending order to avoid reindex issues
+				List<Integer> toDelete = new ArrayList<>(planUpdateRequestDTO.deletePublicationIndexes());
+				toDelete.sort(Comparator.reverseOrder());
+				for (Integer i : toDelete) {
+					if (i == null || i < 0 || i >= pubs.size())
+						throw new BadRequestException(ValidationErrorMessage.INDEX_OUT_OF_RANGE);
+					pubs.remove(i.intValue());
+				}
+				target.setPublicationsIdList(pubs);
+			}
+
+			// then append new publications
+			if (planUpdateRequestDTO.publicationsIdList() != null) {
+				List<String> pubs = target.getPublicationsIdList();
+				if (pubs == null)
+					pubs = new ArrayList<>();
+				pubs.addAll(planUpdateRequestDTO.publicationsIdList());
+				target.setPublicationsIdList(pubs);
+			}
+		}
+
+		accountRepository.save(account);
+	}
+
+	/**
+	 * Removes one publication from a user's owned plan by its 0-based index.
+	 * @param email user's email.
+	 * @param planId plan identifier.
+	 * @param index 0-based index of the publication to remove.
+	 */
+	public void deletePlanPublication(String email, String planId, int index) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		List<Plan> plans = account.getPlansList();
+		if (plans == null || plans.isEmpty())
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_DELETE);
+
+		Plan target = null;
+		for (Plan p : plans) {
+			if (p != null && Objects.equals(p.getId(), planId)) {
+				target = p;
+				break;
+			}
+		}
+
+		if (target == null)
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_DELETE);
+
+		if (!Objects.equals(target.getOwnerId(), account.getId()))
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+		List<String> pubs = target.getPublicationsIdList();
+		if (pubs == null || pubs.isEmpty())
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_DELETE);
+
+		if (index < 0 || index >= pubs.size())
+			throw new BadRequestException(ValidationErrorMessage.INDEX_OUT_OF_RANGE);
+
+		pubs.remove(index);
+		target.setPublicationsIdList(pubs);
+		accountRepository.save(account);
 	}
 
 	public void deletePlan(String email, String planId) {
