@@ -87,7 +87,7 @@ export function Hero() {
           <Button variant="outlined" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.search}>
             Explora destinos
           </Button>
-          <Button variant="contained" color="primary" size="large">
+          <Button variant="contained" color="primary" size="large"component={RouterLink} to={PAGES_ROUTE.searchTravelers}>
             Conecta con otros viajeros
           </Button>
         </Stack>
