@@ -8,12 +8,20 @@ import org.springframework.data.domain.Pageable;
 public interface AccountRepositoryCustom {
 
 	/**
-	 * Retorna todos los {@link Account} que satisfagan con los filtros especificados. En
-	 * caso de no especificar filtros, retorna todos.
-	 * @param accountSearchRequestDTO dto que contiene los filtros por los cuales filtrar.
-	 * @param pageable cantidad de paginas a retornar.
-	 * @return {@link Pageable Pageable}.
+	 * Returns all users accounts that match the filter, if there are no filters then it
+	 * returns all the users accounts.
+	 * @param accountSearchRequestDTO DTO with the filters.
+	 * @param pageable page configuration.
+	 * @return a page of {@link Account}.
 	 */
 	Page<Account> searchAccount(AccountSearchRequestDTO accountSearchRequestDTO, Pageable pageable);
 
+
+  void addToFollowings(String accountId, String userIdToFollow);
+
+  void removeFromFollowings(String accountId, String userIdToUnfollow);
+
+  void addToFollowers(String accountId, String followerId);
+
+  void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers);
 }
