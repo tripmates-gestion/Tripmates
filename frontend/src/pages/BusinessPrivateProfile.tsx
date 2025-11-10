@@ -7,7 +7,7 @@ import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
-import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../context/PrivateUserProfilesTypes';
+import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../types/PrivateUserProfiles';
 import ImageCarousel from '../components/ui/ImageCarousel';
 import { formatHours } from './utils/Utils';
 import PublicationGrid from '../components/publications/PublicationGrid';

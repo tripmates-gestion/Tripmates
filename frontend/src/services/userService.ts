@@ -1,7 +1,7 @@
 import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 import type { BusinessUpdateResponseDTO } from '../types/business';
-import type { BusinessUser, CommonUser } from '../context/PrivateUserProfilesTypes';
+import type { BusinessUser, CommonUser } from '../types/PrivateUserProfiles';
 
 
 export async function getCurrentUser(token: string) {
@@ -36,20 +36,47 @@ export async function updateBusinessUser(
   }) as Promise<BusinessUpdateResponseDTO>;
 }
 
+
+
+// services/userService.ts
 export async function updateUser(
   data: Partial<CommonUser>,
+  avatar: File | null,
   accessToken: string | null,
   signal?: AbortSignal
-): Promise<BusinessUpdateResponseDTO> {
-  if (!accessToken) throw new Error("No estás autenticado.");
+): Promise<any> {
+  if (!accessToken) throw new Error('No estás autenticado.');
 
-  console.log("[USER SERVICE]: Sending request with:\n", "Method: PATCH\n", "Endpoint: ", ENDPOINTS.USER_ME, "\n")
-  console.log("Data: ", data)
+  const fd = new FormData();
+  // sólo los campos de texto van en data
+  fd.append('data', JSON.stringify(data));
+
+  if (avatar) {
+    fd.append('avatar', avatar, avatar.name);
+  }
+
+  console.log(
+    '[USER SERVICE]: Sending request with:\n',
+    'Method: PATCH\n',
+    'Endpoint: ',
+    ENDPOINTS.USER_ME,
+    '\n'
+  );
+  console.log('Data (JSON): ', data);
+  if (avatar) {
+    console.log('Avatar file:', {
+      name: avatar.name,
+      size: avatar.size,
+      type: avatar.type,
+    });
+  } else {
+    console.log('No avatar file attached');
+  }
 
   return apiFetch(ENDPOINTS.USER_ME, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type
+    body: fd,
     signal,
-  }) as Promise<BusinessUpdateResponseDTO>;
-} 
+  });
+}

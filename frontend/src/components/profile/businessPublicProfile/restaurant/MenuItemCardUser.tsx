@@ -4,7 +4,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
   Chip,
   Box,
   Stack,
@@ -15,6 +14,8 @@ import type { MenuItem, RestaurantType } from "../../../../types/Restaurant";
 import SpaIcon from "@mui/icons-material/Spa";       // alternativa tipo hoja
 // import GrassIcon from "@mui/icons-material/Grass";   // alternativa moderna
 // import YardIcon from "@mui/icons-material/Yard";     // otra hoja simpática
+import ImageCarousel from "../../../ui/ImageCarousel";
+
 
 
 interface Props {
@@ -37,7 +38,7 @@ export function RestaurantItemMenuCard({ menu, restaurantType }: Props) {
 
   // Color temático y estilo según el tipo de restaurante
   const isVeggie =
-    restaurantType === "vegano" || restaurantType === "vegetariano";
+    restaurantType === "Vegano" || restaurantType === "Vegetariano";
   const borderColor = isVeggie ? "success.main" : "divider";
   const iconColor = isVeggie ? "success" : "action";
   const CardIcon = isVeggie ? SpaIcon : Restaurant;
@@ -58,19 +59,24 @@ export function RestaurantItemMenuCard({ menu, restaurantType }: Props) {
               boxShadow: 3,
             }}
           >
-            {/* Imagen del plato */}
-            {item.photosURLs?.length > 0 && (
-              <CardMedia
-                component="img"
-                height="180"
-                image={item.photosURLs[0]}
+            {/* Carrusel de imágenes */}
+            {item.photosURLs && item.photosURLs.length > 0 && (
+              <Box
+              sx={{
+                borderBottom: "1px solid",
+                borderColor,
+              }}
+              >
+              <ImageCarousel
+                images={item.photosURLs}
                 alt={item.foodName}
-                sx={{
-                  objectFit: "cover",
-                  borderBottom: "1px solid",
-                  borderColor,
-                }}
+                height={180}        // mismo alto que antes
+                fit="cover"         // para que se recorte bien
+                rounded={0}         // que no redondee, ya lo maneja la Card
+                autoPlay            // si querés autoplay
+                interval={4000}     // 4s entre cambios
               />
+              </Box>
             )}
 
             <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
@@ -107,7 +113,7 @@ export function RestaurantItemMenuCard({ menu, restaurantType }: Props) {
 
                 {isVeggie && (
                   <Chip
-                    label={restaurantType === "vegano" ? "Vegano" : "Vegetariano"}
+                    label={restaurantType === "Vegano" ? "Vegano" : "Vegetariano"}
                     size="small"
                     color="success"
                     variant="outlined"

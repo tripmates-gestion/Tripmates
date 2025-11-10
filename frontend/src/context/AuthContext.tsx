@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { CurrentUser } from "./PrivateUserProfilesTypes";
+import type { CurrentUser } from "../types/PrivateUserProfiles";
 
 
 
@@ -10,7 +10,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
-  updateUser: (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null) => void;
+  refreshUser: () => Promise<void>;
+  // updateUser: (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null) => void; --- IGNORE --- Deprecado
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

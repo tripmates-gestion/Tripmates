@@ -2,14 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BusinessProfileContext } from "./BusinessProfileContext";
 import { useAuth } from "../hooks/useAuth";
 import { getCurrentUser } from "../services/userService";
-import type { BusinessUser } from "./PrivateUserProfilesTypes";
+import type { BusinessUser } from "../types/PrivateUserProfiles";
 import {ACCOUNT_TYPES, BUSINESS_TYPES} from "../constants/Rol";
 
 // Helpers bien chicos para mapear en forma segura
 function mapToRestaurantUser(raw: any): BusinessUser {
   return {
     id: raw.id,
-    username: raw.username,
     name: raw.name,
     email: raw.email,
     avatarURL: raw.avatarURL,
@@ -34,7 +33,6 @@ function mapToRestaurantUser(raw: any): BusinessUser {
 function mapToHotelUser(raw: any): BusinessUser {
   return {
     id: raw.id,
-    username: raw.username,
     name: raw.name,
     email: raw.email,
     avatarURL: raw.avatarURL,
