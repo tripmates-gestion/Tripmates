@@ -6,6 +6,8 @@ interface UseFollowStatusOptions {
   autoFetch?: boolean;
 }
 
+
+{/* Devuelve el estado de seguimiento de un usuario objetivo */ }
 export function useFollowStatus(
   targetUserId: string | null | undefined,
   options?: UseFollowStatusOptions

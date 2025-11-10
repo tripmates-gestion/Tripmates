@@ -2,7 +2,6 @@ import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
 import type { BusinessUpdateResponseDTO } from '../types/business';
 import type { BusinessUser, CommonUser } from '../types/PrivateUserProfiles';
-import type { AccountResume } from '../types/AccountResume';
 
 function ensureToken(accessToken: string | null) {
   if (!accessToken) throw new Error('No estás autenticado.');
@@ -87,10 +86,15 @@ export async function updateUser(
   });
 }
 
-type FollowersResponse = { followers: AccountResume[] } | null;
-type FollowingsResponse = { followings: AccountResume[] } | null;
 
-export async function getMyFollowers(accessToken: string | null): Promise<AccountResume[]> {
+
+
+{/* Sistemas de seguidores */}
+
+type FollowersResponse = { followers: CommonUser[] } | null;
+type FollowingsResponse = { followings: CommonUser[] } | null;
+
+export async function getMyFollowers(accessToken: string | null): Promise<CommonUser[]> {
   const token = ensureToken(accessToken);
   const response = (await apiFetch(ENDPOINTS.MY_FOLLOWERS, {
     method: 'GET',
@@ -100,7 +104,7 @@ export async function getMyFollowers(accessToken: string | null): Promise<Accoun
   return response?.followers ?? [];
 }
 
-export async function getMyFollowings(accessToken: string | null): Promise<AccountResume[]> {
+export async function getMyFollowings(accessToken: string | null): Promise<CommonUser[]> {
   const token = ensureToken(accessToken);
   const response = (await apiFetch(ENDPOINTS.MY_FOLLOWINGS, {
     method: 'GET',
@@ -113,7 +117,7 @@ export async function getMyFollowings(accessToken: string | null): Promise<Accou
 export async function getUserFollowers(
   userId: string,
   accessToken: string | null
-): Promise<AccountResume[]> {
+): Promise<CommonUser[]> {
   const token = ensureToken(accessToken);
   const response = (await apiFetch(ENDPOINTS.USER_FOLLOWERS(userId), {
     method: 'GET',
@@ -126,7 +130,7 @@ export async function getUserFollowers(
 export async function getUserFollowings(
   userId: string,
   accessToken: string | null
-): Promise<AccountResume[]> {
+): Promise<CommonUser[]> {
   const token = ensureToken(accessToken);
   const response = (await apiFetch(ENDPOINTS.USER_FOLLOWINGS(userId), {
     method: 'GET',

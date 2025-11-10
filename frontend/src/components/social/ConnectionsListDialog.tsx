@@ -16,13 +16,14 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import type { AccountResume } from '../../types/AccountResume';
+import type { CommonUser } from '../../types/PrivateUserProfiles';
+
 
 type ConnectionsListDialogProps = {
   open: boolean;
   onClose: () => void;
   type: 'followers' | 'followings';
-  items: AccountResume[];
+  items: CommonUser[];
   loading?: boolean;
   error?: string | null;
   onRefresh?: () => void;
@@ -96,7 +97,7 @@ export function ConnectionsListDialog({
           <List sx={{ py: 0 }}>
             {items.map((account) => {
               const avatarFallback = account.name ? account.name[0]?.toUpperCase() : '?';
-              const showBusinessChip = account.role === 'BUSINESS' && account.businessType;
+              // const showBusinessChip = account.role === 'BUSINESS' && account.businessType;
               return (
                 <ListItem key={account.id} divider disableGutters sx={{ px: 2 }}>
                   <ListItemAvatar>
@@ -110,12 +111,12 @@ export function ConnectionsListDialog({
                         <Typography variant="subtitle1" fontWeight={600} noWrap>
                           {account.name}
                         </Typography>
-                        {showBusinessChip && (
+                        {/* {showBusinessChip && (
                           <Chip
                             size="small"
                             label={BUSINESS_LABEL[String(account.businessType)] ?? 'Negocio'}
                           />
-                        )}
+                        )} */}
                       </Stack>
                     }
                     secondary={account.description || account.email}

@@ -7,7 +7,7 @@ type StatProps = {
   loading?: boolean;
 };
 
-// Label arriba en mayúsculas, número abajo (como TripAdvisor)
+// Label arriba en mayúsculas, número abajo
 export const Stat = ({ label, value, onClick, loading = false }: StatProps) => {
   const content = (
     <Stack spacing={0.25} alignItems="center" minWidth={96}>

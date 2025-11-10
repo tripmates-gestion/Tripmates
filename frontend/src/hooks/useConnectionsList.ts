@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AccountResume } from '../types/AccountResume';
+import type { CommonUser } from '../types/PrivateUserProfiles';
 import { useAuth } from './useAuth';
 import {
   getMyFollowers,
@@ -14,13 +14,14 @@ interface UseConnectionsListOptions {
   enabled?: boolean;
 }
 
+{/* Devuelve la lista de seguidores - seguidos */ }
 export function useConnectionsList(
   type: ConnectionsType,
   targetUserId?: string | null,
   options?: UseConnectionsListOptions
 ) {
   const { accessToken } = useAuth();
-  const [items, setItems] = useState<AccountResume[]>([]);
+  const [items, setItems] = useState<CommonUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
