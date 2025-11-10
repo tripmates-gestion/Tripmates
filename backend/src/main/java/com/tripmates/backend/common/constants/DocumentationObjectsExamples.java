@@ -231,4 +231,23 @@ public class DocumentationObjectsExamples {
 			```
 			""";
 
+	static public final String USER_PLAN_UPDATE_EXAMPLE = """
+			Partially updates a user's plan by its id.
+
+			### Behavior
+			- Optional fields: `name`, `description`.
+			- `publicationsIdList`: appended to the existing publications list (no replacement).
+			- `deletePublicationIndexes`: 0-based indexes to remove from the current publications list.
+
+			### Example JSON (PATCH body)
+			```json
+			{
+			  "name": "Roadtrip 2026",
+			  "description": "Costa atlántica",
+			  "publicationsIdList": ["11111111111", "22222222222"],
+			  "deletePublicationIndexes": [0, 2]
+			}
+			```
+			""";
+
 }
