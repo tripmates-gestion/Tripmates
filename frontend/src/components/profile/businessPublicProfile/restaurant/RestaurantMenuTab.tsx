@@ -198,7 +198,7 @@ export default function RestaurantMenuTab({
           restaurantType={(business as any)?.restaurantType}
           isOwner
           onEditItem={(i) => !loading && setEditIndex(i)}
-          onDeleteItem={handleDeleteRequest}   // 👈 ahora abre el diálogo
+          onDeleteItem={handleDeleteRequest}  
         />
       )}
 

@@ -84,88 +84,87 @@ public class UserService {
 			.map(AccountResumeResponseDTO::fromAccount);
 	}
 
-  /**
-   * Follows a user.
-   * @param followerEmail follower's email.
-   * @param followedUserId followed user's ID.
-   */
-  public void followUser(String followerEmail, String followedUserId) {
-    Account follower = accountRepository.findByEmail(followerEmail)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+	/**
+	 * Follows a user.
+	 * @param followerEmail follower's email.
+	 * @param followedUserId followed user's ID.
+	 */
+	public void followUser(String followerEmail, String followedUserId) {
+		Account follower = accountRepository.findByEmail(followerEmail)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-    Account followed = accountRepository.findById(followedUserId)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		Account followed = accountRepository.findById(followedUserId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-    checkFollowingInteractionBetweenTwoUsers(follower, followed);
+		checkFollowingInteractionBetweenTwoUsers(follower, followed);
 
-    addFollowingInfoOnAccount(follower.getId(), followedUserId);
-  }
+		addFollowingInfoOnAccount(follower.getId(), followedUserId);
+	}
 
-  /**
-   * Unfollows a user.
-   * @param unfollowerEmail unfollower's email.
-   * @param unfollowedUserId unfollowed user's ID.
-   */
-  public void unfollowUser(String unfollowerEmail, String unfollowedUserId) {
-    Account unfollower = accountRepository.findByEmail(unfollowerEmail)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+	/**
+	 * Unfollows a user.
+	 * @param unfollowerEmail unfollower's email.
+	 * @param unfollowedUserId unfollowed user's ID.
+	 */
+	public void unfollowUser(String unfollowerEmail, String unfollowedUserId) {
+		Account unfollower = accountRepository.findByEmail(unfollowerEmail)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-    Account unfollowed = accountRepository.findById(unfollowedUserId)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		Account unfollowed = accountRepository.findById(unfollowedUserId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-    checkFollowingInteractionBetweenTwoUsers(unfollower, unfollowed);
+		checkFollowingInteractionBetweenTwoUsers(unfollower, unfollowed);
 
-    removeFollowingInfoOnAccount(unfollower.getId(), unfollowedUserId);
-  }
+		removeFollowingInfoOnAccount(unfollower.getId(), unfollowedUserId);
+	}
 
-  /**
-   * Checks if the interaction (follow / unfollow) between two users is valid.
-   * @param follower follower's account.
-   * @param followed followed user's account.
-   */
-  private void checkFollowingInteractionBetweenTwoUsers(Account follower, Account followed) {
-    if (follower.getId().equals(followed.getId()))
-      throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_UNFOLLOW_YOURSELF);
+	/**
+	 * Checks if the interaction (follow / unfollow) between two users is valid.
+	 * @param follower follower's account.
+	 * @param followed followed user's account.
+	 */
+	private void checkFollowingInteractionBetweenTwoUsers(Account follower, Account followed) {
+		if (follower.getId().equals(followed.getId()))
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_UNFOLLOW_YOURSELF);
 
-    if (follower.getRole() != Role.USER)
-      throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+		if (follower.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
-    if (followed.getRole() != Role.USER)
-      throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_UNFOLLOW_BUSINESS);
-  }
+		if (followed.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_UNFOLLOW_BUSINESS);
+	}
 
-  /**
-   * Removes following info on account.
-   * @param followerUserId follower's ID.
-   * @param followedUserId followed user's ID.
-   */
-  private void removeFollowingInfoOnAccount(String followerUserId, String followedUserId) {
-    long isFollowing = accountRepository.existsFollowing(followerUserId, followedUserId);
-    long isFollower = accountRepository.existsFollowers(followedUserId, followerUserId);
-    
-    if (isFollowing == 0 || isFollower == 0)
-      throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
-    
-    accountRepository.removeFromFollowings(followerUserId, followedUserId);
-    accountRepository.removeFromFollowers(followedUserId, followerUserId);
-  }
+	/**
+	 * Removes following info on account.
+	 * @param followerUserId follower's ID.
+	 * @param followedUserId followed user's ID.
+	 */
+	private void removeFollowingInfoOnAccount(String followerUserId, String followedUserId) {
+		long isFollowing = accountRepository.existsFollowing(followerUserId, followedUserId);
+		long isFollower = accountRepository.existsFollowers(followedUserId, followerUserId);
 
-  /**
-   * Adds following info on account.
-   * @param whoId who's following.
-   * @param followedUserId followed user's ID.
-   */
-  private void addFollowingInfoOnAccount(String whoId, String followedUserId) {
-    long isFollowing = accountRepository.existsFollowing(whoId, followedUserId);
-    long isFollower = accountRepository.existsFollowers(followedUserId, whoId);
-    
-    if (isFollowing > 0 || isFollower > 0)
-      throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
-    
-    accountRepository.addToFollowings(whoId, followedUserId);
-    accountRepository.addToFollowers(followedUserId, whoId);
-  }
-  
+		if (isFollowing == 0 || isFollower == 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+
+		accountRepository.removeFromFollowings(followerUserId, followedUserId);
+		accountRepository.removeFromFollowers(followedUserId, followerUserId);
+	}
+
+	/**
+	 * Adds following info on account.
+	 * @param whoId who's following.
+	 * @param followedUserId followed user's ID.
+	 */
+	private void addFollowingInfoOnAccount(String whoId, String followedUserId) {
+		long isFollowing = accountRepository.existsFollowing(whoId, followedUserId);
+		long isFollower = accountRepository.existsFollowers(followedUserId, whoId);
+
+		if (isFollowing > 0 || isFollower > 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
+
+		accountRepository.addToFollowings(whoId, followedUserId);
+		accountRepository.addToFollowers(followedUserId, whoId);
+	}
 
 	/**
 	 * Updates user's avatar.
@@ -560,35 +559,35 @@ public class UserService {
 		accountRepository.save(account);
 	}
 
-  private List<AccountResumeResponseDTO> formatAccountIdList(List<String> idList){
-    return idList.stream().map((id)->
-      AccountResumeResponseDTO.fromAccount(accountRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND))))
-        .collect(Collectors.toList());
-  }
+	private List<AccountResumeResponseDTO> formatAccountIdList(List<String> idList) {
+		return idList.stream()
+			.map((id) -> AccountResumeResponseDTO.fromAccount(accountRepository.findById(id)
+				.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND))))
+			.collect(Collectors.toList());
+	}
 
-  public List<AccountResumeResponseDTO> getFollowingsByEmail(String email) {
-    Account account = accountRepository.findByEmail(email)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return formatAccountIdList(account.getFollowings());
-  }
+	public List<AccountResumeResponseDTO> getFollowingsByEmail(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return formatAccountIdList(account.getFollowings());
+	}
 
-  public List<AccountResumeResponseDTO> getFollowersByEmail(String email) {
-    Account account = accountRepository.findByEmail(email)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return formatAccountIdList(account.getFollowers());
-  }
+	public List<AccountResumeResponseDTO> getFollowersByEmail(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return formatAccountIdList(account.getFollowers());
+	}
 
-  public List<AccountResumeResponseDTO> getFollowingsByUserId(String userId) {
-    Account account = accountRepository.findById(userId)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return formatAccountIdList(account.getFollowings());
-  }
+	public List<AccountResumeResponseDTO> getFollowingsByUserId(String userId) {
+		Account account = accountRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return formatAccountIdList(account.getFollowings());
+	}
 
-  public List<AccountResumeResponseDTO> getFollowersByUserId(String userId) {
-    Account account = accountRepository.findById(userId)
-      .orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return formatAccountIdList(account.getFollowers());
-  }
+	public List<AccountResumeResponseDTO> getFollowersByUserId(String userId) {
+		Account account = accountRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return formatAccountIdList(account.getFollowers());
+	}
+
 }
-
