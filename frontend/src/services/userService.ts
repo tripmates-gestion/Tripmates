@@ -3,12 +3,17 @@ import { ENDPOINTS } from '../api/endpoints';
 import type { BusinessUpdateResponseDTO } from '../types/business';
 import type { BusinessUser, CommonUser } from '../types/PrivateUserProfiles';
 
+function ensureToken(accessToken: string | null) {
+  if (!accessToken) throw new Error('No estás autenticado.');
+  return accessToken;
+}
+
 
 export async function getCurrentUser(token: string) {
-    return apiFetch(ENDPOINTS.USER_ME, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${token}` },
-    });
+  return apiFetch(ENDPOINTS.USER_ME, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 export async function updateBusinessUser(
@@ -18,7 +23,7 @@ export async function updateBusinessUser(
   accessToken: string | null,
   signal?: AbortSignal
 ): Promise<BusinessUpdateResponseDTO> {
-  if (!accessToken) throw new Error("No estás autenticado.");
+  const token = ensureToken(accessToken);
   
   const fd = new FormData();
   fd.append("data", JSON.stringify(data));
@@ -30,7 +35,7 @@ export async function updateBusinessUser(
 
   return apiFetch(ENDPOINTS.USER_ME, {
     method: "PATCH",
-    headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type
+    headers: { Authorization: `Bearer ${token}` }, // SIN Content-Type
     body: fd,
     signal,
   }) as Promise<BusinessUpdateResponseDTO>;
@@ -44,8 +49,8 @@ export async function updateUser(
   avatar: File | null,
   accessToken: string | null,
   signal?: AbortSignal
-): Promise<any> {
-  if (!accessToken) throw new Error('No estás autenticado.');
+): Promise<unknown> {
+  const token = ensureToken(accessToken);
 
   const fd = new FormData();
   // sólo los campos de texto van en data
@@ -73,10 +78,75 @@ export async function updateUser(
     console.log('No avatar file attached');
   }
 
-  return apiFetch(ENDPOINTS.USER_ME, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type
-    body: fd,
-    signal,
+    return apiFetch(ENDPOINTS.USER_ME, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }, // SIN Content-Type
+      body: fd,
+      signal,
+    });
+}
+
+type FollowersResponse = { followers: CommonUser[] } | null;
+type FollowingsResponse = { followings: CommonUser[] } | null;
+
+export async function getMyFollowers(accessToken: string | null): Promise<CommonUser[]> {
+  const token = ensureToken(accessToken);
+  const response = (await apiFetch(ENDPOINTS.MY_FOLLOWERS, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })) as FollowersResponse;
+
+  return response?.followers ?? [];
+}
+
+export async function getMyFollowings(accessToken: string | null): Promise<CommonUser[]> {
+  const token = ensureToken(accessToken);
+  const response = (await apiFetch(ENDPOINTS.MY_FOLLOWINGS, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })) as FollowingsResponse;
+
+  return response?.followings ?? [];
+}
+
+export async function getUserFollowers(
+  userId: string,
+  accessToken: string | null
+): Promise<CommonUser[]> {
+  const token = ensureToken(accessToken);
+  const response = (await apiFetch(ENDPOINTS.USER_FOLLOWERS(userId), {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })) as FollowersResponse;
+
+  return response?.followers ?? [];
+}
+
+export async function getUserFollowings(
+  userId: string,
+  accessToken: string | null
+): Promise<CommonUser[]> {
+  const token = ensureToken(accessToken);
+  const response = (await apiFetch(ENDPOINTS.USER_FOLLOWINGS(userId), {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })) as FollowingsResponse;
+
+  return response?.followings ?? [];
+}
+
+export async function followUser(userId: string, accessToken: string | null): Promise<void> {
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.FOLLOW_USER(userId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function unfollowUser(userId: string, accessToken: string | null): Promise<void> {
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.UNFOLLOW_USER(userId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
