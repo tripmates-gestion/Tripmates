@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.users.dto.FollowingsListResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import com.tripmates.backend.TestHelper;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+
+import jakarta.validation.constraints.AssertFalse.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -389,6 +392,88 @@ public class FollowUserTest {
     assertEquals(204, responseUnfollow.getStatusCode().value());
   }
 
+  @Test
+  void testGivenNewUserAccount_WhenGetFollowings_ThenShouldSuccessAndReturn200WithFollowings() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("other@example.com");
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+    ResponseEntity<String> response = restTemplate.exchange(
+        testHelper.url("/users/me/followings"),
+        HttpMethod.GET,
+        entity,
+        String.class
+    );
+    String expectedJson = "{" +
+      "\"followings\":[]" +
+      "}";
+    assertEquals(200, response.getStatusCode().value());
+    JSONAssert.assertEquals(expectedJson, response.getBody(),true);
+  }
+
+  @Test
+  void testGivenNewUserAccount_WhenGetFollowers_ThenShouldSuccessAndReturn200WithFollowers() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("other@example.com");
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+    ResponseEntity<String> response = restTemplate.exchange(
+        testHelper.url("/users/me/followers"),
+        HttpMethod.GET,
+        entity,
+        String.class
+    );
+    String expectedJson = "{" +
+      "\"followers\":[]" +
+      "}";
+    assertEquals(200, response.getStatusCode().value());
+    JSONAssert.assertEquals(expectedJson, response.getBody(),true);
+  }
+
+  @Test
+  void testGivenMeFollowingAUserAccount_WhenGetFollowers_ThenShouldSuccessAndReturn200WithFollowers() throws Exception {
+    String jwt = testHelper.getUserTestingJwt("me@example.com");
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+
+    Account other = new Account();
+    other.setEmail("other@example.com");
+    other.setName("Other");
+    other.setPassword("123456");
+    other.setRole(Role.USER);
+    Account otherSaved = accountRepository.save(other);
+    followUserWithPreviusJwt(jwt, otherSaved.getId());
+
+    ResponseEntity<String> response = restTemplate.exchange(
+        testHelper.url("/users/me/followings"),
+        HttpMethod.GET,
+        entity,
+        String.class
+    );
+    String expectedJson = "{" +
+      "\"followings\":[{" +
+        "\"name\":\"Other\"," +
+        "\"email\":\"other@example.com\"," +
+        "\"role\":\"USER\"" +
+      "}]" +
+    "}";
+    assertEquals(200, response.getStatusCode().value());
+    JSONAssert.assertEquals(expectedJson, response.getBody(),false);
+  }
+
+    void followUserWithPreviusJwt(String jwt, String followedUserId) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(jwt);
+    HttpEntity<?> entity = new HttpEntity<>(headers);
+    restTemplate.exchange(
+        testHelper.url("/users/" + followedUserId + "/follow"),
+        HttpMethod.POST,
+        entity,
+        String.class
+    );
+  }
+
   private void followUser(String followerEmail, String followedUserId) {
     String jwt = testHelper.getUserTestingJwt(followerEmail);
     HttpHeaders headers = new HttpHeaders();
@@ -401,6 +486,8 @@ public class FollowUserTest {
         String.class
     );
   }
+
+
 
 
 }

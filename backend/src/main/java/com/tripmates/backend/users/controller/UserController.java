@@ -320,4 +320,47 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping(value = "/me/followings")
+  @Operation(summary = "Get the list of users that the current user is following", description = "Get the list of users that the current user is following.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "List of users that the current user is following", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> getFollowings(@AuthenticationPrincipal UserDetails userDetails) {
+    List<AccountResumeResponseDTO> followings = userService.getFollowingsByEmail(userDetails.getUsername());
+    return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+  }
+
+  @GetMapping(value = "/me/followers")
+  @Operation(summary = "Get the list of users that are following the current user", description = "Get the list of users that are following the current user.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "List of users that are following the current user", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowersListResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
+    List<AccountResumeResponseDTO> followers = userService.getFollowersByEmail(userDetails.getUsername());
+    return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+  }
+
+  @GetMapping(value = "/{userId}/followings")
+  @Operation(summary = "Get the list of users that the specified user is following", description = "Get the list of users that the specified user is following.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "List of users that the specified user is following", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
+    List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
+    return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+  }
+
+  @GetMapping(value = "/{userId}/followers")
+  @Operation(summary = "Get the list of users that are following the specified user", description = "Get the list of users that are following the specified user.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "List of users that are following the specified user", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowersListResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
+  })
+  public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
+    List<AccountResumeResponseDTO> followers = userService.getFollowersByUserId(userId);
+    return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+  }
 }
