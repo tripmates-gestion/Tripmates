@@ -76,36 +76,40 @@ public class UserController {
 
 	@PostMapping(value = "/search/business", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search business's accounts")
+	@Operation(summary = "Search business's accounts",
+			description = DocumentationObjectsExamples.BUSINESS_ACCOUNT_SEARCH_EXAMPLE)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
-	public ResponseEntity<?> searchBusiness(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
+	public ResponseEntity<?> searchBusiness(@RequestBody BusinessSearchRequestDTO businessSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchAccount(accountSearchRequestDTO,
-				pageable);
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
+			.searchAccount(AccountSearchRequestDTO.fromBusinessSearchRequestDTO(businessSearchRequestDTO), pageable);
+
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
 
 		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
 	}
 
-	@PostMapping(value = "/search/user", consumes = MediaType.APPLICATION_JSON_VALUE,
+	@GetMapping(value = "/search/user", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search user's accounts")
+	@Operation(summary = "Search user's accounts",
+			description = DocumentationObjectsExamples.USER_ACCOUNT_SEARCH_EXAMPLE)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
-	public ResponseEntity<?> searchUser(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
+	public ResponseEntity<?> searchUser(@ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchAccount(accountSearchRequestDTO,
-				pageable);
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
+			.searchAccount(AccountSearchRequestDTO.fromUserSearchRequestDTO(userSearchRequestDTO), pageable);
+
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
 
@@ -131,23 +135,26 @@ public class UserController {
 
 		return ResponseEntity.noContent().build();
 	}
+
 	@DeleteMapping("/plans/{id}")
 	@Operation(summary = "Delete user's plan by id")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "User's plan deleted successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = void.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))),
-			@ApiResponse(responseCode = "401", description = "Invalid credentials",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "User's plan deleted successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> deletePlan(@PathVariable("id") String planId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		userService.deletePlan(userDetails.getUsername(), planId);
 		return ResponseEntity.noContent().build();
 	}
+
 	@GetMapping("/plans/list")
 	@Operation(description = "Obtains user's plans or plans where he belongs")
 	@ApiResponses(value = {
@@ -296,71 +303,94 @@ public class UserController {
 		return ResponseEntity.ok(userService.deleteRoomPack(userDetails.getUsername(), index));
 	}
 
+	@PostMapping(value = "/{userId}/follow")
+	@Operation(summary = "Follow a user", description = "Follow a user by their ID.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "User followed successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> followUser(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("userId") String userId) {
+		userService.followUser(userDetails.getUsername(), userId);
+		return ResponseEntity.noContent().build();
+	}
 
-  @PostMapping(value = "/{userId}/follow")
-  @Operation(summary = "Follow a user", description = "Follow a user by their ID.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "204", description = "User followed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> followUser(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("userId") String userId) {
-    userService.followUser(userDetails.getUsername(), userId);
-    return ResponseEntity.noContent().build();
-  }
+	@PostMapping(value = "/{userId}/unfollow")
+	@Operation(summary = "Unfollow a user", description = "Unfollow a user by their ID.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "User unfollowed successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> unfollowUser(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("userId") String userId) {
+		userService.unfollowUser(userDetails.getUsername(), userId);
+		return ResponseEntity.noContent().build();
+	}
 
+	@GetMapping(value = "/me/followings")
+	@Operation(summary = "Get the list of users that the current user is following",
+			description = "Get the list of users that the current user is following.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that the current user is following",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowings(@AuthenticationPrincipal UserDetails userDetails) {
+		List<AccountResumeResponseDTO> followings = userService.getFollowingsByEmail(userDetails.getUsername());
+		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+	}
 
-  @PostMapping(value = "/{userId}/unfollow")
-  @Operation(summary = "Unfollow a user", description = "Unfollow a user by their ID.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "204", description = "User unfollowed successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> unfollowUser(@AuthenticationPrincipal UserDetails userDetails, @PathVariable("userId") String userId) {
-    userService.unfollowUser(userDetails.getUsername(), userId);
-    return ResponseEntity.noContent().build();
-  }
+	@GetMapping(value = "/me/followers")
+	@Operation(summary = "Get the list of users that are following the current user",
+			description = "Get the list of users that are following the current user.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that are following the current user",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowersListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
+		List<AccountResumeResponseDTO> followers = userService.getFollowersByEmail(userDetails.getUsername());
+		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+	}
 
-  @GetMapping(value = "/me/followings")
-  @Operation(summary = "Get the list of users that the current user is following", description = "Get the list of users that the current user is following.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "List of users that the current user is following", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowingsListResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> getFollowings(@AuthenticationPrincipal UserDetails userDetails) {
-    List<AccountResumeResponseDTO> followings = userService.getFollowingsByEmail(userDetails.getUsername());
-    return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
-  }
+	@GetMapping(value = "/{userId}/followings")
+	@Operation(summary = "Get the list of users that the specified user is following",
+			description = "Get the list of users that the specified user is following.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that the specified user is following",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
+		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+	}
 
-  @GetMapping(value = "/me/followers")
-  @Operation(summary = "Get the list of users that are following the current user", description = "Get the list of users that are following the current user.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "List of users that are following the current user", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowersListResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
-    List<AccountResumeResponseDTO> followers = userService.getFollowersByEmail(userDetails.getUsername());
-    return ResponseEntity.ok(new FollowersListResponseDTO(followers));
-  }
+	@GetMapping(value = "/{userId}/followers")
+	@Operation(summary = "Get the list of users that are following the specified user",
+			description = "Get the list of users that are following the specified user.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that are following the specified user",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowersListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> followers = userService.getFollowersByUserId(userId);
+		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+	}
 
-  @GetMapping(value = "/{userId}/followings")
-  @Operation(summary = "Get the list of users that the specified user is following", description = "Get the list of users that the specified user is following.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "List of users that the specified user is following", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowingsListResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
-    List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
-    return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
-  }
-
-  @GetMapping(value = "/{userId}/followers")
-  @Operation(summary = "Get the list of users that are following the specified user", description = "Get the list of users that are following the specified user.")
-  @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "List of users that are following the specified user", content = @Content(mediaType = "application/json", schema = @Schema(implementation = FollowersListResponseDTO.class))),
-    @ApiResponse(responseCode = "404", description = "Account not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)))
-  })
-  public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
-    List<AccountResumeResponseDTO> followers = userService.getFollowersByUserId(userId);
-    return ResponseEntity.ok(new FollowersListResponseDTO(followers));
-  }
 }

@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.MongoExpression;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -54,6 +52,8 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	 */
 	private List<Criteria> buildRootCriteria(AccountSearchRequestDTO accountSearchRequestDTO) {
 		List<Criteria> criteria = new ArrayList<>();
+
+		criteria.add(Criteria.where("role").is(accountSearchRequestDTO.role()));
 
 		if (accountSearchRequestDTO.followings() != null)
 			criteria.add(Criteria.where("following." + (accountSearchRequestDTO.followings() - 1)).exists(true));
@@ -123,33 +123,32 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		return roomPacksCriteria;
 	}
 
+	@Override
+	public void addToFollowings(String accountId, String userIdToFollow) {
+		Query query = new Query(Criteria.where("_id").is(accountId));
+		Update update = new Update().addToSet("followings", userIdToFollow);
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-  @Override
-  public void addToFollowings(String accountId, String userIdToFollow) {
-      Query query = new Query(Criteria.where("_id").is(accountId));
-      Update update = new Update().addToSet("followings", userIdToFollow);
-      mongoTemplate.updateFirst(query, update, Account.class);
-  }
-  
-  @Override
-  public void removeFromFollowings(String accountId, String userIdToUnfollow) {
-      Query query = new Query(Criteria.where("_id").is(accountId));
-      Update update = new Update().pull("followings", userIdToUnfollow);
-      mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public void removeFromFollowings(String accountId, String userIdToUnfollow) {
+		Query query = new Query(Criteria.where("_id").is(accountId));
+		Update update = new Update().pull("followings", userIdToUnfollow);
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-  @Override
-  public void addToFollowers(String accountId, String followerId) {
-      Query query = new Query(Criteria.where("_id").is(accountId));
-      Update update = new Update().addToSet("followers", followerId);
-      mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public void addToFollowers(String accountId, String followerId) {
+		Query query = new Query(Criteria.where("_id").is(accountId));
+		Update update = new Update().addToSet("followers", followerId);
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-  @Override
-  public void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers) {
-      Query query = new Query(Criteria.where("_id").is(accountId));
-      Update update = new Update().pull("followers", userIdToDeleteFromFollowers);
-      mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers) {
+		Query query = new Query(Criteria.where("_id").is(accountId));
+		Update update = new Update().pull("followers", userIdToDeleteFromFollowers);
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
 }
