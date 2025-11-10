@@ -15,22 +15,22 @@ public interface AccountRepository extends MongoRepository<Account, String>, Acc
 	 */
 	Optional<Account> findByEmail(String email);
 
+	/**
+	 * Checks if a user is following another user.
+	 * @param followerUserId The ID of the follower
+	 * @param followedUserId The ID of the user being followed
+	 * @return true if the account is following the user, false otherwise
+	 */
+	@Query(value = "{ '_id' : ?0, 'followings' : ?1 }", count = true)
+	long existsFollowing(String followerUserId, String followedUserId);
 
-  /**
-   * Checks if a user is following another user.
-   * @param followerUserId The ID of the follower
-   * @param followedUserId The ID of the user being followed
-   * @return true if the account is following the user, false otherwise
-   */
-  @Query(value = "{ '_id' : ?0, 'followings' : ?1 }", count = true)
-  long existsFollowing(String followerUserId, String followedUserId);
-  
-  /**
-   * Checks if a user has a specific follower.
-   * @param followerUserId The ID of the follower
-   * @param followedUserId The ID of the user being followed
-   * @return true if the account has the specified follower, false otherwise
-   */
-  @Query(value = "{ '_id' : ?0, 'followers' : ?1 }", count = true)
-  long existsFollowers(String followedUserId, String followerUserId);
+	/**
+	 * Checks if a user has a specific follower.
+	 * @param followerUserId The ID of the follower
+	 * @param followedUserId The ID of the user being followed
+	 * @return true if the account has the specified follower, false otherwise
+	 */
+	@Query(value = "{ '_id' : ?0, 'followers' : ?1 }", count = true)
+	long existsFollowers(String followedUserId, String followerUserId);
+
 }

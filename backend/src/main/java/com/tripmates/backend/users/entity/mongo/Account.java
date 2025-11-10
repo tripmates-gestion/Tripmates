@@ -65,7 +65,6 @@ public class Account implements UserDetails {
 	@Field(targetType = FieldType.STRING)
 	private String description;
 
-
 	/** Account's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
 	private String location;
@@ -144,7 +143,6 @@ public class Account implements UserDetails {
 	 * Account's followers. Only used in USER account.
 	 */
 	private List<String> followers = new ArrayList<>();
-
 
 	@Override
 	public String getPassword() {

@@ -16,12 +16,12 @@ public interface AccountRepositoryCustom {
 	 */
 	Page<Account> searchAccount(AccountSearchRequestDTO accountSearchRequestDTO, Pageable pageable);
 
+	void addToFollowings(String accountId, String userIdToFollow);
 
-  void addToFollowings(String accountId, String userIdToFollow);
+	void removeFromFollowings(String accountId, String userIdToUnfollow);
 
-  void removeFromFollowings(String accountId, String userIdToUnfollow);
+	void addToFollowers(String accountId, String followerId);
 
-  void addToFollowers(String accountId, String followerId);
+	void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers);
 
-  void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers);
 }
