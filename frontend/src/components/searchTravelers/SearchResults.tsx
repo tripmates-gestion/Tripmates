@@ -8,7 +8,7 @@ interface Props {
   onUserClick: (user: any) => void;
 }
 
-const SearchResults: React.FC<Props> = ({ results, onUserClick }) => {
+const SearchResults: React.FC<Props> = React.memo(({ results, onUserClick }) => {
   if (results.length === 0){
     return
   }
@@ -25,6 +25,6 @@ const SearchResults: React.FC<Props> = ({ results, onUserClick }) => {
       </Stack>
     </Box>
   );
-};
+});
 
 export default SearchResults;

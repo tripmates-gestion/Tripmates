@@ -1,3 +1,4 @@
+// src/components/searchTravelers/BackgroundRotator.tsx
 import React from "react";
 import { Box } from "@mui/material";
 import { SEARCH_TRAVELERS_BACKGROUND } from "../../constants/DefaultImages";
