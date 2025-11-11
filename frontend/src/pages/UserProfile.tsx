@@ -18,12 +18,12 @@ import {
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
 
-import EditProfileDialog from '../components/profile/userProfile.tsx/EditUserProfileDialog';
+import EditProfileDialog from '../components/profile/userProfile/EditUserProfileDialog';
 import { useAuth } from '../hooks/useAuth';
 import { DEFAULT_STATS } from '../constants/DefaultStats';
 
-import UserReviewsTab from '../components/profile/userProfile.tsx/UserReviewsTab';
-import UserPlansTab from '../components/profile/userProfile.tsx/UserPlansTab';
+import UserReviewsTab from '../components/profile/userProfile/UserReviewsTab';
+import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
 import { Stat } from '../components/profile/stats';
 
 import { updateUser } from '../services/userService';
