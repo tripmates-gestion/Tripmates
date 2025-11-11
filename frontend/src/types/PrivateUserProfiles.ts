@@ -1,16 +1,15 @@
 // Tipos base
 import type { MenuItem } from "./Restaurant";
 import type { RestaurantType } from "./Restaurant";
+import type { AccountType, BusinessType } from './AccountTypes';
 
-type Role = "USER" | "BUSINESS";
-type BusinessType = "RESTAURANT" | "HOTEL";
 
 export type CommonUser = {
   id: string;
   name: string;
   email: string;
   avatarURL?: string;
-  role: Role;
+  role: AccountType;
   description?: string;
 };
 
@@ -19,7 +18,7 @@ export type BusinessCommon = {
   name: string;
   email: string;
   avatarURL?: string;
-  role: Role;
+  role: AccountType;
   businessType: BusinessType; // viene en /me
   description?: string;
   location?: string;
