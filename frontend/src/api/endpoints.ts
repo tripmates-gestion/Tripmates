@@ -2,7 +2,15 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
-    USER_ME: '/users/me',    
+    USER_ME: '/users/me',
+
+    MY_FOLLOWERS: '/users/me/followers',
+    MY_FOLLOWINGS: '/users/me/followings',
+    USER_FOLLOWERS: (userId: string) => `/users/${userId}/followers`,
+    USER_FOLLOWINGS: (userId: string) => `/users/${userId}/followings`,
+    FOLLOW_USER: (userId: string) => `/users/${userId}/follow`,
+    UNFOLLOW_USER: (userId: string) => `/users/${userId}/unfollow`,
+
     REFRESH_TOKEN: '/auth/refresh',
     PUBLISH_BUSINESS: '/publications/business',
     GET_BUSINESS_PUBLICATIONS: '/publications/mine',

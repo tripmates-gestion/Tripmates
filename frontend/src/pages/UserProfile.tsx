@@ -31,6 +31,9 @@ import type {
   CommonUser,
   CurrentUser,
 } from '../types/PrivateUserProfiles';
+import { useConnectionsList } from '../hooks/useConnectionsList';
+import { ConnectionsListDialog } from '../components/social/ConnectionsListDialog';
+import { FollowButton } from '../components/social/FollowButton';
 
 const userRoleChipColor = 'info';
 
@@ -41,10 +44,24 @@ export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
+  const [activeList, setActiveList] = React.useState<'followers' | 'followings' | null>(null);
 
   const { user, accessToken, refreshUser } = useAuth();
 
   const currentUser = user as CurrentUser | null;
+
+  const followersList = useConnectionsList('followers');
+  const followingsList = useConnectionsList('followings');
+
+  const handleFollowingChange = React.useCallback(
+    (accountId: string, nextIsFollowing: boolean) => {
+      if (!nextIsFollowing) {
+        followingsList.removeItem(accountId);
+        void followingsList.refresh();
+      }
+    },
+    [followingsList]
+  );
 
   const tabs = [
     { key: 'actividad', label: 'Actividad' },
@@ -77,7 +94,26 @@ export default function UserProfile() {
     }
   };
 
-  const stats = DEFAULT_STATS;
+  const stats = React.useMemo(
+    () => ({
+      aportes: DEFAULT_STATS.aportes,
+      seguidores: followersList.items.length,
+      siguiendo: followingsList.items.length,
+    }),
+    [followersList.items.length, followingsList.items.length]
+  );
+
+  const openFollowers = () => {
+    void followersList.refresh();
+    setActiveList('followers');
+  };
+
+  const openFollowings = () => {
+    void followingsList.refresh();
+    setActiveList('followings');
+  };
+
+  const closeDialog = () => setActiveList(null);
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
@@ -176,8 +212,18 @@ export default function UserProfile() {
               sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}
             >
               <Stat label="Aportes" value={stats.aportes} />
-              <Stat label="Seguidores" value={stats.seguidores} />
-              <Stat label="Siguiendo" value={stats.siguiendo} />
+              <Stat
+                label="Seguidores"
+                value={stats.seguidores}
+                loading={followersList.loading}
+                onClick={openFollowers}
+              />
+              <Stat
+                label="Siguiendo"
+                value={stats.siguiendo}
+                loading={followingsList.loading}
+                onClick={openFollowings}
+              />
             </Stack>
           </CardContent>
 
@@ -215,6 +261,38 @@ export default function UserProfile() {
           saving={saving}
         />
       )}
+
+      <ConnectionsListDialog
+        open={activeList === 'followers'}
+        onClose={closeDialog}
+        type="followers"
+        items={followersList.items}
+        loading={followersList.loading}
+        error={followersList.error}
+        onRefresh={followersList.refresh}
+      />
+
+      <ConnectionsListDialog
+        open={activeList === 'followings'}
+        onClose={closeDialog}
+        type="followings"
+        items={followingsList.items}
+        loading={followingsList.loading}
+        error={followingsList.error}
+        onRefresh={followingsList.refresh}
+        renderAction={(account) => (
+          <FollowButton
+            targetUserId={account.id}
+            size="small"
+            variant="outlined"
+            color="inherit"
+            autoFetch={false}
+            initialIsFollowing
+            onFollowChange={(next) => handleFollowingChange(account.id, next)}
+            sx={{ minWidth: 140 }}
+          />
+        )}
+      />
     </Box>
   );
 }
