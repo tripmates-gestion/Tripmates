@@ -6,4 +6,5 @@ export const PAGES_ROUTE = {
   businessPosts: "/business/posts", //parece que NO se usa
   restaurantPublic: "/restaurant",
   hotelPublic: "/hotel",
+  userPublicProfile: '/userProfile',
 };
