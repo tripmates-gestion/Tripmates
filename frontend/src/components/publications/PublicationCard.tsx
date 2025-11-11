@@ -260,3 +260,4 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
     </>
   );
 }
+
