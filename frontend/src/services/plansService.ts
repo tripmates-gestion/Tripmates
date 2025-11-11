@@ -58,3 +58,24 @@ export async function addPublicationToPlan(accessToken: string, planId: string, 
   });
   return response;
 }
+
+export async function updatePlan(accessToken: string, planId: string, name: string, description: string, deletePublicationIndexes: number[]) {
+  console.log("Updating plan with ID:", planId);
+  console.log("Using access token:", accessToken);
+  const endpoint = ENDPOINTS.PATCH_PLAN.replace("{id}", planId);
+  const body = {
+    name,
+    description,
+    deletePublicationIndexes
+  };
+  console.log("Request body:", body);
+
+  const response = await apiFetch(endpoint, {
+    method: "PATCH",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(body),
+  });
+  return response;
+}

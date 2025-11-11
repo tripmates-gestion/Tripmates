@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Box, Stack, Typography, Chip, IconButton, Collapse } from '@mui/material';
-import { Delete, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons-material';
 import type { BusinessPublicationResponseDTO } from '../../../types/business';
 import PublicationCard from '../../publications/PublicationCard';
 import PublicationDetailDialog from '../../publications/PublicationDetailDialog';
@@ -17,27 +17,28 @@ interface PlansGridProps {
   expandedPlans: Set<number>;
   togglePlanExpansion: (index: number) => void;
   openDeleteDialog: (plan: Plan) => void;
+  onEditPlan: (plan: Plan) => void; // Nueva prop para edición
 }
 
 export default function PlansGrid({ 
   plans, 
   expandedPlans, 
   togglePlanExpansion, 
-  openDeleteDialog 
+  openDeleteDialog,
+  onEditPlan
 }: PlansGridProps) {
 
   const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
 
   return (
     <>
-      <Grid item xs={12}>
-        {plans.map((plan, index) => {
-          const isExpanded = expandedPlans.has(index);
-          const publicationCount = plan.publications?.length || 0;
-          
-          return (
+      {plans.map((plan, index) => {
+        const isExpanded = expandedPlans.has(index);
+        const publicationCount = plan.publications?.length || 0;
+        
+        return (
+          <Grid item xs={12} key={index}>
             <Box 
-              key={index} 
               sx={{ 
                 mb: 3,
                 borderRadius: 2,
@@ -58,27 +59,7 @@ export default function PlansGrid({
                 }}
                 onClick={() => togglePlanExpansion(index)}
               >
-                <IconButton
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openDeleteDialog(plan);
-                  }}
-                  sx={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    color: 'error.main',
-                    '&:hover': {
-                      backgroundColor: 'error.light',
-                      color: 'error.contrastText'
-                    }
-                  }}
-                  size="small"
-                >
-                  <Delete />
-                </IconButton>
-
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ pr: 6 }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
                   <Typography variant="h6" sx={{ flexGrow: 1 }}>
                     {plan.name}
                   </Typography>
@@ -89,6 +70,42 @@ export default function PlansGrid({
                       size="small"
                       variant="outlined"
                     />
+                    
+                    {/* Botones de editar y eliminar alineados con el chip */}
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Botón editar clickeado');
+                        onEditPlan(plan);
+                      }}
+                      sx={{
+                        color: 'primary.main',
+                        '&:hover': {
+                          backgroundColor: 'primary.light',
+                          color: 'primary.contrastText'
+                        }
+                      }}
+                      size="small"
+                    >
+                      <Edit />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteDialog(plan);
+                      }}
+                      sx={{
+                        color: 'error.main',
+                        '&:hover': {
+                          backgroundColor: 'error.light',
+                          color: 'error.contrastText'
+                        }
+                      }}
+                      size="small"
+                    >
+                      <Delete />
+                    </IconButton>
+                    
                     <IconButton size="small">
                       {isExpanded ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
@@ -126,9 +143,9 @@ export default function PlansGrid({
                 </Box>
               </Collapse>
             </Box>
-          );
-        })}
-      </Grid>
+          </Grid>
+        );
+      })}
 
       {/* Diálogo de detalle de publicación */}
       <PublicationDetailDialog
