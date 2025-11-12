@@ -32,8 +32,11 @@ chmod +x load_samples.sh
 Este script realizará las siguientes acciones:
 
 -Creará usuarios de prueba
+
 -Registrará negocios (restaurantes y hoteles)
+
 -Agregará publicaciones, menús y paquetes de habitaciones
+
 -Incluirá reseñas de ejemplo
 
 ## Acceso a endpoints protegidos
