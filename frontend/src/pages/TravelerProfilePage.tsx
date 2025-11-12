@@ -1,11 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import TravelerHeader from "../components/profile/travelerPublicProfile/TravelerHeader";
 import TravelerReviewsGrid from "../components/profile/travelerPublicProfile/TravelerReviewsGrid";
 import { getReviewsForUser } from "../services/reviewService";
 import { useAuth } from "../hooks/useAuth";
+import { useConnectionsList } from "../hooks/useConnectionsList";
+import { ConnectionsListDialog } from "../components/social/ConnectionsListDialog";
+import { FollowButton } from "../components/social/FollowButton";
 
 const TravelerProfilePage: React.FC = () => {
   const location = useLocation();
@@ -14,7 +16,31 @@ const TravelerProfilePage: React.FC = () => {
   const { account } = location.state || {};
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const {accessToken} = useAuth();
+  const [activeList, setActiveList] = useState<"followers" | "followings" | null>(null);
+  const { accessToken } = useAuth();
+
+  const userId = account?.id ?? null;
+
+  const followersList = useConnectionsList("followers", userId, {
+    enabled: Boolean(userId),
+  });
+  const followingsList = useConnectionsList("followings", userId, {
+    enabled: Boolean(userId),
+  });
+
+  const {
+    items: followerItems,
+    loading: followersLoading,
+    error: followersError,
+    refresh: refreshFollowers,
+  } = followersList;
+
+  const {
+    items: followingItems,
+    loading: followingsLoading,
+    error: followingsError,
+    refresh: refreshFollowings,
+  } = followingsList;
 
   useEffect(() => {
     if (!account?.id) return;
@@ -42,6 +68,40 @@ const TravelerProfilePage: React.FC = () => {
     fetchReviews();
   }, [account?.id, accessToken]);
 
+  const followerCount = followerItems.length;
+  const followingCount = followingItems.length;
+
+  const handleOpenFollowers = () => {
+    void refreshFollowers();
+    setActiveList("followers");
+  };
+
+  const handleOpenFollowings = () => {
+    void refreshFollowings();
+    setActiveList("followings");
+  };
+
+  const handleCloseDialog = () => setActiveList(null);
+
+  const followButton = useMemo(() => {
+    if (!userId) {
+      return null;
+    }
+
+    return (
+      <FollowButton
+        targetUserId={userId}
+        onFollowChange={() => {
+          void refreshFollowers();
+        }}
+        sx={{
+          minWidth: 180,
+          fontWeight: 600,
+        }}
+      />
+    );
+  }, [refreshFollowers, userId]);
+
   if (!account)
     return (
       <Box p={4}>
@@ -61,7 +121,17 @@ const TravelerProfilePage: React.FC = () => {
         px: 2,
       }}
     >
-      <TravelerHeader account={account} reviewsCount={reviews.length} />
+      <TravelerHeader
+        account={account}
+        reviewsCount={reviews.length}
+        followerCount={followerCount}
+        followingCount={followingCount}
+        followersLoading={followersLoading}
+        followingsLoading={followingsLoading}
+        onFollowersClick={handleOpenFollowers}
+        onFollowingsClick={handleOpenFollowings}
+        followButton={followButton}
+      />
 
       {loading ? (
         <Box mt={6}>
@@ -90,6 +160,28 @@ const TravelerProfilePage: React.FC = () => {
           }}
         />
       )}
+
+      <ConnectionsListDialog
+        open={activeList === "followers"}
+        onClose={handleCloseDialog}
+        type="followers"
+        items={followerItems}
+        loading={followersLoading}
+        error={followersError}
+        onRefresh={refreshFollowers}
+        emptyMessage="Este viajero aún no tiene seguidores."
+      />
+
+      <ConnectionsListDialog
+        open={activeList === "followings"}
+        onClose={handleCloseDialog}
+        type="followings"
+        items={followingItems}
+        loading={followingsLoading}
+        error={followingsError}
+        onRefresh={refreshFollowings}
+        emptyMessage="Este viajero aún no sigue a nadie."
+      />
     </Box>
   );
 };
