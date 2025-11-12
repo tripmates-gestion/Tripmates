@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Avatar,
   Box,
@@ -52,6 +53,8 @@ export default function UserProfile() {
 
   const followersList = useConnectionsList('followers');
   const followingsList = useConnectionsList('followings');
+
+  const navigate = useNavigate();
 
   const handleFollowingChange = React.useCallback(
     (accountId: string, nextIsFollowing: boolean) => {
@@ -113,7 +116,22 @@ export default function UserProfile() {
     setActiveList('followings');
   };
 
-  const closeDialog = () => setActiveList(null);
+  const closeDialog = React.useCallback(() => setActiveList(null), []);
+
+  const handleConnectionClick = React.useCallback(
+    (account: CommonUser) => {
+      if (account.role !== 'USER') {
+        console.warn('Solo los perfiles de viajeros están disponibles para navegar.');
+        return;
+      }
+
+      closeDialog();
+      navigate(`/userProfile/${account.id}`, {
+        state: { account },
+      });
+    },
+    [closeDialog, navigate]
+  );
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
@@ -270,6 +288,7 @@ export default function UserProfile() {
         loading={followersList.loading}
         error={followersList.error}
         onRefresh={followersList.refresh}
+        onItemClick={handleConnectionClick}
       />
 
       <ConnectionsListDialog
@@ -292,6 +311,7 @@ export default function UserProfile() {
             sx={{ minWidth: 140 }}
           />
         )}
+        onItemClick={handleConnectionClick}
       />
     </Box>
   );
