@@ -93,14 +93,16 @@ export function FollowButton({
       ? {
           borderColor: 'divider',
           bgcolor: 'background.paper',
+          color: 'text.primary',
           fontWeight: 600,
           '&:hover': {
             borderColor: 'error.main',
-            bgcolor: 'error.main',
-            color: 'common.white',
+            color: 'error.main',
+            bgcolor: 'background.paper', // sin fondo rojo
           },
         }
       : null;
+
 
     if (!sx) {
       return followStyles ?? undefined;
