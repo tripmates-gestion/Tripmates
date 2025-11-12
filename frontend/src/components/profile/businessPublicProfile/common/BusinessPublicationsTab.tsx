@@ -30,6 +30,17 @@ type PlanInfo = {
   id: string
 }
 
+async function fetchPlans(accessToken: string) : Promise<PlanInfo[]>
+{ 
+  const response = await getPlans(accessToken);
+  const fetchedPlans: PlanInfo[] = Array.isArray(response)
+    ? response.map((p: any) => ({
+    name: typeof p === "string" ? p : p.name,
+    id: typeof p === "string" ? p : p.id
+    })) : [];
+  return fetchedPlans;
+}
+
 export default function BusinessPublicationsTab({ id }: { id: string }) {
   const [selected, setSelected] =
     React.useState<BusinessPublicationResponseDTO | null>(null);
@@ -95,15 +106,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     // Sólo fetchear si no se cargaron antes
     if (!plansLoaded) {
       try {
-        const response = await getPlans(accessToken);
-
-        const fetchedPlans: PlanInfo[] = Array.isArray(response)
-        ? response.map((p: any) => ({
-            name: typeof p === "string" ? p : p.name,
-            id: typeof p === "string" ? p : p.id
-          }))
-        : [];
-
+        const fetchedPlans = await fetchPlans(accessToken);
         setPlans(fetchedPlans);
         setPlansLoaded(true);
       } catch (error) {
@@ -140,7 +143,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   // ───────────────────────────────
   // Crear nuevo plan (llamando al backend)
   // ───────────────────────────────
-  const handleCreatePlan = async () => {
+  const handleCreatePlan = async (id: string) => {
     const trimmed = newPlanName.trim();
 
     if (!trimmed) {
@@ -155,8 +158,13 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     try {
       // descripción vacía por ahora; la podés extender más tarde
       await createPlan(accessToken, trimmed, "");
+      const fetchedPlans = await fetchPlans(accessToken);
+      console.log("Planes:", fetchedPlans);
+      console.log("Nombre:", trimmed);
+      const plan = fetchedPlans.find((p) => p.name === trimmed);
+      console.log("Plan creado:", plan);
+      await addPublicationToPlan(accessToken, plan.id, id);
       // opcional: actualizar la lista local de planes para que aparezca en el menú
-      setPlans((prev) => [...prev, trimmed]);
       setShowSuccessMsg(true);
     } catch (error) {
       console.error("Error creating plan:", error);
@@ -267,7 +275,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
       {/* Diálogo para crear nuevo plan */}
       <Dialog
         open={openCreateDialog}
-        onClose={() => setOpenCreateDialog(false)}
+        // onClose={() => setOpenCreateDialog(false)} ← Quitar esta línea
       >
         <DialogTitle>Crear nuevo plan</DialogTitle>
         <DialogContent>
@@ -279,11 +287,27 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
             variant="outlined"
             value={newPlanName}
             onChange={(e) => setNewPlanName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (newPlanName.trim() && targetPublication?.id) {
+                  handleCreatePlan(targetPublication.id);
+                }
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreateDialog(false)}>Cancelar</Button>
-          <Button onClick={handleCreatePlan} variant="contained">
+          <Button 
+            onClick={() => {
+              if (targetPublication?.id) {
+                handleCreatePlan(targetPublication.id);
+              }
+            }} 
+            variant="contained"
+            disabled={!newPlanName.trim()}
+          >
             Crear
           </Button>
         </DialogActions>

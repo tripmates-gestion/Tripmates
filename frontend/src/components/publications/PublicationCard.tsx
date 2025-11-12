@@ -83,6 +83,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
   const openNow = useMemo(() => isOpenNow(publication, now), [publication, now]);
   const authContext = useAuth();
   const [showAuthError, setShowAuthError] = useState(false);
+
+  const hasMenuOptions = onEdit || onDelete || onAddToBoard;
   
   return (
     <>
@@ -147,7 +149,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
           )}
 
         </Stack>
-        <IconButton
+        {hasMenuOptions && (
+          <IconButton
           onClick={(e) => {
             e.stopPropagation();
             handleMenu(e);
@@ -167,7 +170,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
           })}
         >
           <MoreVert />
-        </IconButton>
+        </IconButton>)}
         <Menu anchorEl={anchorEl} open={openMenu} onClose={handleClose} onClick={e => e.stopPropagation()}>
           {onEdit && <MenuItem onClick={() => { handleClose(); onEdit(publication); }}>Editar</MenuItem>}
           {onDelete && <MenuItem onClick={() => { handleClose(); onDelete(publication.id); }}>Eliminar</MenuItem>}
@@ -260,4 +263,3 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
     </>
   );
 }
-
