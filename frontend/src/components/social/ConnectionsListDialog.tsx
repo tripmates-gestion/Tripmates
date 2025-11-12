@@ -16,7 +16,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import type { CommonUser } from '../../types/PrivateUserProfiles';
 
 type ConnectionsListDialogProps = {
@@ -29,6 +29,7 @@ type ConnectionsListDialogProps = {
   onRefresh?: () => void;
   emptyMessage?: string;
   renderAction?: (account: CommonUser) => ReactNode;
+  onItemClick?: (account: CommonUser) => void;
 };
 
 const TITLES = {
@@ -51,10 +52,12 @@ export function ConnectionsListDialog({
   onRefresh,
   emptyMessage,
   renderAction,
+  onItemClick,
 }: ConnectionsListDialogProps) {
   const title = TITLES[type];
   const resolvedEmptyMessage = emptyMessage ?? EMPTY_MESSAGES[type];
   const count = items.length;
+  const isInteractive = Boolean(onItemClick);
 
   return (
     <Dialog
@@ -162,6 +165,21 @@ export function ConnectionsListDialog({
                 ? account.name[0]?.toUpperCase()
                 : '?';
 
+              const handleActivate = () => {
+                onItemClick?.(account);
+              };
+
+              const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+                if (!onItemClick || event.target !== event.currentTarget) {
+                  return;
+                }
+
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onItemClick(account);
+                }
+              };
+
               return (
                 <ListItem
                   key={account.id}
@@ -171,10 +189,22 @@ export function ConnectionsListDialog({
                     px: 2.5,
                     py: 1.5,
                     transition: 'background-color 0.15s ease-in-out',
-                    '&:hover': {
-                      bgcolor: 'action.hover',
-                    },
+                    ...(isInteractive
+                      ? {
+                          cursor: 'pointer',
+                          '&:hover': { bgcolor: 'action.hover' },
+                          '&:focus-visible': {
+                            outline: '2px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '-2px',
+                          },
+                        }
+                      : {}),
                   }}
+                  onClick={isInteractive ? handleActivate : undefined}
+                  role={isInteractive ? 'button' : undefined}
+                  tabIndex={isInteractive ? 0 : undefined}
+                  onKeyDown={isInteractive ? handleKeyDown : undefined}
                 >
                   <ListItemAvatar>
                     <Avatar
@@ -214,6 +244,7 @@ export function ConnectionsListDialog({
                         // 👇 mueve el botón un poco hacia adentro
                         right: 24, // 24px en vez de 16px por defecto
                       }}
+                      onClick={(event) => event.stopPropagation()}
                     >
                       {renderAction(account)}
                     </ListItemSecondaryAction>
