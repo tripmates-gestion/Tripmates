@@ -169,7 +169,7 @@ export function ConnectionsListDialog({
                 onItemClick?.(account);
               };
 
-              const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+              const handleKeyDown = (event: KeyboardEvent<HTMLLIElement>) => {
                 if (!onItemClick || event.target !== event.currentTarget) {
                   return;
                 }
@@ -241,8 +241,8 @@ export function ConnectionsListDialog({
                   {renderAction && (
                     <ListItemSecondaryAction
                       sx={{
-                        // 👇 mueve el botón un poco hacia adentro
-                        right: 24, // 24px en vez de 16px por defecto
+                        // mueve el botón un poco hacia adentro
+                        right: 16, // 24px en vez de 16px por defecto
                       }}
                       onClick={(event) => event.stopPropagation()}
                     >
