@@ -21,8 +21,6 @@ type Props = {
   publicationTitle?: string;
   /** Callback para notificar al padre que se creó una reseña */
   onCreate?: (r: Review) => void;
-
-  userId: string;
 };
 
 
@@ -31,7 +29,6 @@ export default function NewReviewPlace({
   publicationId,
   publicationTitle,
   onCreate,
-  userId
 }: Props) {
   const { user, accessToken } = useAuth();
 
@@ -43,9 +40,6 @@ export default function NewReviewPlace({
   const [rating, setRating] = React.useState<number | null>(null);
   const [images, setImages] = React.useState<string[]>([]);
   const [touched, setTouched] = React.useState(false);
-
-
-              
 
 
   const [snack, setSnack] = React.useState<{ open: boolean; msg: string; sev: "success" | "error" }>({
@@ -107,6 +101,9 @@ export default function NewReviewPlace({
     }
     const r: Review = {
       id: crypto.randomUUID(),
+      avatarUrl: user?.avatarURL || "", // Add avatarUrl
+      authorId: user?.id || "unknown", // Add authorId
+      authorName: currentUserName, // Add authorName
       author: currentUserName,
       title: title.trim(),
       rating: rating ?? undefined,
@@ -115,7 +112,6 @@ export default function NewReviewPlace({
       createdAt: new Date().toISOString(),
       publicationId,
       publicationTitle,
-      authorId: userId
     };
     try {
       console.log(publicationId)

@@ -10,6 +10,7 @@ export type Review = {
     publicationTitle?: string;   // opcional (referencia visual)
     authorId: string;           // (referencia al autor)
     authorName: string;         // (referencia al autor)
+    avatarUrl?: string;        // (opcional, URL del avatar del autor)
   };
 
 

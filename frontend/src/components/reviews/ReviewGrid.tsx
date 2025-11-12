@@ -46,14 +46,14 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             <Card variant="outlined">
             <CardContent>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1, cursor: 'pointer' }}
-                onClick={(e) => {
-                console.log("Review seleccionada:", r);
-                e.stopPropagation();
-                handleUserClick(r.authorName, r.authorId);
-            }}>
-                <Avatar>{r.author.slice(0, 1).toUpperCase()}</Avatar>
+                // onClick={(e) => {
+                // console.log("Review seleccionada:", r);
+                // e.stopPropagation();
+                // handleUserClick(r.authorName, r.authorId);}}
+                >
+                <Avatar src={r.avatarUrl} />
                 <Stack spacing={0}>
-                    <Typography variant="subtitle2" fontWeight={700}>{r.author}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700}>{r.authorName}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {new Date(r.createdAt).toLocaleString()}
                     </Typography>
