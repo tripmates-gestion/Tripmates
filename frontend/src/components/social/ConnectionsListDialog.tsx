@@ -109,7 +109,7 @@ export function ConnectionsListDialog({
       <DialogContent
         dividers
         sx={{
-          // 👇 antes tenías p: 0 — ahora le damos aire horizontal
+          // aire horizontal
           px: 2,
           py: 0,
           bgcolor: 'background.default',
