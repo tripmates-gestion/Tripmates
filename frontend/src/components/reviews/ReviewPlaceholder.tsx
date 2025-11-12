@@ -101,6 +101,9 @@ export default function NewReviewPlace({
     }
     const r: Review = {
       id: crypto.randomUUID(),
+      avatarUrl: user?.avatarURL || "", // Add avatarUrl
+      authorId: user?.id || "unknown", // Add authorId
+      authorName: currentUserName, // Add authorName
       author: currentUserName,
       title: title.trim(),
       rating: rating ?? undefined,

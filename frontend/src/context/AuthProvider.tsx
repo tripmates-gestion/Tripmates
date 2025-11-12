@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext } from './AuthContext';
-import { type CurrentUser } from "./PrivateUserProfilesTypes";
+import { type CurrentUser } from "../types/PrivateUserProfiles";
 import { loginApi, logoutApi, refreshAccessTokenApi } from "../services/authService";
 import { getCurrentUser } from "../services/userService";
 import { mapUser } from "../services/mappers/userMapper";
@@ -9,7 +9,6 @@ import { mapUser } from "../services/mappers/userMapper";
 
 interface AuthProviderProps {
     children: ReactNode;
-
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -67,16 +66,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [accessToken, refreshToken, user?.email, logoutHandler]);
 
+
+  // DEPRECADO ESTA FUNCION => CAMBIADA POR UN REFRESH 
   // Actualiza campos simples del usuario en memoria (sin pegarle al backend).
   // Usa setState funcional + nullish coalescing para “conservar si no vino valor nuevo”.
-  const updateUser = (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null) => {
-    setUser((prev) => ({
-      ...prev!, // copia todo lo anterior (asumimos que prev no es null)
-      username: newUserName ?? prev?.username ?? '',
-      description: newDescription ?? prev?.description ?? '',
-      avatarURL: newAvatarURL ?? prev?.avatarURL ?? '',
-    }));
-  };
+  // const updateUser = (newUserName: string|null, newDescription: string|null, newAvatarURL: string|null) => {
+  //   setUser((prev) => ({
+  //     ...prev!, // copia todo lo anterior (asumimos que prev no es null)
+  //     username: newUserName ?? prev?.name ?? '',
+  //     description: newDescription ?? prev?.description ?? '',
+  //     avatarURL: newAvatarURL ?? prev?.avatarURL ?? '',
+  //   }));
+  // };
+
+  const refreshUser = useCallback(async () => {
+    if (!accessToken) return; // sin token no hay nada que hacer
+
+    console.log("[REFRESH USER]");
+    try {
+      const data = await getCurrentUser(accessToken);   // puede tirar error si el token es inválido
+      let res = mapUser(data)
+      console.log("[AuthProvider] Usuario obtenido:", res);
+      setUser(res);              // guarda el usuario en estado
+      console.log("[AuthProvider] Usuario seteado en estado:", user);
+
+    } catch (err) {
+      console.log(`[Auth] ${err} Intentando refrescar token ...`);
+      await refreshAccessTokenHandler();
+    }
+  }, [accessToken, refreshAccessTokenHandler]);
 
   // Efecto que reacciona a cambios en accessToken:
   // - Si hay token, trae el usuario (GET /users/me).
@@ -113,7 +131,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login: loginHandler,
       logout: logoutHandler,
       refreshAccessToken: refreshAccessTokenHandler,
-      updateUser
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

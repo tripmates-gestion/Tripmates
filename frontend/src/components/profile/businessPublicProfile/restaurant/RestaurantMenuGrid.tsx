@@ -53,7 +53,7 @@ export default function RestaurantMenuGrid({
     );
   }
 
-  const isVeggie = restaurantType === "vegano" || restaurantType === "vegetariano";
+  const isVeggie = (restaurantType && (restaurantType === "Vegano" || restaurantType === "Vegetariano"));
   const borderColor = isVeggie ? "success.main" : "divider";
   const iconColor: any = isVeggie ? "success" : "action"; // MUI IconColor
   const CardIcon = isVeggie ? SpaIcon : Restaurant;
@@ -61,7 +61,7 @@ export default function RestaurantMenuGrid({
   return (
     <Grid container spacing={3} sx={{ p: { xs: 1, sm: 2 } }}>
       {menu.map((item, idx) => {
-
+        console.log("Rendering menu item:", item);
         return (
           <Grid item xs={12} sm={6} md={4} key={`${item.foodName}-${idx}`}>
             <Card
@@ -123,7 +123,7 @@ export default function RestaurantMenuGrid({
                 {/* Badge veggie (si corresponde) */}
                 {isVeggie && (
                   <Chip
-                    label={restaurantType === "vegano" ? "Vegano" : "Vegetariano"}
+                    label={restaurantType === "Vegano" ? "Vegano" : "Vegetariano"}
                     size="small"
                     color="success"
                     variant="outlined"

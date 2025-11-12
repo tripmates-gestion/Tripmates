@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { BusinessUser } from "./PrivateUserProfilesTypes";
+import type { BusinessUser } from "../types/PrivateUserProfiles";
 
 export interface BusinessProfileContextType {
   business: BusinessUser | null; // solo negocios

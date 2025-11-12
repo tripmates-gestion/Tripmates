@@ -8,7 +8,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
 import { useAuth } from "../../hooks/useAuth";
-
+import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
 
 type Props = {
   open: boolean;
@@ -60,7 +60,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const { user } = useAuth();
 
   // Derivados seguros aunque publication sea null
-  const images = publication?.imageUrls?.length ? publication.imageUrls : ["/placeholder.jpg"];
+  const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
   const max = images.length;
 
   const nextIndex = (i: number) => ((i + 1) % max);
@@ -282,9 +282,6 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         <Divider sx={{ my: 2 }} />
         {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} />}
         <Divider sx={{ my: 2 }} />
-        {/* TODO: Dado el id de la publicacion se debe obtener sus reviews MEDIANTE "GET publication/{idPublication}/reviews" */}
-        {/* <ReviewList/> */}
-
       </DialogContent>
     </Dialog>
   );

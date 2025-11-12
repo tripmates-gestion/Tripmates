@@ -14,6 +14,9 @@ export function mapReviewDTOToReview(dto: ReviewDTO): Review {
     createdAt: new Date().toISOString(), // Si no viene fecha en el DTO, usar actual
     publicationId: dto.publicationReviewed.id,
     publicationTitle: dto.publicationReviewed.title,
+    authorId: dto.reviewerId,
+    authorName: dto.reviewerUsername,
+    avatarUrl: dto.reviewerAvatarUrl // Descomentar si se agrega este campo al tipo Review
   };
 }
 
