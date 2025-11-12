@@ -230,4 +230,175 @@ public class DocumentationObjectsExamples {
 			}
 			```
 			""";
+
+	static public final String USER_PLAN_UPDATE_EXAMPLE = """
+			Partially updates a user's plan by its id.
+
+			### Behavior
+			- Optional fields: `name`, `description`.
+			- `publicationsIdList`: appended to the existing publications list (no replacement).
+			- `deletePublicationIndexes`: 0-based indexes to remove from the current publications list.
+
+			### Example JSON (PATCH body)
+			```json
+			{
+			  "name": "Roadtrip 2026",
+			  "description": "Costa atlántica",
+			  "publicationsIdList": ["11111111111", "22222222222"],
+			  "deletePublicationIndexes": [0, 2]
+			}
+			```
+			""";
+
+	public static final String USER_ACCOUNT_SEARCH_EXAMPLE = """
+			Search a user account by the filters provided.
+
+			### Filters
+			- `username`: Filters by user's username.
+			- `followers`: Filters by this minimum amount of followers.
+			- `following`: Filters by this minimum amount of followings.
+			- `location`: Filters by users that have made a review from a business publication that has
+			this specific location.
+
+			### Example Request
+			```json
+			{
+			    "username": "string",
+			    "followers": 0,
+			    "following": 0,
+			    "location": "string"
+			}
+			```
+
+			### Returns
+			This endpoint returns the following JSON.
+			```json
+			          {
+			              "id": "string",
+			              "avatarURL": "string",
+			              "name": "string",
+			              "email": "string",
+			              "role": "USER",
+			              "description": "string"
+			          }
+			```
+			""";
+
+	public static final String BUSINESS_ACCOUNT_SEARCH_EXAMPLE = """
+			Search a business account by the filters provided.
+
+			### Filters
+			- `username`: Filters by business's username.
+			- `averagePrice`: Filters by the average price.
+			- `location`: Filters by business's location.
+			- `businessType`: Filter by the business type.
+			- `restaurantType`: Filter by the restaurant type.
+			- `hotelType`: Filter by the hotel type.
+			- `attentionSchedule`: Filter by the attention schedule.
+			    - `openingTime`: Filter by the opening time.
+			    - `closingTime`: Filter by the closing time.
+			- `roomPacksList`: Filter by business hosting room packs.
+			    - `numberOfGuests`: Filter by number of guests.
+			    - `checkInDate`: Filter by the checkin date.
+			    - `checkOutDate`: Filter by the checkout date.
+
+			### Example Request
+			```json
+			         {
+			              "username": "string",
+			              "businessType": "RESTAURANT",
+			              "location": "string",
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                 }
+			              ]
+			          }
+			```
+
+			### Returns
+			This endpoint returns the following JSON.
+			```json
+			          {
+			              "id": "string",
+			              "avatarURL": "string",
+			              "name": "string",
+			              "email": "string",
+			              "role": "BUSINESS",
+			              "description": "string",
+			              "businessType": "RESTAURANT",
+			              "location": "string",
+			              "phoneNumber": "string",
+			              "publicEmail": "string",
+			              "profileImageUrls": [
+			                  "string"
+			              ],
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "openingDays": [
+			                  "MONDAY"
+			              ],
+			              "menu": [
+			                 {
+			                     "photosURLs": [
+			                        "string"
+			                     ],
+			                     "foodName": "string",
+			                     "price": 0,
+			                     "description": "string"
+			                 }
+			              ],
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                     "services": [
+			                         "string"
+			                     ],
+			                     "price": 0,
+			                     "description": "string",
+			                     "photosURLs": [
+			                         "string"
+			                     ]
+			                 }
+			              ]
+			          }
+			```
+			""";
+
 }

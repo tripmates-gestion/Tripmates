@@ -5,6 +5,7 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -133,6 +134,16 @@ public class Account implements UserDetails {
 	 */
 	private List<RoomPack> roomPacks;
 
+	/**
+	 * Account's following users. Only used in USER account.
+	 */
+	private List<String> followings = new ArrayList<>();
+
+	/**
+	 * Account's followers. Only used in USER account.
+	 */
+	private List<String> followers = new ArrayList<>();
+
 	@Override
 	public String getPassword() {
 		return this.password;
@@ -166,6 +177,22 @@ public class Account implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	/**
+	 * Gets the account following count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowingCount() {
+		return this.followings.size();
+	}
+
+	/**
+	 * Gets the account followers count.
+	 * @return {@link Integer}.
+	 */
+	public Integer getFollowersCount() {
+		return this.followers.size();
 	}
 
 }

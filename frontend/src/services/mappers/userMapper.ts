@@ -1,23 +1,5 @@
-import type { CommonUsersInformation } from '../../types/CommonUserInfo';
-import type { CurrentUser } from '../../context/PrivateUserProfilesTypes';
+import type { CurrentUser } from '../../types/PrivateUserProfiles';
 import { ACCOUNT_TYPES, BUSINESS_TYPES } from '../../constants/Rol';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapUser2(data: any): CommonUsersInformation {
-  if (!data || typeof data !== 'object') {
-    throw new Error('Invalid user data');
-  }
-  console.log("[UserMapper] Mapping user recived from GET user/me", data);
-  return {
-    id: data.id,
-    email: data.email,
-    username: data.name,
-    role: data.role,
-    description: data.description || '',
-    avatarURL: data.avatarURL,
-  };
-}
-
 
 export function mapUser(raw: any): CurrentUser {
   if (!raw || typeof raw !== 'object') {
@@ -31,6 +13,7 @@ export function mapUser(raw: any): CurrentUser {
     name: raw.name,
     email: raw.email,
     avatarURL: raw.avatarURL,
+    description: raw.description,
   };
 
   if (raw.role === ACCOUNT_TYPES.business) {

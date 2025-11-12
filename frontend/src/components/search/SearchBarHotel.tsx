@@ -24,7 +24,6 @@ import { useAuth } from "../../hooks/useAuth";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import type { BusinessType } from "../../types/AccountTypes";
 import type { HotelType } from "../../types/Hotel";
-//TODO cambiar su ubicación
 import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
 import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
 import { MOCKEAR_RESULTADOS_DE_PERFILES } from "../../constants/UseMOCK";
@@ -69,34 +68,50 @@ export const SearchBarHotel = ({
   };
 
   const handleSearch = async (commonFilters: CommonFilters) => {
-    //QUITAR CUANDO SEA PUBLICO
     if (!accessToken) return;
     setLoading(true);
+  
     try {
-      const params: SearchBusinessFilters = {
-        ...commonFilters,
+      // Construcción dinámica del objeto de filtros
+      const params: Record<string, any> = {
         businessType: "HOTEL" as BusinessType,
-        ...(filters.hotelType && { hotelType: filters.hotelType }),
-        ...(filters.roomPack?.checkInDate && { checkin: filters.roomPack?.checkInDate }),
-        ...(filters.roomPack?.checkOutDate && { checkout: filters.roomPack?.checkOutDate }),
-        ...(filters.roomPack?.numberOfGuests && { numberOfGuests: filters.roomPack?.numberOfGuests }),
-        ...(filters.roomPack?.services?.length && { services: filters.roomPack?.services }),
       };
+  
+      // Agrego los filtros comunes solo si tienen valor no vacío
+      if (commonFilters.username?.trim()) params.username = commonFilters.username.trim();
+      if (commonFilters.location?.trim()) params.location = commonFilters.location.trim();
+      if (commonFilters.averagePrice) params.averagePrice = commonFilters.averagePrice;
+  
+      // Agrego los filtros específicos de hotel
+      if (filters.hotelType) params.hotelType = filters.hotelType;
+  
+      // Armar el objeto roomPack sólo si hay al menos un valor definido
+      const roomPack: Record<string, any> = {};
+  
+      if (filters.roomPack?.checkInDate) roomPack.checkInDate = filters.roomPack.checkInDate;
+      if (filters.roomPack?.checkOutDate) roomPack.checkOutDate = filters.roomPack.checkOutDate;
+      if (filters.roomPack?.numberOfGuests && filters.roomPack.numberOfGuests > 0)
+        roomPack.numberOfGuests = filters.roomPack.numberOfGuests;
+      if (filters.roomPack?.services?.length)
+        roomPack.services = filters.roomPack.services.filter((s) => s.trim() !== "");
+  
+      // Si el roomPack tiene al menos una clave, lo incluyo en una lista
+      if (Object.keys(roomPack).length > 0) params.roomPacks = [roomPack];
+  
       console.log("🔍 Parámetros de búsqueda (hoteles):", params);
-
-      // QUITAR (PARAMETRO) CUANDO SEA PUBLICO
-      const response = await searchBusiness(accessToken, params);      
-      console.log("¡¡¡ Response de búsqueda de la api(hoteles):", response);
+  
+      const response = await searchBusiness(accessToken, params);
+      console.log("✅ Response de búsqueda de la API (hoteles):", response);
+  
       const hotels: BusinessPubAccountDataDTO[] = [];
-      
-      //INYECTO RESULTADOS CON MOCKITO (QUITAR)
+  
       if (MOCKEAR_RESULTADOS_DE_PERFILES) {
         hotels.push(...aplyFiltersToMock(MOCK_BUSINESS_SEARCH_RESULTS, params));
       }
       if (response != null) {
         hotels.push(...response.content);
       }
-      
+  
       onSearchResults(hotels);
     } catch (err) {
       console.error(err);
@@ -166,11 +181,12 @@ export const SearchBarHotel = ({
               label="Tipo de hotel"
             >
               <MenuItem value="">Todos</MenuItem>
-              <MenuItem value="hotel">Hotel</MenuItem>
-              <MenuItem value="hostel">Hostel</MenuItem>
-              <MenuItem value="departamento">Departamento</MenuItem>
-              <MenuItem value="cabaña">Cabaña</MenuItem>
-              <MenuItem value="camping">Camping</MenuItem>
+              <MenuItem value="Hotel">Hotel</MenuItem>
+              <MenuItem value="Hostel">Hostel</MenuItem>
+              <MenuItem value="Departamento">Departamento</MenuItem>
+              <MenuItem value="Cabaña">Cabaña</MenuItem>
+              <MenuItem value="Camping">Camping</MenuItem>
+              <MenuItem value="Lujo">Lujo</MenuItem>
             </Select>
           </FormControl>
 

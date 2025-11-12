@@ -1,26 +1,24 @@
 // Tipos base
-import type { MenuItem } from "../types/Restaurant";
+import type { MenuItem } from "./Restaurant";
+import type { RestaurantType } from "./Restaurant";
+import type { AccountType, BusinessType } from './AccountTypes';
 
-type Role = "USER" | "BUSINESS";
-type BusinessType = "RESTAURANT" | "HOTEL";
 
-type CommonUser = {
+export type CommonUser = {
   id: string;
-  username: string;
   name: string;
   email: string;
   avatarURL?: string;
-  role: Role;
+  role: AccountType;
   description?: string;
 };
 
 export type BusinessCommon = {
   id: string;
-  username: string;
   name: string;
   email: string;
   avatarURL?: string;
-  role: Role;
+  role: AccountType;
   businessType: BusinessType; // viene en /me
   description?: string;
   location?: string;
@@ -33,7 +31,7 @@ export type BusinessCommon = {
 
 // Especializaciones por tipo de negocio
 export type RestaurantExtras = {
-  restaurantType?: string;
+  restaurantType?: RestaurantType;
   openingDays?: string[]; // ["MONDAY", ...]
   attentionSchedule?: {
     openingTime: { hour: number; minute: number };

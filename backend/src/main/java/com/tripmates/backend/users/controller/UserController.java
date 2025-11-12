@@ -45,21 +45,153 @@ public class UserController {
 	}
 
 	@GetMapping("/me")
-	@Operation(summary = "Obtains an account from the system")
+	@Operation(summary = "Obtains user's account")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "Account obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
-
 			@ApiResponse(responseCode = "404", description = "Account not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
-		return ResponseEntity.ok().body(userService.getUser(userDetails.getUsername()));
+		return ResponseEntity.ok().body(userService.getUserAccount(userDetails.getUsername()));
+	}
+
+	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Updates user's account profile",
+			description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's account profile updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDetails userDetails,
+			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
+			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
+		return ResponseEntity.ok(userService.updateUserAccount(userDetails.getUsername(),
+				parsingService.parseAndValidate(data, AccountUpdateRequestDTO.class), files, avatar));
+
+	}
+
+	@PostMapping(value = "/search/business", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Search business's accounts",
+			description = DocumentationObjectsExamples.BUSINESS_ACCOUNT_SEARCH_EXAMPLE)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
+			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
+	public ResponseEntity<?> searchBusiness(@RequestBody BusinessSearchRequestDTO businessSearchRequestDTO,
+			@ParameterObject @PageableDefault Pageable pageable) {
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
+			.searchAccount(AccountSearchRequestDTO.fromBusinessSearchRequestDTO(businessSearchRequestDTO), pageable);
+
+		if (accountResumeResponseDTOPage.getTotalElements() == 0)
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
+	}
+
+	@GetMapping(value = "/search/user", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(summary = "Search user's accounts",
+			description = DocumentationObjectsExamples.USER_ACCOUNT_SEARCH_EXAMPLE)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
+			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
+	public ResponseEntity<?> searchUser(@ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
+			@ParameterObject @PageableDefault Pageable pageable) {
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
+			.searchAccount(AccountSearchRequestDTO.fromUserSearchRequestDTO(userSearchRequestDTO), pageable);
+
+		if (accountResumeResponseDTOPage.getTotalElements() == 0)
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
+	}
+
+	@PostMapping("/plans/create")
+	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> createPlan(@RequestBody PlanCreationRequestDTO planCreationRequestDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
+
+		return ResponseEntity.noContent().build();
+	}
+	@PatchMapping("/plans/{id}")
+	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))),
+			@ApiResponse(responseCode = "401", description = "Invalid credentials",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
+			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
+		return ResponseEntity.noContent().build();
+	}
+	@DeleteMapping("/plans/{id}")
+	@Operation(summary = "Delete user's plan by id")
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "User's plan deleted successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> deletePlan(@PathVariable("id") String planId,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		userService.deletePlan(userDetails.getUsername(), planId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/plans/list")
+	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
+		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
+
+		if (planResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(planResumeResponseDTOList);
 	}
 
 	@PostMapping(value = "/me/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Append one menu item (multipart)",
-			description = DocumentationObjectsExamples.RESTAURANT_APPEND_EXAMPLE)
+	@Operation(summary = "Posts a menu item", description = DocumentationObjectsExamples.RESTAURANT_APPEND_EXAMPLE)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Menu item appended successfully",
 					content = @Content(mediaType = "application/json",
@@ -67,17 +199,17 @@ public class UserController {
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> appendMenuItem(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
+	public ResponseEntity<?> postMenuItem(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
 			description = "JSON with non-image fields (foodName, price, description). Images must be sent via 'files'.") @RequestPart("data") String data,
 			@Parameter(
 					description = "Optional image files for the menu item. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
-		MenuItem item = parsingService.parseAndValidate(data, MenuItem.class);
-		return ResponseEntity.ok(userService.addMenuItem(userDetails.getUsername(), item, files));
+		return ResponseEntity.ok(userService.addMenuItem(userDetails.getUsername(),
+				parsingService.parseAndValidate(data, MenuItem.class), files));
 	}
 
 	@PatchMapping(value = "/me/restaurant/{index}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Update one menu item by index (multipart)",
+	@Operation(summary = "Updates a menu item by its index (multipart)",
 			description = DocumentationObjectsExamples.RESTAURANT_UPDATE_EXAMPLE)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Menu item updated successfully",
@@ -94,12 +226,16 @@ public class UserController {
 			@Parameter(
 					description = "Optional image files to append to the item's photos. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
-		com.tripmates.backend.users.dto.MenuItemUpdateDTO dto = (data != null && !data.isBlank())
-				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.MenuItemUpdateDTO.class) : null;
-		MenuItem item = (dto != null) ? new MenuItem(null, dto.foodName(), dto.price(), dto.description()) : null;
-		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
+		MenuItemUpdateDTO menuItemUpdateDTO = (data != null && !data.isBlank())
+				? parsingService.parseAndValidate(data, MenuItemUpdateDTO.class) : null;
+
+		MenuItem menuItem = (menuItemUpdateDTO != null) ? new MenuItem(null, menuItemUpdateDTO.foodName(),
+				menuItemUpdateDTO.price(), menuItemUpdateDTO.description()) : null;
+
+		List<Integer> deletePhotoIndexes = (menuItemUpdateDTO != null) ? menuItemUpdateDTO.deletePhotoIndexes() : null;
+
 		return ResponseEntity
-			.ok(userService.updateMenuItem(userDetails.getUsername(), index, item, files, deletePhotoIndexes));
+			.ok(userService.updateMenuItem(userDetails.getUsername(), index, menuItem, files, deletePhotoIndexes));
 	}
 
 	@DeleteMapping(value = "/me/restaurant/{index}")
@@ -128,13 +264,13 @@ public class UserController {
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> appendRoomPack(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
+	public ResponseEntity<?> postRoomPack(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
 			description = "JSON with non-image fields (checkInDate, checkOutDate, numberOfGuests, services, price, description). Images must be sent via 'files'.") @RequestPart("data") String data,
 			@Parameter(
 					description = "Optional image files for the room pack. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
-		RoomPack pack = parsingService.parseAndValidate(data, RoomPack.class);
-		return ResponseEntity.ok(userService.addRoomPack(userDetails.getUsername(), pack, files));
+		return ResponseEntity.ok(userService.addRoomPack(userDetails.getUsername(),
+				parsingService.parseAndValidate(data, RoomPack.class), files));
 	}
 
 	@PatchMapping(value = "/me/hosting/{index}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -155,13 +291,17 @@ public class UserController {
 			@Parameter(
 					description = "Optional image files to append to the room pack photos. Supported formats: JPG, PNG, etc.") @RequestPart(
 							value = "files", required = false) List<MultipartFile> files) {
-		com.tripmates.backend.users.dto.RoomPackUpdateDTO dto = (data != null && !data.isBlank())
-				? parsingService.parseAndValidate(data, com.tripmates.backend.users.dto.RoomPackUpdateDTO.class) : null;
-		RoomPack pack = (dto != null) ? new RoomPack(dto.checkInDate(), dto.checkOutDate(), dto.numberOfGuests(),
-				dto.services(), dto.price(), dto.description(), null) : null;
-		List<Integer> deletePhotoIndexes = (dto != null) ? dto.deletePhotoIndexes() : null;
+		RoomPackUpdateDTO roomPackUpdateDTO = (data != null && !data.isBlank())
+				? parsingService.parseAndValidate(data, RoomPackUpdateDTO.class) : null;
+
+		RoomPack roomPack = (roomPackUpdateDTO != null) ? new RoomPack(roomPackUpdateDTO.checkInDate(),
+				roomPackUpdateDTO.checkOutDate(), roomPackUpdateDTO.numberOfGuests(), roomPackUpdateDTO.services(),
+				roomPackUpdateDTO.price(), roomPackUpdateDTO.description(), null) : null;
+
+		List<Integer> deletePhotoIndexes = (roomPackUpdateDTO != null) ? roomPackUpdateDTO.deletePhotoIndexes() : null;
+
 		return ResponseEntity
-			.ok(userService.updateRoomPack(userDetails.getUsername(), index, pack, files, deletePhotoIndexes));
+			.ok(userService.updateRoomPack(userDetails.getUsername(), index, roomPack, files, deletePhotoIndexes));
 	}
 
 	@DeleteMapping(value = "/me/hosting/{index}")
@@ -180,80 +320,94 @@ public class UserController {
 		return ResponseEntity.ok(userService.deleteRoomPack(userDetails.getUsername(), index));
 	}
 
-	@PostMapping(value = "/search/business", consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(summary = "Search business accounts")
+	@PostMapping(value = "/{userId}/follow")
+	@Operation(summary = "Follow a user", description = "Follow a user by their ID.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
-					content = { @Content(mediaType = "application/json",
-							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
-			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
-	public ResponseEntity<?> search(@RequestBody AccountSearchRequestDTO accountSearchRequestDTO,
-			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.search(accountSearchRequestDTO,
-				pageable);
-		if (accountResumeResponseDTOPage.getTotalElements() == 0)
-			return ResponseEntity.noContent().build();
-
-		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
-	}
-
-	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Update account profile", description = DocumentationObjectsExamples.UPDATE_PROFILE_EXAMPLE)
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account's profile updated successfully",
+			@ApiResponse(responseCode = "204", description = "User followed successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
 			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> updateProfileMultipart(@AuthenticationPrincipal UserDetails userDetails,
-			@RequestPart("data") String data, @RequestPart(value = "avatar", required = false) MultipartFile avatar,
-			@RequestPart(value = "files", required = false) List<MultipartFile> files) {
-
-		UserUpdateRequestDTO userUpdateRequestDTO = parsingService.parseAndValidate(data, UserUpdateRequestDTO.class);
-		return ResponseEntity
-			.ok(userService.updateUser(userDetails.getUsername(), userUpdateRequestDTO, files, avatar));
-
-	}
-
-	@PostMapping("/plans/create")
-	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
-	@ApiResponses(
-			value = {
-					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = void.class))),
-					@ApiResponse(responseCode = "404", description = "User not found",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))),
-					@ApiResponse(responseCode = "401", description = "Invalid credentials",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> createPlan(@RequestBody PlanCreationRequestDTO planCreationRequestDTO,
-			@AuthenticationPrincipal UserDetails userDetails) {
-		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
-
+	public ResponseEntity<?> followUser(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("userId") String userId) {
+		userService.followUser(userDetails.getUsername(), userId);
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/plans/list")
-	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@PostMapping(value = "/{userId}/unfollow")
+	@Operation(summary = "Unfollow a user", description = "Unfollow a user by their ID.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+			@ApiResponse(responseCode = "204", description = "User unfollowed successfully",
 					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
+	public ResponseEntity<?> unfollowUser(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("userId") String userId) {
+		userService.unfollowUser(userDetails.getUsername(), userId);
+		return ResponseEntity.noContent().build();
+	}
 
-		if (planResumeResponseDTOList.isEmpty())
-			return ResponseEntity.noContent().build();
+	@GetMapping(value = "/me/followings")
+	@Operation(summary = "Get the list of users that the current user is following",
+			description = "Get the list of users that the current user is following.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that the current user is following",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowings(@AuthenticationPrincipal UserDetails userDetails) {
+		List<AccountResumeResponseDTO> followings = userService.getFollowingsByEmail(userDetails.getUsername());
+		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+	}
 
-		return ResponseEntity.ok(planResumeResponseDTOList);
+	@GetMapping(value = "/me/followers")
+	@Operation(summary = "Get the list of users that are following the current user",
+			description = "Get the list of users that are following the current user.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that are following the current user",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowersListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
+		List<AccountResumeResponseDTO> followers = userService.getFollowersByEmail(userDetails.getUsername());
+		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+	}
+
+	@GetMapping(value = "/{userId}/followings")
+	@Operation(summary = "Get the list of users that the specified user is following",
+			description = "Get the list of users that the specified user is following.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that the specified user is following",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
+		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+	}
+
+	@GetMapping(value = "/{userId}/followers")
+	@Operation(summary = "Get the list of users that are following the specified user",
+			description = "Get the list of users that are following the specified user.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "List of users that are following the specified user",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = FollowersListResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Account not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> followers = userService.getFollowersByUserId(userId);
+		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
 	}
 
 }

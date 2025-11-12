@@ -8,6 +8,8 @@ export type Review = {
     createdAt: string;
     publicationId?: string;      // opcional (referencia)
     publicationTitle?: string;   // opcional (referencia visual)
+    authorId: string;           // (referencia al autor)
+    authorName: string;         // (referencia al autor)
   };
 
 
