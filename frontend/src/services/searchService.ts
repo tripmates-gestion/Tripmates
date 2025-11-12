@@ -30,3 +30,11 @@ export async function searchTravelers(accesstoken: string, username: string|null
   return response;
 }
 
+
+export async function getUserById(accesstoken: string, userName: string) {
+  const uri = `${ENDPOINTS.SEARCH_TRAVELERS}?username=${userName}`
+  return apiFetch(uri, {
+    method: "GET",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accesstoken}` }
+  });
+}
