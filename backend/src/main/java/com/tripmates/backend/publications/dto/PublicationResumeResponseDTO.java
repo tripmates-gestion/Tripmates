@@ -10,7 +10,7 @@ import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record PublicationResumeResponseDTO(@Schema(description = "PublicationNode's ID") String id,
+public record PublicationResumeResponseDTO(@Schema(description = "Publication's ID") String id,
 		@Schema(description = "Publication's title") String title,
 		@Schema(description = "Publication's description") String description,
 		@Schema(description = "Publication's opening days") List<DayOfWeek> openingDays,
