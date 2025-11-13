@@ -30,7 +30,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/publications")
-@Tag(name = "Publications", description = "PublicationNode management endpoints")
+@Tag(name = "Publications", description = "Publication management endpoints")
 public class PublicationController {
 
 	@Autowired
@@ -43,7 +43,7 @@ public class PublicationController {
 	@Operation(summary = "Creates a publication for a specific business",
 			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "PublicationNode created successfully",
+			@ApiResponse(responseCode = "200", description = "Publication created successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
 			@ApiResponse(responseCode = "404", description = "User not found",
@@ -100,10 +100,10 @@ public class PublicationController {
 	@Operation(summary = "Update a publication",
 			description = DocumentationObjectsExamples.BUSINESS_PUBLICATION_UPDATE_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "PublicationNode updated successfully",
+			@ApiResponse(responseCode = "200", description = "Publication updated successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "PublicationNode not found",
+			@ApiResponse(responseCode = "404", description = "Publication not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))),
 			@ApiResponse(responseCode = "404", description = "User not found",
@@ -128,7 +128,7 @@ public class PublicationController {
 	@Operation(summary = "Deletes user's publication")
 	@ApiResponses(
 			value = {
-					@ApiResponse(responseCode = "204", description = "PublicationNode deleted successfully",
+					@ApiResponse(responseCode = "204", description = "Publication deleted successfully",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = void.class))),
 					@ApiResponse(responseCode = "404", description = "User not found",
@@ -158,10 +158,10 @@ public class PublicationController {
 	@GetMapping("/mine")
 	@Operation(summary = "Gets user's publications")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "PublicationNode fetched successfully",
+			@ApiResponse(responseCode = "200", description = "Publication fetched successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "PublicationNode not found",
+			@ApiResponse(responseCode = "404", description = "Publication not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getAuthorized(@AuthenticationPrincipal UserDetails userDetails) {
@@ -171,7 +171,7 @@ public class PublicationController {
 	@GetMapping("/{userId}")
 	@Operation(summary = "Obtains a publication by user's ID")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "PublicationNode obtained successfully",
+			@ApiResponse(responseCode = "200", description = "Publication obtained successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
 			@ApiResponse(responseCode = "404", description = "User not found",

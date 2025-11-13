@@ -21,83 +21,83 @@ import java.util.List;
 public class Publication {
 
 	/**
-	 * PublicationNode's ID.
+	 * Publication's ID.
 	 */
 	@Id
 	private String id;
 
 	/**
-	 * PublicationNode's title.
+	 * Publication's title.
 	 */
 	private String title;
 
 	/**
-	 * PublicationNode's description.
+	 * Publication's description.
 	 */
 	private String description;
 
 	/**
-	 * PublicationNode's opening days.
+	 * Publication's opening days.
 	 */
 	private List<DayOfWeek> openingDays = new ArrayList<>();
 
 	/**
-	 * PublicationNode's attention schedule.
+	 * Publication's attention schedule.
 	 */
 	private AttentionSchedule attentionSchedule;
 
 	/**
-	 * PublicationNode's exceptional closing days.
+	 * Publication's exceptional closing days.
 	 */
 	private List<LocalDate> exceptionalClosingDays = new ArrayList<>();
 
 	/**
-	 * PublicationNode's creation date.
+	 * Publication's creation date.
 	 */
 	private Date createdAt = new Date();
 
 	/**
-	 * PublicationNode's phone number.
+	 * Publication's phone number.
 	 */
 	private String phoneNumber;
 
 	/**
-	 * PublicationNode's email.
+	 * Publication's email.
 	 */
 	private String email;
 
 	/**
-	 * PublicationNode's location.
+	 * Publication's location.
 	 */
 	private String location;
 
 	/**
-	 * PublicationNode's images URLs.
+	 * Publication's images URLs.
 	 */
 	private List<String> imageUrls = new ArrayList<>();
 
 	/**
-	 * PublicationNode's tags.
+	 * Publication's tags.
 	 */
 	private List<String> tags = new ArrayList<>();
 
 	/**
-	 * PublicationNode's reviews.
+	 * Publication's reviews.
 	 */
 	private List<Review> reviews = new ArrayList<>();
 
 	/**
-	 * PublicationNode's owner ID.
+	 * Publication's owner ID.
 	 */
 	private String ownerId;
 
 	/**
-	 * PublicationNode's owner username.
+	 * Publication's owner username.
 	 */
 	private String ownerUsername;
 
 	/**
-	 * PublicationNode's owner avatar image URL.
+	 * Publication's owner avatar image URL.
 	 */
 	private String ownerAvatarUrl;
 

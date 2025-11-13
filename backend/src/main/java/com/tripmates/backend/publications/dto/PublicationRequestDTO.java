@@ -12,7 +12,7 @@ import java.util.List;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
 public record PublicationRequestDTO(
-		@Schema(description = "PublicationNode title") @NotBlank(
+		@Schema(description = "Publication's title") @NotBlank(
 				message = ValidationErrorMessage.EMPTY_OR_NULL_FIELD) String title,
 		@Schema(description = "Business publication description text") @NotBlank(
 				message = ValidationErrorMessage.EMPTY_OR_NULL_FIELD) String description,

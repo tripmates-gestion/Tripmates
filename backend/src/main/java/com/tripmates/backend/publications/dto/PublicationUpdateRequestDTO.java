@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record PublicationUpdateRequestDTO(
-		@Schema(description = "PublicationNode title (optional for update)") String title,
+		@Schema(description = "Publication's title (optional for update)") String title,
 		@Schema(description = "Business publication description text (optional for update)") String description,
 		@Schema(description = "Business publication phone number") String phoneNumber,
 		@Schema(description = "Business publication email") String email,

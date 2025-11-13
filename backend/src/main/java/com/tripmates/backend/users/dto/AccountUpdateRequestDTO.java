@@ -16,11 +16,11 @@ import java.util.Arrays;
 import java.util.AbstractMap;
 
 @Schema(description = "User update request DTO")
-public record AccountUpdateRequestDTO(@Schema(description = "AccountNode's name") String name,
-		@Schema(description = "AccountNode's description or bio") String description,
-		@Schema(description = "AccountNode's location") String location,
-		@Schema(description = "AccountNode's phone number") String phoneNumber,
-		@Schema(description = "AccountNode's public email") @Email(
+public record AccountUpdateRequestDTO(@Schema(description = "Account's name") String name,
+		@Schema(description = "Account's description or bio") String description,
+		@Schema(description = "Account's location") String location,
+		@Schema(description = "Account's phone number") String phoneNumber,
+		@Schema(description = "Account's public email") @Email(
 				message = ValidationErrorMessage.INVALID_EMAIL) String publicEmail,
 		@Schema(description = "Business account's average price") AveragePrice averagePrice,
 		@Schema(description = "Restaurant's type (for bussines account that is restaurant)") RestaurantType restaurantType,
