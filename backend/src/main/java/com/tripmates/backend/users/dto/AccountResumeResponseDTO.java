@@ -7,12 +7,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.DayOfWeek;
 import java.util.List;
 
-@Schema(description = "Account resume profile response DTO")
+@Schema(description = "AccountNode resume profile response DTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record AccountResumeResponseDTO(@Schema(description = "Account's ID") String id,
-		@Schema(description = "Account's avatar URL") String avatarURL,
-		@Schema(description = "Account's name") String name, @Schema(description = "Account's email") String email,
-		@Schema(description = "Account's role") Role role,
+public record AccountResumeResponseDTO(@Schema(description = "AccountNode's ID") String id,
+		@Schema(description = "AccountNode's avatar URL") String avatarURL,
+		@Schema(description = "AccountNode's name") String name,
+		@Schema(description = "AccountNode's email") String email,
+		@Schema(description = "AccountNode's role") Role role,
 		@Schema(description = "Business account's description") String description,
 		/* For business's accounts */
 		@Schema(description = "Business account's business type") BusinessType businessType,

@@ -31,41 +31,41 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Document(collection = "account")
 public class Account implements UserDetails {
 
-	/** Account's refresh token. */
+	/** AccountNode's refresh token. */
 	@Field(targetType = FieldType.STRING)
 	private String token;
 
-	/** Account's ID. */
+	/** AccountNode's ID. */
 	@Id
 	private String id;
 
-	/** Account's avatar profile URL. */
+	/** AccountNode's avatar profile URL. */
 	@Field(targetType = FieldType.STRING)
 	private String avatarURL;
 
-	/** Account's name. */
+	/** AccountNode's name. */
 	@NotNull
 	private String name;
 
-	/** Account's email. */
+	/** AccountNode's email. */
 	@NotNull
 	@Indexed(unique = true)
 	private String email;
 
-	/** Account's password. */
+	/** AccountNode's password. */
 	@NotNull
 	private String password;
 
-	/** Account's role. */
+	/** AccountNode's role. */
 	@NotNull
 	@Field(targetType = FieldType.STRING)
 	private Role role;
 
-	/** Account's profile description. */
+	/** AccountNode's profile description. */
 	@Field(targetType = FieldType.STRING)
 	private String description;
 
-	/** Account's business location. Only allowed in BUSINESS account. */
+	/** AccountNode's business location. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
 	private String location;
 
@@ -73,74 +73,74 @@ public class Account implements UserDetails {
 	@Field(targetType = FieldType.STRING)
 	private String phoneNumber;
 
-	/** Account's public email. Only allowed in BUSINESS account. */
+	/** AccountNode's public email. Only allowed in BUSINESS account. */
 	private String publicEmail;
 
-	/** Account's profile pictures URLs. Only allowed in BUSINESS account */
+	/** AccountNode's profile pictures URLs. Only allowed in BUSINESS account */
 	private List<String> profileImageUrls;
 
 	/**
-	 * Account's plans where he is owner. Only allowed in USER account
+	 * AccountNode's plans where he is owner. Only allowed in USER account
 	 */
 	private List<Plan> plansList;
 
 	/**
-	 * Account's plans ID where he participates, but it's not an owner. Only allowed in
-	 * USER account.
+	 * AccountNode's plans ID where he participates, but it's not an owner. Only allowed
+	 * in USER account.
 	 */
 	private List<String> plansIdList;
 
-	/** Account's business type. Only allowed in BUSINESS account. */
+	/** AccountNode's business type. Only allowed in BUSINESS account. */
 	@NotNull
 	@Field(targetType = FieldType.STRING)
 	private BusinessType businessType;
 
-	/** Account's average price. Only allowed in BUSINESS account. */
+	/** AccountNode's average price. Only allowed in BUSINESS account. */
 	private AveragePrice averagePrice;
 
 	/**
-	 * Account's restaurant type. Only allowed in BUSINESS accounts with business type
+	 * AccountNode's restaurant type. Only allowed in BUSINESS accounts with business type
 	 * equal to Restaurant.
 	 */
 	private RestaurantType restaurantType;
 
 	/**
-	 * Account's restaurant attention schedule. Only allowed in BUSINESS accounts with
+	 * AccountNode's restaurant attention schedule. Only allowed in BUSINESS accounts with
 	 * business type equal to Restaurant.
 	 */
 	private AttentionSchedule attentionSchedule;
 
 	/**
-	 * Account's restaurant opening days. Only allowed in BUSINESS accounts with business
-	 * type equal to Restaurant.
+	 * AccountNode's restaurant opening days. Only allowed in BUSINESS accounts with
+	 * business type equal to Restaurant.
 	 */
 	private List<DayOfWeek> openingDays;
 
 	/**
-	 * Account's restaurant menu. Only allowed in BUSINESS accounts with business type
+	 * AccountNode's restaurant menu. Only allowed in BUSINESS accounts with business type
 	 * equal to Restaurant.
 	 */
 	private List<MenuItem> menu;
 
 	/**
-	 * Account's hotel type. Only allowed in BUSINESS accounts with business type equal to
-	 * Hotel.
+	 * AccountNode's hotel type. Only allowed in BUSINESS accounts with business type
+	 * equal to Hotel.
 	 */
 	private HotelType hotelType;
 
 	/**
-	 * Account's hotel room packs. Only allowed in BUSINESS accounts with business type
-	 * equal to Hotel.
+	 * AccountNode's hotel room packs. Only allowed in BUSINESS accounts with business
+	 * type equal to Hotel.
 	 */
 	private List<RoomPack> roomPacks;
 
 	/**
-	 * Account's following users. Only used in USER account.
+	 * AccountNode's following users. Only used in USER account.
 	 */
 	private List<String> followings = new ArrayList<>();
 
 	/**
-	 * Account's followers. Only used in USER account.
+	 * AccountNode's followers. Only used in USER account.
 	 */
 	private List<String> followers = new ArrayList<>();
 

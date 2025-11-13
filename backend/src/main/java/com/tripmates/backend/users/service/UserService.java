@@ -525,9 +525,10 @@ public class UserService {
 			}
 		}
 
-  		imageURLsList.addAll(uploadImages(multipartFileList));
-  		return imageURLsList;
-  	}
+		imageURLsList.addAll(uploadImages(multipartFileList));
+		return imageURLsList;
+	}
+
 	public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
 		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -559,9 +560,10 @@ public class UserService {
 			if (planUpdateRequestDTO.description() != null)
 				target.setDescription(planUpdateRequestDTO.description());
 
-			// delete publications by 0-based indexes if provided (do this first to avoid index shifts)
-			if (planUpdateRequestDTO.deletePublicationIndexes() != null &&
-					!planUpdateRequestDTO.deletePublicationIndexes().isEmpty()) {
+			// delete publications by 0-based indexes if provided (do this first to avoid
+			// index shifts)
+			if (planUpdateRequestDTO.deletePublicationIndexes() != null
+					&& !planUpdateRequestDTO.deletePublicationIndexes().isEmpty()) {
 				List<String> pubs = target.getPublicationsIdList();
 				if (pubs == null || pubs.isEmpty())
 					throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
