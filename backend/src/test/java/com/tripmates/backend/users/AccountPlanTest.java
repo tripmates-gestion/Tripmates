@@ -74,7 +74,7 @@ public class AccountPlanTest {
 		accountRepository.save(fran);
 
 		Publication publication = new Publication();
-		publication.setTitle("Fishing Trip Publication");
+		publication.setTitle("Fishing Trip PublicationNode");
 		publication.setDescription("Going now to Villa Paranacito");
 		publicationRepository.save(publication);
 
@@ -94,7 +94,7 @@ public class AccountPlanTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0].name").value("Fishing Trip 2026"))
 			.andExpect(jsonPath("$[0].description").value("Going fishing to Villa Paranacito next summer 2026"))
-			.andExpect(jsonPath("$[0].publications[0].title").value("Fishing Trip Publication"))
+			.andExpect(jsonPath("$[0].publications[0].title").value("Fishing Trip PublicationNode"))
 			.andExpect(jsonPath("$[0].publications[0].description").value("Going now to Villa Paranacito"));
 	}
 

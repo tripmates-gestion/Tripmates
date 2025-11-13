@@ -6,7 +6,7 @@ import java.util.List;
 
 @Validated
 public record PublicationSearchRequestDTO(@Schema(description = "Full-text search over title and description") String q,
-		@Schema(description = "Publication location") String location,
+		@Schema(description = "PublicationNode location") String location,
 		@Schema(description = "Tags that the publication must contain (all)") List<String> tags,
 		@Schema(description = "Filter by owner id") String ownerId) {
 }

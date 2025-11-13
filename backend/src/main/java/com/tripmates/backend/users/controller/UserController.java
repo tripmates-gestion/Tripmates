@@ -47,10 +47,10 @@ public class UserController {
 	@GetMapping("/me")
 	@Operation(summary = "Obtains user's account")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Account obtained successfully",
+			@ApiResponse(responseCode = "204", description = "AccountNode obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
-			@ApiResponse(responseCode = "404", description = "Account not found", content = {
+			@ApiResponse(responseCode = "404", description = "AccountNode not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok().body(userService.getUserAccount(userDetails.getUsername()));
@@ -63,7 +63,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "User's account profile updated successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDetails userDetails,
@@ -79,7 +79,7 @@ public class UserController {
 	@Operation(summary = "Search business's accounts",
 			description = DocumentationObjectsExamples.BUSINESS_ACCOUNT_SEARCH_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
+			@ApiResponse(responseCode = "200", description = "AccountNode obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
@@ -100,7 +100,7 @@ public class UserController {
 	@Operation(summary = "Search user's accounts",
 			description = DocumentationObjectsExamples.USER_ACCOUNT_SEARCH_EXAMPLE)
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Account obtained successfully",
+			@ApiResponse(responseCode = "200", description = "AccountNode obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "204", description = "No account matched the filters", content = {
@@ -135,24 +135,26 @@ public class UserController {
 
 		return ResponseEntity.noContent().build();
 	}
+
 	@PatchMapping("/plans/{id}")
 	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = void.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))),
-			@ApiResponse(responseCode = "401", description = "Invalid credentials",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
-			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO,
-			@AuthenticationPrincipal UserDetails userDetails) {
+			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
 		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
 		return ResponseEntity.noContent().build();
 	}
+
 	@DeleteMapping("/plans/{id}")
 	@Operation(summary = "Delete user's plan by id")
 	@ApiResponses(
@@ -196,7 +198,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Menu item appended successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> postMenuItem(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
@@ -215,7 +217,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Menu item updated successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateMenuItem(@AuthenticationPrincipal UserDetails userDetails,
@@ -246,7 +248,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Menu item deleted successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> deleteMenuItem(@AuthenticationPrincipal UserDetails userDetails,
@@ -261,7 +263,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Room pack appended successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> postRoomPack(@AuthenticationPrincipal UserDetails userDetails, @Parameter(
@@ -280,7 +282,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Room pack updated successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updateRoomPack(@AuthenticationPrincipal UserDetails userDetails,
@@ -312,7 +314,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "Room pack deleted successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> deleteRoomPack(@AuthenticationPrincipal UserDetails userDetails,
@@ -326,7 +328,7 @@ public class UserController {
 			@ApiResponse(responseCode = "204", description = "User followed successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> followUser(@AuthenticationPrincipal UserDetails userDetails,
@@ -341,7 +343,7 @@ public class UserController {
 			@ApiResponse(responseCode = "204", description = "User unfollowed successfully",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> unfollowUser(@AuthenticationPrincipal UserDetails userDetails,
@@ -357,7 +359,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "List of users that the current user is following",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowings(@AuthenticationPrincipal UserDetails userDetails) {
@@ -372,7 +374,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "List of users that are following the current user",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = FollowersListResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowers(@AuthenticationPrincipal UserDetails userDetails) {
@@ -387,7 +389,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "List of users that the specified user is following",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = FollowingsListResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
@@ -402,7 +404,7 @@ public class UserController {
 			@ApiResponse(responseCode = "200", description = "List of users that are following the specified user",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = FollowersListResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Account not found",
+			@ApiResponse(responseCode = "404", description = "AccountNode not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
