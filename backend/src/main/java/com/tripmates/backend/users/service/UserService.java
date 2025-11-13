@@ -7,6 +7,7 @@ import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
+import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
@@ -74,14 +75,24 @@ public class UserService {
 
 	/**
 	 * Returns a page with accounts that match the filters.
-	 * @param accountSearchRequestDTO filters.
+	 * @param businessSearchRequestDTO filters.
 	 * @param pageable pages configuration.
 	 * @return a page of {@link AccountResumeResponseDTO}.
 	 */
-	public Page<AccountResumeResponseDTO> searchAccount(AccountSearchRequestDTO accountSearchRequestDTO,
+	public Page<AccountResumeResponseDTO> searchBusiness(BusinessSearchRequestDTO businessSearchRequestDTO,
 			Pageable pageable) {
-		return accountRepository.searchAccount(accountSearchRequestDTO, pageable)
+		return accountRepository.searchBusiness(businessSearchRequestDTO, pageable)
 			.map(AccountResumeResponseDTO::fromAccount);
+	}
+
+	/**
+	 * Returns a page with accounts that match the filters.
+	 * @param userSearchRequestDTO filters.
+	 * @param pageable pages configuration.
+	 * @return a page of {@link AccountResumeResponseDTO}.
+	 */
+	public Page<AccountResumeResponseDTO> searchUser(UserSearchRequestDTO userSearchRequestDTO, Pageable pageable) {
+		return accountRepository.searchUser(userSearchRequestDTO, pageable).map(AccountResumeResponseDTO::fromAccount);
 	}
 
 	/**

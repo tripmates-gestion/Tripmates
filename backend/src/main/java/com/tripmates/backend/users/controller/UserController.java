@@ -87,7 +87,7 @@ public class UserController {
 	public ResponseEntity<?> searchBusiness(@RequestBody BusinessSearchRequestDTO businessSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
 		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
-			.searchAccount(AccountSearchRequestDTO.fromBusinessSearchRequestDTO(businessSearchRequestDTO), pageable);
+			.searchBusiness(businessSearchRequestDTO, pageable);
 
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
@@ -107,8 +107,8 @@ public class UserController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
 	public ResponseEntity<?> searchUser(@ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
-			.searchAccount(AccountSearchRequestDTO.fromUserSearchRequestDTO(userSearchRequestDTO), pageable);
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchUser(userSearchRequestDTO,
+				pageable);
 
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
