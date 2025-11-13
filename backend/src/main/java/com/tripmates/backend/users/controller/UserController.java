@@ -87,7 +87,7 @@ public class UserController {
 	public ResponseEntity<?> searchBusiness(@RequestBody BusinessSearchRequestDTO businessSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
 		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
-			.searchAccount(AccountSearchRequestDTO.fromBusinessSearchRequestDTO(businessSearchRequestDTO), pageable);
+			.searchBusiness(businessSearchRequestDTO, pageable);
 
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
@@ -107,8 +107,8 @@ public class UserController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = void.class)) }) })
 	public ResponseEntity<?> searchUser(@ModelAttribute UserSearchRequestDTO userSearchRequestDTO,
 			@ParameterObject @PageableDefault Pageable pageable) {
-		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService
-			.searchAccount(AccountSearchRequestDTO.fromUserSearchRequestDTO(userSearchRequestDTO), pageable);
+		Page<AccountResumeResponseDTO> accountResumeResponseDTOPage = userService.searchUser(userSearchRequestDTO,
+				pageable);
 
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
@@ -135,24 +135,26 @@ public class UserController {
 
 		return ResponseEntity.noContent().build();
 	}
+
 	@PatchMapping("/plans/{id}")
 	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = void.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))),
-			@ApiResponse(responseCode = "401", description = "Invalid credentials",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))),
+					@ApiResponse(responseCode = "401", description = "Invalid credentials",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
-			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO,
-			@AuthenticationPrincipal UserDetails userDetails) {
+			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
 		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
 		return ResponseEntity.noContent().build();
 	}
+
 	@DeleteMapping("/plans/{id}")
 	@Operation(summary = "Delete user's plan by id")
 	@ApiResponses(
