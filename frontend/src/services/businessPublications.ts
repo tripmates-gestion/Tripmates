@@ -1,7 +1,7 @@
 import type {
   BusinessPublicationRequestDTO,
   BusinessPublicationResponseDTO,
-} from '../types/business'
+} from '../types/Business'
 import { apiFetch } from "../api/client"; // ruta a tu apiFetch
 import { ENDPOINTS } from "../api/endpoints";
 import { MOCK_BUSINESS_PUBLICATIONS } from "../components/mocks/businessMocks";

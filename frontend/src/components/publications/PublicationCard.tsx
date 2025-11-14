@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { useAuth } from "../../hooks/useAuth";
 
 type Props = {

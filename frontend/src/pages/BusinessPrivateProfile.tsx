@@ -11,7 +11,7 @@ import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../types/Pr
 import ImageCarousel from '../components/ui/ImageCarousel';
 import { formatHours } from './utils/Utils';
 import PublicationGrid from '../components/publications/PublicationGrid';
-import type { BusinessPublicationResponseDTO } from '../types/business';
+import type { BusinessPublicationResponseDTO } from '../types/Business';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
 import HotelEditDialog from '../components/profile/businessPrivateProfile/hotel/HotelEditDialog';

@@ -1,5 +1,5 @@
 import { Typography, Card, CardContent, CardMedia, Grid, Stack, Avatar, Chip } from "@mui/material";
-import type { Review } from "../../types/review";
+import type { Review } from "../../types/Review";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserById } from "../../services/searchService";

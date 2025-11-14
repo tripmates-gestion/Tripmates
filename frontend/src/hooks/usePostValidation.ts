@@ -5,7 +5,7 @@ import {
   isValidSchedule,
   isValidLocation,
 } from '../components/publications/utils/validators'
-import type { FormState } from '../types/business'
+import type { FormState } from '../types/Business'
 
 type ValidationErrors = Partial<Record<keyof FormState, string>>
 

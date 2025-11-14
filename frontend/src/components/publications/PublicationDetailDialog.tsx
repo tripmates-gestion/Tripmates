@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";

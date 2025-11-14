@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, Box, Stack, Typography, Chip, IconButton, Collapse } from '@mui/material';
 import { Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons-material';
-import type { BusinessPublicationResponseDTO } from '../../../types/business';
+import type { BusinessPublicationResponseDTO } from '../../../types/Business';
 import PublicationCard from '../../publications/PublicationCard';
 import PublicationDetailDialog from '../../publications/PublicationDetailDialog';
 
