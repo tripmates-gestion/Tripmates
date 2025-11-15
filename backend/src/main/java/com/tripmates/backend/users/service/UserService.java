@@ -8,9 +8,12 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
+import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
@@ -34,6 +37,9 @@ public class UserService {
 
 	@Autowired
 	private PublicationRepository publicationRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
 
 	@Autowired
 	private StorageService storageService;
@@ -175,6 +181,7 @@ public class UserService {
 
 		accountRepository.addToFollowings(whoId, followedUserId);
 		accountRepository.addToFollowers(followedUserId, whoId);
+		accountNodeRepository.createFollow(followedUserId, whoId);
 	}
 
 	/**

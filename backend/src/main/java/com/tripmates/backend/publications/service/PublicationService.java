@@ -4,8 +4,10 @@ import com.tripmates.backend.common.exception.UnauthorizedException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.*;
+import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
+import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
@@ -13,6 +15,7 @@ import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.NotFoundException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.BusinessPublicationBuilder;
 import com.tripmates.backend.utils.ReviewBuilder;
 
@@ -42,6 +45,12 @@ public class PublicationService {
 	private AccountRepository accountRepository;
 
 	@Autowired
+	private PublicationNodeRepository publicationNodeRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
+
+	@Autowired
 	private StorageService storageService;
 
 	/**
@@ -64,8 +73,12 @@ public class PublicationService {
 		if (imageFiles != null && !imageFiles.isEmpty())
 			businessPublicationBuilder = businessPublicationBuilder.imageFiles(imageFiles);
 
-		return PublicationResumeResponseDTO
-			.fromPublication(publicationRepository.save(businessPublicationBuilder.build()));
+		Publication publication = businessPublicationBuilder.build();
+
+		publicationRepository.save(publication);
+		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
+
+		return PublicationResumeResponseDTO.fromPublication(publication);
 	}
 
 	/**
@@ -140,6 +153,7 @@ public class PublicationService {
 		}
 
 		publicationRepository.deleteById(publicationId);
+		publicationNodeRepository.deletePublicationNodeById(publicationId);
 	}
 
 	/**
@@ -194,10 +208,10 @@ public class PublicationService {
 	 */
 	public ReviewResponseDTO createReview(ReviewCreationRequestDTO reviewCreationRequestDTO,
 			List<MultipartFile> multipartFileList, String publicationId, String email) {
-		Account user = accountRepository.findByEmail(email)
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
-		if (user.getRole() != Role.USER)
+		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
 		Publication publication = publicationRepository.findById(publicationId)
@@ -205,16 +219,19 @@ public class PublicationService {
 
 		var reviewConstructor = new ReviewBuilder(storageService).publicationDetails(reviewCreationRequestDTO)
 			.publicationId(publicationId)
-			.owner(user);
+			.owner(account);
 
 		if (multipartFileList != null && !multipartFileList.isEmpty())
 			reviewConstructor = reviewConstructor.imageFiles(multipartFileList);
 
 		Review review = reviewConstructor.build();
 		publication.addReview(review);
-		publicationRepository.save(publication);
 
-		return ReviewResponseDTO.fromEntities(review, publication, user);
+		publicationRepository.save(publication);
+		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
+				review.getRating());
+
+		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
 
 	/**
