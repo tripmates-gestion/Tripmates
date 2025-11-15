@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
+import com.tripmates.backend.publications.entity.mongo.Publication;
+import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
@@ -43,6 +45,9 @@ public class SearchAccountTest {
 
 	@Autowired
 	private AccountRepository accountRepository;
+
+	@Autowired
+	private PublicationRepository publicationRepository;
 
 	private String baseUrl() {
 		return "http://localhost:" + port;
@@ -91,7 +96,7 @@ public class SearchAccountTest {
 		kansas.setBusinessType(BusinessType.RESTAURANT);
 		kansas.setRole(Role.BUSINESS);
 
-		accountRepository.saveAll(List.of(kansas));
+		accountRepository.save(kansas);
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", "{}", new ParameterizedTypeReference<>() {
@@ -270,7 +275,7 @@ public class SearchAccountTest {
 		ypfAtalaya.setRole(Role.BUSINESS);
 		ypfAtalaya.setAttentionSchedule(new AttentionSchedule(LocalTime.of(8, 0), LocalTime.of(18, 0)));
 
-		accountRepository.saveAll(List.of(ypfAtalaya));
+		accountRepository.save(ypfAtalaya);
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", """
@@ -305,7 +310,7 @@ public class SearchAccountTest {
 				"Las habitaciones incluyen frigorífico y aire acondicionado, y es posible permanecer conectado, ya que hay wifi gratuito disponible, para que disfrutes de tu descanso con comodidad.",
 				null)));
 
-		accountRepository.saveAll(List.of(hiltonPilar));
+		accountRepository.save(hiltonPilar);
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", """
@@ -399,6 +404,48 @@ public class SearchAccountTest {
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
 		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(martin)), page.content());
+	}
+
+	@Test
+	void testSearchUserWithLocationFilter() {
+		Account eltonJohn = new Account();
+		eltonJohn.setEmail("eltonjohn@gmail.com");
+		eltonJohn.setName("Elton John");
+		eltonJohn.setPassword("12345678");
+		eltonJohn.setRole(Role.USER);
+
+		Account phillCollins = new Account();
+		phillCollins.setEmail("phillcollins@gmail.com");
+		phillCollins.setName("Phill Collins");
+		phillCollins.setPassword("12345678");
+		phillCollins.setRole(Role.USER);
+		accountRepository.saveAll(List.of(eltonJohn, phillCollins));
+
+		Publication villaParanacito = new Publication();
+		villaParanacito.setTitle("Villa Paranacito");
+		villaParanacito.setDescription("Hostel en Villa Paranacito, a 100 metros del Río Uruguay");
+		villaParanacito.setLocation("Argentina, Entre Rios");
+		villaParanacito.setReviews(List.of(new Review(null, null, null, null, null, eltonJohn.getId())));
+
+		Publication sheratonPilar = new Publication();
+		sheratonPilar.setTitle("Sheraton Pilar Hotel & Convention Center");
+		sheratonPilar.setDescription(
+				"Desde Hilton Pilar pensamos constantemente en innovar y es por esa razón que ahora podrás ver todos nuestros espacios mediante este tour virtual. Facilitándote la elección del salón indicado para vos.");
+		sheratonPilar.setLocation("Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires");
+		sheratonPilar.setReviews(List.of(new Review(null, null, null, null, null, phillCollins.getId())));
+
+		publicationRepository.saveAll(List.of(villaParanacito, sheratonPilar));
+
+		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
+				baseUrl() + "/users/search/user?location=Entre Rios", new ParameterizedTypeReference<>() {
+				});
+
+		assertEquals(HttpStatus.OK, response.getStatusCode());
+
+		PageResponse<AccountResumeResponseDTO> page = response.getBody();
+		Assertions.assertNotNull(page);
+		Assertions.assertEquals(1, page.totalElements());
+		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(eltonJohn)), page.content());
 	}
 
 }

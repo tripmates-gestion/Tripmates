@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.DayOfWeek;
 import java.util.List;
 
-@Schema(description = "Account resume profile response DTO")
+@Schema(description = "Account's resume profile response DTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record AccountResumeResponseDTO(@Schema(description = "Account's ID") String id,
 		@Schema(description = "Account's avatar URL") String avatarURL,

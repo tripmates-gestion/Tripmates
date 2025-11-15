@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 public record ReviewResponseDTO(@Schema(description = "Review's ID") String reviewId, @Schema(
-		description = "Publication resume which the review is done for") PublicationResumeResponseDTO publicationReviewed,
+		description = "Publication's resume which the review is done for") PublicationResumeResponseDTO publicationReviewed,
 		@Schema(description = "Review's title") String title, @Schema(description = "Review's content") String content,
 		@Schema(description = "Review's rating") Double rating,
 		@Schema(description = "Review's images URLs") List<String> imageUrls,
