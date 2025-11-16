@@ -7,6 +7,7 @@ import com.tripmates.backend.publications.dto.*;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.entity.mongo.Publication;
@@ -299,6 +300,121 @@ public class PublicationService {
 
 		imageURLsList.addAll(uploadImages(multipartFileList));
 		return imageURLsList;
+	}
+
+	/**
+	 * Adds a like to a publication from a user.
+	 * @param publicationId publication's ID.
+	 * @param email user's email.
+	 */
+	public void addLike(String publicationId, String email) {
+		Publication publication = publicationRepository.findById(publicationId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
+
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		checkLikeInteraction(publication, account);
+
+		addLikeInfoOnPublication(publicationId, account.getId());
+	}
+
+	/**
+	 * Removes a like from a publication.
+	 * @param publicationId publication's ID.
+	 * @param email user's email.
+	 */
+	public void removeLike(String publicationId, String email) {
+		Publication publication = publicationRepository.findById(publicationId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
+
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		checkUnlikeInteraction(publication, account);
+
+		removeLikeInfoOnPublication(publicationId, account.getId());
+	}
+
+	/**
+	 * Gets the list of users who liked a publication.
+	 * @param publicationId publication's ID.
+	 * @return {@link LikesListDTO} containing the list of users who liked the publication.
+	 */
+	public LikesListDTO getLikesList(String publicationId) {
+		Publication publication = publicationRepository.findById(publicationId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
+
+		return new LikesListDTO(formatAccountIdList(publication.getLikes()));
+	}
+
+	/**
+	 * Checks if the like interaction is valid.
+	 * @param publication publication.
+	 * @param account user's account.
+	 */
+	private void checkLikeInteraction(Publication publication, Account account) {
+		if (publication.getLikes().contains(account.getId()))
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
+	}
+
+	/**
+	 * Checks if the unlike interaction is valid.
+	 * @param publication publication.
+	 * @param account user's account.
+	 */
+	private void checkUnlikeInteraction(Publication publication, Account account) {
+		if (!publication.getLikes().contains(account.getId()))
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+	}
+
+	/**
+	 * Adds like info on publication.
+	 * @param publicationId publication's ID.
+	 * @param userId user's ID.
+	 */
+	private void addLikeInfoOnPublication(String publicationId, String userId) {
+		long isLiked = publicationRepository.existsLike(publicationId, userId);
+
+		if (isLiked > 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
+
+		publicationRepository.addToLikes(publicationId, userId);
+	}
+
+	/**
+	 * Removes like info from publication.
+	 * @param publicationId publication's ID.
+	 * @param userId user's ID.
+	 */
+	private void removeLikeInfoOnPublication(String publicationId, String userId) {
+		long isLiked = publicationRepository.existsLike(publicationId, userId);
+
+		if (isLiked == 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+
+		publicationRepository.removeFromLikes(publicationId, userId);
+	}
+
+	/**
+	 * Formats a list of account IDs into AccountResumeResponseDTO.
+	 * @param idList list of account IDs.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	private List<AccountResumeResponseDTO> formatAccountIdList(List<String> idList) {
+		List<AccountResumeResponseDTO> accounts = new ArrayList<>();
+
+		if (idList == null || idList.isEmpty())
+			return accounts;
+
+		for (String id : idList) {
+			Account account = accountRepository.findById(id).orElse(null);
+
+			if (account != null)
+				accounts.add(AccountResumeResponseDTO.fromAccount(account));
+		}
+
+		return accounts;
 	}
 
 }

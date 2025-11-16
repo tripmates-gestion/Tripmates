@@ -87,6 +87,11 @@ public class Publication {
 	private List<Review> reviews = new ArrayList<>();
 
 	/**
+	 * Publication's likes (user IDs who liked this publication).
+	 */
+	private List<String> likes = new ArrayList<>();
+
+	/**
 	 * Publication's owner ID.
 	 */
 	private String ownerId;
@@ -100,6 +105,7 @@ public class Publication {
 	 * Publication's owner avatar image URL.
 	 */
 	private String ownerAvatarUrl;
+
 
 	public Publication() {
 	}

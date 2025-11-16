@@ -1,0 +1,30 @@
+name: Build and run tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker & Compose
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Build and run tests (compose.test.yml)
+        run: |
+          docker compose --env-file .env.test -f compose.test.yml up --build --abort-on-container-exit --remove-orphans
+
+      - name: Clean up resources
+        if: always()
+        run: |
+          docker compose --env-file .env.test -f compose.test.yml down -v --remove-orphans
+          docker system prune -f

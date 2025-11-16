@@ -56,4 +56,20 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 		return new PageImpl<>(results, pageable, total);
 	}
 
+	@Override
+	public void addToLikes(String publicationId, String userId) {
+		Query query = new Query(Criteria.where("_id").is(publicationId));
+		org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update()
+			.addToSet("likes", userId);
+		mongoTemplate.updateFirst(query, update, Publication.class);
+	}
+
+	@Override
+	public void removeFromLikes(String publicationId, String userId) {
+		Query query = new Query(Criteria.where("_id").is(publicationId));
+		org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update()
+			.pull("likes", userId);
+		mongoTemplate.updateFirst(query, update, Publication.class);
+	}
+
 }
