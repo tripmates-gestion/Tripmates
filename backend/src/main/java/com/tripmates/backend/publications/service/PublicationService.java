@@ -355,7 +355,7 @@ public class PublicationService {
 	 */
 	private void checkLikeInteraction(Publication publication, Account account) {
 		if (publication.getLikes().contains(account.getId()))
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
 	}
 
 	/**
@@ -365,7 +365,7 @@ public class PublicationService {
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
 		if (!publication.getLikes().contains(account.getId()))
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
 	/**
@@ -377,7 +377,7 @@ public class PublicationService {
 		long isLiked = publicationRepository.existsLike(publicationId, userId);
 
 		if (isLiked > 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
 
 		publicationRepository.addToLikes(publicationId, userId);
 	}
