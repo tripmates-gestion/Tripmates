@@ -280,7 +280,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         </Stack>
         
         <Divider sx={{ my: 2 }} />
-        {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} />}
+        {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} userId={user?.id} />}
         <Divider sx={{ my: 2 }} />
       </DialogContent>
     </Dialog>

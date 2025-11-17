@@ -2,22 +2,8 @@ import { Typography, Card, CardContent, CardMedia, Grid, Stack, Avatar, Chip } f
 import type { Review } from "../../types/review";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserById } from "../../services/searchService";
 import { useAuth } from "../../hooks/useAuth";
-
-
-async function getUser(accessToken: string, userName: string, userId: string) {
-    const result = await getUserById(accessToken, userName);
-    console.log("Resultado de getUserById:", result);
-    const content = await result.json();
-    const user = content.find((u: any) => u.id === userId);
-    
-    if (!user) {
-        throw new Error(`Usuario con ID ${userId} no encontrado`);
-    }
-    
-    return user;
-}
+import { getUserByEmail } from "../../services/userService";
 
 
 
@@ -29,7 +15,7 @@ export function ReviewGrid({ items }: { items: Review[] }) {
     const handleUserClick = useCallback(async (authorName: string, authorId: string) => {
         console.log("Haciendo click en usuario:", authorName);
         try {
-            const user = {username: authorName, id: authorId}; // Agregar await
+            const user = await getUserByEmail(authorName, accessToken!);
             console.log("Usuario obtenido:", user);
             navigate(`/userProfile/${authorId}`, {
                 state: { account: user } 
@@ -46,10 +32,10 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             <Card variant="outlined">
             <CardContent>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1, cursor: 'pointer' }}
-                // onClick={(e) => {
-                // console.log("Review seleccionada:", r);
-                // e.stopPropagation();
-                // handleUserClick(r.authorName, r.authorId);}}
+                onClick={(e) => {
+                console.log("Review seleccionada:", r);
+                e.stopPropagation();
+                handleUserClick(r.authorName, r.authorId);}}
                 >
                 <Avatar src={r.avatarUrl} />
                 <Stack spacing={0}>

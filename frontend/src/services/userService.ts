@@ -155,3 +155,13 @@ export async function unfollowUser(userId: string, accessToken: string | null): 
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+
+export async function getUserByEmail(email: string, accessToken: string | null) {
+  const token = ensureToken(accessToken);
+  const response = await apiFetch(ENDPOINTS.GET_USER_BY_EMAIL.replace('{email}', email), {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response;
+}
