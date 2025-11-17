@@ -442,19 +442,19 @@ public class UserController {
 		description = "Returns a paginated list of recommended publications based on reviews from users they follow")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Publication recommendations obtained successfully",
-				content = @Content(mediaType = "application/json",
-					schema = @Schema(implementation = PageableResponseDTO.class)
-				)
-			),
-			@ApiResponse(responseCode = "204", description = "No publication recommendations available",
-				content = @Content(mediaType = "application/json",
-					schema = @Schema(implementation = void.class)
-				)
+				content = { @Content(mediaType = "application/json",
+					array = @ArraySchema(schema = @Schema(implementation = PublicationResumeResponseDTO.class)))
+			}
+		),
+		@ApiResponse(responseCode = "204", description = "No publication recommendations available",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(implementation = void.class)
 			)
+		)
 	})
-	public ResponseEntity<Page<PublicationResumeResponseDTO>> getPublicationRecommendations(
+	public ResponseEntity<?> getPublicationRecommendations(
 			@PathVariable("userId") String userId,
-			@ParameterObject Pageable pageable) {
+			@ParameterObject @PageableDefault Pageable pageable) {
 		
 		Page<PublicationResumeResponseDTO> recommendations = userService.getPublicationRecommendations(userId, pageable);
 		
