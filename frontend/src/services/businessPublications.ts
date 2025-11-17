@@ -94,3 +94,11 @@ export async function getBusinessPublicationsPublic(id: string, accessToken: str
     return [];
   }
 }
+
+export async function getLikesForPublication(publicationId: string, accessToken: string | null) {
+  if (!accessToken) throw new Error("No estás autenticado.");
+  return apiFetch(ENDPOINTS.GET_LIKES_FOR_PUBLICATION.replace("{id}", publicationId), {
+    method: "GET",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}

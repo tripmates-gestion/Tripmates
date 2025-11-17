@@ -165,3 +165,20 @@ export async function getUserByEmail(email: string, accessToken: string | null) 
   });
   return response;
 }
+
+
+export async function likePublication(publicationId: string, accessToken: string | null){
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.LIKE_PUBLICATION.replace('{id}', publicationId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function unlikePublication(publicationId: string, accessToken: string | null){
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.UNLIKE_PUBLICATION.replace('{id}', publicationId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
