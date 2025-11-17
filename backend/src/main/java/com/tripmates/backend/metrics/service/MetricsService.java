@@ -24,66 +24,67 @@ import java.util.Optional;
 @Transactional
 @Service
 public class MetricsService {
-  @Autowired
-  private ProfileViewsRepository profileViewsRepository;
 
-  @Autowired
-  private ReviewRepository reviewRepository;
+	@Autowired
+	private ProfileViewsRepository profileViewsRepository;
 
-  @Autowired
-  private AccountRepository accountRepository;
+	@Autowired
+	private ReviewRepository reviewRepository;
 
-  public EventReport getProfileViewsEventReport(String email, Integer daysAgo) {
-    validateBusinessAccount(email);
-    Date requestTime = new Date();
-    Date startTime = calculateStartTime(daysAgo, requestTime);
-    List<Date> profileViews = profileViewsRepository.findByProfileSeenEmailAndDateBetween(email, startTime, requestTime)
-                                .stream()
-                                .map(ProfileView::getDate)
-                                .toList();
-    return new EventReport(profileViews.size(), profileViews);
-  }
+	@Autowired
+	private AccountRepository accountRepository;
 
-  public void registerProfileView(String viewerEmail, String profileSeenEmail) {
-    Account viewerAccount = validateExistentAccount(viewerEmail);
-    validateExistentAccount(profileSeenEmail);
-    if (viewerEmail.equals(profileSeenEmail)) {
-      return;
-    }
+	public EventReport getProfileViewsEventReport(String email, Integer daysAgo) {
+		validateBusinessAccount(email);
+		Date requestTime = new Date();
+		Date startTime = calculateStartTime(daysAgo, requestTime);
+		List<Date> profileViews = profileViewsRepository
+			.findByProfileSeenEmailAndDateBetween(email, startTime, requestTime)
+			.stream()
+			.map(ProfileView::getDate)
+			.toList();
+		return new EventReport(profileViews.size(), profileViews);
+	}
 
-    ProfileView profileViews = new ProfileView(viewerEmail, profileSeenEmail, viewerAccount.getRole());
-    profileViewsRepository.save(profileViews);
-  }
+	public void registerProfileView(String viewerEmail, String profileSeenEmail) {
+		Account viewerAccount = validateExistentAccount(viewerEmail);
+		validateExistentAccount(profileSeenEmail);
+		if (viewerEmail.equals(profileSeenEmail)) {
+			return;
+		}
 
-  private void validateBusinessAccount(String email) {
-    Account account = validateExistentAccount(email);
-    if (account.getRole() != Role.BUSINESS) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_ACCOUNT_CANT_REQUEST_STATISTICS);
-    }
-  }
+		ProfileView profileViews = new ProfileView(viewerEmail, profileSeenEmail, viewerAccount.getRole());
+		profileViewsRepository.save(profileViews);
+	}
 
-  // public EventReport getReviewsEventReport(String email, Integer daysAgo) {
-  //   //Debo buscar en las publicaciones: cuales son las mías, hago un unwind de las reviews y me quedo con las que están en el periodo de tiempo
-  //   validateBusinessAccount(email);
-  //   Date requestTime = new Date();
-  //   Date startTime = calculateStartTime(daysAgo, requestTime);
+	private void validateBusinessAccount(String email) {
+		Account account = validateExistentAccount(email);
+		if (account.getRole() != Role.BUSINESS) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_ACCOUNT_CANT_REQUEST_STATISTICS);
+		}
+	}
 
-  //   return new EventReport(reviews.size(), reviews);
-  // }
+	// public EventReport getReviewsEventReport(String email, Integer daysAgo) {
+	// //Debo buscar en las publicaciones: cuales son las mías, hago un unwind de las
+	// reviews y me quedo con las que están en el periodo de tiempo
+	// validateBusinessAccount(email);
+	// Date requestTime = new Date();
+	// Date startTime = calculateStartTime(daysAgo, requestTime);
 
+	// return new EventReport(reviews.size(), reviews);
+	// }
 
-  private Date calculateStartTime(Integer daysAgo, Date requestTime) {
-    Date startTime = new Date(requestTime.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    return startTime;
-  }
+	private Date calculateStartTime(Integer daysAgo, Date requestTime) {
+		Date startTime = new Date(requestTime.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+		return startTime;
+	}
 
-  private Account validateExistentAccount(String email) {
-    Optional<Account> account = accountRepository.findByEmail(email);
-    if (!account.isPresent()) {
-      throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
-    }
-    return account.get();
-  }
-
+	private Account validateExistentAccount(String email) {
+		Optional<Account> account = accountRepository.findByEmail(email);
+		if (!account.isPresent()) {
+			throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
+		}
+		return account.get();
+	}
 
 }

@@ -13,13 +13,14 @@ public class ReviewRelationship {
 	/**
 	 * ReviewRelationship's ID. Required by Neo4j
 	 */
-	@Id @GeneratedValue
+	@Id
+	@GeneratedValue
 	private String id;
 
-    /**
-     * Review's ID.
-     */
-    private String reviewId;
+	/**
+	 * Review's ID.
+	 */
+	private String reviewId;
 
 	/**
 	 * ReviewRelationship's rating.

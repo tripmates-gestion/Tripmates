@@ -18,4 +18,3 @@ public interface PublicationRepository extends MongoRepository<Publication, Stri
 	long existsLike(String publicationId, String userId);
 
 }
-
