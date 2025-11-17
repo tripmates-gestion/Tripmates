@@ -14,6 +14,7 @@ import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,12 +24,10 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.neo4j.core.Neo4jClient;
-import org.springframework.data.neo4j.core.Neo4jTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 
@@ -36,6 +35,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -90,7 +90,7 @@ public class AccountRecommendationTest {
 
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
-	public void testNewAccountDoesNotHaveUserAccountsRecommendations() throws Exception {
+	public void testNewAccountDoesNotHaveUserAccountRecommendations() throws Exception {
 		Account fran = new Account();
 		fran.setName("Fran Infanti");
 		fran.setEmail("franInfanti@gmail.com.ar");
@@ -102,17 +102,56 @@ public class AccountRecommendationTest {
 
 		String uri = String.format("/users/recommendations/user/%s", fran.getId());
 
-		mockMvc.perform(get(uri).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNoContent());
+		mockMvc.perform(get(uri).contentType(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isNoContent());
+	}
+
+	@Test
+	@WithMockUser(username = "josh@gmail.com", roles = { "USER" })
+	public void testAccountThatFollowsAnAccountWithNoFollowsDoesNotHaveUserAccountRecommendations() throws Exception {
+		Account jeremyWade = new Account();
+		jeremyWade.setName("Jeremy Wade");
+		jeremyWade.setEmail("jeremy.wade@gmail.com");
+		jeremyWade.setPassword("123456789");
+		jeremyWade.setRole(Role.USER);
+
+		Account josh = new Account();
+		josh.setName("Josh");
+		josh.setEmail("josh@gmail.com");
+		josh.setPassword("123456789");
+		josh.setRole(Role.USER);
+
+		jeremyWade = accountRepository.save(jeremyWade);
+		josh = accountRepository.save(josh);
+
+		accountNodeRepository.save(AccountNode.fromAccount(jeremyWade));
+		accountNodeRepository.save(AccountNode.fromAccount(josh));
+
+		mockMvc
+			.perform(post("/users/" + jeremyWade.getId() + "/follow").with(csrf())
+				.with(user(josh.getEmail()).roles("USER")))
+			.andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/users/recommendations/user/" + josh.getId()).contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isNoContent());
 	}
 
 	@Test
 	@WithMockUser(username = "antonio.fuoco@gmail.com", roles = { "USER" })
-	public void testAccountWithFollowsHasUserAccountsRecommendations() throws Exception {
+	public void testAccountThatFollowsAnAccountThatFollowsOtherAccountsHasUserAccountsRecommendations()
+			throws Exception {
 		Account lewisHamilton = new Account();
 		lewisHamilton.setName("Lewis Hamilton");
 		lewisHamilton.setEmail("lewis.hamilton44@gmail.com.gb");
 		lewisHamilton.setPassword("123456789");
 		lewisHamilton.setRole(Role.USER);
+
+		Account jamesCalado = new Account();
+		jamesCalado.setName("James Calado");
+		jamesCalado.setEmail("james.calado@gmail.com");
+		jamesCalado.setPassword("123456789");
+		jamesCalado.setRole(Role.USER);
 
 		Account antonioFuoco = new Account();
 		antonioFuoco.setName("Antonio Fuoco");
@@ -122,12 +161,19 @@ public class AccountRecommendationTest {
 
 		antonioFuoco = accountRepository.save(antonioFuoco);
 		lewisHamilton = accountRepository.save(lewisHamilton);
+		jamesCalado = accountRepository.save(jamesCalado);
 
 		accountNodeRepository.save(AccountNode.fromAccount(antonioFuoco));
 		accountNodeRepository.save(AccountNode.fromAccount(lewisHamilton));
+		accountNodeRepository.save(AccountNode.fromAccount(jamesCalado));
 
 		mockMvc
 			.perform(post("/users/" + lewisHamilton.getId() + "/follow").with(csrf())
+				.with(user(jamesCalado.getEmail()).roles("USER")))
+			.andExpect(status().isNoContent());
+
+		mockMvc
+			.perform(post("/users/" + jamesCalado.getId() + "/follow").with(csrf())
 				.with(user(antonioFuoco.getEmail()).roles("USER")))
 			.andExpect(status().isNoContent());
 
@@ -150,12 +196,19 @@ public class AccountRecommendationTest {
 
 	@Test
 	@WithMockUser(username = "charles.leclerc@gmail.com.ar", roles = { "USER" })
-	public void testAccountThatFollowsAndUnfollowsAUserAccountsHasNoRecommendations() throws Exception {
+	public void testAccountThatFollowsAnAccountThatFollowsOtherAccountsAndThenUnfollowsHasNoRecommendations()
+			throws Exception {
 		Account michaelJordan = new Account();
 		michaelJordan.setName("Michael Jordan");
 		michaelJordan.setEmail("michael.jordan@gmail.com.ar");
 		michaelJordan.setPassword("123456789");
 		michaelJordan.setRole(Role.USER);
+
+		Account michaelSchumacher = new Account();
+		michaelSchumacher.setName("Michael Schumacher");
+		michaelSchumacher.setEmail("michael.sch@gmail.com.gr");
+		michaelSchumacher.setPassword("123456789");
+		michaelSchumacher.setRole(Role.USER);
 
 		Account charlesLeclerc = new Account();
 		charlesLeclerc.setName("Charles Leclerc");
@@ -165,9 +218,16 @@ public class AccountRecommendationTest {
 
 		charlesLeclerc = accountRepository.save(charlesLeclerc);
 		michaelJordan = accountRepository.save(michaelJordan);
+		michaelSchumacher = accountRepository.save(michaelSchumacher);
 
 		accountNodeRepository.save(AccountNode.fromAccount(charlesLeclerc));
 		accountNodeRepository.save(AccountNode.fromAccount(michaelJordan));
+		accountNodeRepository.save(AccountNode.fromAccount(michaelSchumacher));
+
+		mockMvc
+			.perform(post("/users/" + michaelSchumacher.getId() + "/follow").with(csrf())
+				.with(user(michaelJordan.getEmail()).roles("USER")))
+			.andExpect(status().isNoContent());
 
 		mockMvc
 			.perform(post("/users/" + michaelJordan.getId() + "/follow").with(csrf())

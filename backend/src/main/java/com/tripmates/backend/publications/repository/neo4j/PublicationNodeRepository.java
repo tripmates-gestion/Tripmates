@@ -14,11 +14,10 @@ public interface PublicationNodeRepository extends Neo4jRepository<PublicationNo
 	@Query("""
 			MATCH (a:AccountNode {id: $accountId})-[:FOLLOWS*1..2]->(f:AccountNode)
 			WITH DISTINCT a, f
+
 			MATCH (f)-[r:REVIEWED]->(p:PublicationNode)
-			WHERE r.rating >= 3
-			AND NOT EXISTS {
-				MATCH (a)-[:REVIEWED]->(p)
-			}
+			    WHERE r.rating >= 3
+			    AND NOT (a)-[:REVIEWED]->(p)
 			RETURN DISTINCT p
 			ORDER BY rand()
 			SKIP $skip
@@ -32,13 +31,15 @@ public interface PublicationNodeRepository extends Neo4jRepository<PublicationNo
 			WITH DISTINCT a, f
 			MATCH (f)-[r:REVIEWED]->(p:PublicationNode)
 			WHERE r.rating >= 3
-			AND NOT EXISTS {
-				MATCH (a)-[:REVIEWED]->(p)
-			}
+			AND NOT (a)-[:REVIEWED]->(p)
 			RETURN COUNT(DISTINCT p) as count
 			""")
 	long countRecommendedPublications(@Param("accountId") String accountId);
 
+    /**
+     * Deletes a publication node and all of its relations
+     * @param publicationId
+     */
 	@Query("MATCH (p:PublicationNode {id: $id}) DETACH DELETE p")
 	void deletePublicationNodeById(@Param("id") String publicationId);
 

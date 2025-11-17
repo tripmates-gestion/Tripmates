@@ -17,17 +17,20 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 	 * @return list of {@link AccountNode}.
 	 */
 	@Query("""
-			MATCH (a:AccountNode {id: $accountId})-[:FOLLOWS]->(b:AccountNode)
-			RETURN b
+			         MATCH (a:AccountNode {id: $accountId}),
+			               (a)-[:FOLLOWS]->(b:AccountNode),
+			               (b)-[:FOLLOWS]->(c:AccountNode)
+			         RETURN c AS user
 
-			UNION
+			         UNION
 
-			MATCH (a:AccountNode {id: $accountId}),
-			    (a)-[r1:REVIEWED]->(p:PublicationNode),
-			    (b)-[r2:REVIEWED]->(p)
+			         MATCH (a:AccountNode {id: $accountId}),
+			               (a)-[r1:REVIEWED]->(p:PublicationNode),
+			               (b)-[r2:REVIEWED]->(p)
 			         WHERE abs(r1.rating - r2.rating) <= 1
-			         AND a <> b
-			RETURN b
+			           AND NOT (a)-[:FOLLOWS]->(b)
+			           AND a <> b
+			         RETURN b AS user
 			""")
 	List<AccountNode> findAllAccountsRelated(@Param("accountId") String accountId);
 
