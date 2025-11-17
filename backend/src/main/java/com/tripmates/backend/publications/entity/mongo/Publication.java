@@ -106,7 +106,6 @@ public class Publication {
 	 */
 	private String ownerAvatarUrl;
 
-
 	public Publication() {
 	}
 

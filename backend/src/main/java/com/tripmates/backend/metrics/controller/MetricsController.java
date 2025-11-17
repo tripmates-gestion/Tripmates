@@ -23,7 +23,7 @@ import com.tripmates.backend.common.dto.ErrorDTO;
 @Tag(name = "Metrics", description = "Metrics management endpoints")
 public class MetricsController {
 
-  private final MetricsService metricsService;
+	private final MetricsService metricsService;
 
   public MetricsController(MetricsService metricsService) {
     this.metricsService = metricsService;

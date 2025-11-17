@@ -182,15 +182,15 @@ public class PublicationController {
 	}
 
 	@PostMapping("/{publicationId}/like")
-	@Operation(summary = "Add a like to a publication",
-			description = "Allows a user to like a publication")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Like added successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = void.class))),
-			@ApiResponse(responseCode = "404", description = "Publication not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+	@Operation(summary = "Add a like to a publication", description = "Allows a user to like a publication")
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "Like added successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "Publication not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<Void> addLike(@PathVariable String publicationId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.addLike(publicationId, userDetails.getUsername());
@@ -200,13 +200,14 @@ public class PublicationController {
 	@PostMapping("/{publicationId}/unlike")
 	@Operation(summary = "Remove a like from a publication",
 			description = "Allows a user to remove their like from a publication")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "204", description = "Like removed successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = void.class))),
-			@ApiResponse(responseCode = "404", description = "Publication not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "Like removed successfully",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "Publication not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<Void> removeLike(@PathVariable String publicationId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.removeLike(publicationId, userDetails.getUsername());

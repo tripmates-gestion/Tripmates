@@ -7,5 +7,4 @@ public record GetMetricsResponseDTO
     EventReport profileViews,
     Integer totalLikes
 ){
-    
 }
