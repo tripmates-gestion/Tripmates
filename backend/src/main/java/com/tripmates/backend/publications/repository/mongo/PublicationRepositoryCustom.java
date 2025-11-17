@@ -12,4 +12,8 @@ public interface PublicationRepositoryCustom {
 	 */
 	Page<Publication> search(PublicationSearchRequestDTO filters, Pageable pageable);
 
+	void addToLikes(String publicationId, String userId);
+
+	void removeFromLikes(String publicationId, String userId);
+
 }

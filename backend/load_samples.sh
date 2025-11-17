@@ -804,6 +804,195 @@ if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$RESTAURANT_TOKEN" ]; then
     fi
 fi
 
+# 7. Add followers between users
+echo -e "\n=== Adding Followers ==="
+
+# Function to make a user follow another user
+add_follower() {
+    local follower_token="$1"
+    local user_id_to_follow="$2"
+    local follower_name="$3"
+    local followed_name="$4"
+    
+    echo -n "Making $follower_name follow $followed_name... "
+    
+    # Debug: Show what we're about to send
+    echo "[DEBUG] Token prefix: ${follower_token:0:20}..." >&2
+    echo "[DEBUG] User ID to follow: $user_id_to_follow" >&2
+    echo "[DEBUG] URL: $BASE_URL/users/$user_id_to_follow/follow" >&2
+    
+    response=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/users/$user_id_to_follow/follow" \
+        -H "Authorization: Bearer $follower_token" \
+        -H "Content-Type: application/json")
+    
+    status_code=$(echo "$response" | tail -n1)
+    body=$(echo "$response" | head -n -1)
+    
+    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+        print_success "✅ Success! (Status: $status_code)"
+        return 0
+    else
+        print_error "❌ Failed! (Status: $status_code)"
+        echo "[DEBUG] Response body: $body" >&2
+        return 1
+    fi
+}
+
+# Get user IDs by logging in and extracting from response
+# We need to fetch the user profiles to get their IDs
+get_user_id_from_profile() {
+    local token="$1"    
+    
+    response=$(curl -s -X GET "$BASE_URL/users/me" \
+        -H "Authorization: Bearer $token" \
+        -H "Content-Type: application/json")
+    
+    echo "[DEBUG] /users/me response: $response" >&2
+    
+    # Extract the ID from the response - try multiple patterns
+    user_id=$(echo "$response" | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
+    
+    echo "[DEBUG] Pattern 1 result: '$user_id'" >&2
+    
+    # If that didn't work, try another pattern
+    if [ -z "$user_id" ]; then
+        user_id=$(echo "$response" | grep -oP '(?<="id":")[^"]*' | head -1)
+        echo "[DEBUG] Pattern 2 result: '$user_id'" >&2
+    fi
+    
+    # Try a third pattern: look for "_id" field (MongoDB ID)
+    if [ -z "$user_id" ]; then
+        user_id=$(echo "$response" | grep -o '"_id":"[^"]*' | head -1 | cut -d'"' -f4)
+        echo "[DEBUG] Pattern 3 (_id) result: '$user_id'" >&2
+    fi
+    
+    if [ ! -z "$user_id" ]; then
+        echo "[DEBUG] Final user_id: '$user_id'" >&2
+        echo "$user_id"
+        return 0
+    else
+        print_error "Could not get user ID from response"
+        echo "[ERROR] Full response: $response" >&2
+        return 1
+    fi
+}
+
+# Get user IDs
+if [ ! -z "$USER1_TOKEN" ]; then
+    USER1_ID=$(get_user_id_from_profile "$USER1_TOKEN")
+    if [ ! -z "$USER1_ID" ]; then
+        print_success "✅ Got User1 ID: $USER1_ID"
+    fi
+fi
+
+if [ ! -z "$USER2_TOKEN" ]; then
+    USER2_ID=$(get_user_id_from_profile "$USER2_TOKEN")
+    if [ ! -z "$USER2_ID" ]; then
+        print_success "✅ Got User2 ID: $USER2_ID"
+    fi
+fi
+
+if [ ! -z "$USER3_TOKEN" ]; then
+    USER3_ID=$(get_user_id_from_profile "$USER3_TOKEN")
+    if [ ! -z "$USER3_ID" ]; then
+        print_success "✅ Got User3 ID: $USER3_ID"
+    fi
+fi
+
+# Add followers (User1 follows User2 and User3)
+if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$USER2_ID" ]; then
+    add_follower "$USER1_TOKEN" "$USER2_ID" "Juan" "María"
+else
+    print_error "Skipping: Juan follow María - missing tokens or IDs (USER1_TOKEN=${USER1_TOKEN:0:10}..., USER2_ID=$USER2_ID)"
+fi
+
+if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$USER3_ID" ]; then
+    add_follower "$USER1_TOKEN" "$USER3_ID" "Juan" "Carlos"
+else
+    print_error "Skipping: Juan follow Carlos - missing tokens or IDs (USER1_TOKEN=${USER1_TOKEN:0:10}..., USER3_ID=$USER3_ID)"
+fi
+
+# Add followers (User2 follows User1)
+if [ ! -z "$USER2_TOKEN" ] && [ ! -z "$USER1_ID" ]; then
+    add_follower "$USER2_TOKEN" "$USER1_ID" "María" "Juan"
+else
+    print_error "Skipping: María follow Juan - missing tokens or IDs (USER2_TOKEN=${USER2_TOKEN:0:10}..., USER1_ID=$USER1_ID)"
+fi
+
+# Add followers (User3 follows User1 and User2)
+if [ ! -z "$USER3_TOKEN" ] && [ ! -z "$USER1_ID" ]; then
+    add_follower "$USER3_TOKEN" "$USER1_ID" "Carlos" "Juan"
+else
+    print_error "Skipping: Carlos follow Juan - missing tokens or IDs (USER3_TOKEN=${USER3_TOKEN:0:10}..., USER1_ID=$USER1_ID)"
+fi
+
+if [ ! -z "$USER3_TOKEN" ] && [ ! -z "$USER2_ID" ]; then
+    add_follower "$USER3_TOKEN" "$USER2_ID" "Carlos" "María"
+else
+    print_error "Skipping: Carlos follow María - missing tokens or IDs (USER3_TOKEN=${USER3_TOKEN:0:10}..., USER2_ID=$USER2_ID)"
+fi
+
+# 8. Add likes to publications
+echo -e "\n=== Adding Likes to Publications ==="
+
+# Function to add a like to a publication
+add_like_to_publication() {
+    local user_token="$1"
+    local publication_id="$2"
+    local user_name="$3"
+    
+    echo -n "Adding like from $user_name to publication... "
+    response=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/publications/$publication_id/like" \
+        -H "Authorization: Bearer $user_token" \
+        -H "Content-Type: application/json")
+    
+    status_code=$(echo "$response" | tail -n1)
+    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+        print_success "✅ Success! (Status: $status_code)"
+        return 0
+    else
+        print_error "❌ Failed! (Status: $status_code)"
+        echo "Response: $(echo "$response" | head -n -1)"
+        return 1
+    fi
+}
+
+# Get all publications
+if [ ! -z "$USER1_TOKEN" ]; then
+    echo -n "Fetching publications for adding likes... "
+    
+    response=$(curl -s -X GET "$BASE_URL/publications/search" \
+        -H "Authorization: Bearer $USER1_TOKEN" \
+        -H "Content-Type: application/json")
+    
+    # Extract all publication IDs
+    pub_ids=($(echo "$response" | grep -o '"id":"[^"]*' | cut -d'"' -f4))
+    
+    if [ ${#pub_ids[@]} -gt 0 ]; then
+        print_success "✅ Found ${#pub_ids[@]} publication(s)"
+        
+        # Add likes from different users to each publication
+        for pub_id in "${pub_ids[@]}"; do
+            # User1 likes the publication
+            if [ ! -z "$USER1_TOKEN" ]; then
+                add_like_to_publication "$USER1_TOKEN" "$pub_id" "Juan"
+            fi
+            
+            # User2 likes the publication
+            if [ ! -z "$USER2_TOKEN" ]; then
+                add_like_to_publication "$USER2_TOKEN" "$pub_id" "María"
+            fi
+            
+            # User3 likes the publication
+            if [ ! -z "$USER3_TOKEN" ]; then
+                add_like_to_publication "$USER3_TOKEN" "$pub_id" "Carlos"
+            fi
+        done
+    else
+        print_error "❌ No publications found"
+    fi
+fi
+
 echo -e "\n=== Sample data loading completed! ==="
 echo -e "\nYou can now log in with:"
 echo -e "\n=== Regular Users ==="
