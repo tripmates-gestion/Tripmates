@@ -2,13 +2,13 @@ package com.tripmates.backend.users.controller;
 
 import com.tripmates.backend.users.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,15 +20,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
-
+import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import java.util.List;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -436,4 +435,32 @@ public class UserController {
 
         return ResponseEntity.ok(accountResumeResponseDTOList);
     }
+
+	@GetMapping("/recommendations/publications/{userId}")
+	@Operation(summary = "Gets all the publication recommendations for a user",
+		description = "Returns a paginated list of recommended publications based on reviews from users they follow")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Publication recommendations obtained successfully",
+				content = { @Content(mediaType = "application/json",
+					array = @ArraySchema(schema = @Schema(implementation = PublicationResumeResponseDTO.class)))
+			}
+		),
+		@ApiResponse(responseCode = "204", description = "No publication recommendations available",
+			content = @Content(mediaType = "application/json",
+				schema = @Schema(implementation = void.class)
+			)
+		)
+	})
+	public ResponseEntity<?> getPublicationRecommendations(
+			@PathVariable("userId") String userId,
+			@ParameterObject @PageableDefault Pageable pageable) {
+		
+		Page<PublicationResumeResponseDTO> recommendations = userService.getPublicationRecommendations(userId, pageable);
+		
+		if (recommendations.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		
+		return ResponseEntity.ok(recommendations);
+	}
 }
