@@ -27,5 +27,5 @@ public class ReviewRespositoryImpl implements ReviewRepository {
 
 		return results.getMappedResults();
 	}
-
+  
 }
