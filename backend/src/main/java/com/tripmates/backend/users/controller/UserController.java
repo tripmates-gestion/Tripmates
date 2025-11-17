@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
-import com.tripmates.backend.publications.dto.PageableResponseDTO;
 import java.util.List;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
