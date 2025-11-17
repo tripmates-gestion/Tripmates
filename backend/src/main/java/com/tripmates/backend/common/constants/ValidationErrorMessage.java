@@ -62,4 +62,10 @@ public class ValidationErrorMessage {
 
 	public static final String CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING = "No puedes seguir a alguien que ya sigues";
 
+	public static final String CANNOT_LIKE_PUBLICATION_TWICE = "Ya has dado like a esta publicación";
+
+	public static final String CANNOT_UNLIKE_PUBLICATION_NOT_LIKED = "No puedes deshacer like a una publicación que no has likeado";
+
+	public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS = "Una cuenta de usuario no puede solicitar estadisticas";
+
 }

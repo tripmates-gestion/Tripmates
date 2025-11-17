@@ -1,7 +1,7 @@
 package com.tripmates.backend.users.controller;
 
-import com.tripmates.backend.users.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 
+import com.tripmates.backend.users.dto.*;
+import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
 import com.tripmates.backend.common.service.parsing.ObjectParsingService;
@@ -52,8 +54,20 @@ public class UserController {
 							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
 			@ApiResponse(responseCode = "404", description = "Account not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-	public ResponseEntity<?> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+	public ResponseEntity<?> getProfileAuthenticated(@AuthenticationPrincipal UserDetails userDetails) {
 		return ResponseEntity.ok().body(userService.getUserAccount(userDetails.getUsername()));
+	}
+
+	@GetMapping("/{email}")
+	@Operation(summary = "Obtains a user account by its email, without being authenticated")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Account obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class)) }),
+			@ApiResponse(responseCode = "404", description = "Account not found", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> getProfileNoneAuthenticated(@PathVariable("email") String email) {
+		return ResponseEntity.ok().body(userService.getUserAccount(email));
 	}
 
 	@PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -410,6 +424,49 @@ public class UserController {
 	public ResponseEntity<?> getFollowers(@PathVariable("userId") String userId) {
 		List<AccountResumeResponseDTO> followers = userService.getFollowersByUserId(userId);
 		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
+	}
+
+	@GetMapping("/recommendations/user/{userId}")
+	@Operation(summary = "Gets all the user account recommendations for a user account", description = "In progress...")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Recommendations obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "204", description = "No recommendations available",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))) })
+	public ResponseEntity<?> userAccountRecommendations(@PathVariable("userId") String id) {
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getUserAccountRecommendation(id);
+
+		if (accountResumeResponseDTOList.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+
+		return ResponseEntity.ok(accountResumeResponseDTOList);
+	}
+
+	@GetMapping("/recommendations/publications/{userId}")
+	@Operation(summary = "Gets all the publication recommendations for a user",
+			description = "Returns a paginated list of recommended publications based on reviews from users they follow")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Publication recommendations obtained successfully",
+					content = { @Content(mediaType = "application/json",
+							array = @ArraySchema(
+									schema = @Schema(implementation = PublicationResumeResponseDTO.class))) }),
+			@ApiResponse(responseCode = "204", description = "No publication recommendations available",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))) })
+	public ResponseEntity<?> getPublicationRecommendations(@PathVariable("userId") String userId,
+			@ParameterObject @PageableDefault Pageable pageable) {
+
+		Page<PublicationResumeResponseDTO> recommendations = userService.getPublicationRecommendations(userId,
+				pageable);
+
+		if (recommendations.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+
+		return ResponseEntity.ok(recommendations);
 	}
 
 }

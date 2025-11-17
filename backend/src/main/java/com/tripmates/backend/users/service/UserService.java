@@ -6,16 +6,20 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
-import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
+import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,12 @@ public class UserService {
 
 	@Autowired
 	private PublicationRepository publicationRepository;
+
+	@Autowired
+	private PublicationNodeRepository publicationNodeRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
 
 	@Autowired
 	private StorageService storageService;
@@ -159,6 +169,7 @@ public class UserService {
 
 		accountRepository.removeFromFollowings(followerUserId, followedUserId);
 		accountRepository.removeFromFollowers(followedUserId, followerUserId);
+		accountNodeRepository.removeFollow(followerUserId, followedUserId);
 	}
 
 	/**
@@ -175,6 +186,7 @@ public class UserService {
 
 		accountRepository.addToFollowings(whoId, followedUserId);
 		accountRepository.addToFollowers(followedUserId, whoId);
+		accountNodeRepository.createFollow(whoId, followedUserId);
 	}
 
 	/**
@@ -705,6 +717,61 @@ public class UserService {
 		Account account = accountRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		return formatAccountIdList(account.getFollowers());
+	}
+
+	/**
+	 * Given a user's ID, returns all user accounts that may bee to its interest.
+	 * @param userId users account ID.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
+		List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+		for (AccountNode accountNode : accountNodeList) {
+			accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+				accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+			});
+		}
+
+		return accountResumeResponseDTOList;
+	}
+
+	@Transactional(readOnly = true)
+	public Page<PublicationResumeResponseDTO> getPublicationRecommendations(String userId, Pageable pageable) {
+		// Get recommended publication nodes from Neo4j with pagination
+		List<PublicationNode> recommendedNodes = publicationNodeRepository.findRecommendedPublications(userId,
+				(int) pageable.getOffset(), pageable.getPageSize());
+
+		// If no recommendations from reviews, return empty page
+		if (recommendedNodes.isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		// Convert to MongoDB IDs
+		List<String> publicationIds = recommendedNodes.stream()
+			.map(PublicationNode::getId)
+			.collect(Collectors.toList());
+
+		// Get total count for pagination
+		long total = publicationNodeRepository.countRecommendedPublications(userId);
+
+		// Fetch full publication details from MongoDB
+		List<PublicationResumeResponseDTO> content = publicationRepository.findAllById(publicationIds)
+			.stream()
+			.map(publication -> {
+				Account owner = accountRepository.findById(publication.getOwnerId())
+					.orElseThrow(() -> new NotFoundException("Account not found with id: " + publication.getOwnerId()));
+
+				return new PublicationResumeResponseDTO(publication.getId(), publication.getTitle(),
+						publication.getDescription(), publication.getOpeningDays(), publication.getAttentionSchedule(),
+						publication.getExceptionalClosingDays(), publication.getImageUrls(), publication.getTags(),
+						publication.getCreatedAt(), publication.getPhoneNumber(), publication.getEmail(),
+						publication.getLocation(), owner.getId(), owner.getUsername(), owner.getAvatarURL());
+			})
+			.collect(Collectors.toList());
+
+		return new PageImpl<>(content, pageable, total);
 	}
 
 }
