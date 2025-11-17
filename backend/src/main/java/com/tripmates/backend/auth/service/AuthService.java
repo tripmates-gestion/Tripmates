@@ -9,9 +9,11 @@ import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
 	@Autowired
-	private AccountRepository userRepository;
+	private AccountRepository accountRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
 
 	@Autowired
 	private JwtService jwtService;
@@ -35,7 +40,7 @@ public class AuthService {
 	 * @param authRegisterRequestDTO DTO with user's account register information.
 	 */
 	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
-		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(account -> {
+		accountRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(account -> {
 			throw new ConflictException(ValidationErrorMessage.USER_ALREADY_EXISTS);
 		});
 
@@ -49,7 +54,9 @@ public class AuthService {
 		account.setRole(authRegisterRequestDTO.role());
 		account.setBusinessType(authRegisterRequestDTO.businessType());
 
-		userRepository.save(account);
+		accountRepository.save(account);
+		if (authRegisterRequestDTO.role() == Role.USER)
+			accountNodeRepository.save(AccountNode.fromAccount(account));
 	}
 
 	/**
@@ -58,7 +65,7 @@ public class AuthService {
 	 * @return {@link AuthLoginResponseDTO}
 	 */
 	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
-		Account account = userRepository.findByEmail(authLoginRequestDTO.email())
+		Account account = accountRepository.findByEmail(authLoginRequestDTO.email())
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		if (!passwordEncoder.matches(authLoginRequestDTO.password(), account.getPassword()))
@@ -71,7 +78,7 @@ public class AuthService {
 			.generateRefreshToken(new UserDetailFromJwt(account.getEmail(), account.getPassword()));
 
 		account.setToken(refreshToken);
-		userRepository.save(account);
+		accountRepository.save(account);
 
 		return new AuthLoginResponseDTO(accessToken, refreshToken);
 	}
@@ -81,11 +88,11 @@ public class AuthService {
 	 * @param authLogoutRequestDTO DTO with user's account logout information.
 	 */
 	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
-		Account account = userRepository.findByEmail(authLogoutRequestDTO.email())
+		Account account = accountRepository.findByEmail(authLogoutRequestDTO.email())
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		account.setToken(null);
-		userRepository.save(account);
+		accountRepository.save(account);
 	}
 
 	/**
@@ -94,7 +101,7 @@ public class AuthService {
 	 * @return {@link AuthRefreshResponseDTO }.
 	 */
 	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
-		Account user = userRepository.findByEmail(authRefreshRequestDTO.email())
+		Account user = accountRepository.findByEmail(authRefreshRequestDTO.email())
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
 		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))

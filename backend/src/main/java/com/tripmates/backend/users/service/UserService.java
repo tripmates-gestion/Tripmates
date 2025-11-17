@@ -8,9 +8,12 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
+import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
@@ -34,6 +37,9 @@ public class UserService {
 
 	@Autowired
 	private PublicationRepository publicationRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
 
 	@Autowired
 	private StorageService storageService;
@@ -159,6 +165,7 @@ public class UserService {
 
 		accountRepository.removeFromFollowings(followerUserId, followedUserId);
 		accountRepository.removeFromFollowers(followedUserId, followerUserId);
+        accountNodeRepository.removeFollow(followerUserId, followedUserId);
 	}
 
 	/**
@@ -175,6 +182,7 @@ public class UserService {
 
 		accountRepository.addToFollowings(whoId, followedUserId);
 		accountRepository.addToFollowers(followedUserId, whoId);
+		accountNodeRepository.createFollow(whoId, followedUserId);
 	}
 
 	/**
@@ -706,5 +714,24 @@ public class UserService {
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		return formatAccountIdList(account.getFollowers());
 	}
+
+    /**
+     * Given a user's ID, returns all user accounts that may bee
+     * to its interest.
+     * @param userId users account ID.
+     * @return list of {@link AccountResumeResponseDTO}.
+     */
+    public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
+        List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+        List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+        for (AccountNode accountNode : accountNodeList) {
+            accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+                accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+            });
+        }
+
+        return accountResumeResponseDTOList;
+    }
 
 }
