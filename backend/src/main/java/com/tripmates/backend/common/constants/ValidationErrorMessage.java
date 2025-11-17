@@ -62,4 +62,6 @@ public class ValidationErrorMessage {
 
 	public static final String CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING = "No puedes seguir a alguien que ya sigues";
 
+  public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS="Una cuenta de usuario no puede solicitar estadisticas";
+
 }
