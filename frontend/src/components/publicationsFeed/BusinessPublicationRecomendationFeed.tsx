@@ -26,6 +26,7 @@ import { useSnackbar } from 'notistack';
 import { useAuth } from '../../hooks/useAuth'; // 👈 Importamos useAuth
 // 💡 Asegúrate de que las rutas a los servicios son correctas
 import { getPlans, createPlan, addPublicationToPlan } from '../../services/plansService'; 
+import { getBusinessPublicationsPublicRecommendations } from '../../services/recommendations';
 
 // ──────────────────────────────────────────────────────────
 // TIPOS Y FUNCIONES COPIADAS DEL BusinessPublicationsTab.tsx
@@ -47,52 +48,7 @@ async function fetchPlans(accessToken: string) : Promise<PlanInfo[]>
     })) : [];
   return fetchedPlans;
 }
-// TODO: importar la forma en la que las piblicaciones desde un perfifl de negocio se guardan en un plan
 
-// MOCK de datos para desarrollo/ejemplo
-const MOCK_RECOMMENDATIONS: any[] = [
-    {
-        id: '101', title: 'Tour Gastronómico de Palermo', description: 'Disfruta de los mejores sabores de Buenos Aires en un recorrido de 4 horas.',
-        openingDays: ['THURSDAY', 'FRIDAY', 'SATURDAY'], attentionSchedule: { openingTime: '18:00', closingTime: '22:00' },
-        exceptionalClosingDays: [], phoneNumber: '123456789', email: 'tour@business.com', location: 'Palermo, Buenos Aires',
-        // imageUrls: ['https://images.unsplash.com/photo-1514995960013-1f1437158782?q=80&w=1600&auto=format&fit=crop'],
-        ownerId: 'B001', ownerUsername: 'BA_Foodie', ownerAvatarUrl: '/avatars/foodie.jpg', createdAt: new Date().toISOString(), tags: ['Comida', 'Tour', 'Buenos Aires']
-    },
-    {
-        id: '102', title: 'Clases de Surf en Mar del Plata', description: 'Aprende a surfear con instructores profesionales en Playa Grande.',
-        openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], attentionSchedule: { openingTime: '08:00', closingTime: '17:00' },
-        exceptionalClosingDays: ['2025-12-25'], phoneNumber: '987654321', email: 'surf@business.com', location: 'Mar del Plata, Argentina',
-        // imageUrls: ['https://images.unsplash.com/photo-1549477026-b8e734c51478?q=80&w=1600&auto=format&fit=crop'],
-        ownerId: 'B002', ownerUsername: 'MdpSurf', ownerAvatarUrl: '/avatars/surf.jpg', createdAt: new Date().toISOString(), tags: ['Aventura', 'Playa', 'Deportes']
-    },
-    {
-        id: '103', title: 'Clases de Surf en Mar del Plata', description: 'Aprende a surfear con instructores profesionales en Playa Grande.',
-        openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], attentionSchedule: { openingTime: '08:00', closingTime: '17:00' },
-        exceptionalClosingDays: ['2025-12-25'], phoneNumber: '987654321', email: 'surf@business.com', location: 'Mar del Plata, Argentina',
-        // imageUrls: ['https://images.unsplash.com/photo-1549477026-b8e734c51478?q=80&w=1600&auto=format&fit=crop'],
-        ownerId: 'B002', ownerUsername: 'MdpSurf', ownerAvatarUrl: '/avatars/surf.jpg', createdAt: new Date().toISOString(), tags: ['Aventura', 'Playa', 'Deportes']
-    },
-    {
-        id: '104', title: 'Clases de Surf en Mar del Plata', description: 'Aprende a surfear con instructores profesionales en Playa Grande.',
-        openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], attentionSchedule: { openingTime: '08:00', closingTime: '17:00' },
-        exceptionalClosingDays: ['2025-12-25'], phoneNumber: '987654321', email: 'surf@business.com', location: 'Mar del Plata, Argentina',
-        // imageUrls: ['https://images.unsplash.com/photo-1549477026-b8e734c51478?q=80&w=1600&auto=format&fit=crop'],
-        ownerId: 'B002', ownerUsername: 'MdpSurf', ownerAvatarUrl: '/avatars/surf.jpg', createdAt: new Date().toISOString(), tags: ['Aventura', 'Playa', 'Deportes']
-    },
-    {
-        id: '105', title: 'Clases de Surf en Mar del Plata', description: 'Aprende a surfear con instructores profesionales en Playa Grande.',
-        openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], attentionSchedule: { openingTime: '08:00', closingTime: '17:00' },
-        exceptionalClosingDays: ['2025-12-25'], phoneNumber: '987654321', email: 'surf@business.com', location: 'Mar del Plata, Argentina',
-        // imageUrls: ['https://images.unsplash.com/photo-1549477026-b8e734c51478?q=80&w=1600&auto=format&fit=crop'],
-        ownerId: 'B002', ownerUsername: 'MdpSurf', ownerAvatarUrl: '/avatars/surf.jpg', createdAt: new Date().toISOString(), tags: ['Aventura', 'Playa', 'Deportes']
-    },
-    {
-        id: '106', title: 'Clases de Surf en Mar del Plata', description: 'Aprende a surfear con instructores profesionales en Playa Grande.',
-        openingDays: ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], attentionSchedule: { openingTime: '08:00', closingTime: '17:00' },
-        exceptionalClosingDays: ['2025-12-25'], phoneNumber: '987654321', email: 'surf@business.com', location: 'Mar del Plata, Argentina',
-        ownerId: 'B002', ownerUsername: 'MdpSurf', ownerAvatarUrl: '/avatars/surf.jpg', createdAt: new Date().toISOString(), tags: ['Aventura', 'Playa', 'Deportes']
-    }
-];
 // ──────────────────────────────────────────────────────────
 // COMPONENTE PRINCIPAL
 // ──────────────────────────────────────────────────────────
@@ -116,7 +72,7 @@ export default function BusinessRecommendationFeed() {
   const [newPlanName, setNewPlanName] = useState("");
 
   const { enqueueSnackbar } = useSnackbar();
-  const { accessToken } = useAuth(); // 👈 Obtenemos el token de autenticación
+  const context  = useAuth(); // 👈 Obtenemos el token de autenticación
 
   // El handler para la visualización (se mantiene igual)
   const handleView = (p: BusinessPublicationResponseDTO) => {
@@ -128,11 +84,15 @@ export default function BusinessRecommendationFeed() {
   // ───────────────────────────────
   useEffect(() => {
     const fetchRecommendations = async () => {
+      if (context.user ==null || !context.accessToken) {
+        setIsLoading(false);
+        return;
+      }
       try {
         setIsLoading(true);
         setError(null);
-        // Usamos MOCK para demostración
-        setPublications(MOCK_RECOMMENDATIONS as BusinessPublicationResponseDTO[]);
+        const pubs = await getBusinessPublicationsPublicRecommendations(context.user.id, context.accessToken);
+        setPublications(pubs);
       } catch (err) {
         console.error(err);
         setError('Error al cargar las publicaciones recomendadas.');
@@ -155,7 +115,7 @@ export default function BusinessRecommendationFeed() {
   ) => {
     event.stopPropagation();
 
-    if (!accessToken) {
+    if (!context.accessToken) {
       setShowLoginMsg(true);
       return;
     }
@@ -166,7 +126,7 @@ export default function BusinessRecommendationFeed() {
     // Sólo fetchear si no se cargaron antes
     if (!plansLoaded) {
       try {
-        const fetchedPlans = await fetchPlans(accessToken);
+        const fetchedPlans = await fetchPlans(context.accessToken);
         setPlans(fetchedPlans);
         setPlansLoaded(true);
       } catch (error) {
@@ -190,9 +150,9 @@ export default function BusinessRecommendationFeed() {
       return;
     }
 
-    if (planId && publicationId && accessToken) {
+    if (planId && publicationId && context.accessToken) {
       try {
-          await addPublicationToPlan(accessToken, planId, publicationId);
+          await addPublicationToPlan(context.accessToken, planId, publicationId);
           console.log(
             `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`
           );
@@ -218,22 +178,22 @@ export default function BusinessRecommendationFeed() {
       return;
     }
 
-    if (!accessToken) {
+    if (!context.accessToken) {
       setShowLoginMsg(true);
       return;
     }
 
     try {
       // 1. Crear el plan
-      await createPlan(accessToken, trimmed, "");
+      await createPlan(context.accessToken, trimmed, "");
       
       // 2. Refrescar la lista de planes para incluir el nuevo
-      const fetchedPlans = await fetchPlans(accessToken);
+      const fetchedPlans = await fetchPlans(context.accessToken);
       const plan = fetchedPlans.find((p) => p.name === trimmed);
       setPlans(fetchedPlans); // Actualiza el estado de planes para el menú
 
       // 3. Agregar la publicación al nuevo plan
-      await addPublicationToPlan(accessToken, plan.id, id);
+      await addPublicationToPlan(context.accessToken, plan.id, id);
       
       setShowSuccessMsg(true);
     } catch (error) {

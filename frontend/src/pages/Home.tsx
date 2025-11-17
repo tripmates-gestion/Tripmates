@@ -10,7 +10,7 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import { Link as RouterLink } from 'react-router-dom';
 import { PAGES_ROUTE } from '../constants/Pages';
 import { useAuth } from '../hooks/useAuth';
-import BusinessRecommendationFeed from '../components/publicationsFeed/BusinessRecomendationFeed';
+import BusinessRecommendationFeed from '../components/publicationsFeed/BusinessPublicationRecomendationFeed';
 
 // Otro mock que es igual que el que esta en Search.tsx
 const MOCK: Place[] = [
