@@ -35,9 +35,6 @@ public class AccountPlanTest {
 	private int port;
 
 	@Autowired
-	private TestRestTemplate restTemplate;
-
-	@Autowired
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
@@ -87,7 +84,6 @@ public class AccountPlanTest {
 				""", publication.getId());
 
 		mockMvc.perform(post("/users/plans/create").contentType(MediaType.APPLICATION_JSON).content(createPlanRequest))
-			.andDo(print())
 			.andExpect(status().isNoContent());
 
 		mockMvc.perform(get("/users/plans/list").contentType(MediaType.APPLICATION_JSON))
