@@ -37,10 +37,10 @@ public interface PublicationNodeRepository extends Neo4jRepository<PublicationNo
 	long countRecommendedPublications(@Param("accountId") String accountId);
 
     /**
-     * Deletes a publication node and all of its relations
-     * @param publicationId
+     * Deletes a publication node and all of its relations.
+     * @param publicationId publication's ID.
      */
-	@Query("MATCH (p:PublicationNode {id: $id}) DETACH DELETE p")
-	void deletePublicationNodeById(@Param("id") String publicationId);
+	@Query("MATCH (p:PublicationNode {id: $publicationId}) DETACH DELETE p")
+	void deletePublicationNodeById(@Param("publicationId") String publicationId);
 
 }
