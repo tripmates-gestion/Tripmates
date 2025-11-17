@@ -8,12 +8,10 @@ import com.tripmates.backend.common.types.EventReport;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.tripmates.backend.metrics.entity.mongo.ProfileView;
 import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
@@ -86,5 +84,9 @@ public class MetricsService {
     return account.get();
   }
 
+  public Integer getAllLikes(String email) {
+    Account account = validateBusinessAccount(email);
+    return publicationRepository.countLikesFromAccountId(account.getId());
+  }
 
 }

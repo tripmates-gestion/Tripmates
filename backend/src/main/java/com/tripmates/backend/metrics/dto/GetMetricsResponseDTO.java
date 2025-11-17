@@ -4,7 +4,8 @@ import com.tripmates.backend.common.types.EventReport;
 public record GetMetricsResponseDTO
 (
     EventReport reviewsFromMyPublications,
-    EventReport profileViews
+    EventReport profileViews,
+    Integer totalLikes
 ){
     
 }

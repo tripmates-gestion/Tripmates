@@ -22,4 +22,5 @@ public interface PublicationRepositoryCustom {
 
   List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate);
 
+  Integer countLikesFromAccountId(String accountId);
 }

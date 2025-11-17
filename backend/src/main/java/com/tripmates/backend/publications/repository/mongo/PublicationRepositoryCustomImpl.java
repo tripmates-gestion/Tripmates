@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Date;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 
 @Repository
 public class PublicationRepositoryCustomImpl implements PublicationRepositoryCustom {
@@ -96,6 +98,25 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 		mongoTemplate.updateFirst(query, update, Publication.class);
 	}
 
+  @Override
+  public Integer countLikesFromAccountId(String accountId) {
+    Aggregation aggregation = Aggregation.newAggregation(
+        Aggregation.match(Criteria.where("ownerId").is(accountId)),
+        Aggregation.project()
+            .and(ArrayOperators.Size.lengthOfArray("likes")).as("likesCount"),
+        Aggregation.group().sum("likesCount").as("totalLikes")
+    );
+
+    AggregationResults<Map> results = mongoTemplate.aggregate(
+        aggregation, "publications", Map.class);
+
+    if (results.getMappedResults().isEmpty()) {
+        return 0;
+    }
+    
+    return (Integer) results.getMappedResults().get(0).get("totalLikes");
+  }
+  
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
