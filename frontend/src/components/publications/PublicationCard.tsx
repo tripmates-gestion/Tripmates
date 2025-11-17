@@ -15,7 +15,13 @@ import {
   Alert,
   Snackbar
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { 
+  MoreVert, 
+  ThumbUp, 
+  ThumbDown, 
+  ThumbUpOutlined, 
+  ThumbDownOutlined 
+} from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/business";
 import { useAuth } from "../../hooks/useAuth";
@@ -25,8 +31,11 @@ type Props = {
   onView: (p: BusinessPublicationResponseDTO) => void;
   onEdit?: (p: BusinessPublicationResponseDTO) => void;
   onDelete?: (id: string) => void;
-  onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;//opción para guardar en un plan 
+  onAddToBoard?: (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;
+  onLike?: (publicationId: string, token: string) => Promise<void>;
+  onDislike?: (publicationId: string, token: string) => Promise<void>;
 };
+
 const IMG_PLACEHOLDER_URL= "https://images.unsplash.com/photo-1610513320995-1ad4bbf25e55?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070";
 const DAYS_ORDER: Array<"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"> = [
   "MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"
@@ -84,8 +93,79 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
   const authContext = useAuth();
   const [showAuthError, setShowAuthError] = useState(false);
 
+  const [userLiked, setUserLiked] = useState(false);
+  const [userDisliked, setUserDisliked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [dislikesCount, setDislikesCount] = useState(0);
+
   const hasMenuOptions = onEdit || onDelete || onAddToBoard;
   
+  const handleLike = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    
+    if (!authContext.accessToken) {
+      setShowAuthError(true);
+      return;
+    }
+
+    if (!onLike) return;
+
+    try {
+      await onLike(publication.id, authContext.accessToken);
+      
+      if (userLiked) {
+        // Quitar like
+        setUserLiked(false);
+        setLikesCount(prev => prev - 1);
+      } else {
+        // Agregar like
+        setUserLiked(true);
+        setLikesCount(prev => prev + 1);
+        
+        // Si tenía dislike, quitarlo
+        if (userDisliked) {
+          setUserDisliked(false);
+          setDislikesCount(prev => prev - 1);
+        }
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+    }
+  };
+
+  const handleDislike = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    
+    if (!authContext.accessToken) {
+      setShowAuthError(true);
+      return;
+    }
+
+    if (!onDislike) return;
+
+    try {
+      await onDislike(publication.id, authContext.accessToken);
+      
+      if (userDisliked) {
+        // Quitar dislike
+        setUserDisliked(false);
+        setDislikesCount(prev => prev - 1);
+      } else {
+        // Agregar dislike
+        setUserDisliked(true);
+        setDislikesCount(prev => prev + 1);
+        
+        // Si tenía like, quitarlo
+        if (userLiked) {
+          setUserLiked(false);
+          setLikesCount(prev => prev - 1);
+        }
+      }
+    } catch (error) {
+      console.error('Error handling dislike:', error);
+    }
+  };
+
   return (
     <>
     <Card
@@ -149,6 +229,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
           )}
 
         </Stack>
+
         {hasMenuOptions && (
           <IconButton
           onClick={(e) => {
@@ -247,6 +328,89 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             Dueño: {publication.ownerUsername}
           </Typography>
         </Stack>
+        {/* Like & Dislike abajo a la derecha */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            mt: 1.5,
+          }}
+        >
+          <Stack direction="row" spacing={1.2} alignItems="center">
+
+            {/* LIKE */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+                px: 1.8,
+                py: 0.9,
+                borderRadius: "22px",
+                bgcolor: userLiked ? "#2196F3" : "rgba(33,150,243,0.12)",
+                color: userLiked ? "#fff" : "#2196F3",
+                boxShadow: userLiked
+                  ? "0 0 12px rgba(33,150,243,0.5)"
+                  : "0 2px 6px rgba(0,0,0,0.15)",
+                fontSize: "1rem",
+                cursor: "pointer",
+                transition: "all .25s ease",
+                "&:hover": {
+                  transform: "scale(1.08)",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                },
+              }}
+              onClick={handleLike}
+            >
+              {userLiked ? (
+                <ThumbUp fontSize="medium" />
+              ) : (
+                <ThumbUpOutlined fontSize="medium" />
+              )}
+              <Typography variant="body1" fontWeight={700}>
+                {likesCount}
+              </Typography>
+            </Box>
+
+
+            {/* DISLIKE */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.8,
+                px: 1.8,
+                py: 0.9,
+                borderRadius: "22px",
+                bgcolor: userDisliked ? "#F44336" : "rgba(244,67,54,0.12)",
+                color: userDisliked ? "#fff" : "#F44336",
+                boxShadow: userDisliked
+                  ? "0 0 12px rgba(244,67,54,0.5)"
+                  : "0 2px 6px rgba(0,0,0,0.15)",
+                fontSize: "1rem",
+                cursor: "pointer",
+                transition: "all .25s ease",
+                "&:hover": {
+                  transform: "scale(1.08)",
+                  boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                },
+              }}
+              onClick={handleDislike}
+            >
+              {userDisliked ? (
+                <ThumbDown fontSize="medium" />
+              ) : (
+                <ThumbDownOutlined fontSize="medium" />
+              )}
+              <Typography variant="body1" fontWeight={700}>
+                {dislikesCount}
+              </Typography>
+            </Box>
+
+
+          </Stack>
+        </Box>
+
       </CardContent>
     </Card>
     {/* 🆕 Snackbar de error si no hay token */}
