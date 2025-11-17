@@ -13,25 +13,28 @@ import com.tripmates.backend.common.types.Role;
 @Setter
 @Document(collection = "profile_view")
 public class ProfileView {
-  @Id
-  private String id;
 
-  private String viewerEmail;
-  private Role viewerRole; 
-  
-  private Date date = new Date();
+	@Id
+	private String id;
 
-  @Indexed()
-  private String profileSeenEmail;
+	private String viewerEmail;
 
-  public ProfileView() {
-  }
+	private Role viewerRole;
 
-  public ProfileView(String viewerEmail, String profileSeenEmail, Role viewerRole) {
-    this.viewerEmail = viewerEmail;
-    this.date = new Date();
-    this.profileSeenEmail = profileSeenEmail;
-    this.viewerRole = viewerRole;
+	private Date date = new Date();
 
-  }
+	@Indexed()
+	private String profileSeenEmail;
+
+	public ProfileView() {
+	}
+
+	public ProfileView(String viewerEmail, String profileSeenEmail, Role viewerRole) {
+		this.viewerEmail = viewerEmail;
+		this.date = new Date();
+		this.profileSeenEmail = profileSeenEmail;
+		this.viewerRole = viewerRole;
+
+	}
+
 }
