@@ -39,21 +39,21 @@ public class MetricsController {
   // }
 
   //cuantos usuarios realizaron reseñas de cada una de sus publicaciones
-  // @GetMapping("/reviews")
-  // @Operation(summary = "Get reviews event report")
-  // @ApiResponses(value = {
-  //     @ApiResponse(responseCode = "200", description = "Reviews event report retrieved successfully", 
-  //         content = { @Content(mediaType = "application/json", 
-  //         schema = @Schema(implementation = EventReport.class)) }),
-  //     @ApiResponse(responseCode = "404", description = "User not found", 
-  //         content = { @Content(mediaType = "application/json", 
-  //         schema = @Schema(implementation = ErrorDTO.class)) }) 
-  // })
-  // public ResponseEntity<?> getReviewsEventReport(
-  //     @AuthenticationPrincipal UserDetails userDetails,
-  //     @RequestParam(required = false, defaultValue = "7") Integer daysAgo) {
-  //     return ResponseEntity.ok(metricsService.getReviewsEventReport(userDetails.getUsername(), daysAgo));
-  // }
+  @GetMapping("/reviews")
+  @Operation(summary = "Get reviews event report")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Reviews event report retrieved successfully", 
+          content = { @Content(mediaType = "application/json", 
+          schema = @Schema(implementation = EventReport.class)) }),
+      @ApiResponse(responseCode = "404", description = "User not found", 
+          content = { @Content(mediaType = "application/json", 
+          schema = @Schema(implementation = ErrorDTO.class)) }) 
+  })
+  public ResponseEntity<?> getReviewsEventReport(
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestParam(required = false, defaultValue = "7") Integer daysAgo) {
+      return ResponseEntity.ok(metricsService.getReviewsEventReport(userDetails.getUsername(), daysAgo));
+  }
   
   @GetMapping("/profile-views")
   @Operation(summary = "Get profile views event report")

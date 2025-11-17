@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.tripmates.backend.metrics.entity.mongo.ProfileView;
 import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
-import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
+import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,10 +28,11 @@ public class MetricsService {
   private ProfileViewsRepository profileViewsRepository;
 
   @Autowired
-  private ReviewRepository reviewRepository;
+  private PublicationRepository publicationRepository;
 
   @Autowired
   private AccountRepository accountRepository;
+
 
   public EventReport getProfileViewsEventReport(String email, Integer daysAgo) {
     validateBusinessAccount(email);
@@ -55,21 +56,21 @@ public class MetricsService {
     profileViewsRepository.save(profileViews);
   }
 
-  private void validateBusinessAccount(String email) {
+  private Account validateBusinessAccount(String email) {
     Account account = validateExistentAccount(email);
     if (account.getRole() != Role.BUSINESS) {
       throw new UnauthorizedException(ValidationErrorMessage.USER_ACCOUNT_CANT_REQUEST_STATISTICS);
     }
+    return account;
   }
 
-  // public EventReport getReviewsEventReport(String email, Integer daysAgo) {
-  //   //Debo buscar en las publicaciones: cuales son las mías, hago un unwind de las reviews y me quedo con las que están en el periodo de tiempo
-  //   validateBusinessAccount(email);
-  //   Date requestTime = new Date();
-  //   Date startTime = calculateStartTime(daysAgo, requestTime);
-
-  //   return new EventReport(reviews.size(), reviews);
-  // }
+  public EventReport getReviewsEventReport(String email, Integer daysAgo) {
+    Account account = validateBusinessAccount(email);
+    Date requestTime = new Date();
+    Date startTime = calculateStartTime(daysAgo, requestTime);
+    List<Date> reviews = publicationRepository.findReviewDatesByBusinessIdAndDateRange(account.getId(), startTime, requestTime);
+    return new EventReport(reviews.size(), reviews);
+  }
 
 
   private Date calculateStartTime(Integer daysAgo, Date requestTime) {

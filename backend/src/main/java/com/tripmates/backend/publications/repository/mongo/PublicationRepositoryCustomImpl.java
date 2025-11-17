@@ -2,9 +2,15 @@ package com.tripmates.backend.publications.repository.mongo;
 
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,12 +20,30 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import java.util.Date;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 
 @Repository
 public class PublicationRepositoryCustomImpl implements PublicationRepositoryCustom {
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
+
+  @Override
+  public List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate) {
+    Aggregation aggregation = Aggregation.newAggregation(
+        Aggregation.match(Criteria.where("ownerId").is(businessId)),
+        Aggregation.unwind("reviews"),
+        Aggregation.match(Criteria.where("reviews.date").gte(startDate).lte(endDate)),
+        Aggregation.project().and("reviews.date").as("reviewDate")
+
+    );
+    AggregationResults<ReviewDateResult> results = mongoTemplate.aggregate(aggregation, "publications", ReviewDateResult.class);
+    return results.getMappedResults().stream()
+            .map(ReviewDateResult::getReviewDate)
+            .collect(Collectors.toList());
+  }
 
 	@Override
 	public Page<Publication> search(PublicationSearchRequestDTO filters, Pageable pageable) {
@@ -72,4 +96,10 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 		mongoTemplate.updateFirst(query, update, Publication.class);
 	}
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  private static class ReviewDateResult {
+      private Date reviewDate;
+  }
 }
