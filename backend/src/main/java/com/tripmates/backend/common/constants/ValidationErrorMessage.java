@@ -66,6 +66,6 @@ public class ValidationErrorMessage {
 
 	public static final String CANNOT_UNLIKE_PUBLICATION_NOT_LIKED = "No puedes deshacer like a una publicación que no has likeado";
 
-  public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS="Una cuenta de usuario no puede solicitar estadisticas";
+	public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS = "Una cuenta de usuario no puede solicitar estadisticas";
 
 }

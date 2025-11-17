@@ -356,7 +356,8 @@ public class PublicationService {
 	/**
 	 * Gets the list of users who liked a publication.
 	 * @param publicationId publication's ID.
-	 * @return {@link LikesListDTO} containing the list of users who liked the publication.
+	 * @return {@link LikesListDTO} containing the list of users who liked the
+	 * publication.
 	 */
 	public LikesListDTO getLikesList(String publicationId) {
 		Publication publication = publicationRepository.findById(publicationId)

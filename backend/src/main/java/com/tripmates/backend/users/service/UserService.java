@@ -8,7 +8,6 @@ import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
-import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.entity.mongo.Account;
@@ -21,7 +20,6 @@ import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -171,7 +169,7 @@ public class UserService {
 
 		accountRepository.removeFromFollowings(followerUserId, followedUserId);
 		accountRepository.removeFromFollowers(followedUserId, followerUserId);
-        accountNodeRepository.removeFollow(followerUserId, followedUserId);
+		accountNodeRepository.removeFollow(followerUserId, followedUserId);
 	}
 
 	/**
@@ -721,32 +719,29 @@ public class UserService {
 		return formatAccountIdList(account.getFollowers());
 	}
 
-    /**
-     * Given a user's ID, returns all user accounts that may bee
-     * to its interest.
-     * @param userId users account ID.
-     * @return list of {@link AccountResumeResponseDTO}.
-     */
-    public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
-        List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+	/**
+	 * Given a user's ID, returns all user accounts that may bee to its interest.
+	 * @param userId users account ID.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
+		List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
 
-        List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
-        for (AccountNode accountNode : accountNodeList) {
-            accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
-                accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
-            });
-        }
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+		for (AccountNode accountNode : accountNodeList) {
+			accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+				accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+			});
+		}
 
-        return accountResumeResponseDTOList;
-    }
+		return accountResumeResponseDTOList;
+	}
+
 	@Transactional(readOnly = true)
 	public Page<PublicationResumeResponseDTO> getPublicationRecommendations(String userId, Pageable pageable) {
 		// Get recommended publication nodes from Neo4j with pagination
-		List<PublicationNode> recommendedNodes = publicationNodeRepository.findRecommendedPublications(
-			userId,
-			(int) pageable.getOffset(),
-			pageable.getPageSize()
-		);
+		List<PublicationNode> recommendedNodes = publicationNodeRepository.findRecommendedPublications(userId,
+				(int) pageable.getOffset(), pageable.getPageSize());
 
 		// If no recommendations from reviews, return empty page
 		if (recommendedNodes.isEmpty()) {
@@ -762,31 +757,21 @@ public class UserService {
 		long total = publicationNodeRepository.countRecommendedPublications(userId);
 
 		// Fetch full publication details from MongoDB
-		List<PublicationResumeResponseDTO> content = publicationRepository.findAllById(publicationIds).stream()
+		List<PublicationResumeResponseDTO> content = publicationRepository.findAllById(publicationIds)
+			.stream()
 			.map(publication -> {
 				Account owner = accountRepository.findById(publication.getOwnerId())
 					.orElseThrow(() -> new NotFoundException("Account not found with id: " + publication.getOwnerId()));
-				
-				return new PublicationResumeResponseDTO(
-					publication.getId(),
-					publication.getTitle(),
-					publication.getDescription(),
-					publication.getOpeningDays(),
-					publication.getAttentionSchedule(),
-					publication.getExceptionalClosingDays(),
-					publication.getImageUrls(),
-					publication.getTags(),
-					publication.getCreatedAt(),
-					publication.getPhoneNumber(),
-					publication.getEmail(),
-					publication.getLocation(),
-					owner.getId(),
-					owner.getUsername(),
-					owner.getAvatarURL()
-				);
+
+				return new PublicationResumeResponseDTO(publication.getId(), publication.getTitle(),
+						publication.getDescription(), publication.getOpeningDays(), publication.getAttentionSchedule(),
+						publication.getExceptionalClosingDays(), publication.getImageUrls(), publication.getTags(),
+						publication.getCreatedAt(), publication.getPhoneNumber(), publication.getEmail(),
+						publication.getLocation(), owner.getId(), owner.getUsername(), owner.getAvatarURL());
 			})
 			.collect(Collectors.toList());
 
 		return new PageImpl<>(content, pageable, total);
 	}
+
 }

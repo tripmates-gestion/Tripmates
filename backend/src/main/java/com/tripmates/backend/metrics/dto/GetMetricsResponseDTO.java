@@ -1,10 +1,7 @@
 package com.tripmates.backend.metrics.dto;
 
 import com.tripmates.backend.common.types.EventReport;
-public record GetMetricsResponseDTO
-(
-    EventReport reviewsFromMyPublications,
-    EventReport profileViews
-){
-    
+
+public record GetMetricsResponseDTO(EventReport reviewsFromMyPublications, EventReport profileViews) {
+
 }

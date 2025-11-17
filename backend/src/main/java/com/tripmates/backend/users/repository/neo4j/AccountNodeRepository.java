@@ -43,16 +43,16 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 			""")
 	void createFollow(@Param("from") String from, @Param("to") String to);
 
-    /**
-     * Removes a followed relationship between the two accounts.
-     * @param from the account that is unfollowing.
-     * @param to the account that is being unfollowed.
-     */
-    @Query("""
-            MATCH (a:AccountNode {id: $from})-[f:FOLLOWS]->(b:AccountNode {id: $to})
-            DELETE f
-            """)
-    void removeFollow(@Param("from") String from, @Param("to") String to);
+	/**
+	 * Removes a followed relationship between the two accounts.
+	 * @param from the account that is unfollowing.
+	 * @param to the account that is being unfollowed.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $from})-[f:FOLLOWS]->(b:AccountNode {id: $to})
+			DELETE f
+			""")
+	void removeFollow(@Param("from") String from, @Param("to") String to);
 
 	/**
 	 * Creates a reviewed relationship between the user account and the publication that
