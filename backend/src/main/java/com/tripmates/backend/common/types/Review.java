@@ -1,5 +1,6 @@
 package com.tripmates.backend.common.types;
 
+import java.util.Date;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -27,6 +28,8 @@ public class Review {
 
 	private String ownerId;
 
+	private Date date = new Date();
+
 	public Review(String publicationId, String title, String content, Double rating, List<String> imageUrls,
 			String ownerId) {
 		this.publicationId = publicationId;
@@ -35,6 +38,7 @@ public class Review {
 		this.rating = rating;
 		this.imageUrls = imageUrls;
 		this.ownerId = ownerId;
+    this.date = new Date();
 	}
 
 }
