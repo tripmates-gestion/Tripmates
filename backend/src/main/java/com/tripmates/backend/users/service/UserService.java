@@ -6,6 +6,7 @@ import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
@@ -19,6 +20,8 @@ import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +40,9 @@ public class UserService {
 
 	@Autowired
 	private PublicationRepository publicationRepository;
+
+	@Autowired
+	private PublicationNodeRepository publicationNodeRepository;
 
 	@Autowired
 	private AccountNodeRepository accountNodeRepository;
@@ -733,5 +739,54 @@ public class UserService {
 
         return accountResumeResponseDTOList;
     }
+	@Transactional(readOnly = true)
+	public Page<PublicationResumeResponseDTO> getPublicationRecommendations(String userId, Pageable pageable) {
+		// Get recommended publication nodes from Neo4j with pagination
+		List<PublicationNode> recommendedNodes = publicationNodeRepository.findRecommendedPublications(
+			userId,
+			(int) pageable.getOffset(),
+			pageable.getPageSize()
+		);
 
+		// If no recommendations from reviews, return empty page
+		if (recommendedNodes.isEmpty()) {
+			return Page.empty(pageable);
+		}
+
+		// Convert to MongoDB IDs
+		List<String> publicationIds = recommendedNodes.stream()
+			.map(PublicationNode::getId)
+			.collect(Collectors.toList());
+
+		// Get total count for pagination
+		long total = publicationNodeRepository.countRecommendedPublications(userId);
+
+		// Fetch full publication details from MongoDB
+		List<PublicationResumeResponseDTO> content = publicationRepository.findAllById(publicationIds).stream()
+			.map(publication -> {
+				Account owner = accountRepository.findById(publication.getOwnerId())
+					.orElseThrow(() -> new NotFoundException("Account not found with id: " + publication.getOwnerId()));
+				
+				return new PublicationResumeResponseDTO(
+					publication.getId(),
+					publication.getTitle(),
+					publication.getDescription(),
+					publication.getOpeningDays(),
+					publication.getAttentionSchedule(),
+					publication.getExceptionalClosingDays(),
+					publication.getImageUrls(),
+					publication.getTags(),
+					publication.getCreatedAt(),
+					publication.getPhoneNumber(),
+					publication.getEmail(),
+					publication.getLocation(),
+					owner.getId(),
+					owner.getUsername(),
+					owner.getAvatarURL()
+				);
+			})
+			.collect(Collectors.toList());
+
+		return new PageImpl<>(content, pageable, total);
+	}
 }
