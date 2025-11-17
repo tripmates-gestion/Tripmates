@@ -19,13 +19,14 @@ import { MoreVert } from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
 import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { useAuth } from "../../hooks/useAuth";
-
+//TODO: Me gustaría que sea arametrizable qué es lo que pasa cuando pones el mouse pasa encima (para hacer algo piola con el feed)
 type Props = {
   publication: BusinessPublicationResponseDTO;
   onView: (p: BusinessPublicationResponseDTO) => void;
   onEdit?: (p: BusinessPublicationResponseDTO) => void;
   onDelete?: (id: string) => void;
   onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;//opción para guardar en un plan 
+  sx?: object;
 };
 const IMG_PLACEHOLDER_URL= "https://images.unsplash.com/photo-1610513320995-1ad4bbf25e55?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070";
 const DAYS_ORDER: Array<"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"> = [
@@ -73,7 +74,7 @@ function initials(name?: string) {
   return parts.map(p => p[0]?.toUpperCase() ?? "").join("") || "U";
 }
 
-export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard }: Props) {
+export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard, sx }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const handleMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
@@ -95,7 +96,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         borderRadius: 3,
         overflow: "hidden",
         transition: "0.25s",
-        "&:hover": { boxShadow: 6, transform: "translateY(-2px)" }
+        "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
+        ...sx
       }}
     >
       <Box sx={{ position: "relative", height: 220, overflow: "hidden" }}>
