@@ -412,4 +412,28 @@ public class UserController {
 		return ResponseEntity.ok(new FollowersListResponseDTO(followers));
 	}
 
+    @GetMapping("/recommendations/user/{userId}")
+    @Operation(summary = "Gets all the user account recommendations for a user account",
+        description = "In progress...")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recommendations obtained successfully",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = AccountResumeResponseDTO.class)
+                )
+            ),
+            @ApiResponse(responseCode = "204", description = "No recommendations available",
+                content = @Content(mediaType = "application/json",
+                    schema =  @Schema(implementation = void.class)
+                )
+            )
+    })
+    public ResponseEntity<?> userAccountRecommendations(@PathVariable("userId") String id) {
+        List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getUserAccountRecommendation(id);
+
+        if (accountResumeResponseDTOList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(accountResumeResponseDTOList);
+    }
 }

@@ -181,4 +181,50 @@ public class PublicationController {
 		return ResponseEntity.ok(publicationService.getPublicationNoneAuthenticated(userId));
 	}
 
+	@PostMapping("/{publicationId}/like")
+	@Operation(summary = "Add a like to a publication",
+			description = "Allows a user to like a publication")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Like added successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "404", description = "Publication not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<Void> addLike(@PathVariable String publicationId,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		publicationService.addLike(publicationId, userDetails.getUsername());
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/{publicationId}/unlike")
+	@Operation(summary = "Remove a like from a publication",
+			description = "Allows a user to remove their like from a publication")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Like removed successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "404", description = "Publication not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<Void> removeLike(@PathVariable String publicationId,
+			@AuthenticationPrincipal UserDetails userDetails) {
+		publicationService.removeLike(publicationId, userDetails.getUsername());
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/{publicationId}/likes")
+	@Operation(summary = "Get list of users who liked a publication",
+			description = "Returns a list of users who have liked the publication")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Likes list obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = LikesListDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Publication not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getLikesList(@PathVariable String publicationId) {
+		return ResponseEntity.ok(publicationService.getLikesList(publicationId));
+	}
+
 }
