@@ -165,6 +165,7 @@ public class UserService {
 
 		accountRepository.removeFromFollowings(followerUserId, followedUserId);
 		accountRepository.removeFromFollowers(followedUserId, followerUserId);
+        accountNodeRepository.removeFollow(followerUserId, followedUserId);
 	}
 
 	/**
@@ -181,7 +182,7 @@ public class UserService {
 
 		accountRepository.addToFollowings(whoId, followedUserId);
 		accountRepository.addToFollowers(followedUserId, whoId);
-		accountNodeRepository.createFollow(followedUserId, whoId);
+		accountNodeRepository.createFollow(whoId, followedUserId);
 	}
 
 	/**
@@ -713,5 +714,24 @@ public class UserService {
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		return formatAccountIdList(account.getFollowers());
 	}
+
+    /**
+     * Given a user's ID, returns all user accounts that may bee
+     * to its interest.
+     * @param userId users account ID.
+     * @return list of {@link AccountResumeResponseDTO}.
+     */
+    public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
+        List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+        List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+        for (AccountNode accountNode : accountNodeList) {
+            accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+                accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+            });
+        }
+
+        return accountResumeResponseDTOList;
+    }
 
 }
