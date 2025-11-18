@@ -27,6 +27,10 @@ export const ENDPOINTS = {
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
-    PATCH_PLAN: "/users/plans/{id}"
+    PATCH_PLAN: "/users/plans/{id}",
+    METRICS_REVIEWS: '/metrics/reviews',
+    METRICS_PROFILE_VIEWS: '/metrics/profile-views',
+    METRICS_LIKES: '/metrics/likes',
+    METRICS_VIEW_PROFILE: '/metrics/view-profile'
   };
   
