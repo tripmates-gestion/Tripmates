@@ -155,3 +155,30 @@ export async function unfollowUser(userId: string, accessToken: string | null): 
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+
+export async function getUserByEmail(email: string, accessToken: string | null) {
+  const token = ensureToken(accessToken);
+  const response = await apiFetch(ENDPOINTS.GET_USER_BY_EMAIL.replace('{email}', email), {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response;
+}
+
+
+export async function likePublication(publicationId: string, accessToken: string | null){
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.LIKE_PUBLICATION.replace('{id}', publicationId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function unlikePublication(publicationId: string, accessToken: string | null){
+  const token = ensureToken(accessToken);
+  await apiFetch(ENDPOINTS.UNLIKE_PUBLICATION.replace('{id}', publicationId), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

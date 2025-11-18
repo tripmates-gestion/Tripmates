@@ -22,6 +22,7 @@ export async function saveReview(review: Review, accessToken: string, photos: st
         JSON.stringify({
             title: review.title,
             content: review.text,
+            rating: review.rating,
         })
     );
     files.forEach((f) => reviewBody.append("files", f, f.name));
