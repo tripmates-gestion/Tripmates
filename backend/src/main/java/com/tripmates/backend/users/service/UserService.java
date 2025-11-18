@@ -737,6 +737,24 @@ public class UserService {
 		return accountResumeResponseDTOList;
 	}
 
+    /**
+     * Given a user's ID, returns all business accounts that may bee to its interest.
+     * @param userId users account ID.
+     * @return list of {@link AccountResumeResponseDTO}.
+     */
+    public List<AccountResumeResponseDTO> getBusinessAccountRecommendation(String userId) {
+        List<AccountNode> accountNodeList = accountNodeRepository.findAllBusinessRelated(userId);
+
+        List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+        for (AccountNode accountNode : accountNodeList) {
+            accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+                accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+            });
+        }
+
+        return accountResumeResponseDTOList;
+    }
+
 	@Transactional(readOnly = true)
 	public Page<PublicationResumeResponseDTO> getPublicationRecommendations(String userId, Pageable pageable) {
 		// Get recommended publication nodes from Neo4j with pagination

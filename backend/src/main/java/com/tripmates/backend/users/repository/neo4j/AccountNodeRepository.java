@@ -1,5 +1,6 @@
 package com.tripmates.backend.users.repository.neo4j;
 
+import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
 
 import org.springframework.data.neo4j.repository.Neo4jRepository;
@@ -33,6 +34,11 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 			         RETURN b AS user
 			""")
 	List<AccountNode> findAllAccountsRelated(@Param("accountId") String accountId);
+
+    @Query("""
+            
+            """)
+    List<AccountNode> findAllBusinessRelated(@Param("accountId") String accountId);
 
 	/**
 	 * Creates a followed relationship between the two accounts.
@@ -72,5 +78,31 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 			""")
 	void createReviewed(@Param("accountId") String accountId, @Param("publicationId") String publicationId,
 			@Param("reviewId") String reviewId, @Param("rating") Double rating);
+
+    /**
+     * Creates a share the same business type relationship between two business account.
+     * @param businessId business account ID.
+     */
+    @Query("""
+            MATCH (a:AccountNode {id: $businessId}),
+            MATCH (b:AccountNode)
+            WHERE a.businessType IS NOT NULL
+                AND b.businessType = a.businessType
+                AND a <> b
+            MERGE (a)-[:SHARES_BUSINESS_TYPE]->(b)
+            """)
+    void createSharesBusinessType(@Param("businessId") String businessId);
+
+    /**
+     * Creates an own relationship between a business account and a publication.
+     * @param businessId business account ID.
+     * @param publicationId publication ID.
+     */
+    @Query("""
+            MATCH (a:AccountNode {id: $businessId})
+            MATCH (p:PublicationNode {id: $publicationId})
+            MERGE (a)-[:OWNS]->(p)
+            """)
+    void createOwnsPublication(@Param("businessId") String businessId, @Param("publicationId") String publicationId);
 
 }

@@ -438,12 +438,29 @@ public class UserController {
 	public ResponseEntity<?> userAccountRecommendations(@PathVariable("userId") String id) {
 		List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getUserAccountRecommendation(id);
 
-		if (accountResumeResponseDTOList.isEmpty()) {
+		if (accountResumeResponseDTOList.isEmpty())
 			return ResponseEntity.noContent().build();
-		}
 
 		return ResponseEntity.ok(accountResumeResponseDTOList);
 	}
+
+    @GetMapping("/recommendations/business/{userId}")
+    @Operation(summary = "Gets all the business account recommendations for a user account", description = "In progress...")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recommendations obtained successfully",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+            @ApiResponse(responseCode = "204", description = "No recommendations available",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = void.class))) })
+    public ResponseEntity<?> businessAccountRecommendations(@PathVariable("userId") String id) {
+        List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getBusinessAccountRecommendation(id);
+
+        if (accountResumeResponseDTOList.isEmpty())
+            return ResponseEntity.noContent().build();
+
+        return ResponseEntity.ok(accountResumeResponseDTOList);
+    }
 
 	@GetMapping("/recommendations/publications/{userId}")
 	@Operation(summary = "Gets all the publication recommendations for a user",

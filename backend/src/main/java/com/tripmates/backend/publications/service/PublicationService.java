@@ -78,6 +78,7 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
+        accountNodeRepository.createOwnsPublication(account.getId(), publication.getId());
 
 		return PublicationResumeResponseDTO.fromPublication(publication);
 	}
