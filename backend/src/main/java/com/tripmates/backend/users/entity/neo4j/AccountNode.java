@@ -1,10 +1,10 @@
 package com.tripmates.backend.users.entity.neo4j;
 
-import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tripmates.backend.publications.entity.neo4j.CreatedRelationship;
+import com.tripmates.backend.publications.entity.neo4j.LikedRelationship;
 import com.tripmates.backend.publications.entity.neo4j.ReviewRelationship;
 import com.tripmates.backend.users.entity.mongo.Account;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,9 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 @Node("AccountNode")
 public class AccountNode {
 
-	/** AccountNode's ID. */
+	/**
+	 * Account's ID.
+	 */
 	@Id
 	private String id;
 
@@ -38,12 +40,24 @@ public class AccountNode {
 	private List<ReviewRelationship> reviewRelationshipList;
 
 	/**
+	 * Publications that the account has liked.
+	 */
+	@Relationship(type = "LIKED", direction = Relationship.Direction.OUTGOING)
+	private List<LikedRelationship> likedRelationshipList;
+
+	/**
+	 * Publications that the account has created.
+	 */
+	@Relationship(type = "CREATED", direction = Relationship.Direction.OUTGOING)
+	private List<CreatedRelationship> createdRelationshipList;
+
+	/**
 	 * Returns a {@link AccountNode} from an {@link Account}.
 	 * @param account account with user data.
 	 * @return {@link AccountNode}.
 	 */
 	public static AccountNode fromAccount(Account account) {
-		return new AccountNode(account.getId(), new ArrayList<>(), new ArrayList<>());
+		return new AccountNode(String.valueOf(account.getId()), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 
 }

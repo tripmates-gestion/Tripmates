@@ -22,71 +22,72 @@ import java.util.Optional;
 @Transactional
 @Service
 public class MetricsService {
-  @Autowired
-  private ProfileViewsRepository profileViewsRepository;
 
-  @Autowired
-  private PublicationRepository publicationRepository;
+	@Autowired
+	private ProfileViewsRepository profileViewsRepository;
 
-  @Autowired
-  private AccountRepository accountRepository;
+	@Autowired
+	private PublicationRepository publicationRepository;
 
+	@Autowired
+	private AccountRepository accountRepository;
 
-  public EventReport getProfileViewsEventReport(String email, Integer daysAgo) {
-    validateBusinessAccount(email);
-    Date requestTime = new Date();
-    Date startTime = calculateStartTime(daysAgo, requestTime);
-    List<Date> profileViews = profileViewsRepository.findByProfileSeenEmailAndDateBetween(email, startTime, requestTime)
-                                .stream()
-                                .map(ProfileView::getDate)
-                                .toList();
-    return new EventReport(profileViews.size(), profileViews);
-  }
+	public EventReport getProfileViewsEventReport(String email, Integer daysAgo) {
+		validateBusinessAccount(email);
+		Date requestTime = new Date();
+		Date startTime = calculateStartTime(daysAgo, requestTime);
+		List<Date> profileViews = profileViewsRepository
+			.findByProfileSeenEmailAndDateBetween(email, startTime, requestTime)
+			.stream()
+			.map(ProfileView::getDate)
+			.toList();
+		return new EventReport(profileViews.size(), profileViews);
+	}
 
-  public void registerProfileView(String viewerEmail, String profileSeenEmail) {
-    Account viewerAccount = validateExistentAccount(viewerEmail);
-    validateExistentAccount(profileSeenEmail);
-    if (viewerEmail.equals(profileSeenEmail)) {
-      return;
-    }
+	public void registerProfileView(String viewerEmail, String profileSeenEmail) {
+		Account viewerAccount = validateExistentAccount(viewerEmail);
+		validateExistentAccount(profileSeenEmail);
+		if (viewerEmail.equals(profileSeenEmail)) {
+			return;
+		}
 
-    ProfileView profileViews = new ProfileView(viewerEmail, profileSeenEmail, viewerAccount.getRole());
-    profileViewsRepository.save(profileViews);
-  }
+		ProfileView profileViews = new ProfileView(viewerEmail, profileSeenEmail, viewerAccount.getRole());
+		profileViewsRepository.save(profileViews);
+	}
 
-  private Account validateBusinessAccount(String email) {
-    Account account = validateExistentAccount(email);
-    if (account.getRole() != Role.BUSINESS) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_ACCOUNT_CANT_REQUEST_STATISTICS);
-    }
-    return account;
-  }
+	private Account validateBusinessAccount(String email) {
+		Account account = validateExistentAccount(email);
+		if (account.getRole() != Role.BUSINESS) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_ACCOUNT_CANT_REQUEST_STATISTICS);
+		}
+		return account;
+	}
 
-  public EventReport getReviewsEventReport(String email, Integer daysAgo) {
-    Account account = validateBusinessAccount(email);
-    Date requestTime = new Date();
-    Date startTime = calculateStartTime(daysAgo, requestTime);
-    List<Date> reviews = publicationRepository.findReviewDatesByBusinessIdAndDateRange(account.getId(), startTime, requestTime);
-    return new EventReport(reviews.size(), reviews);
-  }
+	public EventReport getReviewsEventReport(String email, Integer daysAgo) {
+		Account account = validateBusinessAccount(email);
+		Date requestTime = new Date();
+		Date startTime = calculateStartTime(daysAgo, requestTime);
+		List<Date> reviews = publicationRepository.findReviewDatesByBusinessIdAndDateRange(account.getId(), startTime,
+				requestTime);
+		return new EventReport(reviews.size(), reviews);
+	}
 
+	private Date calculateStartTime(Integer daysAgo, Date requestTime) {
+		Date startTime = new Date(requestTime.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+		return startTime;
+	}
 
-  private Date calculateStartTime(Integer daysAgo, Date requestTime) {
-    Date startTime = new Date(requestTime.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    return startTime;
-  }
+	private Account validateExistentAccount(String email) {
+		Optional<Account> account = accountRepository.findByEmail(email);
+		if (!account.isPresent()) {
+			throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
+		}
+		return account.get();
+	}
 
-  private Account validateExistentAccount(String email) {
-    Optional<Account> account = accountRepository.findByEmail(email);
-    if (!account.isPresent()) {
-      throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
-    }
-    return account.get();
-  }
-
-  public Integer getAllLikes(String email) {
-    Account account = validateBusinessAccount(email);
-    return publicationRepository.countLikesFromAccountId(account.getId());
-  }
+	public Integer getAllLikes(String email) {
+		Account account = validateBusinessAccount(email);
+		return publicationRepository.countLikesFromAccountId(account.getId());
+	}
 
 }
