@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tripmates.backend.community.service.CommunityService;
-import com.tripmates.backend.publications.dto.ReviewsListDTO;
 import com.tripmates.backend.users.dto.plan.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.common.dto.ErrorDTO;
 
@@ -166,5 +165,19 @@ public class CommunityController {
 		return ResponseEntity.ok(planResumeResponseDTOList);
 	}
 
+
+  @GetMapping("/plan/{planId}")
+	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PlanWithPublicationsResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getPlanById(@PathVariable("planId") String planId, @AuthenticationPrincipal UserDetails userDetails) {
+
+		return ResponseEntity.ok(communityService.getPlanById(planId, userDetails.getUsername()));
+	}
 
 }

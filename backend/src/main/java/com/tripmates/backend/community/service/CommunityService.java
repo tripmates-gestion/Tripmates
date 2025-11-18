@@ -69,6 +69,36 @@ public class CommunityService {
     accountRepository.removeUserIdFromPendingUsersIdsInvitedToPlan(planId, me.getId());
   }
 
+  public List<PlanWithPublicationsResponseDTO> getPlans(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+
+    List<PlanWithPublicationsResponseDTO> plansResponse = new ArrayList<>();
+    addCollaborationsPlansToResponse(plansResponse, account.getId());
+    if (account.getPlansList() != null) {
+      addMyOwnPlansToResponse(plansResponse, account.getPlansList());
+    }
+		return plansResponse;
+	}
+
+  public PlanWithPublicationsResponseDTO getPlanById(String planId, String email) {
+    validateUserOrThrowUnauthorizedFromEmail(email);
+    PlanMetadata planMetadata = validateExistentPlan(planId);
+    List<String> planPublicationsIds = accountRepository.getPlanPublicationsIds(planId);
+    PlanMetadataWithContent planMetadataWithContent = new PlanMetadataWithContent(
+      planMetadata.planId(), 
+      planMetadata.name(), 
+      planMetadata.description(), 
+      planMetadata.ownerId(), 
+      planMetadata.collaboratorsIds(), 
+      planMetadata.pendingUsersIdsInvited(), 
+      planPublicationsIds);
+    
+    return PlanWithPublicationsResponseDTO.fromPlanMetadataWithContent(planMetadataWithContent, publicationRepository);
+  }
+
   private Account validateUserOrThrowUnauthorizedFromId(String accountId) {
     Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
     return checkUserRolOrThrowUnauthorized(account);
@@ -94,19 +124,6 @@ public class CommunityService {
     return plan;
   }
 
-	public List<PlanWithPublicationsResponseDTO> getPlans(String email) {
-		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-		if (account.getRole() != Role.USER)
-			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-
-    List<PlanWithPublicationsResponseDTO> plansResponse = new ArrayList<>();
-    addCollaborationsPlansToResponse(plansResponse, account.getId());
-    if (account.getPlansList() != null) {
-      addMyOwnPlansToResponse(plansResponse, account.getPlansList());
-    }
-		return plansResponse;
-	}
 
   private void addCollaborationsPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, String collaboratorUserId) {
     List<PlanMetadataWithContent> plansMetadataCollaborations = accountRepository.getCollaborationsPlansByUserId(collaboratorUserId);

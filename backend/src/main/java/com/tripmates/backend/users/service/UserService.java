@@ -14,7 +14,6 @@ import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
 import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
 import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
