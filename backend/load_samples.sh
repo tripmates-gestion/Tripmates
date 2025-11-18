@@ -32,7 +32,7 @@ make_request() {
     
     # Create a temporary file for the data if provided
     local temp_file=""
-    if [ ! -z "$data" ]; then
+    if [ -n "$data" ]; then
         temp_file=$(mktemp)
         echo "$data" > "$temp_file"
     fi
@@ -49,19 +49,19 @@ make_request() {
     fi
     
     # Add JWT token if provided
-    if [ ! -z "$auth_header" ]; then
+    if [ -n "$auth_header" ]; then
         cmd+=" -H \"Authorization: Bearer $auth_header\""
     fi
     
     # Handle data and file upload
     if [ "$is_multipart" = true ]; then
         # For multipart, add data if provided
-        if [ ! -z "$temp_file" ]; then
+        if [ -n "$temp_file" ]; then
             cmd+=" -F \"data=@$temp_file;type=application/json\""
         fi
         
         # Add files if provided
-        if [ ! -z "$file_paths" ]; then
+        if [ -n "$file_paths" ]; then
             IFS=',' read -ra FILES <<< "$file_paths"
             for file_path in "${FILES[@]}"; do
                 if [ -f "$file_path" ]; then
@@ -71,18 +71,18 @@ make_request() {
         fi
     else
         # For regular JSON
-        if [ ! -z "$temp_file" ]; then
+        if [ -n "$temp_file" ]; then
             cmd+=" -d @$temp_file"
         fi
     fi
     
     # Execute the command
-    response=$(eval $cmd 2>&1)
+    response=$(eval "$cmd" 2>&1)
     local status_code=$(echo "$response" | tail -n1)
     local json_response=$(echo "$response" | head -n -1)
     
     # Clean up temporary file
-    if [ ! -z "$temp_file" ] && [ -f "$temp_file" ]; then
+    if [ -n "$temp_file" ] && [ -f "$temp_file" ]; then
         rm "$temp_file"
     fi
     
@@ -97,12 +97,14 @@ make_request() {
     fi
 }
 
-# Function to update user profile picture
+# Function to update user profile picture with additional images
 update_profile_picture() {
     local user_token=$1
-    local image_path=$2
+    local avatar_path=$2
+    shift 2
+    local additional_images=("$@")
     
-    if [ -z "$user_token" ] || [ ! -f "$image_path" ]; then
+    if [ -z "$user_token" ] || [ ! -f "$avatar_path" ]; then
         return 1
     fi
     
@@ -112,23 +114,34 @@ update_profile_picture() {
     local temp_file=$(mktemp)
     echo '{}' > "$temp_file"
     
-    # Use make_request to handle the multipart form data
-    response=$(curl -s -w "\n%{http_code}" -X PATCH "$BASE_URL/users/me" \
-        -H "Authorization: Bearer $user_token" \
-        -H "Content-Type: multipart/form-data" \
-        -F "data=@$temp_file;type=application/json" \
-        -F "avatar=@$image_path")
+    # Build the curl command with avatar
+    local cmd="curl -s -w \"\n%{http_code}\" -X PATCH \"$BASE_URL/users/me\""
+    cmd+=" -H \"Authorization: Bearer $user_token\""
+    cmd+=" -H \"Content-Type: multipart/form-data\""
+    cmd+=" -F \"data=@$temp_file;type=application/json\""
+    cmd+=" -F \"avatar=@$avatar_path\""
     
-    # Clean up temp file
+    # Add additional images if provided
+    for img_path in "${additional_images[@]}"; do
+        if [ -f "$img_path" ]; then
+            cmd+=" -F \"files=@$img_path\""
+        fi
+    done
+    
+    # Execute the command
+    response=$(eval "$cmd")
+    local status_code=$(echo "$response" | tail -n1)
+    local json_response=$(echo "$response" | head -n -1)
+    
+    # Clean up
     rm -f "$temp_file"
     
-    status_code=$(echo "$response" | tail -n1)
-    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
         print_success "✅ Success! (Status: $status_code)"
         return 0
     else
         print_error "❌ Failed! (Status: $status_code)"
-        echo "Response: $(echo "$response" | head -n -1)"
+        echo "Response: $json_response"
         return 1
     fi
 }
@@ -136,15 +149,16 @@ update_profile_picture() {
 # Function to update business profile with all fields and images
 update_business_picture() {
     local business_token=$1
-    local business_type=$2  # 'restaurant' or 'hotel'
+    local business_type=$2  # 'restaurant', 'hotel', 'cafe', 'hostel'
+    local business_name=$3  # Specific business name
     
     if [ -z "$business_token" ]; then
         return 1
     fi
     
-    echo -e "\n=== Updating $business_type profile with all fields and images ==="
+    echo -e "\n=== Updating $business_name profile with all fields and images ==="
     
-    # Set business details based on type
+    # Set business details based on the specific business
     local name
     local description
     local location
@@ -156,36 +170,68 @@ update_business_picture() {
     local attentionSchedule
     local openingDays
     local hotelType
+    local profile_image
     
-    if [ "$business_type" = "restaurant" ]; then
-        name="La Buena Mesa"
-        description="Un restaurante familiar con los mejores platos de la cocina tradicional"
-        location="Av. Corrientes 1234, Buenos Aires"
-        phoneNumber="+54 11 1234-5678"
-        publicEmail="contacto@labuenamesa.com"
-        businessType="RESTAURANT"
-        averagePrice="$$"
-        restaurantType="Argentino"
-        attentionSchedule='{"openingTime":"09:00","closingTime":"23:00"}'
-        openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
-        profile_image="sample_images/profile_pictures/restaurant.jpg"
-    else  # hotel
-        name="Hotel Playa Dorada"
-        description="Un hotel de lujo frente al mar con todas las comodidades"
-        location="Av. Costanera 2345, Mar del Plata"
-        phoneNumber="+54 223 123-4567"
-        publicEmail="reservas@hotelplayadorada.com"
-        businessType="HOSTING"
-        averagePrice="$$$"
-        hotelType="Hotel"
-        profile_image="sample_images/profile_pictures/hotel.jpg"
-    fi
+    case $business_name in
+        "La Buena Mesa")
+            name="La Buena Mesa"
+            description="Un restaurante familiar con los mejores platos de la cocina tradicional"
+            location="Av. Corrientes 1234, Buenos Aires"
+            phoneNumber="+54 11 1234-5678"
+            publicEmail="contacto@labuenamesa.com"
+            businessType="RESTAURANT"
+            averagePrice='$$'
+            restaurantType="Argentino"
+            attentionSchedule='{"openingTime":"09:00","closingTime":"23:00"}'
+            openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
+            profile_image="sample_images/profile_pictures/restaurant.jpg"
+            ;;
+        "Hotel Playa Dorada")
+            name="Hotel Playa Dorada"
+            description="Un hotel de lujo frente al mar con todas las comodidades"
+            location="Av. Costanera 2345, Mar del Plata"
+            phoneNumber="+54 223 123-4567"
+            publicEmail="reservas@hotelplayadorada.com"
+            businessType="HOSTING"
+            averagePrice='$$$'
+            hotelType="Hotel"
+            profile_image="sample_images/profile_pictures/hotel.jpg"
+            ;;
+        "Café del Centro")
+            name="Café del Centro"
+            description="Un acogedor café en el corazón de la ciudad con especialidades artesanales"
+            location="Av. Santa Fe 1234, Buenos Aires"
+            phoneNumber="+54 11 9876-5432"
+            publicEmail="contacto@cafedelcentro.com"
+            businessType="RESTAURANT"
+            averagePrice='$'
+            restaurantType="Cafe"
+            attentionSchedule='{"openingTime":"07:00","closingTime":"20:00"}'
+            openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
+            profile_image="sample_images/profile_pictures/cafe.jpeg"
+            ;;
+        "Hostel Montaña")
+            name="Hostel Montaña"
+            description="Un hostel ecológico en las montañas con vistas panorámicas"
+            location="Ruta 234, San Carlos de Bariloche"
+            phoneNumber="+54 294 123-4567"
+            publicEmail="info@hostelmontana.com"
+            businessType="HOSTING"
+            averagePrice='$$'
+            hotelType="Hostel"
+            profile_image="sample_images/profile_pictures/hostel.jpg"
+            ;;
+        *)
+            echo "❌ Unknown business: $business_name"
+            return 1
+            ;;
+    esac
     
     # Create a temporary file for the update data
     local temp_file=$(mktemp)
     
     # Create the JSON data for the update with properly escaped dollar signs
-    if [ "$business_type" = "restaurant" ]; then
+    if [ "$business_type" = "restaurant" ] || [ "$business_type" = "cafe" ]; then
         cat > "$temp_file" << EOF
 {
     "name": "$name",
@@ -193,7 +239,7 @@ update_business_picture() {
     "location": "$location",
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
-    "averagePrice": "\$\$",
+    "averagePrice": "$averagePrice",
     "restaurantType": "$restaurantType",
     "attentionSchedule": $attentionSchedule,
     "openingDays": $openingDays
@@ -207,7 +253,7 @@ EOF
     "location": "$location",
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
-    "averagePrice": "\$\$\$",
+    "averagePrice": "$averagePrice",
     "hotelType": "$hotelType"
 }
 EOF
@@ -256,16 +302,8 @@ EOF
         curl_cmd+=("-F" "avatar=@$profile_image")
     fi
     
-    # Add additional business images based on type
-    if [ "$business_type" = "restaurant" ] && [ -f "sample_images/business_picture/restaurante1.jpeg" ]; then
-        curl_cmd+=(
-            "-F" "files=@sample_images/business_picture/restaurante1.jpeg"
-        )
-    elif [ "$business_type" = "hotel" ] && [ -f "sample_images/business_picture/playa1.jpeg" ]; then
-        curl_cmd+=(
-            "-F" "files=@sample_images/business_picture/playa1.jpeg"
-        )
-    fi
+    # Add additional business images based on type - only for profile, not for publications
+    # Skip adding additional images to keep them only for publications
     
     # Execute the image update
     response=$("${curl_cmd[@]}" 2>/dev/null)
@@ -303,7 +341,7 @@ add_review_with_image() {
     cmd+=" -F \"data=@$temp_file;type=application/json\""
     
     # Add images if provided
-    if [ ! -z "$image_paths" ]; then
+    if [ -n "$image_paths" ]; then
         IFS=',' read -ra FILES <<< "$image_paths"
         for file_path in "${FILES[@]}"; do
             if [ -f "$file_path" ]; then
@@ -313,7 +351,7 @@ add_review_with_image() {
     fi
     
     # Execute the command
-    response=$(eval $cmd 2>&1)
+    response=$(eval "$cmd" 2>&1)
     local status_code=$(echo "$response" | tail -n1)
     local json_response=$(echo "$response" | head -n -1)
     
@@ -383,6 +421,23 @@ make_request "/auth/register" '{
     "businessType": "HOTEL"
 }' "Registering Hotel Business"
 
+make_request "/auth/register" '{
+    "name": "Café del Centro",
+    "email": "contacto@cafedelcentro.com",
+    "password": "business123",
+    "role": "BUSINESS",
+    "businessType": "RESTAURANT"
+}' "Registering Café del Centro"
+
+make_request "/auth/register" '{
+    "name": "Hostel Montaña Mágica",
+    "email": "info@hostelmontana.com",
+    "password": "business123",
+    "role": "BUSINESS",
+    "businessType": "HOTEL"
+}' "Registering Hostel Montaña Mágica"
+
+
 # 2. Login and get tokens
 echo -e "\n=== Logging in users to get tokens ==="
 
@@ -402,7 +457,7 @@ login_user() {
         # Extract token from response
         token=$(echo "$response" | grep -o '"accessToken":"[^"]*' | cut -d'"' -f4)
         
-        if [ ! -z "$token" ]; then
+        if [ -n "$token" ]; then
             eval "$var_name=\"$token\""
             print_success "✅ Success!"
             return 0
@@ -421,11 +476,12 @@ login_user "maria@example.com" "password123" "USER2_TOKEN"
 login_user "carlos@example.com" "password123" "USER3_TOKEN"
 login_user "info@labuenamesa.com" "business123" "RESTAURANT_TOKEN"
 login_user "reservas@playadorada.com" "business123" "HOTEL_TOKEN"
+login_user "contacto@cafedelcentro.com" "business123" "CAFE_TOKEN"
+login_user "info@hostelmontana.com" "business123" "HOSTEL_TOKEN"
 
 # 3. Update profile pictures
 echo -e "\n=== Updating Profile Pictures ==="
 
-# Update user profile pictures (if image files exist)
 if [ -f "sample_images/profile_pictures/user1.jpg" ]; then
     update_profile_picture "$USER1_TOKEN" "sample_images/profile_pictures/user1.jpg"
 fi
@@ -435,34 +491,48 @@ if [ -f "sample_images/profile_pictures/user2.jpg" ]; then
 fi
 
 # Update business profiles with all fields and images
-if [ ! -z "$RESTAURANT_TOKEN" ]; then
-    update_business_picture "$RESTAURANT_TOKEN" "restaurant"
+if [ -n "$RESTAURANT_TOKEN" ]; then
+    update_business_picture "$RESTAURANT_TOKEN" "restaurant" "La Buena Mesa"
 fi
 
-if [ ! -z "$HOTEL_TOKEN" ]; then
-    update_business_picture "$HOTEL_TOKEN" "hotel"
+if [ -n "$HOTEL_TOKEN" ]; then
+    update_business_picture "$HOTEL_TOKEN" "hotel" "Hotel Playa Dorada"
 fi
+
+if [ -n "$CAFE_TOKEN" ]; then
+    update_business_picture "$CAFE_TOKEN" "cafe" "Café del Centro"
+fi
+
+if [ -n "$HOSTEL_TOKEN" ]; then
+    update_business_picture "$HOSTEL_TOKEN" "hostel" "Hostel Montaña"
+fi
+
 
 # 4. Create publications (only for businesses)
 echo -e "\n=== Creating Publications ==="
-
 # Function to create a publication with dynamic images
 create_publication() {
-    local token="$1"
-    local business_type="$2"
+    local token=$1
+    local business_type=$2
     local index=$3
+    local business_name=${4:-""}  # Optional business name parameter
     
+    echo -n "Creating $business_type publication $index... "
+    
+    # Set default values
     local title=""
     local description=""
     local phone=""
     local email=""
     local location=""
-    local opening_days=""
-    local opening_time=""
-    local closing_time=""
+    local opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]'
+    local opening_time="09:00"
+    local closing_time="23:00"
+    local exceptional_days='[]'
+    local tags='[]'
     local image_path=""
     
-    if [ "$business_type" == "restaurant" ]; then
+    if [ "$business_type" = "restaurant" ]; then
         case $index in
             1)
                 title="Menú Especial de Otoño"
@@ -470,7 +540,6 @@ create_publication() {
                 phone="+54 11 1234-5678"
                 email="reservas@labuenamesa.com"
                 location="Av. Corrientes 1234, Buenos Aires"
-                opening_days='["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]'
                 opening_time="12:00"
                 closing_time="23:00"
                 exceptional_days='["2025-12-25", "2026-01-01"]'
@@ -478,39 +547,130 @@ create_publication() {
                 image_path="sample_images/publications/restaurant/cena1.jpg"
                 ;;
             2)
-                title="Cena Romántica con Vista al Río"
-                description="Vive una experiencia gastronómica inolvidable con nuestra cena de 5 pasos y vino de la casa."
-                phone="+54 11 5555-1234"
+                title="Noche de Vinos"
+                description="Degustación de vinos de bodegas locales con maridaje incluido."
+                phone="+54 11 1234-5678"
                 email="eventos@labuenamesa.com"
-                location="Puerto Madero, Dique 2, Buenos Aires"
-                opening_days='["THURSDAY", "FRIDAY", "SATURDAY"]'
+                location="Av. Corrientes 1234, Buenos Aires"
                 opening_time="20:00"
-                closing_time="00:00"
-                exceptional_days='["2025-12-24", "2025-12-31"]'
-                tags='["cena", "romántico", "vista al río", "alta cocina"]'
-                # No image for this one since we only have one restaurant image
+                closing_time="23:30"
+                exceptional_days='[]'
+                tags='["vinos", "degustación", "evento"]'
+                image_path="sample_images/publications/restaurant/vinos.jpeg"
+                ;;
+            3)
+                title="Brunch de Domingos"
+                description="Disfruta de nuestro brunch los domingos de 10:00 a 15:00."
+                phone="+54 11 1234-5678"
+                email="reservas@labuenamesa.com"
+                location="Av. Corrientes 1234, Buenos Aires"
+                opening_days='["SUNDAY"]'
+                opening_time="10:00"
+                closing_time="15:00"
+                exceptional_days='[]'
+                tags='["brunch", "desayuno", "domingo"]'
+                image_path="sample_images/publications/restaurant/postre1.jpg"
                 ;;
         esac
-    elif [ "$business_type" == "hotel" ]; then
+    elif [ "$business_type" = "hotel" ]; then
         case $index in
             1)
                 title="Escape a la Playa - Oferta Especial"
                 description="Disfruta de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido."
-                phone="+54 11 8765-4321"
-                email="info@playadorada.com"
-                location="Av. Costanera 2500, Mar del Plata"
-                opening_days='["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]'
+                phone="+54 223 123-4567"
+                email="reservas@playadorada.com"
+                location="Av. Costanera 2345, Mar del Plata"
+                opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
                 opening_time="00:00"
                 closing_time="23:59"
                 exceptional_days='[]'
                 tags='["hotel", "playa", "vacaciones", "todo incluido"]'
                 image_path="sample_images/publications/hotel/playa1.jpeg"
                 ;;
+            2)
+                title="Paquete Romántico"
+                description="Escapada romántica con cena gourmet y masajes para dos."
+                phone="+54 223 123-4567"
+                email="romance@playadorada.com"
+                location="Av. Costanera 2345, Mar del Plata"
+                opening_days='["FRIDAY","SATURDAY"]'
+                opening_time="14:00"
+                closing_time="23:00"
+                exceptional_days='[]'
+                tags='["romántico", "parejas", "especial"]'
+                image_path="sample_images/publications/hotel/deluxe1.jpeg"
+                ;;
+            3)
+                title="Paquete Familiar"
+                description="Diversión para toda la familia con actividades para niños y adultos."
+                phone="+54 223 123-4567"
+                email="familias@playadorada.com"
+                location="Av. Costanera 2345, Mar del Plata"
+                opening_days='["SATURDAY","SUNDAY"]'
+                opening_time="09:00"
+                closing_time="20:00"
+                exceptional_days='[]'
+                tags='["familiar", "niños", "actividades"]'
+                image_path="sample_images/publications/hotel/suite1.jpg"
+                ;;
+        esac
+    elif [ "$business_type" = "cafe" ]; then
+        case $index in
+            1)
+                title="Café de Especialidad"
+                description="Disfruta de nuestros cafés de especialidad tostados artesanalmente."
+                phone="+54 11 9876-5432"
+                email="contacto@cafedelcentro.com"
+                location="Av. Santa Fe 1234, Buenos Aires"
+                opening_time="07:00"
+                closing_time="20:00"
+                tags='["café", "especialidad", "tostado"]'
+                image_path="sample_images/publications/restaurant/cafe/cafe1.jpg"
+                ;;
+            2)
+                title="Tardes de Té"
+                description="Relájate con nuestra selección de tés e infusiones con pastelería casera."
+                phone="+54 11 9876-5432"
+                email="contacto@cafedelcentro.com"
+                location="Av. Santa Fe 1234, Buenos Aires"
+                opening_time="15:00"
+                closing_time="19:00"
+                tags='["té", "infusiones", "pastelería"]'
+                image_path="sample_images/publications/restaurant/cafe/cafe2.jpg"
+                ;;
+        esac
+    elif [ "$business_type" = "hostel" ]; then
+        case $index in
+            1)
+                title="Aventura en la Montaña"
+                description="Paquete de aventura con caminatas guiadas y alojamiento en la naturaleza."
+                phone="+54 294 123-4567"
+                email="info@hostelmontana.com"
+                location="Ruta 234, San Carlos de Bariloche"
+                opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
+                opening_time="00:00"
+                closing_time="23:59"
+                tags='["aventura", "montaña", "naturaleza"]'
+                image_path="sample_images/publications/hotel/habitacion1.jpg"
+                ;;
+            2)
+                title="Escape de Fin de Semana"
+                description="Escapada relajante con desayuno incluido y actividades al aire libre."
+                phone="+54 294 123-4567"
+                email="reservas@hostelmontana.com"
+                location="Ruta 234, San Carlos de Bariloche"
+                opening_days='["FRIDAY","SATURDAY","SUNDAY"]'
+                opening_time="14:00"
+                closing_time="12:00"
+                tags='["fin de semana", "relax", "naturaleza"]'
+                image_path="sample_images/publications/hotel/playa1.jpeg"
+                ;;
         esac
     fi
-    
-    # Create the publication
-    local data=$(cat <<EOF
+
+    # Create a temporary file for the JSON data
+    local temp_json=$(mktemp)
+    cat << EOF > "$temp_json"
 {
     "title": "$title",
     "description": "$description",
@@ -526,187 +686,280 @@ create_publication() {
     "tags": $tags
 }
 EOF
-)
 
-    # Only include image if it exists
+    # Build the curl command
+    local cmd="curl -s -w \"\n%{http_code}\" -X POST \"$BASE_URL/publications/business\""
+    cmd+=" -H \"Authorization: Bearer $token\""
+    cmd+=" -H \"Content-Type: multipart/form-data\""
+    cmd+=" -F \"data=@$temp_json;type=application/json\""
+    
+    # Add image if it exists
     if [ -f "$image_path" ]; then
-        make_request "/publications/business" "$data" "Creating $business_type publication $index" "$token" "multipart/form-data" "POST" "files" "$image_path" true
+        cmd+=" -F \"files=@$image_path\""
+    fi
+
+    # Execute the command
+    response=$(eval "$cmd")
+    local status_code=$(echo "$response" | tail -n1)
+    local json_response=$(echo "$response" | head -n -1)
+    
+    # Clean up
+    rm -f "$temp_json"
+    
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
+        echo "✅ Success! (Status: $status_code)"
+        echo "$json_response"
+        return 0
     else
-        make_request "/publications/business" "$data" "Creating $business_type publication $index" "$token" "application/json" "POST"
+        echo "❌ Failed! (Status: $status_code)"
+        echo "Response: $json_response"
+        return 1
     fi
 }
 
 # Create restaurant publications
-if [ ! -z "$RESTAURANT_TOKEN" ]; then
-    # Check how many restaurant publications we have images for
-    if [ -d "sample_images/publications/restaurant" ]; then
-        pub_count=$(find "sample_images/publications/restaurant" -maxdepth 1 -type f | wc -l)
-        for ((i=1; i<=$pub_count; i++)); do
-            create_publication "$RESTAURANT_TOKEN" "restaurant" $i
-        done
-    fi
-    
-    # If no images but we still want to create at least one publication
-    if [ "$pub_count" -eq 0 ]; then
-        create_publication "$RESTAURANT_TOKEN" "restaurant" 1
-    fi
+if [ -n "$RESTAURANT_TOKEN" ]; then
+    # Create 3 restaurant publications using all available restaurant images
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 1
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 2
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 3
 fi
 
+# Create cafe publications
+if [ -n "$CAFE_TOKEN" ]; then
+    # Create 2 cafe publications using all available cafe images
+    create_publication "$CAFE_TOKEN" "cafe" 1
+    create_publication "$CAFE_TOKEN" "cafe" 2
+fi
+
+# Create hostel publications
+if [ -n "$HOSTEL_TOKEN" ]; then
+    # Create 2 hostel publications using available hotel images
+    create_publication "$HOSTEL_TOKEN" "hostel" 1
+    create_publication "$HOSTEL_TOKEN" "hostel" 2
+fi
+
+
 # Create hotel publications
-if [ ! -z "$HOTEL_TOKEN" ]; then
-    # Check how many hotel publications we have images for
-    if [ -d "sample_images/publications/hotel" ]; then
-        pub_count=$(find "sample_images/publications/hotel" -maxdepth 1 -type f | wc -l)
-        for ((i=1; i<=$pub_count; i++)); do
-            create_publication "$HOTEL_TOKEN" "hotel" $i
-        done
-    fi
-    
-    # If no images but we still want to create at least one publication
-    if [ "$pub_count" -eq 0 ]; then
-        create_publication "$HOTEL_TOKEN" "hotel" 1
-    fi
+if [ -n "$HOTEL_TOKEN" ]; then
+    # We have hotel images, create 3 hotel publications
+    create_publication "$HOTEL_TOKEN" "hotel" 1
+    create_publication "$HOTEL_TOKEN" "hotel" 2
+    create_publication "$HOTEL_TOKEN" "hotel" 3
 fi
 
 # 5. Create restaurant menus and room packs
 echo -e "\n=== Creating Restaurant Menus and Room Packs ==="
 
-# Function to add a menu item with dynamic images
+# Function to add a menu item with dynamic images and business-specific content
 add_menu_item() {
-    local token="$1"
-    local index=$2
+    local token=$1
+    local business_name=$2
+    local index=$3
     
     local food_name=""
-    local price=0
     local description=""
+    local price=""
     local image_path=""
     
-    case $index in
-        1)
-            food_name="Milanesa Napolitana"
-            price=3500
-            description="Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas."
-            image_path="sample_images/menu_items/milanesa.jpeg"
+    case $business_name in
+        "La Buena Mesa")
+            case $index in
+                1)
+                    food_name="Milanesa Napolitana"
+                    description="Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas."
+                    price="3500.0"
+                    image_path="sample_images/menu_items/milanesa.jpeg"
+                    ;;
+                2)
+                    food_name="Jugo de Naranja"
+                    description="Jugo de Naranja de primera calidad para acompañar la comida."
+                    price="700.0"
+                    image_path="sample_images/menu_items/bebida.jpg"
+                    ;;
+                *)
+                    echo "❌ Invalid menu item index: $index"
+                    return 1
+                    ;;
+            esac
             ;;
-        2)
-            food_name="Ensalada César"
-            price=2200
-            description="Lechuga romana, crutones, queso parmesano, con aderezo César."
-            # No image for this one
+        "Café del Centro")
+            case $index in
+                1)
+                    food_name="Café Especial"
+                    description="Café artesanal de granos tostados localmente. Servido con medialuna de manteca."
+                    price="1200.0"
+                    image_path="sample_images/menu_items/cafe1.jpg"
+                    ;;
+                2)
+                    food_name="Té de Hierbas"
+                    description="Mezcla de hierbas aromáticas seleccionadas. Relajante y digestivo."
+                    price="1000.0"
+                    image_path="sample_images/menu_items/cafe2.jpg"
+                    ;;
+                *)
+                    echo "❌ Invalid menu item index: $index"
+                    return 1
+                    ;;
+            esac
             ;;
-        3)
-            food_name="Pizza Margherita"
-            price=2800
-            description="Clásica pizza con salsa de tomate, mozzarella fresca, albahaca y aceite de oliva."
-            # No image for this one
+        *)
+            echo "❌ Unknown business: $business_name"
+            return 1
             ;;
     esac
     
-    local data=$(cat <<EOF
+    echo -n "Adding $food_name to menu... "
+    
+    # Create a temporary file for the JSON data
+    local temp_json=$(mktemp)
+    cat << EOF > "$temp_json"
 {
     "foodName": "$food_name",
-    "price": $price,
-    "description": "$description"
+    "description": "$description",
+    "price": $price
 }
 EOF
-)
 
-    # Only include image if it exists
+    # Build the curl command - using POST to create new items
+    local cmd="curl -s -w \"\n%{http_code}\" -X POST \"$BASE_URL/users/me/restaurant\""
+    cmd+=" -H \"Authorization: Bearer $token\""
+    cmd+=" -H \"Content-Type: multipart/form-data\""
+    cmd+=" -F \"data=@$temp_json;type=application/json\""
+    
+    # Add image if it exists
     if [ -f "$image_path" ]; then
-        make_request "/users/me/restaurant" "$data" "Adding $food_name to menu" "$token" "multipart/form-data" "POST" "files" "$image_path" true
+        cmd+=" -F \"files=@$image_path\""
+    fi
+
+    # Execute the command
+    response=$(eval "$cmd")
+    local status_code=$(echo "$response" | tail -n1)
+    local json_response=$(echo "$response" | head -n -1)
+    
+    # Clean up
+    rm -f "$temp_json"
+    
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
+        echo "✅ Success! (Status: $status_code)"
+        echo "$json_response"
+        return 0
     else
-        make_request "/users/me/restaurant" "$data" "Adding $food_name to menu" "$token" "application/json" "POST"
+        echo "❌ Failed! (Status: $status_code)"
+        echo "Response: $json_response"
+        return 1
     fi
 }
 
-# Function to add a room pack with dynamic images
+# Function to add a room pack with dynamic images and business-specific content
 add_room_pack() {
-    local token="$1"
-    local index=$2
+    local token=$1
+    local business_name=$2
+    local index=$3
     
-    local title=""
     local description=""
-    local check_in=""
-    local check_out=""
-    local guests=0
-    local price=0
-    local services='[]'
+    local price=""
+    local services="[]"
     local image_path=""
     
-    case $index in
-        1)
-            title="Habitación Estándar con Vista al Mar"
-            description="Habitación doble con vista al mar. Incluye desayuno buffet y acceso a todas las instalaciones del hotel."
-            check_in="2025-12-20"
-            check_out="2025-12-27"
-            guests=2
-            price=25000
-            services='["desayuno", "wifi", "piscina", "estacionamiento"]'
-            image_path="sample_images/room_packs/playa.jpg"
+    case $business_name in
+        "Hotel Playa Dorada")
+            case $index in
+                1)
+                    description="Habitación Estándar con Vista al Mar - Habitación doble con vista al mar. Incluye desayuno buffet y acceso a todas las instalaciones del hotel."
+                    price="25000.0"
+                    services='["desayuno", "wifi", "piscina", "estacionamiento"]'
+                    image_path="sample_images/publications/hotel/habitacion1.jpg"
+                    ;;
+                2)
+                    description="Suite Familiar - Amplia suite con sala de estar y cama king size. Ideal para familias o grupos pequeños."
+                    price="38000.0"
+                    services='["desayuno", "wifi", "piscina", "estacionamiento", "minibar"]'
+                    image_path="sample_images/publications/hotel/suite1.jpg"
+                    ;;
+                3)
+                    description="Habitación Deluxe - Lujosa habitación con jacuzzi y vista panorámica. Incluye acceso al spa y desayuno a la habitación."
+                    price="45000.0"
+                    services='["desayuno", "wifi", "piscina", "estacionamiento", "spa", "minibar"]'
+                    image_path="sample_images/publications/hotel/deluxe1.jpeg"
+                    ;;
+                *)
+                    echo "❌ Invalid room pack index: $index"
+                    return 1
+                    ;;
+            esac
             ;;
-        2)
-            title="Suite Familiar"
-            description="Amplia suite familiar con sala de estar y cocineta. Incluye acceso al spa y gimnasio."
-            check_in="2025-12-20"
-            check_out="2025-12-25"
-            guests=4
-            price=45000
-            services='["desayuno", "wifi", "piscina", "spa", "gimnasio", "estacionamiento"]'
-            # No image for this one
+        "Hostel Montaña")
+            case $index in
+                1)
+                    description="Habitación Compartida 4 Personas - Cama individual en habitación compartida con baño compartido. Ideal para mochileros y grupos jóvenes."
+                    price="8000.0"
+                    services='["wifi", "cocina_compartida", "area_comun"]'
+                    image_path="sample_images/business_picture/hostel1.jpg"
+                    ;;
+                2)
+                    description="Habitación Doble Privada - Habitación privada con cama matrimonial y baño privado. Perfecta para parejas."
+                    price="15000.0"
+                    services='["wifi", "desayuno_simple", "baño_privado"]'
+                    image_path="sample_images/business_picture/hostel2.jpg"
+                    ;;
+                *)
+                    echo "❌ Invalid room pack index: $index"
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            echo "❌ Unknown business: $business_name"
+            return 1
             ;;
     esac
     
-    local data=$(cat <<EOF
+    echo -n "Adding room pack $index... "
+    
+    # Create a temporary file for the JSON data
+    local temp_json=$(mktemp)
+    cat << EOF > "$temp_json"
 {
-    "checkInDate": "$check_in",
-    "checkOutDate": "$check_out",
-    "numberOfGuests": $guests,
-    "services": $services,
+    "description": "$description",
     "price": $price,
-    "description": "$description"
+    "services": $services,
+    "checkInDate": "2025-12-20",
+    "checkOutDate": "2025-12-27",
+    "numberOfGuests": 2
 }
 EOF
-)
 
-    # Only include image if it exists
+    # Build the curl command
+    local cmd="curl -s -w \"\n%{http_code}\" -X POST \"$BASE_URL/users/me/hosting\""
+    cmd+=" -H \"Authorization: Bearer $token\""
+    cmd+=" -H \"Content-Type: multipart/form-data\""
+    cmd+=" -F \"data=@$temp_json;type=application/json\""
+    
+    # Add image if it exists
     if [ -f "$image_path" ]; then
-        make_request "/users/me/hosting" "$data" "Adding $title" "$token" "multipart/form-data" "POST" "files" "$image_path" true
+        cmd+=" -F \"images=@$image_path\""
     else
-        make_request "/users/me/hosting" "$data" "Adding $title" "$token" "application/json" "POST"
+        echo -n "[No image] "
+    fi
+
+    # Execute the command
+    response=$(eval "$cmd")
+    local status_code=$(echo "$response" | tail -n1)
+    local json_response=$(echo "$response" | head -n -1)
+    
+    # Clean up
+    rm -f "$temp_json"
+    
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
+        echo "✅ Success! (Status: $status_code)"
+        return 0
+    else
+        echo "❌ Failed! (Status: $status_code)"
+        echo "Response: $json_response"
+        return 1
     fi
 }
-
-# Add menu items for restaurant
-if [ ! -z "$RESTAURANT_TOKEN" ]; then
-    # Check how many menu item images we have
-    if [ -d "sample_images/menu_items" ]; then
-        menu_count=$(find "sample_images/menu_items" -maxdepth 1 -type f | wc -l)
-        for ((i=1; i<=$menu_count; i++)); do
-            add_menu_item "$RESTAURANT_TOKEN" $i
-        done
-    fi
-    
-    # If no images but we still want to create at least one menu item
-    if [ "$menu_count" -eq 0 ]; then
-        add_menu_item "$RESTAURANT_TOKEN" 1
-    fi
-fi
-
-# Add room packs for hotel
-if [ ! -z "$HOTEL_TOKEN" ]; then
-    # Check how many room pack images we have
-    if [ -d "sample_images/room_packs" ]; then
-        room_count=$(find "sample_images/room_packs" -maxdepth 1 -type f | wc -l)
-        for ((i=1; i<=$room_count; i++)); do
-            add_room_pack "$HOTEL_TOKEN" $i
-        done
-    fi
-    
-    # If no images but we still want to create at least one room pack
-    if [ "$room_count" -eq 0 ]; then
-        add_room_pack "$HOTEL_TOKEN" 1
-    fi
-fi
 
 # 6. Add reviews to publications
 echo -e "\n=== Adding Reviews to Publications ==="
@@ -733,76 +986,156 @@ add_review() {
             title="Muy buena experiencia"
             content="Muy buena atención y platos deliciosos. El lugar es acogedor y la relación calidad-precio es excelente."
             rating=4
-            # No image for this review
+            ;;
+        *)
+            echo "❌ Invalid review index: $index"
+            return 1
             ;;
     esac
     
-    local data=$(cat <<EOF
+    echo -n "Adding review: \"$title\"... "
+    
+    # Create a temporary file for the JSON data
+    local temp_json=$(mktemp)
+    cat << EOF > "$temp_json"
 {
     "title": "$title",
     "content": "$content",
     "rating": $rating
 }
 EOF
-)
 
-    # Only include image if it exists
+    # Build the curl command
+    local cmd="curl -s -w \"\n%{http_code}\" -X POST \"$BASE_URL/publications/$publication_id/review\""
+    cmd+=" -H \"Authorization: Bearer $token\""
+    cmd+=" -H \"Content-Type: multipart/form-data\""
+    cmd+=" -F \"data=@$temp_json;type=application/json\""
+    
+    # Add image if it exists
     if [ -f "$image_path" ]; then
-        add_review_with_image "$publication_id" "$data" "$token" "$image_path"
+        cmd+=" -F \"files=@$image_path\""
+    fi
+
+    # Execute the command
+    response=$(eval "$cmd")
+    local status_code=$(echo "$response" | tail -n1)
+    local json_response=$(echo "$response" | head -n -1)
+    
+    # Clean up
+    rm -f "$temp_json"
+    
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
+        echo "✅ Success! (Status: $status_code)"
+        echo "$json_response"
+        return 0
     else
-        # Use regular make_request for reviews without images
-        make_request "/publications/$publication_id/review" "$data" "Adding review: $title" "$token" "application/json" "POST"
+        echo "❌ Failed! (Status: $status_code)"
+        echo "Response: $json_response"
+        return 1
     fi
 }
 
-# First, let's get the list of publications to get their IDs
-if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$RESTAURANT_TOKEN" ]; then
-    echo -n "Getting list of publications... "
+# Generic function to add reviews for any publication
+add_reviews_to_publication() {
+    local publication_token="$1"  # Token of the publication owner (to search publications)
+    local publication_type="$2"   # For logging purposes
     
-    # Instead of using /publications, let's use the search endpoint
-    response=$(curl -s -X GET "$BASE_URL/publications/search" \
-        -H "Authorization: Bearer $RESTAURANT_TOKEN" \
+    if [ -z "$publication_token" ]; then
+        return 0
+    fi
+    
+    echo -n "Getting $publication_type publications... "
+    
+    response=$(curl -s -X GET "$BASE_URL/publications/mine?page=0&size=50" \
+        -H "Authorization: Bearer $publication_token" \
         -H "Content-Type: application/json" \
         -w "\n%{http_code}")
     
     status_code=$(echo "$response" | tail -n1)
     if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
-        print_success "✅ Success! (Status: $status_code)"
-        # Extract the first publication ID (assuming there's at least one)
-        publication_id=$(echo "$response" | head -n -1 | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
+        echo "✅ Found publications"
         
-        if [ ! -z "$publication_id" ]; then
-            # Check how many review images we have
-            if [ -d "sample_images/reviews" ]; then
-                review_count=$(find "sample_images/reviews" -maxdepth 1 -type f | wc -l)
-                
-                # Add reviews for each user (up to the number of review images available)
-                if [ $review_count -gt 0 ] && [ ! -z "$USER1_TOKEN" ]; then
-                    add_review "$publication_id" "$USER1_TOKEN" 1
-                fi
-                
-                if [ $review_count -gt 1 ] && [ ! -z "$USER2_TOKEN" ]; then
-                    add_review "$publication_id" "$USER2_TOKEN" 2
-                fi
-                
-                # If no review images but we still want to add at least one review
-                if [ $review_count -eq 0 ] && [ ! -z "$USER1_TOKEN" ]; then
-                    add_review "$publication_id" "$USER1_TOKEN" 1
-                fi
-            else
-                # If no reviews directory, add at least one review without an image
-                if [ ! -z "$USER1_TOKEN" ]; then
-                    add_review "$publication_id" "$USER1_TOKEN" 1
-                fi
-            fi
-        else
-            print_error "❌ No publications found to add reviews to"
+        # Extract publication IDs from paginated response
+        publication_ids=$(echo "$response" | head -n -1 | grep -o '"id":"[^"]*' | cut -d'"' -f4)
+        
+        if [ -z "$publication_ids" ]; then
+            echo "❌ No publications found for $publication_type"
+            return 1
         fi
+        
+        # Count available review images once
+        local review_count=0
+        if [ -d "sample_images/reviews" ]; then
+            review_count=$(find "sample_images/reviews" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) | wc -l)
+        fi
+        
+        # Add reviews to each publication - distribute users across publications
+        local publication_index=0
+        local user_tokens=("$USER1_TOKEN" "$USER2_TOKEN" "$USER3_TOKEN")
+        local user_count=0
+        
+        # Count available users
+        for token in "${user_tokens[@]}"; do
+            if [ -n "$token" ]; then
+                ((user_count++))
+            fi
+        done
+        
+        for publication_id in $publication_ids; do
+            ((publication_index++))
+            echo "Adding review to publication $publication_index..."
+            
+            # Assign different users to different publications
+            local user_index=$(( (publication_index - 1) % user_count ))
+            local review_index=$(( (publication_index - 1) % 2 + 1 )) # Alternate between review 1 and 2
+            
+            if [ -n "${user_tokens[$user_index]}" ]; then
+                add_review "$publication_id" "${user_tokens[$user_index]}" $review_index
+            fi
+        done
+        
+        echo "✅ Added reviews to $publication_index publications"
+        
     else
-        print_error "❌ Failed to search publications (Status: $status_code)"
+        echo "❌ Failed to search $publication_type publications (Status: $status_code)"
         echo "Response: $(echo "$response" | head -n -1)"
+        return 1
     fi
+}
+
+# 6. Add restaurant menus and room packs
+echo -e "\n=== Adding Restaurant Menus and Room Packs ==="
+
+# Add menu items for restaurant
+if [ -n "$RESTAURANT_TOKEN" ]; then
+    add_menu_item "$RESTAURANT_TOKEN" "La Buena Mesa" 1
+    add_menu_item "$RESTAURANT_TOKEN" "La Buena Mesa" 2
 fi
+
+# Add menu items for cafe
+if [ -n "$CAFE_TOKEN" ]; then
+    add_menu_item "$CAFE_TOKEN" "Café del Centro" 1
+    add_menu_item "$CAFE_TOKEN" "Café del Centro" 2
+fi
+
+# Add room packs for hotel
+if [ -n "$HOTEL_TOKEN" ]; then
+    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 1
+    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 2
+    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 3
+fi
+
+# Add room packs for hostel
+if [ -n "$HOSTEL_TOKEN" ]; then
+    add_room_pack "$HOSTEL_TOKEN" "Hostel Montaña" 1
+    add_room_pack "$HOSTEL_TOKEN" "Hostel Montaña" 2
+fi
+
+# 7. Add reviews to all business types - each type only once
+add_reviews_to_publication "$RESTAURANT_TOKEN" "restaurant"
+add_reviews_to_publication "$CAFE_TOKEN" "cafe"
+add_reviews_to_publication "$HOTEL_TOKEN" "hotel"
+add_reviews_to_publication "$HOSTEL_TOKEN" "hostel"
 
 # 7. Add followers between users
 echo -e "\n=== Adding Followers ==="
@@ -816,11 +1149,6 @@ add_follower() {
     
     echo -n "Making $follower_name follow $followed_name... "
     
-    # Debug: Show what we're about to send
-    echo "[DEBUG] Token prefix: ${follower_token:0:20}..." >&2
-    echo "[DEBUG] User ID to follow: $user_id_to_follow" >&2
-    echo "[DEBUG] URL: $BASE_URL/users/$user_id_to_follow/follow" >&2
-    
     response=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/users/$user_id_to_follow/follow" \
         -H "Authorization: Bearer $follower_token" \
         -H "Content-Type: application/json")
@@ -833,7 +1161,7 @@ add_follower() {
         return 0
     else
         print_error "❌ Failed! (Status: $status_code)"
-        echo "[DEBUG] Response body: $body" >&2
+        echo "Response: $body"
         return 1
     fi
 }
@@ -847,89 +1175,81 @@ get_user_id_from_profile() {
         -H "Authorization: Bearer $token" \
         -H "Content-Type: application/json")
     
-    echo "[DEBUG] /users/me response: $response" >&2
-    
     # Extract the ID from the response - try multiple patterns
     user_id=$(echo "$response" | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
-    
-    echo "[DEBUG] Pattern 1 result: '$user_id'" >&2
     
     # If that didn't work, try another pattern
     if [ -z "$user_id" ]; then
         user_id=$(echo "$response" | grep -oP '(?<="id":")[^"]*' | head -1)
-        echo "[DEBUG] Pattern 2 result: '$user_id'" >&2
     fi
     
     # Try a third pattern: look for "_id" field (MongoDB ID)
     if [ -z "$user_id" ]; then
         user_id=$(echo "$response" | grep -o '"_id":"[^"]*' | head -1 | cut -d'"' -f4)
-        echo "[DEBUG] Pattern 3 (_id) result: '$user_id'" >&2
     fi
     
-    if [ ! -z "$user_id" ]; then
-        echo "[DEBUG] Final user_id: '$user_id'" >&2
+    if [ -n "$user_id" ]; then
         echo "$user_id"
         return 0
     else
         print_error "Could not get user ID from response"
-        echo "[ERROR] Full response: $response" >&2
         return 1
     fi
 }
 
 # Get user IDs
-if [ ! -z "$USER1_TOKEN" ]; then
+if [ -n "$USER1_TOKEN" ]; then
     USER1_ID=$(get_user_id_from_profile "$USER1_TOKEN")
-    if [ ! -z "$USER1_ID" ]; then
+    if [ -n "$USER1_ID" ]; then
         print_success "✅ Got User1 ID: $USER1_ID"
     fi
 fi
 
-if [ ! -z "$USER2_TOKEN" ]; then
+if [ -n "$USER2_TOKEN" ]; then
     USER2_ID=$(get_user_id_from_profile "$USER2_TOKEN")
-    if [ ! -z "$USER2_ID" ]; then
+    if [ -n "$USER2_ID" ]; then
         print_success "✅ Got User2 ID: $USER2_ID"
     fi
 fi
 
-if [ ! -z "$USER3_TOKEN" ]; then
+if [ -n "$USER3_TOKEN" ]; then
     USER3_ID=$(get_user_id_from_profile "$USER3_TOKEN")
-    if [ ! -z "$USER3_ID" ]; then
+    if [ -n "$USER3_ID" ]; then
         print_success "✅ Got User3 ID: $USER3_ID"
     fi
 fi
 
 # Add followers (User1 follows User2 and User3)
-if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$USER2_ID" ]; then
+if [ -n "$USER1_TOKEN" ] && [ -n "$USER2_ID" ]; then
     add_follower "$USER1_TOKEN" "$USER2_ID" "Juan" "María"
 else
-    print_error "Skipping: Juan follow María - missing tokens or IDs (USER1_TOKEN=${USER1_TOKEN:0:10}..., USER2_ID=$USER2_ID)"
+    print_error "Skipping: Juan follow María - missing tokens or IDs"
 fi
 
-if [ ! -z "$USER1_TOKEN" ] && [ ! -z "$USER3_ID" ]; then
+if [ -n "$USER1_TOKEN" ] && [ -n "$USER3_ID" ]; then
     add_follower "$USER1_TOKEN" "$USER3_ID" "Juan" "Carlos"
 else
-    print_error "Skipping: Juan follow Carlos - missing tokens or IDs (USER1_TOKEN=${USER1_TOKEN:0:10}..., USER3_ID=$USER3_ID)"
+    print_error "Skipping: Juan follow Carlos - missing tokens or IDs"
 fi
 
 # Add followers (User2 follows User1)
-if [ ! -z "$USER2_TOKEN" ] && [ ! -z "$USER1_ID" ]; then
+if [ -n "$USER2_TOKEN" ] && [ -n "$USER1_ID" ]; then
     add_follower "$USER2_TOKEN" "$USER1_ID" "María" "Juan"
 else
-    print_error "Skipping: María follow Juan - missing tokens or IDs (USER2_TOKEN=${USER2_TOKEN:0:10}..., USER1_ID=$USER1_ID)"
+    print_error "Skipping: María follow Juan - missing tokens or IDs"
 fi
 
 # Add followers (User3 follows User1 and User2)
-if [ ! -z "$USER3_TOKEN" ] && [ ! -z "$USER1_ID" ]; then
+if [ -n "$USER3_TOKEN" ] && [ -n "$USER1_ID" ]; then
     add_follower "$USER3_TOKEN" "$USER1_ID" "Carlos" "Juan"
 else
-    print_error "Skipping: Carlos follow Juan - missing tokens or IDs (USER3_TOKEN=${USER3_TOKEN:0:10}..., USER1_ID=$USER1_ID)"
+    print_error "Skipping: Carlos follow Juan - missing tokens or IDs"
 fi
 
-if [ ! -z "$USER3_TOKEN" ] && [ ! -z "$USER2_ID" ]; then
+if [ -n "$USER3_TOKEN" ] && [ -n "$USER2_ID" ]; then
     add_follower "$USER3_TOKEN" "$USER2_ID" "Carlos" "María"
 else
-    print_error "Skipping: Carlos follow María - missing tokens or IDs (USER3_TOKEN=${USER3_TOKEN:0:10}..., USER2_ID=$USER2_ID)"
+    print_error "Skipping: Carlos follow María - missing tokens or IDs"
 fi
 
 # 8. Add likes to publications
@@ -958,7 +1278,7 @@ add_like_to_publication() {
 }
 
 # Get all publications
-if [ ! -z "$USER1_TOKEN" ]; then
+if [ -n "$USER1_TOKEN" ]; then
     echo -n "Fetching publications for adding likes... "
     
     response=$(curl -s -X GET "$BASE_URL/publications/search" \
@@ -971,22 +1291,20 @@ if [ ! -z "$USER1_TOKEN" ]; then
     if [ ${#pub_ids[@]} -gt 0 ]; then
         print_success "✅ Found ${#pub_ids[@]} publication(s)"
         
-        # Add likes from different users to each publication
+        # Add likes from different users to each publication (max 2 likes per publication)
+        counter=0
         for pub_id in "${pub_ids[@]}"; do
             # User1 likes the publication
-            if [ ! -z "$USER1_TOKEN" ]; then
+            if [ -n "$USER1_TOKEN" ]; then
                 add_like_to_publication "$USER1_TOKEN" "$pub_id" "Juan"
             fi
             
-            # User2 likes the publication
-            if [ ! -z "$USER2_TOKEN" ]; then
+            # User2 likes the publication (only for some publications to vary)
+            if [ -n "$USER2_TOKEN" ] && [ $(($counter % 2)) -eq 0 ]; then
                 add_like_to_publication "$USER2_TOKEN" "$pub_id" "María"
             fi
             
-            # User3 likes the publication
-            if [ ! -z "$USER3_TOKEN" ]; then
-                add_like_to_publication "$USER3_TOKEN" "$pub_id" "Carlos"
-            fi
+            counter=$((counter + 1))
         done
     else
         print_error "❌ No publications found"
