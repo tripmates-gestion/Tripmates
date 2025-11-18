@@ -6,6 +6,7 @@ export const ENDPOINTS = {
 
     MY_FOLLOWERS: '/users/me/followers',
     MY_FOLLOWINGS: '/users/me/followings',
+    
     USER_FOLLOWERS: (userId: string) => `/users/${userId}/followers`,
     USER_FOLLOWINGS: (userId: string) => `/users/${userId}/followings`,
     FOLLOW_USER: (userId: string) => `/users/${userId}/follow`,
@@ -28,9 +29,20 @@ export const ENDPOINTS = {
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
     PATCH_PLAN: "/users/plans/{id}",
+    GET_USER_BY_EMAIL: "/users/{email}",
+
+    LIKE_PUBLICATION: "/publications/{id}/like",
+    UNLIKE_PUBLICATION: "/publications/{id}/unlike",
+    GET_LIKES_FOR_PUBLICATION: "/publications/{id}/likes",
+
+    // recomendaciones
+    BUSSINESS_PUBLICATION_RECOMMENDATIONS: '/users/recommendations/publications/',
+  
     METRICS_REVIEWS: '/metrics/reviews',
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
     METRICS_VIEW_PROFILE: '/metrics/view-profile'
-  };
+
+    // invitaciones a planes 
+};
   

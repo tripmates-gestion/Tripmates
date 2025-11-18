@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Grid, DialogContentText, Typography, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../../../hooks/useAuth';
-import { createPlan, getPlans, deletePlan, updatePlan } from '../../../services/plansService';
+import { createPlan, getPlans, deletePlan, updatePlan, addPublicationToPlan } from '../../../services/plansService';
 import PlansGrid from './PlansGrid';
 import type { BusinessPublicationResponseDTO } from '../../../types/Business';
 import PublicationCard from '../../publications/PublicationCard';
@@ -126,6 +126,8 @@ export default function UserPlansTab() {
       try {
         await createPlan(accessToken, newPlanName.trim(), newPlanDescription.trim());
         await fetchPlans();
+
+        
         
         setNewPlanName('');
         setNewPlanDescription('');

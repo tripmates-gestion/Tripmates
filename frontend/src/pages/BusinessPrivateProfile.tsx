@@ -21,6 +21,7 @@ import { PriceBadge, OpeningDaysRow} from "../components/profile/businessPublicP
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
 import { BusinessMetricsButton } from '../components/metrics/BottonMetrics';
+import { ShareProfileButton } from '../components/profile/ShareProfileButton';
 
 
 const BASE_TABS = [
@@ -46,12 +47,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function makeUrl(business: BusinessCommon | null | undefined): string {
+  if (!business) return '';
+  const account = business;
+  const type = business.businessType === BUSINESS_TYPES.restaurant ? 'restaurant' : business.businessType === BUSINESS_TYPES.hotel ? 'hotel' : 'business';
+  return `http://localhost:5173/${type}/${account.id}?account=${encodeURIComponent(JSON.stringify(account))}`;
+}
+
 export default function BusinessProfile() {
   const { user, accessToken } = useAuth();
   const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-
+  
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
       ? [...BASE_TABS, { key: 'menu', label: 'Menú' }]
@@ -145,6 +153,8 @@ export default function BusinessProfile() {
                   Editar
                 </Button>
               </Stack>
+
+              <ShareProfileButton shareUrl={makeUrl(business)} />
             </Stack>
           </CardContent>
 
