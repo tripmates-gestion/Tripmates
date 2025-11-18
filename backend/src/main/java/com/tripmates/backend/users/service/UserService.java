@@ -9,13 +9,11 @@ import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
-import com.tripmates.backend.users.dto.*;
 import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
 import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
 import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanResumeResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
@@ -23,7 +21,6 @@ import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -258,36 +255,6 @@ public class UserService {
 		accountRepository.save(account);
 	}
 
-	/**
-	 * Obtains all user's plans.
-	 * @param email user's email.
-	 * @return a list of {@link PlanResumeResponseDTO}.
-	 */
-	public List<PlanResumeResponseDTO> getPlans(String email) {
-		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-
-		if (account.getRole() != Role.USER)
-			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-
-		if (account.getPlansList() == null)
-			return new ArrayList<>();
-
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = new ArrayList<>();
-
-		for (Plan plan : account.getPlansList()) {
-			List<PublicationResumeResponseDTO> publicationResumeResponseDTOList = new ArrayList<>();
-
-			for (String publicationId : plan.getPublicationsIdList())
-				publicationRepository.findById(publicationId)
-					.ifPresent(publication -> publicationResumeResponseDTOList
-						.add(PublicationResumeResponseDTO.fromPublication(publication)));
-
-			planResumeResponseDTOList.add(PlanResumeResponseDTO.fromPlan(plan, publicationResumeResponseDTOList));
-		}
-
-		return planResumeResponseDTOList;
-	}
 
 	/**
 	 * Adds a new menu item to the business's restaurant account.

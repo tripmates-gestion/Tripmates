@@ -29,7 +29,6 @@ import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
 import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanResumeResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
@@ -142,7 +141,7 @@ public class UserController {
 	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
 	@ApiResponses(
 			value = {
-					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+					@ApiResponse(responseCode = "204", description = "User's plan created successfully",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = void.class))),
 					@ApiResponse(responseCode = "404", description = "User not found",
@@ -196,23 +195,6 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/plans/list")
-	@Operation(description = "Obtains user's plans or plans where he belongs")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
-
-		if (planResumeResponseDTOList.isEmpty())
-			return ResponseEntity.noContent().build();
-
-		return ResponseEntity.ok(planResumeResponseDTOList);
-	}
 
 
 	@PostMapping(value = "/me/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
