@@ -259,7 +259,6 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
   }
 
 
-
   @Override
   public void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
     ObjectId planObjectId = new ObjectId(planId);

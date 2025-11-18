@@ -2,9 +2,6 @@ package com.tripmates.backend.community.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,33 +94,32 @@ public class CommunityService {
     return plan;
   }
 
-
 	public List<PlanWithPublicationsResponseDTO> getPlans(String email) {
 		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
-
     List<PlanWithPublicationsResponseDTO> plansResponse = new ArrayList<>();
+    addCollaborationsPlansToResponse(plansResponse, account.getId());
+    if (account.getPlansList() != null) {
+      addMyOwnPlansToResponse(plansResponse, account.getPlansList());
+    }
+		return plansResponse;
+	}
 
-    List<PlanMetadataWithContent> plansMetadataCollaborations = accountRepository.getCollaborationsPlansByUserId(account.getId());
-    System.out.println("\n\n\n\n\n\n\n\n\nLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-    System.out.println(plansMetadataCollaborations);
+  private void addCollaborationsPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, String collaboratorUserId) {
+    List<PlanMetadataWithContent> plansMetadataCollaborations = accountRepository.getCollaborationsPlansByUserId(collaboratorUserId);
       for (PlanMetadataWithContent planMetadataWithContent : plansMetadataCollaborations) {
         var planWithPublications = PlanWithPublicationsResponseDTO.fromPlanMetadataWithContent(planMetadataWithContent, publicationRepository);
         plansResponse.add(planWithPublications);
       }
+  }
 
-    //debe devolver una lista de mis planes y agregar los planes en los que estoy de colaborador
-    List<Plan> myPlans = account.getPlansList() != null ? account.getPlansList() : new ArrayList<>();
+  private void addMyOwnPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, List<Plan> myPlans) {
     for (Plan plan : myPlans) {
       var planWithPublications = PlanWithPublicationsResponseDTO.fromPlan(plan, publicationRepository);
       plansResponse.add(planWithPublications);
     }
-    
-    
-		return plansResponse;
-	}
+  }
 }
