@@ -2,13 +2,18 @@ package com.tripmates.backend.community.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tripmates.backend.community.service.CommunityService;
 import com.tripmates.backend.publications.dto.ReviewsListDTO;
+import com.tripmates.backend.users.dto.plan.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.common.dto.ErrorDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,5 +148,23 @@ public class CommunityController {
     communityService.declineInvitation(planId, userDetails.getUsername());
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/list-plans")
+	@Operation(description = "Obtains user's plans or plans where he belongs")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = List.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
+		List<PlanWithPublicationsResponseDTO> planResumeResponseDTOList = communityService.getPlans(userDetails.getUsername());
+		if (planResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(planResumeResponseDTOList);
+	}
+
 
 }

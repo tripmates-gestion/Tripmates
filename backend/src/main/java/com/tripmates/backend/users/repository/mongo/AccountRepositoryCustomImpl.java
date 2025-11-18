@@ -2,6 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.PlanMetadata;
+import com.tripmates.backend.common.types.PlanMetadataWithContent;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.RoomPack;
@@ -18,12 +19,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Repository;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
+import org.springframework.data.mongodb.core.aggregation.ConvertOperators;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.stereotype.Repository;
+
 @Repository
 public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 
@@ -228,6 +235,7 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
           .and("plansList.ownerId").as("ownerId")
           .and("plansList.collaboratorsUsersIds").as("collaboratorsIds")
           .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
+          .and("plansList._id").as("planId")
     );
 
     AggregationResults<PlanMetadata> results = mongoTemplate.aggregate(
@@ -238,6 +246,24 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
     
     return results.getUniqueMappedResult();
   }
+
+  @Override
+  public List<String> getPlanPublicationsIds(String planId) {
+    ObjectId planObjectId = new ObjectId(planId);
+    Aggregation aggregation = Aggregation.newAggregation(
+      Aggregation.match(Criteria.where("plansList._id").is(planObjectId)),
+      Aggregation.unwind("plansList"),
+      Aggregation.match(Criteria.where("plansList._id").is(planObjectId)),
+      Aggregation.project("plansList.publicationsIdList")
+          .and("plansList.publicationsIdList").as("publicationsIdList"));
+
+    AggregationResults<PublicationIdsProjection> results = mongoTemplate.aggregate(aggregation, "account",
+      PublicationIdsProjection.class);
+    PublicationIdsProjection projection = results.getUniqueMappedResult();
+    return projection != null ? projection.publicationsIdList : List.of();
+  }
+
+
 
   @Override
   public void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
@@ -274,6 +300,34 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
       .filterArray(Criteria.where("plan._id").is(planObjectId));
 
     mongoTemplate.updateFirst(query, update, Account.class);
+  }
+
+  @Override
+  public List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId) {
+    Aggregation aggregation = Aggregation.newAggregation(
+        Aggregation.unwind("plansList"),
+        Aggregation.unwind("plansList.collaboratorsUsersIds"),
+        Aggregation.match(Criteria.where("plansList.collaboratorsUsersIds").is(collaboratorId)),
+        Aggregation.group("plansList._id")
+            .first("plansList._id").as("planId")
+            .first("plansList.name").as("name")
+            .first("plansList.description").as("description")
+            .first("plansList.ownerId").as("ownerId")
+            .addToSet("plansList.collaboratorsUsersIds").as("collaboratorsIds")
+            .first("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
+            .first("plansList.publicationsIdList").as("publicationsIds")
+    );
+
+    AggregationResults<PlanMetadataWithContent> results = mongoTemplate.aggregate(
+        aggregation,
+        "account",
+        PlanMetadataWithContent.class
+    );
+
+    return results.getMappedResults();
+  }
+  private static class PublicationIdsProjection {
+    private List<String> publicationsIdList;
   }
 
 }
