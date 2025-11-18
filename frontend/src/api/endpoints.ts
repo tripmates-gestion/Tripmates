@@ -33,5 +33,8 @@ export const ENDPOINTS = {
     LIKE_PUBLICATION: "/publications/{id}/like",
     UNLIKE_PUBLICATION: "/publications/{id}/unlike",
     GET_LIKES_FOR_PUBLICATION: "/publications/{id}/likes",
+
+    // recomendaciones
+    BUSSINESS_PUBLICATION_RECOMMENDATIONS: '/users/recommendations/publications/',
   };
   

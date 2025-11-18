@@ -1,6 +1,6 @@
 import { apiFetch } from '../api/client';
 import { ENDPOINTS } from '../api/endpoints';
-import type { BusinessUpdateResponseDTO } from '../types/business';
+import type { BusinessUpdateResponseDTO } from '../types/Business';
 import type { BusinessUser, CommonUser } from '../types/PrivateUserProfiles';
 
 function ensureToken(accessToken: string | null) {

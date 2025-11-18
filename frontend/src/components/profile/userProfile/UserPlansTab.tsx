@@ -4,7 +4,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../../../hooks/useAuth';
 import { createPlan, getPlans, deletePlan, updatePlan, addPublicationToPlan } from '../../../services/plansService';
 import PlansGrid from './PlansGrid';
-import type { BusinessPublicationResponseDTO } from '../../../types/business';
+import type { BusinessPublicationResponseDTO } from '../../../types/Business';
 import PublicationCard from '../../publications/PublicationCard';
 
 interface Plan {
@@ -285,7 +285,10 @@ export default function UserPlansTab() {
                           accentColor: 'red',
                         }}
                       />
-                      <PublicationCard publication={pub} />
+                      <PublicationCard 
+                        publication={pub} 
+                        onView={() => console.log(`Viewing publication with id: ${pub.id}`)} 
+                      />
                     </Box>
                 ))}
               </Grid>

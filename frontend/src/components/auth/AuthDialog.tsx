@@ -3,7 +3,7 @@ import {
   Dialog, DialogContent, DialogActions, Tabs, Tab,
   Typography, Button, Alert
 } from '@mui/material';
-import type { AuthTab } from '../../types/auth';
+import type { AuthTab } from '../../types/Auth';
 import type { AccountType } from '../../types/AccountTypes';
 import { AUTH_TEXT } from '../../constants/Auth';
 import LoginForm from './LoginForm';

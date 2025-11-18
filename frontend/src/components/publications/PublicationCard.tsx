@@ -21,7 +21,7 @@ import {
   ThumbUpOutlined, 
 } from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { useAuth } from "../../hooks/useAuth";
 import React from "react";
 import { likePublication, unlikePublication } from "../../services/userService";
@@ -32,7 +32,9 @@ type Props = {
   onView: (p: BusinessPublicationResponseDTO) => void;
   onEdit?: (p: BusinessPublicationResponseDTO) => void;
   onDelete?: (id: string) => void;
-  onAddToBoard?: (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;
+  onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>; 
+  sx?: object;
+  moveOnMouseOver?: boolean;
 };
 
 const IMG_PLACEHOLDER_URL= "https://images.unsplash.com/photo-1610513320995-1ad4bbf25e55?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070";
@@ -87,7 +89,7 @@ function getUserLiked(likes: Array<{id: string}>, userId?: string) {
   return likes.some(l => l.id === userId);
 }
 
-export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard }: Props) {
+export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard, sx, moveOnMouseOver }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const handleMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
@@ -147,6 +149,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
     }
   };
 
+  console.log("Publication card ",publication.id, " has onAddToBoard: ",onAddToBoard)
+  const moveOnMouseOverLocal = moveOnMouseOver ?? true;
   return (
     <>
     <Card
@@ -156,7 +160,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         borderRadius: 3,
         overflow: "hidden",
         transition: "0.25s",
-        "&:hover": { boxShadow: 6, transform: "translateY(-2px)" }
+        ...(moveOnMouseOverLocal ? { "&:hover": { transform: "translateY(-2px)" } } : {}),
+        ...sx
       }}
     >
       <Box sx={{ position: "relative", height: 220, overflow: "hidden" }}>
@@ -212,7 +217,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         </Stack>
 
         {hasMenuOptions && (
-          <IconButton
+          <IconButton 
           onClick={(e) => {
             e.stopPropagation();
             handleMenu(e);
@@ -223,11 +228,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             right: 8,
             bgcolor:
               theme.palette.mode === "dark"
-          ? "rgba(255,255,255,0.2)"
+          ? "rgba(255, 255, 255, 0.7)"
           : "rgba(255,255,255,0.9)",
             "&:hover": {
               bgcolor:
-          theme.palette.mode === "dark" ? "rgba(255,255,255,0.3)" : "white",
+          theme.palette.mode === "dark" ? "rgba(244, 239, 239, 0.93)" : "white",
             },
           })}
         >

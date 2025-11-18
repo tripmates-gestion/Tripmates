@@ -1,4 +1,4 @@
-import type { Review, ReviewListDTO, ReviewDTO } from '../../types/review';
+import type { Review, ReviewListDTO, ReviewDTO } from '../../types/Review';
 
 /**
  * Mapea un ReviewDTO a Review

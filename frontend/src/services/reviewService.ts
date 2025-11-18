@@ -1,7 +1,8 @@
 import { apiFetch } from "../api/client";
 import { ENDPOINTS } from "../api/endpoints";
-import { dataURLtoFile, validateFile } from "../components/publications/utils/imageHelpers";
-import type { Review } from "../types/review";
+import { validateFile } from "../components/publications/utils/imageHelpers";
+import { dataURLtoFile } from "../components/GeneralHelpers";
+import type { Review } from "../types/Review";
 
 export async function saveReview(review: Review, accessToken: string, photos: string[]) {
     if (!review.publicationId) {
