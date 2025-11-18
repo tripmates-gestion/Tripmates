@@ -6,7 +6,7 @@ import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.config.TestSecurityConfig;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import org.junit.jupiter.api.*;
