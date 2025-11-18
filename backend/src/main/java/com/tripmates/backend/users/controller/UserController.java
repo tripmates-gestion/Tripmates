@@ -22,6 +22,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 
 import com.tripmates.backend.users.dto.*;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
+import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
+import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
+import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
+import com.tripmates.backend.users.dto.plan.PlanResumeResponseDTO;
+import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
@@ -29,7 +38,6 @@ import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
-
 import java.util.List;
 
 @RestController
@@ -409,7 +417,8 @@ public class UserController {
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
 		List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
-		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+    FollowingsListResponseDTO followingsListResponseDTO = new FollowingsListResponseDTO(followings);
+		return ResponseEntity.ok(followingsListResponseDTO);
 	}
 
 	@GetMapping(value = "/{userId}/followers")

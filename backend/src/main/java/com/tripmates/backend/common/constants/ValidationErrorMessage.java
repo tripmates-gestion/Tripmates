@@ -68,4 +68,7 @@ public class ValidationErrorMessage {
 
 	public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS = "Una cuenta de usuario no puede solicitar estadisticas";
 
+  public static final String PLAN_NOT_FOUND = "El plan referido no se encontró";
+  
+
 }

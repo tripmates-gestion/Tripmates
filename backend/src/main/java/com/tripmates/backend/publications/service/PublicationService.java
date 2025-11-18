@@ -9,7 +9,7 @@ import com.tripmates.backend.publications.repository.mongo.PublicationRepository
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.entity.mongo.Publication;

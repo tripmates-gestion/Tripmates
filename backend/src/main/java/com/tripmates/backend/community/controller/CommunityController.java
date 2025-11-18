@@ -4,13 +4,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.tripmates.backend.community.service.CommunityService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
 @RequestMapping("/community")
+@Tag(name = "Community", description = "Community management endpoints")
 public class CommunityController {
   private final CommunityService communityService;
 
@@ -21,10 +25,11 @@ public class CommunityController {
   @PostMapping("/{planId}/{userId}/invite-user")
   public ResponseEntity<?> inviteUserToPlan
   (
-    @PathVariable("planId") Long planId,
-    @PathVariable("userId") Long userId
+    @PathVariable("planId") String planId,
+    @PathVariable("userId") String userId,
+    @AuthenticationPrincipal UserDetails userDetails
   ) {
-    communityService.inviteUserToPlan(planId, userId);
+    communityService.inviteUserToPlan(planId, userId, userDetails.getUsername());
     return ResponseEntity.noContent().build();
   }
 }

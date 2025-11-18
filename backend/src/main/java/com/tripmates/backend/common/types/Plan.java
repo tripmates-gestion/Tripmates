@@ -46,9 +46,9 @@ public class Plan {
 	@Field(targetType = FieldType.STRING)
 	private String ownerId;
 
-	private HashSet<String> pendingUsersIdsInvited;
+	private HashSet<String> pendingUsersIdsInvited = new HashSet<>();
 
-	private HashSet<String> usersIds;
+	private HashSet<String> collaboratorsUsersIds = new HashSet<>();
 
 	/**
 	 * Retorna un plan según lo especificado.

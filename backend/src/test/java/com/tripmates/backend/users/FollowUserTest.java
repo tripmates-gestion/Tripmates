@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
-import com.tripmates.backend.users.dto.FollowingsListResponseDTO;
+import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 
 import org.junit.jupiter.api.Test;
