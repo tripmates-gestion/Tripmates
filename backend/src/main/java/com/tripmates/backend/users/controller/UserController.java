@@ -30,7 +30,6 @@ import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
 import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
 import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
