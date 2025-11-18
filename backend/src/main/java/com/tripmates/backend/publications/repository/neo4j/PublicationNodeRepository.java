@@ -10,38 +10,48 @@ import java.util.List;
 
 @Repository
 public interface PublicationNodeRepository extends Neo4jRepository<PublicationNode, String> {
-    
+
     @Query("""
-		MATCH (a:AccountNode {id: $accountId})-[:FOLLOWS*1..2]->(f:AccountNode)
-		WITH DISTINCT a, f
-		MATCH (f)-[r:REVIEWED]->(p:PublicationNode)
-		WHERE r.rating >= 3
-		AND NOT EXISTS {
-			MATCH (a)-[:REVIEWED]->(p)
-		}
-		RETURN DISTINCT p
-		ORDER BY rand()
-		SKIP $skip
-		LIMIT $limit
-		""")
-	List<PublicationNode> findRecommendedPublications(
-		@Param("accountId") String accountId, 
-		@Param("skip") int skip,
-		@Param("limit") int limit
-	);
-	
-	@Query("""
-		MATCH (a:AccountNode {id: $accountId})-[:FOLLOWS*1..2]->(f:AccountNode)
-		WITH DISTINCT a, f
-		MATCH (f)-[r:REVIEWED]->(p:PublicationNode)
-		WHERE r.rating >= 3
-		AND NOT EXISTS {
-			MATCH (a)-[:REVIEWED]->(p)
-		}
-		RETURN COUNT(DISTINCT p) as count
-		""")
-	long countRecommendedPublications(@Param("accountId") String accountId);
+        MATCH (a:AccountNode {id: $accountId})
+        OPTIONAL MATCH (a)-[:FOLLOWS*1..2]->(f:AccountNode)
+        WITH a, COLLECT(DISTINCT f) + a AS allRelevantAccounts
+        UNWIND allRelevantAccounts AS account
+        
+        MATCH (account)-[interaction:REVIEWED|LIKED]->(pub:PublicationNode)
+        WHERE (interaction:REVIEWED AND interaction.rating >= 3) OR interaction:LIKED
+        
+        MATCH (business:AccountNode)-[:CREATED]->(pub)
+        MATCH (business)-[:CREATED]->(businessPub:PublicationNode)
+        
+        WHERE NOT (a)-[:REVIEWED|LIKED]->(businessPub)
+        
+        RETURN DISTINCT businessPub
+        ORDER BY rand()
+        SKIP $skip
+        LIMIT $limit
+    """)
+    List<PublicationNode> findRecommendedPublications(@Param("accountId") String accountId, 
+                                                    @Param("skip") int skip,
+                                                    @Param("limit") int limit);
+
+    @Query("""
+        MATCH (a:AccountNode {id: $accountId})
+        OPTIONAL MATCH (a)-[:FOLLOWS*1..2]->(f:AccountNode)
+        WITH a, COLLECT(DISTINCT f) + a AS allRelevantAccounts
+        UNWIND allRelevantAccounts AS account
+        
+        MATCH (account)-[interaction:REVIEWED|LIKED]->(pub:PublicationNode)
+        WHERE (interaction:REVIEWED AND interaction.rating >= 3) OR interaction:LIKED
+        
+        MATCH (business:AccountNode)-[:CREATED]->(pub)
+        MATCH (business)-[:CREATED]->(businessPub:PublicationNode)
+        
+        WHERE NOT (a)-[:REVIEWED|LIKED]->(businessPub)
+        
+        RETURN COUNT(DISTINCT businessPub)
+    """)
+    long countRecommendedPublications(@Param("accountId") String accountId);
 
     @Query("MATCH (p:PublicationNode {id: $id}) DETACH DELETE p")
-    void deletePublicationNodeById(@Param("id") String publicationId);
+    void deletePublicationNodeById(@Param("id") String id);
 }

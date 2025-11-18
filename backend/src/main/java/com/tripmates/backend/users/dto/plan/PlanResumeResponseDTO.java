@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.dto;
+package com.tripmates.backend.users.dto.plan;
 
 import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;

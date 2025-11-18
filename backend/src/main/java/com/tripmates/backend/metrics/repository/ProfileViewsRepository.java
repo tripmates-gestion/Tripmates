@@ -8,5 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.tripmates.backend.metrics.entity.mongo.ProfileView;
 
 public interface ProfileViewsRepository extends MongoRepository<ProfileView, String> {
-  List<ProfileView> findByProfileSeenEmailAndDateBetween(String email, Date startTime, Date endTime);
+
+	List<ProfileView> findByProfileSeenEmailAndDateBetween(String email, Date startTime, Date endTime);
+
 }

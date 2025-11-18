@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.dto;
+package com.tripmates.backend.users.dto.account;
 
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;

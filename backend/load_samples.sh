@@ -16,6 +16,19 @@ print_error() {
     echo -e "\033[0;31m$1\033[0m"
 }
 
+# Function to setup required directories for business images
+setup_business_directories() {
+    echo "=== Setting up business directories ==="
+    
+    # Base directories
+    local base_dir="sample_images"
+    local account_dir="$base_dir/business_picture"
+    local profile_dir="$base_dir/profile_pictures"
+    
+    echo "Profile directory: $profile_dir"
+    echo "Account directory: $account_dir"
+}
+
 # Function to make a request with file upload support
 make_request() {
     local endpoint=$1
@@ -151,6 +164,7 @@ update_business_picture() {
     local business_token=$1
     local business_type=$2  # 'restaurant', 'hotel', 'cafe', 'hostel'
     local business_name=$3  # Specific business name
+    local business_picture=$4  # Comma-separated list of account images
     
     if [ -z "$business_token" ]; then
         return 1
@@ -211,7 +225,7 @@ update_business_picture() {
             profile_image="sample_images/profile_pictures/cafe.jpeg"
             ;;
         "Hostel Montaña")
-            name="Hostel Montaña"
+            name="Hostel Montaña Mágica"
             description="Un hostel ecológico en las montañas con vistas panorámicas"
             location="Ruta 234, San Carlos de Bariloche"
             phoneNumber="+54 294 123-4567"
@@ -297,13 +311,22 @@ EOF
         "-F" "data=@$temp_file;type=application/json"
     )
     
-    # Add profile picture if it exists
+    # Add profile picture to avatar field if it exists
     if [ -f "$profile_image" ]; then
         curl_cmd+=("-F" "avatar=@$profile_image")
     fi
     
-    # Add additional business images based on type - only for profile, not for publications
-    # Skip adding additional images to keep them only for publications
+    # Add account images to files array if they exist
+    if [ -n "$business_picture" ]; then
+        IFS=',' read -ra IMAGES <<< "$business_picture"
+        for img in "${IMAGES[@]}"; do
+            if [ -f "$img" ]; then
+                curl_cmd+=("-F" "files=@$img")
+            else
+                print_error "Account image not found: $img"
+            fi
+        done
+    fi
     
     # Execute the image update
     response=$("${curl_cmd[@]}" 2>/dev/null)
@@ -374,6 +397,9 @@ if ! docker info > /dev/null 2>&1; then
     print_error "Docker is not running. Please start Docker and try again."
     exit 1
 fi
+
+# Setup required directories and check for images
+setup_business_directories
 
 # 1. Clean up existing data (optional)
 echo -e "\n=== Cleaning up existing data (if any) ==="
@@ -492,19 +518,19 @@ fi
 
 # Update business profiles with all fields and images
 if [ -n "$RESTAURANT_TOKEN" ]; then
-    update_business_picture "$RESTAURANT_TOKEN" "restaurant" "La Buena Mesa"
+    update_business_picture "$RESTAURANT_TOKEN" "restaurant" "La Buena Mesa" "sample_images/business_picture/restaurant2.jpg,sample_images/business_picture/resto5.jpg"
 fi
 
 if [ -n "$HOTEL_TOKEN" ]; then
-    update_business_picture "$HOTEL_TOKEN" "hotel" "Hotel Playa Dorada"
+    update_business_picture "$HOTEL_TOKEN" "hotel" "Hotel Playa Dorada" "sample_images/business_picture/playa1.jpeg,sample_images/business_picture/hostel1.jpg,sample_images/business_picture/hostel2.jpg"
 fi
 
 if [ -n "$CAFE_TOKEN" ]; then
-    update_business_picture "$CAFE_TOKEN" "cafe" "Café del Centro"
+    update_business_picture "$CAFE_TOKEN" "cafe" "Café del Centro" "sample_images/business_picture/cafe1.jpg,sample_images/business_picture/cafe2.jpg"
 fi
 
 if [ -n "$HOSTEL_TOKEN" ]; then
-    update_business_picture "$HOSTEL_TOKEN" "hostel" "Hostel Montaña"
+    update_business_picture "$HOSTEL_TOKEN" "hostel" "Hostel Montaña" "sample_images/business_picture/hotel1.jpg"
 fi
 
 
@@ -663,7 +689,7 @@ create_publication() {
                 opening_time="14:00"
                 closing_time="12:00"
                 tags='["fin de semana", "relax", "naturaleza"]'
-                image_path="sample_images/publications/hotel/playa1.jpeg"
+                image_path="sample_images/publications/hotel/aventura1.jpg"
                 ;;
         esac
     fi
@@ -747,9 +773,6 @@ if [ -n "$HOTEL_TOKEN" ]; then
     create_publication "$HOTEL_TOKEN" "hotel" 2
     create_publication "$HOTEL_TOKEN" "hotel" 3
 fi
-
-# 5. Create restaurant menus and room packs
-echo -e "\n=== Creating Restaurant Menus and Room Packs ==="
 
 # Function to add a menu item with dynamic images and business-specific content
 add_menu_item() {
@@ -961,34 +984,104 @@ EOF
     fi
 }
 
-# 6. Add reviews to publications
-echo -e "\n=== Adding Reviews to Publications ==="
-
 # Function to add a review with dynamic images
 add_review() {
     local publication_id="$1"
     local token="$2"
     local index=$3
+    local business_type="$4"  # restaurant, hotel, cafe, hostel
     
     local title=""
     local content=""
     local rating=5
     local image_path=""
     
-    case $index in
-        1)
+    # Reseñas específicas por tipo de negocio
+    case $business_type in
+        "restaurant")
+            case $index in
+                1)
             title="Excelente experiencia"
-            content="¡Excelente comida y servicio! La milanesa estaba deliciosa. Volveré seguro."
-            rating=5
+            content="¡Excelente comida y servicio! estaba todo delicioso. Volveré seguro."
+                    rating=5
             image_path="sample_images/reviews/review.png"
+                    ;;
+                2)
+                    title="Excelente relación calidad-precio"
+                    content="Comida casera abundante y sabrosa. Las pastas son caseras y los postres caseros. Muy recomendable el tiramisú."
+                    rating=4
+                    ;;
+                3)
+                    title="Buena opción para comer"
+                    content="El lugar es acogedor y la comida está bien. No es nada del otro mundo pero cumple con lo que ofrece. El servicio fue rápido."
+                    rating=3
+                    ;;
+                *)
+                    echo "❌ Índice de reseña inválido para restaurante: $index"
+                    return 1
+                    ;;
+            esac
             ;;
-        2)
-            title="Muy buena experiencia"
-            content="Muy buena atención y platos deliciosos. El lugar es acogedor y la relación calidad-precio es excelente."
-            rating=4
+            
+        "hotel")
+            case $index in
+                1)
+                    title="Excelente estadía frente al mar"
+                    content="Las habitaciones son amplias y con vista al mar. El desayuno buffet es variado y delicioso. La piscina está impecable."
+                    rating=5
+                    ;;
+                2)
+                    title="Buen hotel pero con detalles"
+                    content="La ubicación es perfecta, justo frente a la playa. Las habitaciones son cómodas aunque un poco ruidosas. El personal es muy atento."
+                    rating=4
+                    ;;
+                *)
+                    echo "❌ Índice de reseña inválido para hotel: $index"
+                    return 1
+                    ;;
+            esac
             ;;
+            
+        "cafe")
+            case $index in
+                1)
+                    title="El mejor café de la zona"
+                    content="Excelente lugar para trabajar o encontrarse con amigos. El café de especialidad es increíble y los medialunas calentitas. WiFi rápido y buen ambiente."
+                    rating=5
+                    ;;
+                2)
+                    title="Lindo lugar pero caro"
+                    content="El ambiente es acogedor pero los precios son un poco elevados para lo que ofrecen. Los postres están buenos pero no justifican el precio."
+                    rating=3
+                    ;;
+                *)
+                    echo "❌ Índice de reseña inválido para café: $index"
+                    return 1
+                    ;;
+            esac
+            ;;
+            
+        "hostel")
+            case $index in
+                1)
+                    title="Excelente relación calidad-precio"
+                    content="Muy buen hostel para mochileros. Las habitaciones compartidas son limpias y los baños están impecables. El personal es muy amable y organizan buenas actividades."
+                    rating=5
+                    ;;
+                2)
+                    title="Buen ambiente viajero"
+                    content="El lugar tiene muy buena onda y es fácil conocer gente. Las instalaciones son básicas pero limpias. La cocina está bien equipada."
+                    rating=4
+                    ;;
+                *)
+                    echo "❌ Índice de reseña inválido para hostel: $index"
+                    return 1
+                    ;;
+            esac
+            ;;
+            
         *)
-            echo "❌ Invalid review index: $index"
+            echo "❌ Tipo de negocio no reconocido: $business_type"
             return 1
             ;;
     esac
@@ -1037,14 +1130,14 @@ EOF
 
 # Generic function to add reviews for any publication
 add_reviews_to_publication() {
-    local publication_token="$1"  # Token of the publication owner (to search publications)
-    local publication_type="$2"   # For logging purposes
+    local publication_token="$1"  # Token of the publication owner
+    local business_type="$2"      # restaurant, hotel, cafe, hostel
     
     if [ -z "$publication_token" ]; then
         return 0
     fi
     
-    echo -n "Getting $publication_type publications... "
+    echo -n "Getting $business_type publications... "
     
     response=$(curl -s -X GET "$BASE_URL/publications/mine?page=0&size=50" \
         -H "Authorization: Bearer $publication_token" \
@@ -1055,49 +1148,60 @@ add_reviews_to_publication() {
     if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
         echo "✅ Found publications"
         
-        # Extract publication IDs from paginated response
-        publication_ids=$(echo "$response" | head -n -1 | grep -o '"id":"[^"]*' | cut -d'"' -f4)
+        # Extract publication IDs
+        publication_ids=($(echo "$response" | grep -o '"id":"[^"]*' | cut -d'"' -f4))
         
-        if [ -z "$publication_ids" ]; then
-            echo "❌ No publications found for $publication_type"
+        if [ ${#publication_ids[@]} -eq 0 ]; then
+            echo "❌ No publications found for $business_type"
             return 1
         fi
         
-        # Count available review images once
-        local review_count=0
-        if [ -d "sample_images/reviews" ]; then
-            review_count=$(find "sample_images/reviews" -maxdepth 1 -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) | wc -l)
+        # Get available users
+        local users=()
+        [ -n "$USER1_TOKEN" ] && users+=("$USER1_TOKEN")
+        [ -n "$USER2_TOKEN" ] && users+=("$USER2_TOKEN")
+        [ -n "$USER3_TOKEN" ] && users+=("$USER3_TOKEN")
+        
+        if [ ${#users[@]} -eq 0 ]; then
+            echo "❌ No users available to post reviews"
+            return 1
         fi
         
-        # Add reviews to each publication - distribute users across publications
-        local publication_index=0
-        local user_tokens=("$USER1_TOKEN" "$USER2_TOKEN" "$USER3_TOKEN")
-        local user_count=0
+        local review_count=0
+        local publication_count=0
         
-        # Count available users
-        for token in "${user_tokens[@]}"; do
-            if [ -n "$token" ]; then
-                ((user_count++))
+        for publication_id in "${publication_ids[@]}"; do
+            echo "Processing publication $publication_id..."
+            
+            # 70% chance to skip adding any review to this publication
+            if [ $((RANDOM % 100)) -lt 70 ]; then
+                echo "  Skipping review for this publication"
+                continue
             fi
+            
+            # Only add 1 review to this publication
+            echo "  Will add 1 review to this publication"
+            
+            # Shuffle users for this publication
+            local shuffled_users=($(shuf -e "${users[@]}"))
+            
+            # Only take the first user (if any)
+            if [ ${#shuffled_users[@]} -gt 0 ]; then
+                local user_token="${shuffled_users[0]}"
+                echo "  Adding review from user..."
+                
+                if add_review "$publication_id" "$user_token" "1" "$business_type"; then
+                    ((review_count++))
+                fi
+            fi
+            
+            ((publication_count++))
         done
         
-        for publication_id in $publication_ids; do
-            ((publication_index++))
-            echo "Adding review to publication $publication_index..."
-            
-            # Assign different users to different publications
-            local user_index=$(( (publication_index - 1) % user_count ))
-            local review_index=$(( (publication_index - 1) % 2 + 1 )) # Alternate between review 1 and 2
-            
-            if [ -n "${user_tokens[$user_index]}" ]; then
-                add_review "$publication_id" "${user_tokens[$user_index]}" $review_index
-            fi
-        done
-        
-        echo "✅ Added reviews to $publication_index publications"
+        echo "✅ Added $review_count reviews to $publication_count out of ${#publication_ids[@]} $business_type publications"
         
     else
-        echo "❌ Failed to search $publication_type publications (Status: $status_code)"
+        echo "❌ Failed to search $business_type publications (Status: $status_code)"
         echo "Response: $(echo "$response" | head -n -1)"
         return 1
     fi
@@ -1293,12 +1397,7 @@ if [ -n "$USER1_TOKEN" ]; then
         
         # Add likes from different users to each publication (max 2 likes per publication)
         counter=0
-        for pub_id in "${pub_ids[@]}"; do
-            # User1 likes the publication
-            if [ -n "$USER1_TOKEN" ]; then
-                add_like_to_publication "$USER1_TOKEN" "$pub_id" "Juan"
-            fi
-            
+        for pub_id in "${pub_ids[@]}"; do   
             # User2 likes the publication (only for some publications to vary)
             if [ -n "$USER2_TOKEN" ] && [ $(($counter % 2)) -eq 0 ]; then
                 add_like_to_publication "$USER2_TOKEN" "$pub_id" "María"
