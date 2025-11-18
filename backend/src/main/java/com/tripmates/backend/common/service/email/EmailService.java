@@ -1,6 +1,4 @@
-package com.tripmates.backend.common.service.email;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
+package com.tripmates.backend.common.service.email;import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +9,7 @@ public class EmailService {
     private final String fromEmail;
 
     public EmailService(JavaMailSender mailSender, 
-                      @Value("${GMAIL_NAME}") String fromEmail) {
+                      @Value("${GMAIL_NAME:test_example.com}") String fromEmail) {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
     }

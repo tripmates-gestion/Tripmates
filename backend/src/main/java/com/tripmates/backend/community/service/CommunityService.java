@@ -47,7 +47,17 @@ public class CommunityService {
     emailService.sendEmail(userToInvite.getEmail(), "Invitation to plan", "You have been invited to join the plan " + plan.name());    
   }
 
+  public void acceptInvitation(String planId, String userId, String currentUserEmail) {
+    Account me = validateUserOrThrowUnauthorized(currentUserEmail); 
+    if (!me.getRole().equals(Role.USER) || !me.getId().equals(userId)) {
+      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+    }
+    PlanMetadata plan = validateExistentPlan(planId);
 
+    
+
+    
+  }
 
 
   private Account validateUserOrThrowUnauthorized(String accountId) {
