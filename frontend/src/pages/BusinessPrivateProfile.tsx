@@ -3,7 +3,7 @@ import {
   Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
   Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, TextField
 } from '@mui/material';
-import { BarChart, Edit, Room, Phone, Email } from '@mui/icons-material';
+import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
@@ -20,7 +20,7 @@ import { InfoRow } from '../components/profile/businessPublicProfile/common/Busi
 import { PriceBadge, OpeningDaysRow} from "../components/profile/businessPublicProfile/Utils";
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
-import { getLikesMetrics, getProfileViewsMetrics, getReviewsMetrics, type MetricValue } from '../services/metricsService';
+import { BusinessMetricsButton } from '../components/metrics/BottonMetrics';
 
 
 const BASE_TABS = [
@@ -51,7 +51,6 @@ export default function BusinessProfile() {
   const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [metricsOpen, setMetricsOpen] = React.useState(false);
 
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
@@ -63,7 +62,8 @@ export default function BusinessProfile() {
   const currentTabKey = tabs[tab]?.key;
 
   if (loading) return <Box sx={{ p: 3 }}>Cargando perfil…</Box>;
-  if (!user || user.role !== 'BUSINESS') return <Box sx={{ p: 3 }}>Este perfil es solo para cuentas de negocio.</Box>;
+  if (!user || user.role !== 'BUSINESS')
+    return <Box sx={{ p: 3 }}>Este perfil es solo para cuentas de negocio.</Box>;
   if (!business) return <Box sx={{ p: 3 }}>No hay datos del negocio aún.</Box>;
 
   return (
@@ -79,7 +79,10 @@ export default function BusinessProfile() {
       />
 
       <Box sx={{ position: 'relative' }}>
-        <Card elevation={1} sx={{ maxWidth: 1180, mx: 'auto', mt: { xs: -8, md: -10 }, borderRadius: 2 }}>
+        <Card
+          elevation={1}
+          sx={{ maxWidth: 1180, mx: 'auto', mt: { xs: -8, md: -10 }, borderRadius: 2 }}
+        >
           <CardContent sx={{ pb: 1.5 }}>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
@@ -90,28 +93,28 @@ export default function BusinessProfile() {
               <Avatar
                 src={business.avatarURL}
                 alt={business.name}
-                sx={{ width: 96, height: 96, mt: { xs: -6, md: -8 }, border: t => `4px solid ${t.palette.background.paper}` }}
+                sx={{
+                  width: 96,
+                  height: 96,
+                  mt: { xs: -6, md: -8 },
+                  border: t => `4px solid ${t.palette.background.paper}`,
+                }}
               />
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                  <Typography variant="h5" fontWeight={800}>{business.name || 'Mi negocio'}</Typography>
+                  <Typography variant="h5" fontWeight={800}>
+                    {business.name || 'Mi negocio'}
+                  </Typography>
                   <Chip
                     size="small"
                     variant="outlined"
-                    label={business.businessType === BUSINESS_TYPES.restaurant ? 'RESTAURANT' : 'HOTEL'}
+                    label={
+                      business.businessType === BUSINESS_TYPES.restaurant ? 'RESTAURANT' : 'HOTEL'
+                    }
                     color="success"
                     sx={{ ml: 0.5 }}
                   />
-
-                  {/* {business.businessType === BUSINESS_TYPES.restaurant && (
-                    <PriceBadge value={business.averagePrice ?? undefined} />
-                  )}
-
-                  {business.businessType === BUSINESS_TYPES.hotel && business.hotelType && (
-                    <Chip size="small" label={business.hotelType} sx={{ ml: 0.5 }} />
-                  )} */}
-
                 </Stack>
 
                 <Stack direction="row" spacing={2} sx={{ mt: 1.25 }} flexWrap="wrap">
@@ -137,9 +140,7 @@ export default function BusinessProfile() {
               </Box>
 
               <Stack direction="row" spacing={1}>
-                <Button startIcon={<BarChart />} variant="outlined" onClick={() => setMetricsOpen(true)}>
-                  Ver métricas
-                </Button>
+                <BusinessMetricsButton accessToken={accessToken} />
                 <Button startIcon={<Edit />} variant="outlined" onClick={() => setEditOpen(true)}>
                   Editar
                 </Button>
@@ -149,7 +150,13 @@ export default function BusinessProfile() {
 
           <Divider />
 
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            allowScrollButtonsMobile
+            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+          >
             {tabs.map(t => (
               <Tab key={t.key} label={t.label} />
             ))}
@@ -161,46 +168,47 @@ export default function BusinessProfile() {
             {currentTabKey === 'mi-presentacion' && (
               <Stack spacing={3}>
                 <Box>
-                {(!business.profileImageUrls || business.profileImageUrls.length === 0) ? (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                  >
-                    Aún no subiste fotos a tu perfil.
-                  </Typography>
-                ) : (
-                  <ImageCarousel
-                    images={business.profileImageUrls ?? []}
-                    aspectRatio={16 / 9} // puede ser también 4/3 u otro
-                    height={300}
-                    fit="contain"
-                  />
-                )}
-
+                  {!business.profileImageUrls || business.profileImageUrls.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Aún no subiste fotos a tu perfil.
+                    </Typography>
+                  ) : (
+                    <ImageCarousel
+                      images={business.profileImageUrls ?? []}
+                      aspectRatio={16 / 9}
+                      height={300}
+                      fit="contain"
+                    />
+                  )}
                 </Box>
 
                 <Grid container spacing={3} alignItems="flex-start">
                   <Grid item xs={12} md={7}>
                     {!!business.description && (
                       <Section title="Descripción">
-                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ lineHeight: 1.7 }}
+                        >
                           {business.description}
                         </Typography>
                       </Section>
                     )}
 
-                    {/* --- Información de atención según tipo de negocio --- */}
                     {isRestaurant(business) ? (
                       <>
-                        {/* --- Días de atención --- */}
                         <Section title="Atención">
                           <OpeningDaysRow openingDays={business.openingDays} />
                         </Section>
 
-                        {/* --- Detalles del restaurante --- */}
                         <Section title="Detalles del restaurante">
-                          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1.5}
+                            flexWrap="wrap"
+                            alignItems="center"
+                          >
                             {business.attentionSchedule && (
                               <Chip
                                 size="small"
@@ -215,15 +223,21 @@ export default function BusinessProfile() {
                                 label={business.restaurantType}
                               />
                             )}
-                            {!!business.averagePrice && <PriceBadge value={business.averagePrice} />}
+                            {!!business.averagePrice && (
+                              <PriceBadge value={business.averagePrice} />
+                            )}
                           </Stack>
                         </Section>
                       </>
                     ) : business.businessType === BUSINESS_TYPES.hotel ? (
                       <>
-                        {/* --- Detalles del hotel --- */}
                         <Section title="Detalles del hotel">
-                          <Stack direction="row" spacing={1.5} flexWrap="wrap" alignItems="center">
+                          <Stack
+                            direction="row"
+                            spacing={1.5}
+                            flexWrap="wrap"
+                            alignItems="center"
+                          >
                             {!!business.hotelType && (
                               <Chip
                                 size="small"
@@ -232,17 +246,17 @@ export default function BusinessProfile() {
                                 label={business.hotelType}
                                 sx={{
                                   fontWeight: 600,
-                                  textTransform: "capitalize",
+                                  textTransform: 'capitalize',
                                 }}
                               />
                             )}
-                            {!!business.averagePrice && <PriceBadge value={business.averagePrice} />}
+                            {!!business.averagePrice && (
+                              <PriceBadge value={business.averagePrice} />
+                            )}
                           </Stack>
                         </Section>
                       </>
                     ) : null}
-
-
                   </Grid>
 
                   <Grid item xs={12} md={5}>
@@ -256,14 +270,21 @@ export default function BusinessProfile() {
               </Stack>
             )}
 
-            {currentTabKey === 'publicaciones' && <BusinessPublicationsTab accessToken={accessToken} />}
+            {currentTabKey === 'publicaciones' && (
+              <BusinessPublicationsTab accessToken={accessToken} />
+            )}
 
             {currentTabKey === 'fotos' && (
               <Grid container spacing={2}>
                 {(business.profileImageUrls ?? []).map((url, i) => (
                   <Grid item xs={12} sm={6} md={4} key={`${url}-${i}`}>
                     <Card variant="outlined">
-                      <CardMedia component="img" image={url} height={220} sx={{ objectFit: 'cover' }} />
+                      <CardMedia
+                        component="img"
+                        image={url}
+                        height={220}
+                        sx={{ objectFit: 'cover' }}
+                      />
                     </Card>
                   </Grid>
                 ))}
@@ -275,33 +296,38 @@ export default function BusinessProfile() {
               </Grid>
             )}
 
-            {currentTabKey === 'menu' && business.businessType === BUSINESS_TYPES.restaurant && (
-              <RestaurantMenuTab
-                accessToken={accessToken!}
-                initialMenu={business.menu ?? []}
-                onBusinessReload={refreshProfile} // opcional si tenés forma de refrescar el profile externo
-              />
-            )}
+            {currentTabKey === 'menu' &&
+              business.businessType === BUSINESS_TYPES.restaurant && (
+                <RestaurantMenuTab
+                  accessToken={accessToken!}
+                  initialMenu={business.menu ?? []}
+                  onBusinessReload={refreshProfile}
+                />
+              )}
 
-            {currentTabKey === "habitaciones" && business.businessType === BUSINESS_TYPES.hotel && (
+            {currentTabKey === 'habitaciones' &&
+              business.businessType === BUSINESS_TYPES.hotel && (
                 <HotelRoomsTab
                   accessToken={accessToken!}
                   roomPacks={business.roomPacks ?? []}
                   onBusinessReload={refreshProfile}
                 />
               )}
-
           </Box>
         </Card>
       </Box>
 
-      <RestaurantEditDialog open={editOpen && business.businessType === BUSINESS_TYPES.restaurant} onClose={() => setEditOpen(false)} />
-      <HotelEditDialog open={editOpen && business.businessType === BUSINESS_TYPES.hotel} onClose={() => setEditOpen(false)} />
-      <BusinessMetricsDialog open={metricsOpen} onClose={() => setMetricsOpen(false)} accessToken={accessToken} />
+      <RestaurantEditDialog
+        open={editOpen && business.businessType === BUSINESS_TYPES.restaurant}
+        onClose={() => setEditOpen(false)}
+      />
+      <HotelEditDialog
+        open={editOpen && business.businessType === BUSINESS_TYPES.hotel}
+        onClose={() => setEditOpen(false)}
+      />
     </Box>
   );
 }
-
 
 
 
@@ -426,117 +452,4 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
         </Dialog>
       </Box>
     );
-}
-
-function parseMetricValue(value: MetricValue) {
-  if (typeof value === 'number') return value;
-  if (value && typeof value === 'object') {
-    const candidates = ['count', 'total', 'value', 'views', 'likes', 'reviews'];
-    for (const key of candidates) {
-      const candidate = (value as Record<string, unknown>)[key];
-      if (typeof candidate === 'number') return candidate;
-    }
-    return JSON.stringify(value);
-  }
-  return 'Sin datos';
-}
-
-function BusinessMetricsDialog({
-  open,
-  onClose,
-  accessToken,
-}: {
-  open: boolean;
-  onClose: () => void;
-  accessToken: string | null;
-}) {
-  const [days, setDays] = React.useState(30);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [metrics, setMetrics] = React.useState<{
-    reviews: MetricValue;
-    views: MetricValue;
-    likes: MetricValue;
-  }>({ reviews: null, views: null, likes: null });
-
-  const fetchMetrics = React.useCallback(async () => {
-    if (!accessToken) {
-      setError('No estás autenticado.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const [reviews, views, likes] = await Promise.all([
-        getReviewsMetrics(days, accessToken),
-        getProfileViewsMetrics(days, accessToken),
-        getLikesMetrics(days, accessToken),
-      ]);
-      setMetrics({ reviews, views, likes });
-    } catch (e: any) {
-      setError(e?.message || 'No se pudieron cargar las métricas.');
-    } finally {
-      setLoading(false);
-    }
-  }, [accessToken, days]);
-
-  React.useEffect(() => {
-    if (open) {
-      fetchMetrics();
-    }
-  }, [open, fetchMetrics]);
-
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Métricas del perfil</DialogTitle>
-      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-        <Typography variant="body2" color="text.secondary">
-          Visualiza de forma rápida el movimiento de tu perfil en los últimos días.
-        </Typography>
-
-        <Stack direction="row" spacing={2} alignItems="center">
-          <TextField
-            label="Días"
-            type="number"
-            size="small"
-            value={days}
-            onChange={(e) => {
-              const value = Number(e.target.value);
-              setDays(Number.isFinite(value) ? Math.max(1, value) : 1);
-            }}
-            helperText="Intervalo para las estadísticas"
-            inputProps={{ min: 1 }}
-            sx={{ maxWidth: 160 }}
-          />
-          <Button variant="contained" onClick={fetchMetrics} disabled={loading}>
-            Actualizar
-          </Button>
-        </Stack>
-
-        {error && <Alert severity="error">{error}</Alert>}
-
-        <Grid container spacing={2}>
-          {[{ label: 'Reviews', key: 'reviews' }, { label: 'Vistas al perfil', key: 'views' }, { label: 'Likes', key: 'likes' }].map(
-            ({ label, key }) => (
-              <Grid item xs={12} sm={4} key={key}>
-                <Card variant="outlined" sx={{ height: '100%' }}>
-                  <CardContent>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      {label}
-                    </Typography>
-                    <Typography variant="h5" fontWeight={800}>
-                      {loading ? <CircularProgress size={22} /> : parseMetricValue(metrics[key as keyof typeof metrics])}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
-  );
 }
