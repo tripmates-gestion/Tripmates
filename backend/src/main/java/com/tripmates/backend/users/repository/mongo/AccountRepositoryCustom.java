@@ -3,8 +3,6 @@ package com.tripmates.backend.users.repository.mongo;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
 import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanMetadataResponseDTO;
-
 import com.tripmates.backend.users.entity.mongo.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +37,8 @@ public interface AccountRepositoryCustom {
 
   PlanMetadata getPlanMetadataById(String planId);
 
-  void addUserIdToPendingUsersIdsInvitedToPlan(String plansOwnerId, String planId, String userIdInvited);
+  void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+  void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+  void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited);
 
 }

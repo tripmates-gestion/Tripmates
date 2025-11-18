@@ -33,12 +33,7 @@ public class CommunityController {
   @PostMapping("/{planId}/{userId}/invite-user")
   @Operation(
       summary = "Invite a user to a plan",
-      description = """
-      Invita a un usuario (rol USER) a un plan del que el usuario autenticado es owner.
-      - Solo el dueño del plan puede invitar.
-      - Solo cuentas con rol USER pueden ser invitadas.
-      - Falla si el usuario ya es colaborador o ya está invitado.
-      """
+      description = "Invita a un usuario (rol USER) a un plan del que el usuario autenticado es owner."
   )
   @ApiResponses(value = {
       @ApiResponse(
@@ -72,6 +67,45 @@ public class CommunityController {
       @AuthenticationPrincipal UserDetails userDetails
   ) {
     communityService.inviteUserToPlan(planId, userId, userDetails.getUsername());
+    return ResponseEntity.noContent().build();
+  }
+
+
+
+  @PostMapping("/{planId}/accept-invitation")
+  @Operation(summary = "Accept an invitation to a plan",
+      description = "Solo el usuario invitado puede aceptar la invitación; el servicio mueve el ID de pending a colaboradores.")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "204",
+          description = "Invitation accepted",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = void.class))
+      ),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Validation error / bad request",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      ),
+      @ApiResponse(
+          responseCode = "401",
+          description = "Unauthorized: token invalid, role not USER, or not the invited user",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Plan not found",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      )
+  })
+  public ResponseEntity<?> acceptInvitation(
+      @PathVariable("planId") String planId,
+      @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    communityService.acceptInvitation(planId, userDetails.getUsername());
     return ResponseEntity.noContent().build();
   }
 }

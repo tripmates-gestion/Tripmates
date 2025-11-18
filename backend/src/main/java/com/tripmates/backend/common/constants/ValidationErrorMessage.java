@@ -74,5 +74,5 @@ public class ValidationErrorMessage {
 
   public static final String USER_ALREADY_INVITED_TO_PLAN = "El usuario ya esta invitado al plan";
   
-
+  public static final String USER_NOT_INVITED_TO_PLAN = "El usuario no esta invitado al plan";
 }

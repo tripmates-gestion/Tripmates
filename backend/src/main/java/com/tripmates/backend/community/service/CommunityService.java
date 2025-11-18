@@ -28,8 +28,8 @@ public class CommunityService {
 
 
   public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
-    Account me = validateUserOrThrowUnauthorized(currentUserEmail);
-    Account userToInvite = validateUserOrThrowUnauthorized(userId);
+    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
+    Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
     PlanMetadata plan = validateExistentPlan(planId);
 
     if (!plan.ownerId().equals(me.getId())) {
@@ -43,25 +43,29 @@ public class CommunityService {
       throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_INVITED_TO_PLAN);
     }
 
-    accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(me.getId(), planId, userId);
+    accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(planId, userId);
     emailService.sendEmail(userToInvite.getEmail(), "Invitation to plan", "You have been invited to join the plan " + plan.name());    
   }
 
-  public void acceptInvitation(String planId, String userId, String currentUserEmail) {
-    Account me = validateUserOrThrowUnauthorized(currentUserEmail); 
-    if (!me.getRole().equals(Role.USER) || !me.getId().equals(userId)) {
-      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
-    }
+  public void acceptInvitation(String planId, String currentUserEmail) {
+    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail); 
     PlanMetadata plan = validateExistentPlan(planId);
-
-    
-
-    
+    if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
+      throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
+    }
+    accountRepository.upgradeUserFromInvitedToCollaborator(planId, me.getId());
   }
 
 
-  private Account validateUserOrThrowUnauthorized(String accountId) {
+  private Account validateUserOrThrowUnauthorizedFromId(String accountId) {
     Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return checkUserRolOrThrowUnauthorized(account);
+  }
+    private Account validateUserOrThrowUnauthorizedFromEmail(String email) {
+    Account account = accountRepository.findByEmail(email).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    return checkUserRolOrThrowUnauthorized(account);
+  }
+  private Account checkUserRolOrThrowUnauthorized(Account account) {
     if (account.getRole() != Role.USER) {
       throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
     }
