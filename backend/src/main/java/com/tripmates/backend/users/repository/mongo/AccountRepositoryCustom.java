@@ -8,7 +8,6 @@ import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 

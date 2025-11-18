@@ -23,12 +23,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationExpression;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
-import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
-import org.springframework.data.mongodb.core.aggregation.ConvertOperators;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -306,16 +301,15 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
   public List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId) {
     Aggregation aggregation = Aggregation.newAggregation(
         Aggregation.unwind("plansList"),
-        Aggregation.unwind("plansList.collaboratorsUsersIds"),
         Aggregation.match(Criteria.where("plansList.collaboratorsUsersIds").is(collaboratorId)),
-        Aggregation.group("plansList._id")
-            .first("plansList._id").as("planId")
-            .first("plansList.name").as("name")
-            .first("plansList.description").as("description")
-            .first("plansList.ownerId").as("ownerId")
-            .addToSet("plansList.collaboratorsUsersIds").as("collaboratorsIds")
-            .first("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
-            .first("plansList.publicationsIdList").as("publicationsIds")
+        Aggregation.project()
+            .and("plansList._id").as("planId")
+            .and("plansList.name").as("name")
+            .and("plansList.description").as("description")
+            .and("plansList.ownerId").as("ownerId")
+            .and("plansList.collaboratorsUsersIds").as("collaboratorsIds")
+            .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
+            .and("plansList.publicationsIdList").as("publicationsIds")
     );
 
     AggregationResults<PlanMetadataWithContent> results = mongoTemplate.aggregate(
