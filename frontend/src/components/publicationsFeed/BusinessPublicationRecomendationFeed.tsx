@@ -27,7 +27,8 @@ import { useAuth } from '../../hooks/useAuth'; // 👈 Importamos useAuth
 // 💡 Asegúrate de que las rutas a los servicios son correctas
 import { getPlans, createPlan, addPublicationToPlan } from '../../services/plansService'; 
 import { getBusinessPublicationsPublicRecommendations } from '../../services/recommendations';
-
+import PublicationDetailDialog from '../publications/PublicationDetailDialog';
+import { useTheme } from '@emotion/react';
 // ──────────────────────────────────────────────────────────
 // TIPOS Y FUNCIONES COPIADAS DEL BusinessPublicationsTab.tsx
 // ──────────────────────────────────────────────────────────
@@ -72,12 +73,12 @@ export default function BusinessRecommendationFeed() {
   const [newPlanName, setNewPlanName] = useState("");
 
   const { enqueueSnackbar } = useSnackbar();
-  const context  = useAuth(); // 👈 Obtenemos el token de autenticación
+  const context  = useAuth();
 
-  // El handler para la visualización (se mantiene igual)
-  const handleView = (p: BusinessPublicationResponseDTO) => {
-    console.log("Navegando a la publicación:", p.id);
-  };
+  // 🆕 Estados para el diálogo de detalle de publicación
+  const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
+
+  const theme = useTheme();
   
   // ───────────────────────────────
   // Lógica de Fetch inicial
@@ -223,7 +224,8 @@ export default function BusinessRecommendationFeed() {
   if (publications.length === 0) {
     return <Container sx={{ py: 8 }}><Alert severity="info">Aún no hay publicaciones recomendadas para ti. Para una experiencia completa interactúa con más usuarios y publicaciones!</Alert></Container>;
   }
-
+  
+  const glowColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(80, 84, 88, 0.6)'
   return (
     // 💡 El contenedor principal
     <>
@@ -243,12 +245,12 @@ export default function BusinessRecommendationFeed() {
             }}>
                 <BusinessPublicationCard
                     publication={p}
-                    onView={handleView}
+                    onView={setSelected}
                     onAddToBoard={handleAddToBoard} // 👈 Usamos la función handleAddToBoard copiada
                     sx={{
                         "& img": { height: '450px !important' }, 
                         borderRadius: 3, 
-                        boxShadow: 8,
+                        boxShadow: '0 0 35px 8px ' + glowColor,
                     }}
                 />
             </Box>
@@ -340,6 +342,12 @@ export default function BusinessRecommendationFeed() {
           </Button>
         </DialogActions>
       </Dialog>
+      <PublicationDetailDialog
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        publication={selected}
+        letReview={true}
+      />
       </>
   );
 }

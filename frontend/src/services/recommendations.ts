@@ -13,7 +13,7 @@ export async function getBusinessPublicationsPublicRecommendations(id: string, a
       }
     );
     console.log("[API FETCH]: VALUE RETURNED AS RECOMMENDATIONS:", publications);
-    return publications||[];
+    return publications?.content||[];
   } catch (error) {
 
     console.error('Error fetching business publications:', error);
