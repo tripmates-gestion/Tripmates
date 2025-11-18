@@ -25,8 +25,6 @@ public class CommunityService {
     this.emailService = emailService;
   }
 
-
-
   public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
     Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
     Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
@@ -56,15 +54,25 @@ public class CommunityService {
     accountRepository.upgradeUserFromInvitedToCollaborator(planId, me.getId());
   }
 
+  public void declineInvitation(String planId, String currentUserEmail) {
+    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail); 
+    PlanMetadata plan = validateExistentPlan(planId);
+    if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
+      throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
+    }
+    accountRepository.removeUserIdFromPendingUsersIdsInvitedToPlan(planId, me.getId());
+  }
 
   private Account validateUserOrThrowUnauthorizedFromId(String accountId) {
     Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
     return checkUserRolOrThrowUnauthorized(account);
   }
-    private Account validateUserOrThrowUnauthorizedFromEmail(String email) {
+  
+  private Account validateUserOrThrowUnauthorizedFromEmail(String email) {
     Account account = accountRepository.findByEmail(email).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
     return checkUserRolOrThrowUnauthorized(account);
   }
+
   private Account checkUserRolOrThrowUnauthorized(Account account) {
     if (account.getRole() != Role.USER) {
       throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);

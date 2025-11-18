@@ -70,8 +70,6 @@ public class CommunityController {
     return ResponseEntity.noContent().build();
   }
 
-
-
   @PostMapping("/{planId}/accept-invitation")
   @Operation(summary = "Accept an invitation to a plan",
       description = "Solo el usuario invitado puede aceptar la invitación; el servicio mueve el ID de pending a colaboradores.")
@@ -108,4 +106,42 @@ public class CommunityController {
     communityService.acceptInvitation(planId, userDetails.getUsername());
     return ResponseEntity.noContent().build();
   }
+
+  @PostMapping("/{planId}/decline-invitation")
+  @Operation(summary = "Decline an invitation to a plan",
+      description = "Permite al usuario invitado remover su ID del listado de pendientes sin convertirse en colaborador.")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "204",
+          description = "Invitation declined",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = void.class))
+      ),
+      @ApiResponse(
+          responseCode = "400",
+          description = "Validation error / bad request",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      ),
+      @ApiResponse(
+          responseCode = "401",
+          description = "Unauthorized: token invalid, role not USER, or not the invited user",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "Plan not found",
+          content = @Content(mediaType = "application/json",
+              schema = @Schema(implementation = ErrorDTO.class))
+      )
+  })
+  public ResponseEntity<?> declineInvitation(
+      @PathVariable("planId") String planId,
+      @AuthenticationPrincipal UserDetails userDetails
+  ) {
+    communityService.declineInvitation(planId, userDetails.getUsername());
+    return ResponseEntity.noContent().build();
+  }
+
 }
