@@ -26,6 +26,7 @@ public interface PublicationNodeRepository extends Neo4jRepository<PublicationNo
 			MATCH (f)-[l:LIKED]->(pl:PublicationNode)
 			    WHERE NOT (a)-[:LIKED]->(pl)
 			    AND NOT (a)-[:REVIEWED]->(pl)
+				
 			
 			// Publications from creators of highly rated publications
 			WITH a, highRatedPubs, COLLECT(pl) AS likedPubs, f
