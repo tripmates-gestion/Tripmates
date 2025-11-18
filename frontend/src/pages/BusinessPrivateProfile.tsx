@@ -1,9 +1,9 @@
 import * as React from 'react';
 import {
   Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
-  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress
+  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, TextField
 } from '@mui/material';
-import { Edit, Room, Phone, Email } from '@mui/icons-material';
+import { BarChart, Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
@@ -20,6 +20,7 @@ import { InfoRow } from '../components/profile/businessPublicProfile/common/Busi
 import { PriceBadge, OpeningDaysRow} from "../components/profile/businessPublicProfile/Utils";
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
+import { getLikesMetrics, getProfileViewsMetrics, getReviewsMetrics, type MetricValue } from '../services/metricsService';
 
 
 const BASE_TABS = [
@@ -50,6 +51,7 @@ export default function BusinessProfile() {
   const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
+  const [metricsOpen, setMetricsOpen] = React.useState(false);
 
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
@@ -134,9 +136,14 @@ export default function BusinessProfile() {
                 </Stack>
               </Box>
 
-              <Button startIcon={<Edit />} variant="outlined" onClick={() => setEditOpen(true)}>
-                Editar
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button startIcon={<BarChart />} variant="outlined" onClick={() => setMetricsOpen(true)}>
+                  Ver métricas
+                </Button>
+                <Button startIcon={<Edit />} variant="outlined" onClick={() => setEditOpen(true)}>
+                  Editar
+                </Button>
+              </Stack>
             </Stack>
           </CardContent>
 
@@ -290,6 +297,7 @@ export default function BusinessProfile() {
 
       <RestaurantEditDialog open={editOpen && business.businessType === BUSINESS_TYPES.restaurant} onClose={() => setEditOpen(false)} />
       <HotelEditDialog open={editOpen && business.businessType === BUSINESS_TYPES.hotel} onClose={() => setEditOpen(false)} />
+      <BusinessMetricsDialog open={metricsOpen} onClose={() => setMetricsOpen(false)} accessToken={accessToken} />
     </Box>
   );
 }
@@ -417,5 +425,118 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
           </DialogActions>
         </Dialog>
       </Box>
-    );    
+    );
+}
+
+function parseMetricValue(value: MetricValue) {
+  if (typeof value === 'number') return value;
+  if (value && typeof value === 'object') {
+    const candidates = ['count', 'total', 'value', 'views', 'likes', 'reviews'];
+    for (const key of candidates) {
+      const candidate = (value as Record<string, unknown>)[key];
+      if (typeof candidate === 'number') return candidate;
+    }
+    return JSON.stringify(value);
+  }
+  return 'Sin datos';
+}
+
+function BusinessMetricsDialog({
+  open,
+  onClose,
+  accessToken,
+}: {
+  open: boolean;
+  onClose: () => void;
+  accessToken: string | null;
+}) {
+  const [days, setDays] = React.useState(30);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [metrics, setMetrics] = React.useState<{
+    reviews: MetricValue;
+    views: MetricValue;
+    likes: MetricValue;
+  }>({ reviews: null, views: null, likes: null });
+
+  const fetchMetrics = React.useCallback(async () => {
+    if (!accessToken) {
+      setError('No estás autenticado.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const [reviews, views, likes] = await Promise.all([
+        getReviewsMetrics(days, accessToken),
+        getProfileViewsMetrics(days, accessToken),
+        getLikesMetrics(days, accessToken),
+      ]);
+      setMetrics({ reviews, views, likes });
+    } catch (e: any) {
+      setError(e?.message || 'No se pudieron cargar las métricas.');
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, days]);
+
+  React.useEffect(() => {
+    if (open) {
+      fetchMetrics();
+    }
+  }, [open, fetchMetrics]);
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Métricas del perfil</DialogTitle>
+      <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+        <Typography variant="body2" color="text.secondary">
+          Visualiza de forma rápida el movimiento de tu perfil en los últimos días.
+        </Typography>
+
+        <Stack direction="row" spacing={2} alignItems="center">
+          <TextField
+            label="Días"
+            type="number"
+            size="small"
+            value={days}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              setDays(Number.isFinite(value) ? Math.max(1, value) : 1);
+            }}
+            helperText="Intervalo para las estadísticas"
+            inputProps={{ min: 1 }}
+            sx={{ maxWidth: 160 }}
+          />
+          <Button variant="contained" onClick={fetchMetrics} disabled={loading}>
+            Actualizar
+          </Button>
+        </Stack>
+
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <Grid container spacing={2}>
+          {[{ label: 'Reviews', key: 'reviews' }, { label: 'Vistas al perfil', key: 'views' }, { label: 'Likes', key: 'likes' }].map(
+            ({ label, key }) => (
+              <Grid item xs={12} sm={4} key={key}>
+                <Card variant="outlined" sx={{ height: '100%' }}>
+                  <CardContent>
+                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                      {label}
+                    </Typography>
+                    <Typography variant="h5" fontWeight={800}>
+                      {loading ? <CircularProgress size={22} /> : parseMetricValue(metrics[key as keyof typeof metrics])}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )
+          )}
+        </Grid>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cerrar</Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
