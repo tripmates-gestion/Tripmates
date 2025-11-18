@@ -2,6 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.Plan;
+import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.RoomPack;
@@ -219,7 +220,7 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 
 
   @Override
-  public PlanMetadataResponseDTO getPlanMetadataById(String planId) {
+  public PlanMetadata getPlanMetadataById(String planId) {
     ObjectId targetPlanId = new ObjectId(planId);
 
     Aggregation aggregation = Aggregation.newAggregation(
@@ -231,12 +232,13 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
           .and("plansList.description").as("description")
           .and("plansList.ownerId").as("ownerId")
           .and("plansList.collaboratorsUsersIds").as("collaboratorsIds")
+          .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
     );
 
-    AggregationResults<PlanMetadataResponseDTO> results = mongoTemplate.aggregate(
+    AggregationResults<PlanMetadata> results = mongoTemplate.aggregate(
       aggregation,
       "account",
-      PlanMetadataResponseDTO.class
+      PlanMetadata.class
     );
     
     return results.getUniqueMappedResult();
