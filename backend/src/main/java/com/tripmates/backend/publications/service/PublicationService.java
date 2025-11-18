@@ -78,6 +78,7 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
+		accountNodeRepository.createCreated(account.getId(), publication.getId());
 
 		return PublicationResumeResponseDTO.fromPublication(publication);
 	}
@@ -398,6 +399,7 @@ public class PublicationService {
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
 
 		publicationRepository.addToLikes(publicationId, userId);
+		accountNodeRepository.createLiked(userId, publicationId);
 	}
 
 	/**
@@ -412,6 +414,8 @@ public class PublicationService {
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
 
 		publicationRepository.removeFromLikes(publicationId, userId);
+		// Also remove Neo4j relationship
+		accountNodeRepository.removeLiked(userId, publicationId);
 	}
 
 	/**

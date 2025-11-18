@@ -971,22 +971,18 @@ if [ ! -z "$USER1_TOKEN" ]; then
     if [ ${#pub_ids[@]} -gt 0 ]; then
         print_success "✅ Found ${#pub_ids[@]} publication(s)"
         
-        # Add likes from different users to each publication
-        for pub_id in "${pub_ids[@]}"; do
-            # User1 likes the publication
-            if [ ! -z "$USER1_TOKEN" ]; then
+        # Add likes from different users to some publications (randomized)
+        for i in "${!pub_ids[@]}"; do
+            pub_id="${pub_ids[$i]}"
+            
+            if [ ! -z "$USER1_TOKEN" ] && [ $((i % 2)) -eq 0 ]; then
                 add_like_to_publication "$USER1_TOKEN" "$pub_id" "Juan"
             fi
             
-            # User2 likes the publication
-            if [ ! -z "$USER2_TOKEN" ]; then
+            if [ ! -z "$USER2_TOKEN" ] && [ $((i % 3)) -eq 0 ]; then
                 add_like_to_publication "$USER2_TOKEN" "$pub_id" "María"
             fi
             
-            # User3 likes the publication
-            if [ ! -z "$USER3_TOKEN" ]; then
-                add_like_to_publication "$USER3_TOKEN" "$pub_id" "Carlos"
-            fi
         done
     else
         print_error "❌ No publications found"
