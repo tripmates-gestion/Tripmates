@@ -73,4 +73,102 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 	void createReviewed(@Param("accountId") String accountId, @Param("publicationId") String publicationId,
 			@Param("reviewId") String reviewId, @Param("rating") Double rating);
 
+	/**
+	 * Creates a liked relationship between the user account and the publication that was
+	 * liked.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})
+			MATCH (p:PublicationNode {id: $publicationId})
+			MERGE (a)-[r:LIKED]->(p)
+			SET r.createdAt = datetime()
+			""")
+	void createLiked(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Removes a liked relationship between the user account and the publication.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})-[l:LIKED]->(p:PublicationNode {id: $publicationId})
+			DELETE l
+			""")
+	void removeLiked(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Checks if a liked relationship exists between the user account and the publication.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 * @return 1 if the relationship exists, 0 otherwise.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})-[l:LIKED]->(p:PublicationNode {id: $publicationId})
+			RETURN count(l) as count
+			""")
+	long existsLiked(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Gets all user IDs who liked a specific publication.
+	 * @param publicationId publication ID.
+	 * @return list of user account IDs.
+	 */
+	@Query("""
+			MATCH (a:AccountNode)-[l:LIKED]->(p:PublicationNode {id: $publicationId})
+			RETURN a.id as userId
+			ORDER BY l.createdAt DESC
+			""")
+	List<String> findUsersWhoLikedPublication(@Param("publicationId") String publicationId);
+
+	/**
+	 * Creates a created relationship between the user account and the publication that
+	 * was created.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})
+			MATCH (p:PublicationNode {id: $publicationId})
+			MERGE (a)-[r:CREATED]->(p)
+			SET r.createdAt = datetime()
+			""")
+	void createCreated(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Removes a created relationship between the user account and the publication.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})-[c:CREATED]->(p:PublicationNode {id: $publicationId})
+			DELETE c
+			""")
+	void removeCreated(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Checks if a created relationship exists between the user account and the publication.
+	 * @param accountId user account ID.
+	 * @param publicationId publication ID.
+	 * @return 1 if the relationship exists, 0 otherwise.
+	 */
+	@Query("""
+			MATCH (a:AccountNode {id: $accountId})-[c:CREATED]->(p:PublicationNode {id: $publicationId})
+			RETURN count(c) as count
+			""")
+	long existsCreated(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
+
+	/**
+	 * Gets all user IDs who created a specific publication.
+	 * @param publicationId publication ID.
+	 * @return list of user account IDs.
+	 */
+	@Query("""
+			MATCH (a:AccountNode)-[c:CREATED]->(p:PublicationNode {id: $publicationId})
+			RETURN a.id as userId
+			ORDER BY c.createdAt DESC
+			""")
+	List<String> findUsersWhoCreatedPublication(@Param("publicationId") String publicationId);
+
 }

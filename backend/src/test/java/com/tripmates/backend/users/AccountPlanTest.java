@@ -86,7 +86,7 @@ public class AccountPlanTest {
 		mockMvc.perform(post("/users/plans/create").contentType(MediaType.APPLICATION_JSON).content(createPlanRequest))
 			.andExpect(status().isNoContent());
 
-		mockMvc.perform(get("/users/plans/list").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(get("/community/list-plans").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0].name").value("Fishing Trip 2026"))
 			.andExpect(jsonPath("$[0].description").value("Going fishing to Villa Paranacito next summer 2026"))
