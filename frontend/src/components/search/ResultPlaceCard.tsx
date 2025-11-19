@@ -8,6 +8,9 @@ import {
 import { sanitizeImages, computeOpenNow, DAYS_ORDER, DAY_LABEL } from "./utils/placeHelpers";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import { useNavigate } from 'react-router-dom';
+import { registerProfileView } from '../../services/metricsService'
+import { useAuth } from "../../hooks/useAuth";
+
 
 type Props = {
   businessAccountData: BusinessPubAccountDataDTO;
@@ -16,24 +19,34 @@ type Props = {
 export default function PlaceCard({ businessAccountData }: Props) {
   const imgs = sanitizeImages(businessAccountData);
   const navigate = useNavigate();
-  //retorna null si es un hotel (desconocido)
-  const open = React.useMemo(() => computeOpenNow(businessAccountData, new Date()), [businessAccountData]);
+  const open = React.useMemo(
+    () => computeOpenNow(businessAccountData, new Date()),
+    [businessAccountData]
+  );
+  const { accessToken } = useAuth();
 
   const handleSeeDetails = () => {
-    if (businessAccountData.businessType === "HOTEL") {
-      navigate(`/hotel/${businessAccountData.id}`, { 
-        state: { 
-          account: businessAccountData
-        } 
+    // Navegar primero
+    if (businessAccountData.businessType === 'HOTEL') {
+      navigate(`/hotel/${businessAccountData.id}`, {
+        state: { account: businessAccountData },
       });
-    }else{
-      navigate(`/restaurant/${businessAccountData.id}`, { 
-        state: { 
-          account: businessAccountData
-        } 
+    } else {
+      navigate(`/restaurant/${businessAccountData.id}`, {
+        state: { account: businessAccountData },
       });
     }
-  }
+
+    // Registrar vista “fire and forget”
+    if (accessToken) {
+      registerProfileView(businessAccountData.email, accessToken).catch((err) => {
+        console.error('No se pudo registrar la vista de perfil', err);
+      });
+    }
+    
+  };
+
+
   return (
     <Card
       onClick={handleSeeDetails}
