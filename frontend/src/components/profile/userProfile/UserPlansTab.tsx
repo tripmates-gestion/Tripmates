@@ -126,9 +126,22 @@ export default function UserPlansTab() {
     });
   };
 
-  const handleUserProfile = useCallback((userId: string) => {
-    navigate(`/userProfile/${userId}`);
-  }, [navigate]);
+  const handleUserProfile = useCallback(
+    (userId: string) => {
+      const account = knownUsersById[userId];
+  
+      if (account) {
+        navigate(`/userProfile/${userId}`, {
+          state: { account },
+        });
+      } else {
+        // fallback por si no lo tenés en el mapa
+        navigate(`/userProfile/${userId}`);
+      }
+    },
+    [navigate, knownUsersById]
+  );
+  
 
   const closeInviteDialog = () => {
     setInviteDialogOpen(false);
@@ -157,7 +170,7 @@ export default function UserPlansTab() {
     if (inviteDialogOpen) {
       followersList.refresh();
     }
-  }, [inviteDialogOpen, followersList]);
+  }, [inviteDialogOpen]);
 
   const handleInviteUser = async (targetUserId: string) => {
     if (!planToInvite?.id) return;
@@ -178,18 +191,6 @@ export default function UserPlansTab() {
     }
   };
 
-  const handleInviteUser = async (targetUserId: string) => {
-    if (!planToInvite?.id) return;
-
-    try {
-      await inviteUserToPlan(accessToken, planToInvite.id, targetUserId);
-      enqueueSnackbar('Invitación enviada', { variant: 'success' });
-      await fetchPlans();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'No pudimos enviar la invitación.';
-      enqueueSnackbar(message, { variant: 'error' });
-    }
-  };
 
   const openDeleteDialog = (plan: Plan) => {
     setPlanToDelete(plan);

@@ -67,12 +67,16 @@ export default function PlanInvitation() {
 
       const userIds = [planResponse.ownerId, ...(planResponse.collaboratorsIds ?? [])];
       const fetched = await Promise.all(userIds.map(async (id) => {
+
         try {
           const profile = await getUserByEmail(id, accessToken);
           return [id, profile as CommonUser] as const;
+
         } catch (participantError) {
+
           console.warn('No pudimos cargar el usuario', id, participantError);
           return null;
+          
         }
       }));
       const directory: Record<string, CommonUser> = {};
@@ -177,19 +181,25 @@ export default function PlanInvitation() {
             )}
 
             <Stack direction="row" spacing={2} alignItems="center">
+
               <Chip label="Creador" size="small" color="primary" variant="outlined" />
+
               <Stack direction="row" spacing={1} alignItems="center">
                 {renderUserAvatar(plan.ownerId, 'Creador')}
                 <Typography variant="subtitle2" fontWeight={700}>
                   {participantName(plan.ownerId, 'Creador del plan')}
                 </Typography>
+
               </Stack>
+
               {plan.collaboratorsIds?.length ? (
                 <>
                   <Chip label="Invitados" size="small" color="secondary" variant="outlined" />
+
                   <AvatarGroup max={8} sx={{ '& .MuiAvatar-root': { width: 36, height: 36 } }}>
                     {plan.collaboratorsIds.map((id) => renderUserAvatar(id, 'Invitado'))}
                   </AvatarGroup>
+
                   <Typography variant="body2" color="text.secondary">
                     {plan.collaboratorsIds.map((id) => participantName(id, 'Invitado')).join(', ')}
                   </Typography>
@@ -232,7 +242,7 @@ export default function PlanInvitation() {
                 <Typography variant="subtitle1" fontWeight={700}>Publicaciones del plan</Typography>
                 <Grid container spacing={2}>
                   {plan.publications.map((publication) => (
-                    <Grid item xs={12} sm={6} md={4} key={publication.id}>
+                    <Grid item xs={12} sm={6} md={6} key={publication.id}>
                       <PublicationCard publication={publication} onView={() => undefined} />
                     </Grid>
                   ))}
