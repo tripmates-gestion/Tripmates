@@ -178,6 +178,19 @@ export default function UserPlansTab() {
     }
   };
 
+  const handleInviteUser = async (targetUserId: string) => {
+    if (!planToInvite?.id) return;
+
+    try {
+      await inviteUserToPlan(accessToken, planToInvite.id, targetUserId);
+      enqueueSnackbar('Invitación enviada', { variant: 'success' });
+      await fetchPlans();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No pudimos enviar la invitación.';
+      enqueueSnackbar(message, { variant: 'error' });
+    }
+  };
+
   const openDeleteDialog = (plan: Plan) => {
     setPlanToDelete(plan);
     setDeleteDialogOpen(true);
