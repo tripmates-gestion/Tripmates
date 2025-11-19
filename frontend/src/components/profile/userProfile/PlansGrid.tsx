@@ -1,31 +1,32 @@
 import React from 'react';
-import { Grid, Box, Stack, Typography, Chip, IconButton, Collapse } from '@mui/material';
-import { Delete, Edit, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { Avatar, AvatarGroup, Box, Chip, Collapse, Grid, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Delete, Edit, ExpandMore, ExpandLess, PersonAddAlt1 } from '@mui/icons-material';
 import type { BusinessPublicationResponseDTO } from '../../../types/Business';
+import type { CommonUser } from '../../../types/PrivateUserProfiles';
+import type { Plan } from '../../../types/Plans';
 import PublicationCard from '../../publications/PublicationCard';
 import PublicationDetailDialog from '../../publications/PublicationDetailDialog';
-
-export interface Plan {
-  id?: string;
-  name: string;
-  description: string;
-  publications: BusinessPublicationResponseDTO[];
-}
 
 interface PlansGridProps {
   plans: Plan[];
   expandedPlans: Set<number>;
   togglePlanExpansion: (index: number) => void;
   openDeleteDialog: (plan: Plan) => void;
-  onEditPlan: (plan: Plan) => void; // Nueva prop para edición
+  onEditPlan: (plan: Plan) => void;
+  onInvite: (plan: Plan) => void;
+  usersById: Record<string, CommonUser | undefined>;
+  onUserClick?: (userId: string) => void;
 }
 
-export default function PlansGrid({ 
-  plans, 
-  expandedPlans, 
-  togglePlanExpansion, 
+export default function PlansGrid({
+  plans,
+  expandedPlans,
+  togglePlanExpansion,
   openDeleteDialog,
-  onEditPlan
+  onEditPlan,
+  onInvite,
+  usersById,
+  onUserClick
 }: PlansGridProps) {
 
   const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
@@ -35,10 +36,39 @@ export default function PlansGrid({
       {plans.map((plan, index) => {
         const isExpanded = expandedPlans.has(index);
         const publicationCount = plan.publications?.length || 0;
-        
+        const owner = usersById[plan.ownerId];
+        const collaborators = plan.collaboratorsIds ?? [];
+
+        const renderUserAvatar = (userId: string, fallbackLabel: string) => {
+          const user = usersById[userId];
+          const label = user?.name ?? fallbackLabel;
+          return (
+            <Tooltip title={label} key={userId}>
+              <Avatar
+                src={user?.avatarURL}
+                alt={label}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUserClick?.(userId);
+                }}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  cursor: onUserClick ? 'pointer' : 'default',
+                  border: (theme) => `2px solid ${theme.palette.background.paper}`,
+                  bgcolor: (theme) => user ? theme.palette.primary.main : theme.palette.grey[700],
+                  color: 'white',
+                }}
+              >
+                {label.charAt(0).toUpperCase()}
+              </Avatar>
+            </Tooltip>
+          );
+        };
+
         return (
           <Grid item xs={12} key={index}>
-            <Box 
+            <Box
               sx={{ 
                 mb: 3,
                 borderRadius: 2,
@@ -63,14 +93,33 @@ export default function PlansGrid({
                   <Typography variant="h6" sx={{ flexGrow: 1 }}>
                     {plan.name}
                   </Typography>
-                  
+
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip 
+                    <Chip
                       label={`${publicationCount} ${publicationCount === 1 ? 'publicación' : 'publicaciones'}`}
                       size="small"
                       variant="outlined"
                     />
-                    
+
+                    <Tooltip title="Invitar a este plan">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onInvite(plan);
+                        }}
+                        sx={{
+                          color: 'secondary.main',
+                          '&:hover': {
+                            backgroundColor: 'secondary.light',
+                            color: 'secondary.contrastText'
+                          }
+                        }}
+                        size="small"
+                      >
+                        <PersonAddAlt1 />
+                      </IconButton>
+                    </Tooltip>
+
                     {/* Botones de editar y eliminar alineados con el chip */}
                     <IconButton
                       onClick={(e) => {
@@ -117,6 +166,32 @@ export default function PlansGrid({
                     {plan.description}
                   </Typography>
                 )}
+
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 1 }}>
+                  <Chip
+                    label="Creador"
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ borderStyle: 'dashed' }}
+                  />
+                  {renderUserAvatar(plan.ownerId, owner?.name ?? 'Dueño del plan')}
+
+                  {collaborators.length > 0 && (
+                    <>
+                      <Chip
+                        label="Invitados"
+                        size="small"
+                        color="secondary"
+                        variant="outlined"
+                        sx={{ borderStyle: 'dashed' }}
+                      />
+                      <AvatarGroup max={6} sx={{ '& .MuiAvatar-root': { width: 36, height: 36 } }}>
+                        {collaborators.map((id) => renderUserAvatar(id, 'Invitado'))}
+                      </AvatarGroup>
+                    </>
+                  )}
+                </Stack>
               </Box>
 
               {/* Contenido desplegable */}
