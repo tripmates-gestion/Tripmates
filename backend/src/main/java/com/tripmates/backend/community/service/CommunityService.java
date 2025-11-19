@@ -1,6 +1,8 @@
 package com.tripmates.backend.community.service;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +50,12 @@ public class CommunityService {
     }
 
     accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(planId, userId);
-    emailService.sendEmail(userToInvite.getEmail(), "Invitation to plan", "You have been invited to join the plan " + plan.name());    
+    Dictionary<String, String> variables = new Hashtable<>();
+    variables.put("planId", planId);
+    variables.put("toUsername", userToInvite.getUsername());
+    variables.put("planName", plan.name());
+    variables.put("ownerUsername", me.getUsername());
+    emailService.sendHtmlEmail(userToInvite.getEmail(), String.format("Collaborate on %s", plan.name()),"plan_invitation.html", variables);    
   }
 
   public void acceptInvitation(String planId, String currentUserEmail) {
