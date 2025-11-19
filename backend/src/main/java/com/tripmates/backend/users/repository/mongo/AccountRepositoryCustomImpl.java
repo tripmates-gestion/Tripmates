@@ -181,6 +181,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 
 		criteria.add(Criteria.where("role").is(Role.USER));
 
+		if (userSearchRequestDTO.username() != null)
+			criteria.add(Criteria.where("name").regex(userSearchRequestDTO.username(), "i"));
+
 		if (userSearchRequestDTO.followings() != null)
 			criteria.add(Criteria.where("following." + (userSearchRequestDTO.followings() - 1)).exists(true));
 
