@@ -546,6 +546,7 @@ export default function UserPlansTab() {
             onInvite={openInviteDialog}
             usersById={knownUsersById}
             onUserClick={handleUserProfile}
+            currentUserId={user?.id ?? null} 
             />
         ) : (
           <Grid item xs={12}>

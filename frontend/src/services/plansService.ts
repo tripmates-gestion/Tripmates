@@ -36,12 +36,15 @@ export async function createPlan(accessToken: string, name: string, description:
 
 export async function deletePlan(accessToken: string, planId: string) {
   const endpoint = ENDPOINTS.DELETE_PLAN.replace("{id}", planId);
+  
   const response = await apiFetch(endpoint, {
     method: "DELETE",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
     },
   });
+
+  console.log("Delete plan response:", response);
   return response;
 }
 

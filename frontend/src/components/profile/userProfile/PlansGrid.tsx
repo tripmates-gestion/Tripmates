@@ -16,7 +16,9 @@ interface PlansGridProps {
   onInvite: (plan: Plan) => void;
   usersById: Record<string, CommonUser | undefined>;
   onUserClick?: (userId: string) => void;
+  currentUserId?: string | null;     
 }
+
 
 export default function PlansGrid({
   plans,
@@ -26,7 +28,8 @@ export default function PlansGrid({
   onEditPlan,
   onInvite,
   usersById,
-  onUserClick
+  onUserClick,
+  currentUserId,
 }: PlansGridProps) {
 
   const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
@@ -39,9 +42,15 @@ export default function PlansGrid({
         const owner = usersById[plan.ownerId];
         const collaborators = plan.collaboratorsIds ?? [];
 
+        const isOwner = currentUserId === plan.ownerId;
+        const isCollaborator = collaborators.includes(currentUserId ?? '');
+        const canInviteAndDelete = isOwner;
+        const canEdit = isOwner || isCollaborator;
+
         const renderUserAvatar = (userId: string, fallbackLabel: string) => {
-          const user = usersById[userId];
-          const label = user?.name ?? fallbackLabel;
+        const user = usersById[userId];
+        const label = user?.name ?? fallbackLabel;
+
           return (
             <Tooltip title={label} key={userId}>
               <Avatar
@@ -89,77 +98,82 @@ export default function PlansGrid({
                 }}
                 onClick={() => togglePlanExpansion(index)}
               >
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              <Stack direction="row" spacing={1} alignItems="center">
+
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
                     {plan.name}
-                  </Typography>
+                </Typography>
 
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip
-                      label={`${publicationCount} ${publicationCount === 1 ? 'publicación' : 'publicaciones'}`}
-                      size="small"
-                      variant="outlined"
-                    />
+                <Chip
+                  label={`${publicationCount} ${publicationCount === 1 ? 'publicación' : 'publicaciones'}`}
+                  size="small"
+                  variant="outlined"
+                />
 
-                    <Tooltip title="Invitar a este plan">
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onInvite(plan);
-                        }}
-                        sx={{
-                          color: 'secondary.main',
-                          '&:hover': {
-                            backgroundColor: 'secondary.light',
-                            color: 'secondary.contrastText'
-                          }
-                        }}
-                        size="small"
-                      >
-                        <PersonAddAlt1 />
-                      </IconButton>
-                    </Tooltip>
-
-                    {/* Botones de editar y eliminar alineados con el chip */}
+                {canInviteAndDelete && (
+                  <Tooltip title="Invitar a este plan">
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Botón editar clickeado');
-                        onEditPlan(plan);
+                        onInvite(plan);
                       }}
                       sx={{
-                        color: 'primary.main',
+                        color: 'secondary.main',
                         '&:hover': {
-                          backgroundColor: 'primary.light',
-                          color: 'primary.contrastText'
-                        }
+                          backgroundColor: 'secondary.light',
+                          color: 'secondary.contrastText',
+                        },
                       }}
                       size="small"
                     >
-                      <Edit />
+                      <PersonAddAlt1 />
                     </IconButton>
-                    <IconButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openDeleteDialog(plan);
-                      }}
-                      sx={{
-                        color: 'error.main',
-                        '&:hover': {
-                          backgroundColor: 'error.light',
-                          color: 'error.contrastText'
-                        }
-                      }}
-                      size="small"
-                    >
-                      <Delete />
-                    </IconButton>
-                    
-                    <IconButton size="small">
-                      {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                    </IconButton>
-                  </Stack>
-                </Stack>
+                  </Tooltip>
+                )}
+
+                {canEdit && (
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditPlan(plan);
+                    }}
+                    sx={{
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.light',
+                        color: 'primary.contrastText',
+                      },
+                    }}
+                    size="small"
+                  >
+                    <Edit />
+                  </IconButton>
+                )}
+
+                {canInviteAndDelete && (
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteDialog(plan);
+                    }}
+                    sx={{
+                      color: 'error.main',
+                      '&:hover': {
+                        backgroundColor: 'error.light',
+                        color: 'error.contrastText',
+                      },
+                    }}
+                    size="small"
+                  >
+                    <Delete />
+                  </IconButton>
+                )}
+
+                <IconButton size="small">
+                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+              </Stack>
+
 
                 {plan.description && (
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>

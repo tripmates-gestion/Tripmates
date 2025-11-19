@@ -28,7 +28,7 @@ export const ENDPOINTS = {
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
-    PATCH_PLAN: "/users/plans/{id}",
+    PATCH_PLAN: "/community/plans/{id}", // Se cambia users a community
     GET_USER_BY_EMAIL: "/users/{email}",
 
     LIKE_PUBLICATION: "/publications/{id}/like",
