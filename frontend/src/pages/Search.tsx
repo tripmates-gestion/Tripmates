@@ -11,6 +11,7 @@ import { useLocation } from "react-router-dom";
 import { SearchBarHotel } from "../components/search/SearchBarHotel";
 import { SearchBarRestaurant } from "../components/search/SearchBarRestaurant";
 import PlaceGrid from "../components/search/ResultsPlaceGrid";
+import { BusinessRecommendationsSection } from "../components/recommendations/BusinessRecommendationsSection";
 import { MOCK_BUSINESS_SEARCH_RESULTS } from "../components/mocks/businessMocks";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
@@ -75,16 +76,16 @@ function SearchBoxContainer({
       </Stack>
 
       {/* Barra de búsqueda dinámica */}
-      <Box width="100%" maxWidth="900px">
-        {mode === "hotel" ? (
-          <SearchBarHotel onSearchResults={onResults} />
-        ) : (
-          <SearchBarRestaurant onSearchResults={onResults} />
-        )}
-      </Box>
-    </Stack>
-  );
-}
+        <Box width="100%" maxWidth="900px">
+          {mode === "hotel" ? (
+            <SearchBarHotel onSearchResults={onResults} />
+          ) : (
+            <SearchBarRestaurant onSearchResults={onResults} />
+          )}
+        </Box>
+      </Stack>
+    );
+  }
 
 
 // ---------------------------------------------------------
@@ -165,6 +166,7 @@ export default function Search() {
         <PlaceGrid businessAccounts={items} />
       )}
 
+      <BusinessRecommendationsSection />
     </Stack>
   );
 }
