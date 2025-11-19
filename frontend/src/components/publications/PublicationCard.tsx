@@ -149,7 +149,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
     }
   };
 
-  console.log("Publication card ",publication.id, " has onAddToBoard: ",onAddToBoard)
+
+  // console.log("Publication card ",publication.id, " has onAddToBoard: ",onAddToBoard)
   const moveOnMouseOverLocal = moveOnMouseOver ?? true;
   return (
     <>
@@ -334,6 +335,7 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             >
               <Stack direction="row" spacing={1.2} alignItems="center">
                 <Box
+                  component="button"
                   sx={{
                     display: "flex",
                     alignItems: "center",
@@ -354,6 +356,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
                       transform: "scale(1.08)",
                       boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
                     },
+                    border: "none", // Remove default button border
+                    background: "none", // Remove default button background
                   }}
                   onClick={handleLike}
                 >
