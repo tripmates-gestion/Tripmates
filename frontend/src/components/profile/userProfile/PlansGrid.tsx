@@ -16,9 +16,8 @@ interface PlansGridProps {
   onInvite: (plan: Plan) => void;
   usersById: Record<string, CommonUser | undefined>;
   onUserClick?: (userId: string) => void;
-  currentUserId?: string | null;     
+  currentUserId?: string | null;
 }
-
 
 export default function PlansGrid({
   plans,
@@ -31,7 +30,6 @@ export default function PlansGrid({
   onUserClick,
   currentUserId,
 }: PlansGridProps) {
-
   const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
 
   return (
@@ -48,8 +46,8 @@ export default function PlansGrid({
         const canEdit = isOwner || isCollaborator;
 
         const renderUserAvatar = (userId: string, fallbackLabel: string) => {
-        const user = usersById[userId];
-        const label = user?.name ?? fallbackLabel;
+          const user = usersById[userId];
+          const label = user?.name ?? fallbackLabel;
 
           return (
             <Tooltip title={label} key={userId}>
@@ -65,7 +63,7 @@ export default function PlansGrid({
                   height: 36,
                   cursor: onUserClick ? 'pointer' : 'default',
                   border: (theme) => `2px solid ${theme.palette.background.paper}`,
-                  bgcolor: (theme) => user ? theme.palette.primary.main : theme.palette.grey[700],
+                  bgcolor: (theme) => (user ? theme.palette.primary.main : theme.palette.grey[700]),
                   color: 'white',
                 }}
               >
@@ -76,15 +74,15 @@ export default function PlansGrid({
         };
 
         return (
-          <Grid item xs={12} key={index}>
+          <Grid item xs={12} key={plan.id ?? index}>
             <Box
-              sx={{ 
+              sx={{
                 mb: 3,
                 borderRadius: 2,
                 boxShadow: 1,
                 backgroundColor: 'background.paper',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
               }}
             >
               {/* Header del plan - siempre visible */}
@@ -93,90 +91,94 @@ export default function PlansGrid({
                   p: 2,
                   cursor: 'pointer',
                   '&:hover': {
-                    backgroundColor: 'action.hover'
-                  }
+                    backgroundColor: 'action.hover',
+                  },
                 }}
                 onClick={() => togglePlanExpansion(index)}
               >
-              <Stack direction="row" spacing={1} alignItems="center">
-
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h6" sx={{ flexGrow: 1 }}>
                     {plan.name}
-                </Typography>
+                  </Typography>
 
-                <Chip
-                  label={`${publicationCount} ${publicationCount === 1 ? 'publicación' : 'publicaciones'}`}
-                  size="small"
-                  variant="outlined"
-                />
+                  <Chip
+                    label={`${publicationCount} ${
+                      publicationCount === 1 ? 'publicación' : 'publicaciones'
+                    }`}
+                    size="small"
+                    variant="outlined"
+                  />
 
-                {canInviteAndDelete && (
-                  <Tooltip title="Invitar a este plan">
+                  {canInviteAndDelete && (
+                    <Tooltip title="Invitar a este plan">
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onInvite(plan);
+                        }}
+                        sx={{
+                          color: 'secondary.main',
+                          '&:hover': {
+                            backgroundColor: 'secondary.light',
+                            color: 'secondary.contrastText',
+                          },
+                        }}
+                        size="small"
+                      >
+                        <PersonAddAlt1 />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+
+                  {canEdit && (
                     <IconButton
                       onClick={(e) => {
                         e.stopPropagation();
-                        onInvite(plan);
+                        onEditPlan(plan);
                       }}
                       sx={{
-                        color: 'secondary.main',
+                        color: 'primary.main',
                         '&:hover': {
-                          backgroundColor: 'secondary.light',
-                          color: 'secondary.contrastText',
+                          backgroundColor: 'primary.light',
+                          color: 'primary.contrastText',
                         },
                       }}
                       size="small"
                     >
-                      <PersonAddAlt1 />
+                      <Edit />
                     </IconButton>
-                  </Tooltip>
-                )}
+                  )}
 
-                {canEdit && (
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditPlan(plan);
-                    }}
-                    sx={{
-                      color: 'primary.main',
-                      '&:hover': {
-                        backgroundColor: 'primary.light',
-                        color: 'primary.contrastText',
-                      },
-                    }}
-                    size="small"
-                  >
-                    <Edit />
+                  {canInviteAndDelete && (
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDeleteDialog(plan);
+                      }}
+                      sx={{
+                        color: 'error.main',
+                        '&:hover': {
+                          backgroundColor: 'error.light',
+                          color: 'error.contrastText',
+                        },
+                      }}
+                      size="small"
+                    >
+                      <Delete />
+                    </IconButton>
+                  )}
+
+                  <IconButton size="small">
+                    {isExpanded ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
-                )}
-
-                {canInviteAndDelete && (
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openDeleteDialog(plan);
-                    }}
-                    sx={{
-                      color: 'error.main',
-                      '&:hover': {
-                        backgroundColor: 'error.light',
-                        color: 'error.contrastText',
-                      },
-                    }}
-                    size="small"
-                  >
-                    <Delete />
-                  </IconButton>
-                )}
-
-                <IconButton size="small">
-                  {isExpanded ? <ExpandLess /> : <ExpandMore />}
-                </IconButton>
-              </Stack>
-
+                </Stack>
 
                 {plan.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1, fontStyle: 'italic' }}
+                  >
                     {plan.description}
                   </Typography>
                 )}
@@ -200,7 +202,10 @@ export default function PlansGrid({
                         variant="outlined"
                         sx={{ borderStyle: 'dashed' }}
                       />
-                      <AvatarGroup max={6} sx={{ '& .MuiAvatar-root': { width: 36, height: 36 } }}>
+                      <AvatarGroup
+                        max={6}
+                        sx={{ '& .MuiAvatar-root': { width: 36, height: 36 } }}
+                      >
                         {collaborators.map((id) => renderUserAvatar(id, 'Invitado'))}
                       </AvatarGroup>
                     </>
@@ -213,19 +218,22 @@ export default function PlansGrid({
                 <Box sx={{ px: 2, pb: 2 }}>
                   {plan.publications && plan.publications.length > 0 ? (
                     <Grid container spacing={2}>
-                      {plan.publications.map((publication: BusinessPublicationResponseDTO, pubIndex) => (
-                        <Grid item xs={12} sm={6} key={pubIndex}>
-                          <Box>
-                            <PublicationCard 
-                              publication={publication}
-                              onView={setSelected}
-                            />
-                          </Box>
-                        </Grid>
-                      ))}
+                      {plan.publications.map(
+                        (publication: BusinessPublicationResponseDTO, pubIndex) => (
+                          <Grid item xs={12} sm={6} key={publication.id ?? pubIndex}>
+                            <Box>
+                              <PublicationCard publication={publication} onView={setSelected} />
+                            </Box>
+                          </Grid>
+                        )
+                      )}
                     </Grid>
                   ) : (
-                    <Typography variant="body2" color="text.secondary" sx={{ p: 2, fontStyle: 'italic', textAlign: 'center' }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ p: 2, fontStyle: 'italic', textAlign: 'center' }}
+                    >
                       Plan vacío - Agrega publicaciones desde la sección de búsqueda
                     </Typography>
                   )}

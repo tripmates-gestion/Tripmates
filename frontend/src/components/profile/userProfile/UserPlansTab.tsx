@@ -6,6 +6,7 @@ import { useSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import { createPlan, getPlans, deletePlan, updatePlan, inviteUserToPlan } from '../../../services/plansService';
+import { getUserById } from '../../../services/userService';
 import PlansGrid from './PlansGrid';
 import type { CommonUser } from '../../../types/PrivateUserProfiles';
 import type { Plan } from '../../../types/Plans';
@@ -18,14 +19,17 @@ export default function UserPlansTab() {
   const navigate = useNavigate();
   const followersList = useConnectionsList('followers');
   const followingsList = useConnectionsList('followings');
+
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [usersById, setUsersById] = useState<Record<string, CommonUser>>({});
+
   const [openDialog, setOpenDialog] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
   const [newPlanDescription, setNewPlanDescription] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
   const [expandedPlans, setExpandedPlans] = useState<Set<number>>(new Set());
-  
+
   // Estados para edición
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [planToEdit, setPlanToEdit] = useState<Plan | null>(null);
@@ -44,7 +48,6 @@ export default function UserPlansTab() {
     return fallback;
   }, []);
 
-
   if (!accessToken) {
     return <Typography variant="body1">Debes iniciar sesión para ver tus planes de viaje.</Typography>;
   }
@@ -57,30 +60,8 @@ export default function UserPlansTab() {
     setEditDialogOpen(true);
   };
 
-  const fetchPlans = useCallback(async () => {
-    try {
-      const plansResponse = await getPlans(accessToken);
-      const normalizedPlans = plansResponse.map((plan) => ({
-        ...plan,
-        collaboratorsIds: plan.collaboratorsIds ?? [],
-        publications: plan.publications ?? [],
-        description: plan.description ?? '',
-      }));
-      setPlans(normalizedPlans);
-    } catch (error) {
-      console.error('Error fetching plans:', error);
-      enqueueSnackbar(errorMessage(error, 'No pudimos cargar tus planes.'), { variant: 'error' });
-    }
-  }, [accessToken, enqueueSnackbar, errorMessage]);
-
-  React.useEffect(() => {
-    if (user?.id) {
-      fetchPlans();
-    } else {
-      console.log('No user ID available, skipping fetch of plans.');
-    }
-  }, [fetchPlans, user?.id]);
-
+  // Hack anterior: followers + followings + yo
+  // Lo seguimos usando para fallback / navegación
   const knownUsersById = useMemo<Record<string, CommonUser>>(() => {
     const directory: Record<string, CommonUser> = {};
     const addUser = (item?: CommonUser | null) => {
@@ -106,6 +87,66 @@ export default function UserPlansTab() {
     return directory;
   }, [followersList.items, followingsList.items, user]);
 
+  const fetchPlans = useCallback(async () => {
+    try {
+      const plansResponse = await getPlans(accessToken);
+      const normalizedPlans = plansResponse.map((plan) => ({
+        ...plan,
+        collaboratorsIds: plan.collaboratorsIds ?? [],
+        publications: plan.publications ?? [],
+        description: plan.description ?? '',
+      }));
+      setPlans(normalizedPlans);
+
+      // traer todos los usuarios (owner + colaboradores) por ID
+      const idsSet = new Set<string>();
+
+      normalizedPlans.forEach((plan) => {
+        if (plan.ownerId) idsSet.add(plan.ownerId);
+        (plan.collaboratorsIds ?? []).forEach((id) => idsSet.add(id));
+      });
+
+      if (user?.id) {
+        idsSet.add(user.id);
+      }
+
+      const ids = Array.from(idsSet);
+
+      const fetched = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const profile = await getUserById(id, accessToken);
+            return [id, profile as CommonUser] as const;
+          } catch (err) {
+            console.warn('No pudimos cargar el usuario', id, err);
+            return null;
+          }
+        })
+      );
+
+      const directory: Record<string, CommonUser> = {};
+      fetched.forEach((item) => {
+        if (item) {
+          directory[item[0]] = item[1];
+        }
+      });
+
+      // mergeamos con knownUsersById para aprovechar followers/followings también
+      setUsersById({ ...knownUsersById, ...directory });
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos cargar tus planes.'), { variant: 'error' });
+    }
+  }, [accessToken, enqueueSnackbar, errorMessage, knownUsersById, user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchPlans();
+    } else {
+      console.log('No user ID available, skipping fetch of plans.');
+    }
+  }, [fetchPlans, user?.id]);
+
   const filteredFollowers = useMemo(() => {
     const term = inviteSearch.trim().toLowerCase();
     if (!term) return followersList.items;
@@ -115,7 +156,7 @@ export default function UserPlansTab() {
   }, [followersList.items, inviteSearch]);
 
   const togglePlanExpansion = (planIndex: number) => {
-    setExpandedPlans(prev => {
+    setExpandedPlans((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(planIndex)) {
         newSet.delete(planIndex);
@@ -128,20 +169,18 @@ export default function UserPlansTab() {
 
   const handleUserProfile = useCallback(
     (userId: string) => {
-      const account = knownUsersById[userId];
-  
+      const account = usersById[userId] ?? knownUsersById[userId];
+
       if (account) {
         navigate(`/userProfile/${userId}`, {
           state: { account },
         });
       } else {
-        // fallback por si no lo tenés en el mapa
         navigate(`/userProfile/${userId}`);
       }
     },
-    [navigate, knownUsersById]
+    [navigate, usersById, knownUsersById]
   );
-  
 
   const closeInviteDialog = () => {
     setInviteDialogOpen(false);
@@ -151,13 +190,13 @@ export default function UserPlansTab() {
 
   const handleDeletePlan = async () => {
     if (!planToDelete || !planToDelete.id) return;
-    
+
     try {
       console.log('Deleting plan with id:', planToDelete.id);
       await deletePlan(accessToken, planToDelete.id);
-      
+
       await fetchPlans();
-      
+
       setDeleteDialogOpen(false);
       setPlanToDelete(null);
     } catch (error) {
@@ -166,11 +205,6 @@ export default function UserPlansTab() {
     }
   };
 
-  useEffect(() => {
-    if (inviteDialogOpen) {
-      followersList.refresh();
-    }
-  }, [inviteDialogOpen]);
 
   const handleInviteUser = async (targetUserId: string) => {
     if (!planToInvite?.id) return;
@@ -184,13 +218,11 @@ export default function UserPlansTab() {
       const message = errorMessage(error, 'No pudimos enviar la invitación.');
       enqueueSnackbar(message, { variant: 'error' });
 
-      // Si el backend informa que ya fue invitado, marcamos el estado localmente
       if (message.toLowerCase().includes('ya') && message.toLowerCase().includes('invit')) {
         setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
       }
     }
   };
-
 
   const openDeleteDialog = (plan: Plan) => {
     setPlanToDelete(plan);
@@ -201,6 +233,7 @@ export default function UserPlansTab() {
     setPlanToInvite(plan);
     setInviteSearch('');
     setInvitedUserIds(new Set());
+    followersList.refresh(); 
     setInviteDialogOpen(true);
   };
 
@@ -213,10 +246,15 @@ export default function UserPlansTab() {
       console.log('New description:', editPlanDescription.trim());
       console.log('Publications to delete:', publicationsToDelete);
 
-      await updatePlan(accessToken, planToEdit.id, editPlanName.trim(), editPlanDescription.trim(), publicationsToDelete);
+      await updatePlan(
+        accessToken,
+        planToEdit.id,
+        editPlanName.trim(),
+        editPlanDescription.trim(),
+        publicationsToDelete
+      );
       await fetchPlans();
 
-      // Reset
       setEditDialogOpen(false);
       setPlanToEdit(null);
       setEditPlanName('');
@@ -228,7 +266,6 @@ export default function UserPlansTab() {
     }
   };
 
-
   const handleCreatePlan = async () => {
     if (newPlanName.trim()) {
       console.log('Creando plan:', { name: newPlanName, description: newPlanDescription });
@@ -237,8 +274,6 @@ export default function UserPlansTab() {
         await createPlan(accessToken, newPlanName.trim(), newPlanDescription.trim());
         await fetchPlans();
 
-        
-        
         setNewPlanName('');
         setNewPlanDescription('');
         setOpenDialog(false);
@@ -248,6 +283,7 @@ export default function UserPlansTab() {
       }
     }
   };
+
 
   return (
     <Box>
@@ -261,7 +297,7 @@ export default function UserPlansTab() {
             borderRadius: 2,
             textTransform: 'none',
             px: 3,
-            py: 1
+            py: 1,
           }}
         >
           Crear nuevo plan
@@ -544,10 +580,10 @@ export default function UserPlansTab() {
             openDeleteDialog={openDeleteDialog}
             onEditPlan={openEditDialog}
             onInvite={openInviteDialog}
-            usersById={knownUsersById}
+            usersById={usersById}    
             onUserClick={handleUserProfile}
-            currentUserId={user?.id ?? null} 
-            />
+            currentUserId={user?.id ?? null}
+          />
         ) : (
           <Grid item xs={12}>
             <Typography variant="h6" gutterBottom>

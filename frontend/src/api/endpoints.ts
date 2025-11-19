@@ -30,6 +30,7 @@ export const ENDPOINTS = {
     DELETE_PLAN: "/users/plans/{id}",
     PATCH_PLAN: "/community/plans/{id}", // Se cambia users a community
     GET_USER_BY_EMAIL: "/users/{email}",
+    GET_USER_BY_ID: "/users/view/{id}",
 
     LIKE_PUBLICATION: "/publications/{id}/like",
     UNLIKE_PUBLICATION: "/publications/{id}/unlike",

@@ -18,7 +18,7 @@ import {
 import { CheckCircle, HighlightOff } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { acceptPlanInvitation, declinePlanInvitation, getPlanById } from '../services/plansService';
-import { getUserByEmail } from '../services/userService';
+import { getUserById } from '../services/userService';
 import type { CommonUser } from '../types/PrivateUserProfiles';
 import type { Plan } from '../types/Plans';
 import PublicationCard from '../components/publications/PublicationCard';
@@ -69,7 +69,7 @@ export default function PlanInvitation() {
       const fetched = await Promise.all(userIds.map(async (id) => {
 
         try {
-          const profile = await getUserByEmail(id, accessToken);
+          const profile = await getUserById(id, accessToken); 
           return [id, profile as CommonUser] as const;
 
         } catch (participantError) {
