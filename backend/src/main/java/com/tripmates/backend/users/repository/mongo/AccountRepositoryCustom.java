@@ -1,5 +1,6 @@
 package com.tripmates.backend.users.repository.mongo;
 
+import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.PlanMetadataWithContent;
 
@@ -44,7 +45,9 @@ public interface AccountRepositoryCustom {
   void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
   void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
   void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited);
-  List<String> getPlanPublicationsIds(String planId);//quizás no se use
+  List<String> getPlanPublicationsIds(String planId);
   List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId);
+  Plan getPlanByPlanId(String planId);
+  Plan updateExistingPlan(Plan updatedPlan);
 
 }

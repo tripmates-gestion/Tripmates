@@ -1,6 +1,8 @@
 package com.tripmates.backend.users.repository.mongo;
 
+import com.mongodb.client.result.UpdateResult;
 import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.PlanMetadataWithContent;
 import com.tripmates.backend.common.types.Review;
@@ -318,6 +320,67 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
     );
 
     return results.getMappedResults();
+  }
+
+  @Override
+  public Plan getPlanByPlanId(String planId) {
+        
+    if (!ObjectId.isValid(planId)) {
+      return null; 
+    }
+    ObjectId targetPlanId = new ObjectId(planId);
+
+    Aggregation aggregation = Aggregation.newAggregation(
+      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
+      Aggregation.unwind("plansList"),
+      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
+      Aggregation.project()
+        .andExclude("_id") 
+        .andExpression("{$toString: '$plansList._id'}").as("id") 
+        .and("plansList.name").as("name")
+        .and("plansList.description").as("description")
+        .and("plansList.ownerId").as("ownerId") 
+        .and("plansList.collaboratorsUsersIds").as("collaboratorsUsersIds") 
+        .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
+        .and("plansList.publicationsIdList").as("publicationsIdList")
+    );
+    AggregationResults<Plan> results = mongoTemplate.aggregate(
+      aggregation,
+      "account", 
+      Plan.class 
+    );
+
+    Plan foundPlan = results.getUniqueMappedResult();
+
+    if (foundPlan != null) {
+      foundPlan.setId(planId);
+    }
+    return foundPlan;
+  }
+
+  @Override
+  public Plan updateExistingPlan(Plan updatedPlan) {
+    if (updatedPlan.getId() == null || !ObjectId.isValid(updatedPlan.getId())) {
+        System.err.println("Error: El ID del plan a actualizar no es válido.");
+        return null;
+    }
+    ObjectId targetPlanId = new ObjectId(updatedPlan.getId());
+    String ownerId = updatedPlan.getOwnerId();
+    Query query = new Query(Criteria.where("_id").is(ownerId));
+    Update update = new Update()
+      .set("plansList.$[plan].name", updatedPlan.getName())
+      .set("plansList.$[plan].description", updatedPlan.getDescription())
+      .set("plansList.$[plan].publicationsIdList", updatedPlan.getPublicationsIdList())
+      .set("plansList.$[plan].pendingUsersIdsInvited", updatedPlan.getPendingUsersIdsInvited())
+      .set("plansList.$[plan].collaboratorsUsersIds", updatedPlan.getCollaboratorsUsersIds())
+      .filterArray(Criteria.where("plan._id").is(targetPlanId));
+    UpdateResult result = mongoTemplate.updateFirst(query, update, "account");
+    
+    if (result.getModifiedCount() > 0) {
+      return getPlanByPlanId(updatedPlan.getId());
+    }
+    
+    return null;
   }
   private static class PublicationIdsProjection {
     private List<String> publicationsIdList;
