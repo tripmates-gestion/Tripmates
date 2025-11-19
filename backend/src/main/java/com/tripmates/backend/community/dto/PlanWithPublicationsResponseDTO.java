@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.dto.plan;
+package com.tripmates.backend.community.dto;
 
 import java.util.List;
 import com.tripmates.backend.common.types.Plan;

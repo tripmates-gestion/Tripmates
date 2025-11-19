@@ -1,23 +1,24 @@
 package com.tripmates.backend.community.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.NotFoundException;
 import com.tripmates.backend.common.exception.UnauthorizedException;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
-import com.tripmates.backend.users.dto.plan.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.PlanMetadataWithContent;
 import com.tripmates.backend.common.types.Role;
+import com.tripmates.backend.community.dto.PlanUpdateRequestDTO;
+import com.tripmates.backend.community.dto.PlanWithPublicationsResponseDTO;
 import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 
@@ -145,5 +146,61 @@ public class CommunityService {
       var planWithPublications = PlanWithPublicationsResponseDTO.fromPlan(plan, publicationRepository);
       plansResponse.add(planWithPublications);
     }
+  }
+
+  public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
+    Plan target = accountRepository.getPlanByPlanId(planId);
+		if (target == null)
+			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
+    System.out.println("\n\n\nse encuentra el plan para el id: " + planId + " y el plan es: " + target);
+
+    validateMyPlanOrCollaboratinOn(target, email);
+
+		if (planUpdateRequestDTO != null) {
+			if (planUpdateRequestDTO.name() != null)
+				target.setName(planUpdateRequestDTO.name());
+			if (planUpdateRequestDTO.description() != null)
+				target.setDescription(planUpdateRequestDTO.description());
+
+			if (planUpdateRequestDTO.deletePublicationIndexes() != null
+					&& !planUpdateRequestDTO.deletePublicationIndexes().isEmpty()) {
+				List<String> pubs = target.getPublicationsIdList();
+				if (pubs == null || pubs.isEmpty())
+					throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
+
+				List<Integer> toDelete = new ArrayList<>(planUpdateRequestDTO.deletePublicationIndexes());
+				toDelete.sort(Comparator.reverseOrder());
+				for (Integer i : toDelete) {
+					if (i == null || i < 0 || i >= pubs.size())
+						throw new BadRequestException(ValidationErrorMessage.INDEX_OUT_OF_RANGE);
+					pubs.remove(i.intValue());
+				}
+				target.setPublicationsIdList(pubs);
+			}
+
+			if (planUpdateRequestDTO.publicationsIdList() != null) {
+				List<String> pubs = target.getPublicationsIdList();
+				if (pubs == null)
+					pubs = new ArrayList<>();
+				pubs.addAll(planUpdateRequestDTO.publicationsIdList());
+				target.setPublicationsIdList(pubs);
+			}
+		}
+		accountRepository.updateExistingPlan(target);
+	}
+
+  private Account validateMyPlanOrCollaboratinOn(Plan plan, String email) {
+    Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		if (account.getRole() != Role.USER)
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+    
+    var imOwner = plan.getOwnerId().equals(account.getId());
+    var imCollaborator = plan.getCollaboratorsUsersIds().contains(account.getId());
+    if (!imOwner && !imCollaborator) {
+      throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+    }
+    return account;
   }
 }
