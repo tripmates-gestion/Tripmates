@@ -150,17 +150,4 @@ public interface AccountNodeRepository extends Neo4jRepository<AccountNode, Stri
 			""")
 	void createSharesBusinessType(@Param("businessId") String businessId);
 
-	@Query("""
-			MATCH (a:AccountNode {id: $from})-[:SHARES_BUSINESS_TYPE]->(b:AccountNode {id: $to})
-			RETURN count(*) > 0
-			""")
-	boolean existsSharesBusiness(@Param("from") String from, @Param("to") String to);
-
-	@Query("""
-			MATCH (a:AccountNode {id: $accountId})
-			MATCH (p:PublicationNode {id: $publicationId})
-			RETURN EXISTS((a)-[:LIKED]->(p))
-			""")
-	boolean existsLike(@Param("accountId") String accountId, @Param("publicationId") String publicationId);
-
 }
