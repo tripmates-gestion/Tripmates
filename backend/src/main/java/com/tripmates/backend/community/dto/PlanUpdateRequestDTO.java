@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.dto;
+package com.tripmates.backend.community.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

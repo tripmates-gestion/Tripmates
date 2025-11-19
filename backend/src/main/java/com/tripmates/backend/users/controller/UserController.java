@@ -22,6 +22,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 
 import com.tripmates.backend.users.dto.*;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
+import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
+import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
+import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
@@ -29,7 +36,6 @@ import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
-
 import java.util.List;
 
 @RestController
@@ -134,7 +140,7 @@ public class UserController {
 	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
 	@ApiResponses(
 			value = {
-					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+					@ApiResponse(responseCode = "204", description = "User's plan created successfully",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = void.class))),
 					@ApiResponse(responseCode = "404", description = "User not found",
@@ -147,25 +153,6 @@ public class UserController {
 			@AuthenticationPrincipal UserDetails userDetails) {
 		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
 
-		return ResponseEntity.noContent().build();
-	}
-
-	@PatchMapping("/plans/{id}")
-	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
-	@ApiResponses(
-			value = {
-					@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = void.class))),
-					@ApiResponse(responseCode = "404", description = "User not found",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))),
-					@ApiResponse(responseCode = "401", description = "Invalid credentials",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
-			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
-		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -186,24 +173,6 @@ public class UserController {
 			@AuthenticationPrincipal UserDetails userDetails) {
 		userService.deletePlan(userDetails.getUsername(), planId);
 		return ResponseEntity.noContent().build();
-	}
-
-	@GetMapping("/plans/list")
-	@Operation(description = "Obtains user's plans or plans where he belongs")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
-
-		if (planResumeResponseDTOList.isEmpty())
-			return ResponseEntity.noContent().build();
-
-		return ResponseEntity.ok(planResumeResponseDTOList);
 	}
 
 	@PostMapping(value = "/me/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -408,7 +377,8 @@ public class UserController {
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
 		List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
-		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+		FollowingsListResponseDTO followingsListResponseDTO = new FollowingsListResponseDTO(followings);
+		return ResponseEntity.ok(followingsListResponseDTO);
 	}
 
 	@GetMapping(value = "/{userId}/followers")
@@ -435,8 +405,8 @@ public class UserController {
 			@ApiResponse(responseCode = "204", description = "No recommendations available",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = void.class))) })
-	public ResponseEntity<?> userAccountRecommendations(@PathVariable("userId") String id) {
-		List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getUserAccountRecommendation(id);
+	public ResponseEntity<?> userAccountRecommendations(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getUserAccountRecommendation(userId);
 
 		if (accountResumeResponseDTOList.isEmpty())
 			return ResponseEntity.noContent().build();
@@ -444,23 +414,25 @@ public class UserController {
 		return ResponseEntity.ok(accountResumeResponseDTOList);
 	}
 
-    @GetMapping("/recommendations/business/{userId}")
-    @Operation(summary = "Gets all the business account recommendations for a user account", description = "In progress...")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Recommendations obtained successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = AccountResumeResponseDTO.class))),
-            @ApiResponse(responseCode = "204", description = "No recommendations available",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))) })
-    public ResponseEntity<?> businessAccountRecommendations(@PathVariable("userId") String id) {
-        List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService.getBusinessAccountRecommendation(id);
+	@GetMapping("/recommendations/business/{userId}")
+	@Operation(summary = "Gets all the business account recommendations for a user account",
+			description = "In progress...")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Recommendations obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "204", description = "No recommendations available",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))) })
+	public ResponseEntity<?> businessAccountRecommendations(@PathVariable("userId") String userId) {
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = userService
+			.getBusinessAccountRecommendation(userId);
 
-        if (accountResumeResponseDTOList.isEmpty())
-            return ResponseEntity.noContent().build();
+		if (accountResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
 
-        return ResponseEntity.ok(accountResumeResponseDTOList);
-    }
+		return ResponseEntity.ok(accountResumeResponseDTOList);
+	}
 
 	@GetMapping("/recommendations/publications/{userId}")
 	@Operation(summary = "Gets all the publication recommendations for a user",
@@ -479,9 +451,8 @@ public class UserController {
 		Page<PublicationResumeResponseDTO> recommendations = userService.getPublicationRecommendations(userId,
 				pageable);
 
-		if (recommendations.isEmpty()) {
+		if (recommendations.isEmpty())
 			return ResponseEntity.noContent().build();
-		}
 
 		return ResponseEntity.ok(recommendations);
 	}

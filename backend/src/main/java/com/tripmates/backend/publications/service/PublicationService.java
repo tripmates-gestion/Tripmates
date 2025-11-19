@@ -9,7 +9,7 @@ import com.tripmates.backend.publications.repository.mongo.PublicationRepository
 import com.tripmates.backend.publications.repository.mongo.ReviewRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.entity.mongo.Publication;
@@ -78,7 +78,7 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
-        accountNodeRepository.createOwnsPublication(account.getId(), publication.getId());
+		accountNodeRepository.createOwnsPublication(account.getId(), publication.getId());
 
 		return PublicationResumeResponseDTO.fromPublication(publication);
 	}
@@ -399,6 +399,7 @@ public class PublicationService {
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
 
 		publicationRepository.addToLikes(publicationId, userId);
+		accountNodeRepository.createLiked(userId, publicationId);
 	}
 
 	/**
@@ -413,6 +414,7 @@ public class PublicationService {
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
 
 		publicationRepository.removeFromLikes(publicationId, userId);
+		accountNodeRepository.removeLiked(userId, publicationId);
 	}
 
 	/**
