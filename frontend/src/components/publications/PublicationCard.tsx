@@ -26,6 +26,8 @@ import { useAuth } from "../../hooks/useAuth";
 import React from "react";
 import { likePublication, unlikePublication } from "../../services/userService";
 import { getLikesForPublication } from "../../services/businessPublications";
+import { alpha } from "@mui/material/styles";
+
 
 type Props = {
   publication: BusinessPublicationResponseDTO;
@@ -334,42 +336,60 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
               }}
             >
               <Stack direction="row" spacing={1.2} alignItems="center">
-                <Box
-                  component="button"
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.8,
-                    px: 1.8,
-                    py: 0.9,
-                    borderRadius: "22px",
-                    bgcolor: userLiked ? "#2196F3" : "rgba(33,150,243,0.12)",
-                    color: userLiked ? "#fff" : "#2196F3",
-                    boxShadow: userLiked
-                      ? "0 0 12px rgba(33,150,243,0.5)"
-                      : "0 2px 6px rgba(0,0,0,0.15)",
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                    transition: "all .25s ease",
-                    opacity: likesLoaded ? 1 : 0.6, // Opcional: mostrar loading state
-                    "&:hover": {
-                      transform: "scale(1.08)",
-                      boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
-                    },
-                    border: "none", // Remove default button border
-                    background: "none", // Remove default button background
-                  }}
-                  onClick={handleLike}
-                >
-                  {userLiked ? (
-                    <ThumbUp fontSize="medium" />
-                  ) : (
-                    <ThumbUpOutlined fontSize="medium" />
-                  )}
-                  <Typography variant="body1" fontWeight={700}>
-                    {likesCount}
-                  </Typography>
-                </Box>
+              <Box
+                component="button"
+                onClick={handleLike}
+                sx={(theme) => ({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.8,
+                  px: 1.8,
+                  py: 0.9,
+                  borderRadius: "22px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  transition: "all .25s ease",
+                  opacity: likesLoaded ? 1 : 0.6,
+
+                  backgroundColor: userLiked
+                    ? theme.palette.primary.main
+                    : alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.3 : 0.1),
+
+                  color: userLiked
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.primary.main,
+
+                  boxShadow: userLiked ? theme.shadows[4] : theme.shadows[1],
+
+                  "&:hover": {
+                    transform: "scale(1.08)",
+                    boxShadow: theme.shadows[6],
+                    backgroundColor: userLiked
+                      ? theme.palette.primary.dark
+                      : alpha(
+                          theme.palette.primary.main,
+                          theme.palette.mode === "dark" ? 0.4 : 0.2
+                        ),
+                  },
+
+                  "&:disabled": {
+                    cursor: "default",
+                    boxShadow: "none",
+                    opacity: 0.4,
+                  },
+                })}
+              >
+                {userLiked ? (
+                  <ThumbUp fontSize="medium" />
+                ) : (
+                  <ThumbUpOutlined fontSize="medium" />
+                )}
+                <Typography variant="body1" fontWeight={700}>
+                  {likesCount}
+                </Typography>
+              </Box>
+
               </Stack>
             </Box>
           </Stack>

@@ -145,6 +145,9 @@ export default function Search() {
           : "Explora nuestras opciones"}
       </Typography>
 
+      <BusinessRecommendationsSection />
+      
+      
       {/* Resultados */}
       {isSearching ? (
         items.length > 0 ? (
@@ -166,7 +169,6 @@ export default function Search() {
         <PlaceGrid businessAccounts={items} />
       )}
 
-      <BusinessRecommendationsSection />
     </Stack>
   );
 }
