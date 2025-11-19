@@ -12,11 +12,13 @@ import {
   Divider,
   Grid,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { CheckCircle, HighlightOff } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { acceptPlanInvitation, declinePlanInvitation, getPlanById } from '../services/plansService';
+import { getUserByEmail } from '../services/userService';
 import type { CommonUser } from '../types/PrivateUserProfiles';
 import type { Plan } from '../types/Plans';
 import PublicationCard from '../components/publications/PublicationCard';
@@ -30,6 +32,7 @@ export default function PlanInvitation() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<'pending' | 'accepted' | 'declined'>('pending');
+  const [participants, setParticipants] = useState<Record<string, CommonUser>>({});
 
   const knownUsersById = useMemo<Record<string, CommonUser>>(() => {
     const directory: Record<string, CommonUser> = {};
@@ -61,6 +64,24 @@ export default function PlanInvitation() {
         publications: planResponse.publications ?? [],
         description: planResponse.description ?? '',
       });
+
+      const userIds = [planResponse.ownerId, ...(planResponse.collaboratorsIds ?? [])];
+      const fetched = await Promise.all(userIds.map(async (id) => {
+        try {
+          const profile = await getUserByEmail(id, accessToken);
+          return [id, profile as CommonUser] as const;
+        } catch (participantError) {
+          console.warn('No pudimos cargar el usuario', id, participantError);
+          return null;
+        }
+      }));
+      const directory: Record<string, CommonUser> = {};
+      fetched.forEach((item) => {
+        if (item) {
+          directory[item[0]] = item[1];
+        }
+      });
+      setParticipants(directory);
 
       if (user && (planResponse.ownerId === user.id || planResponse.collaboratorsIds?.includes(user.id))) {
         setStatus('accepted');
@@ -96,19 +117,22 @@ export default function PlanInvitation() {
   };
 
   const renderUserAvatar = (userId: string, fallback: string) => {
-    const userInfo = knownUsersById[userId];
+    const userInfo = participants[userId] ?? knownUsersById[userId];
     const label = userInfo?.name ?? fallback;
     return (
-      <Avatar
-        key={userId}
-        src={userInfo?.avatarURL}
-        alt={label}
-        sx={{ width: 40, height: 40, bgcolor: (theme) => theme.palette.primary.main, color: 'white' }}
-      >
-        {label.charAt(0).toUpperCase()}
-      </Avatar>
+      <Tooltip key={userId} title={label}>
+        <Avatar
+          src={userInfo?.avatarURL}
+          alt={label}
+          sx={{ width: 40, height: 40, bgcolor: (theme) => theme.palette.primary.main, color: 'white' }}
+        >
+          {label.charAt(0).toUpperCase()}
+        </Avatar>
+      </Tooltip>
     );
   };
+
+  const participantName = (userId: string, fallback: string) => participants[userId]?.name ?? knownUsersById[userId]?.name ?? fallback;
 
   if (loading) {
     return (
@@ -154,13 +178,21 @@ export default function PlanInvitation() {
 
             <Stack direction="row" spacing={2} alignItems="center">
               <Chip label="Creador" size="small" color="primary" variant="outlined" />
-              {renderUserAvatar(plan.ownerId, 'Creador')}
+              <Stack direction="row" spacing={1} alignItems="center">
+                {renderUserAvatar(plan.ownerId, 'Creador')}
+                <Typography variant="subtitle2" fontWeight={700}>
+                  {participantName(plan.ownerId, 'Creador del plan')}
+                </Typography>
+              </Stack>
               {plan.collaboratorsIds?.length ? (
                 <>
                   <Chip label="Invitados" size="small" color="secondary" variant="outlined" />
                   <AvatarGroup max={8} sx={{ '& .MuiAvatar-root': { width: 36, height: 36 } }}>
                     {plan.collaboratorsIds.map((id) => renderUserAvatar(id, 'Invitado'))}
                   </AvatarGroup>
+                  <Typography variant="body2" color="text.secondary">
+                    {plan.collaboratorsIds.map((id) => participantName(id, 'Invitado')).join(', ')}
+                  </Typography>
                 </>
               ) : null}
             </Stack>
