@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Avatar, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
@@ -36,6 +36,13 @@ export default function UserPlansTab() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [planToInvite, setPlanToInvite] = useState<Plan | null>(null);
   const [inviteSearch, setInviteSearch] = useState('');
+  const [invitedUserIds, setInvitedUserIds] = useState<Set<string>>(new Set());
+
+  const errorMessage = useCallback((err: unknown, fallback: string) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    return fallback;
+  }, []);
 
 
   if (!accessToken) {
@@ -62,8 +69,9 @@ export default function UserPlansTab() {
       setPlans(normalizedPlans);
     } catch (error) {
       console.error('Error fetching plans:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos cargar tus planes.'), { variant: 'error' });
     }
-  }, [accessToken]);
+  }, [accessToken, enqueueSnackbar, errorMessage]);
 
   React.useEffect(() => {
     if (user?.id) {
@@ -122,12 +130,6 @@ export default function UserPlansTab() {
     navigate(`/userProfile/${userId}`);
   }, [navigate]);
 
-  const openInviteDialog = (plan: Plan) => {
-    setPlanToInvite(plan);
-    setInviteSearch('');
-    setInviteDialogOpen(true);
-  };
-
   const closeInviteDialog = () => {
     setInviteDialogOpen(false);
     setPlanToInvite(null);
@@ -147,6 +149,32 @@ export default function UserPlansTab() {
       setPlanToDelete(null);
     } catch (error) {
       console.error('Error deleting plan:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos eliminar el plan.'), { variant: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    if (inviteDialogOpen) {
+      followersList.refresh();
+    }
+  }, [inviteDialogOpen, followersList]);
+
+  const handleInviteUser = async (targetUserId: string) => {
+    if (!planToInvite?.id) return;
+
+    try {
+      await inviteUserToPlan(accessToken, planToInvite.id, targetUserId);
+      enqueueSnackbar('Invitación enviada', { variant: 'success' });
+      setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
+      await fetchPlans();
+    } catch (error) {
+      const message = errorMessage(error, 'No pudimos enviar la invitación.');
+      enqueueSnackbar(message, { variant: 'error' });
+
+      // Si el backend informa que ya fue invitado, marcamos el estado localmente
+      if (message.toLowerCase().includes('ya') && message.toLowerCase().includes('invit')) {
+        setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
+      }
     }
   };
 
@@ -168,11 +196,18 @@ export default function UserPlansTab() {
     setDeleteDialogOpen(true);
   };
 
+  const openInviteDialog = (plan: Plan) => {
+    setPlanToInvite(plan);
+    setInviteSearch('');
+    setInvitedUserIds(new Set());
+    setInviteDialogOpen(true);
+  };
+
   const handleEditPlan = async () => {
     if (!planToEdit || !planToEdit.id || !editPlanName.trim()) return;
 
     try {
-      console.log('Updating plan with id:', planToEdit.id); 
+      console.log('Updating plan with id:', planToEdit.id);
       console.log('New name:', editPlanName.trim());
       console.log('New description:', editPlanDescription.trim());
       console.log('Publications to delete:', publicationsToDelete);
@@ -188,6 +223,7 @@ export default function UserPlansTab() {
       setPublicationsToDelete([]);
     } catch (error) {
       console.error('Error updating plan:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos actualizar el plan.'), { variant: 'error' });
     }
   };
 
@@ -195,7 +231,7 @@ export default function UserPlansTab() {
   const handleCreatePlan = async () => {
     if (newPlanName.trim()) {
       console.log('Creando plan:', { name: newPlanName, description: newPlanDescription });
-      
+
       try {
         await createPlan(accessToken, newPlanName.trim(), newPlanDescription.trim());
         await fetchPlans();
@@ -207,6 +243,7 @@ export default function UserPlansTab() {
         setOpenDialog(false);
       } catch (error) {
         console.error('Error creating plan:', error);
+        enqueueSnackbar(errorMessage(error, 'No pudimos crear el plan.'), { variant: 'error' });
       }
     }
   };
@@ -427,6 +464,7 @@ export default function UserPlansTab() {
               {filteredFollowers.map((follower) => {
                 const isOwner = planToInvite?.ownerId === follower.id;
                 const alreadyCollaborator = planToInvite?.collaboratorsIds?.includes(follower.id);
+                const alreadyInvited = invitedUserIds.has(follower.id);
                 return (
                   <Paper
                     key={follower.id}
@@ -454,14 +492,18 @@ export default function UserPlansTab() {
                         <Chip label="Ya participa" color="success" size="small" variant="outlined" />
                       )}
 
+                      {alreadyInvited && !alreadyCollaborator && (
+                        <Chip label="Invitación enviada" color="info" size="small" variant="outlined" />
+                      )}
+
                       <Button
                         variant="contained"
                         size="small"
                         startIcon={<PersonAddAlt1Icon />}
-                        disabled={isOwner || alreadyCollaborator}
+                        disabled={isOwner || alreadyCollaborator || alreadyInvited}
                         onClick={() => handleInviteUser(follower.id)}
                       >
-                        Invitar
+                        {alreadyInvited ? 'Invitado' : 'Invitar'}
                       </Button>
                     </Stack>
                   </Paper>

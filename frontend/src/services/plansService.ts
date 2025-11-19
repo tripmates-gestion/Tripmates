@@ -81,8 +81,6 @@ export async function updatePlan(accessToken: string, planId: string, name: stri
 
 export async function inviteUserToPlan(accessToken: string, planId: string, userId: string) {
   const endpoint = ENDPOINTS.INVITE_USER_TO_PLAN(planId, userId);
-
-  console.log("Inviting user to plan:", { planId, userId });
   return apiFetch(endpoint, {
     method: "POST",
     headers: {
