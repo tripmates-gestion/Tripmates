@@ -22,6 +22,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 
 import com.tripmates.backend.users.dto.*;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
+import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
+import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
+import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
+import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
@@ -29,7 +37,6 @@ import com.tripmates.backend.common.service.parsing.ObjectParsingService;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
-
 import java.util.List;
 
 @RestController
@@ -134,7 +141,7 @@ public class UserController {
 	@Operation(summary = "User plan's creation", description = DocumentationObjectsExamples.USER_PLAN_CREATION)
 	@ApiResponses(
 			value = {
-					@ApiResponse(responseCode = "200", description = "User's plan created successfully",
+					@ApiResponse(responseCode = "204", description = "User's plan created successfully",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = void.class))),
 					@ApiResponse(responseCode = "404", description = "User not found",
@@ -188,23 +195,7 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/plans/list")
-	@Operation(description = "Obtains user's plans or plans where he belongs")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "User's plans obtained successfully",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = PlanResumeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "User not found",
-					content = @Content(mediaType = "application/json",
-							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = userService.getPlans(userDetails.getUsername());
 
-		if (planResumeResponseDTOList.isEmpty())
-			return ResponseEntity.noContent().build();
-
-		return ResponseEntity.ok(planResumeResponseDTOList);
-	}
 
 	@PostMapping(value = "/me/restaurant", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "Posts a menu item", description = DocumentationObjectsExamples.RESTAURANT_APPEND_EXAMPLE)
@@ -408,7 +399,8 @@ public class UserController {
 							schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> getFollowings(@PathVariable("userId") String userId) {
 		List<AccountResumeResponseDTO> followings = userService.getFollowingsByUserId(userId);
-		return ResponseEntity.ok(new FollowingsListResponseDTO(followings));
+    FollowingsListResponseDTO followingsListResponseDTO = new FollowingsListResponseDTO(followings);
+		return ResponseEntity.ok(followingsListResponseDTO);
 	}
 
 	@GetMapping(value = "/{userId}/followers")

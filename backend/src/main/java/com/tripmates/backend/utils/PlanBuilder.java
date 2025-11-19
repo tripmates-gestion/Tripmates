@@ -1,7 +1,7 @@
 package com.tripmates.backend.utils;
 
 import com.tripmates.backend.common.types.Plan;
-import com.tripmates.backend.users.dto.PlanCreationRequestDTO;
+import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 
 import java.util.ArrayList;

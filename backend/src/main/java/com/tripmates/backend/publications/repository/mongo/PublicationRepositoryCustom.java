@@ -20,7 +20,8 @@ public interface PublicationRepositoryCustom {
 
 	void removeFromLikes(String publicationId, String userId);
 
-  List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate);
+	List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate);
 
-  Integer countLikesFromAccountId(String accountId);
+	Integer countLikesFromAccountId(String accountId);
+
 }
