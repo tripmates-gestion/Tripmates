@@ -216,9 +216,6 @@ export default function UserProfile() {
                 >
                   Editar perfil
                 </Button>
-                <Button startIcon={<Settings />} disabled={saving}>
-                  Configuración
-                </Button>
               </ButtonGroup>
             </Stack>
 
