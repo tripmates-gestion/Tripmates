@@ -443,7 +443,7 @@ public class UserController {
 		return ResponseEntity.ok(recommendations);
 	}
   
-  @GetMapping("/{userId}")
+  @GetMapping("/view/{userId}")
   @Operation(summary = "Get a user by ID", description = "Get a user by ID.")
   @ApiResponses(value = {
     @ApiResponse(responseCode = "200", description = "User obtained successfully",
