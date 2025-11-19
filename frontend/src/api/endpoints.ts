@@ -37,7 +37,8 @@ export const ENDPOINTS = {
 
     // recomendaciones
     BUSSINESS_PUBLICATION_RECOMMENDATIONS: '/users/recommendations/publications/',
-
+    USER_RECOMMENDATIONS: '/users/recommendations/user/',
+  
     METRICS_REVIEWS: '/metrics/reviews',
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',

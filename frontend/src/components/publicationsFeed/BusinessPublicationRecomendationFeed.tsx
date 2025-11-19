@@ -222,7 +222,16 @@ export default function BusinessRecommendationFeed() {
   }
 
   if (publications.length === 0) {
-    return <Container sx={{ py: 8 }}><Alert severity="info">Aún no hay publicaciones recomendadas para ti. Para una experiencia completa interactúa con más usuarios y publicaciones!</Alert></Container>;
+    return (
+      <Container sx={{ py: 8 }}>
+        <Typography variant="overline" color="primary">Para ti</Typography>
+        <Typography variant="h4" fontWeight={800} gutterBottom>Publicaciones Recomendadas</Typography>
+        <Typography variant="body1" color="text.secondary" mb={5}>
+          Descubre los mejores negocios y experiencias que otros viajeros han disfrutado.
+        </Typography>
+        <Alert severity="info">Aún no hay publicaciones recomendadas para ti. Para una experiencia completa interactúa con más usuarios y publicaciones!</Alert>
+      </Container>
+    );
   }
   
   const glowColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(80, 84, 88, 0.6)'
