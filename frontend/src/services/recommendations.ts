@@ -1,4 +1,5 @@
 import type { BusinessPublicationResponseDTO } from '../types/Business'
+import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 import { apiFetch } from "../api/client";
 import { ENDPOINTS } from "../api/endpoints";
 
@@ -35,6 +36,34 @@ export async function getTravelersRecommendations(id: string, accessToken: strin
   } catch (error) {
 
     console.error('Error fetching travelers recommendations:', error);
+    return [];
+  }
+}
+
+export async function getBusinessAccountRecommendations(
+  id: string,
+  accessToken: string
+): Promise<BusinessPubAccountDataDTO[]> {
+  try {
+    console.log("Fetching business account recommendations for ID:", id);
+    const recommendations = await apiFetch(
+      ENDPOINTS.BUSINESS_ACCOUNT_RECOMMENDATIONS + id,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (Array.isArray(recommendations)) {
+      return recommendations;
+    }
+
+    return recommendations?.content ?? [];
+  } catch (error) {
+    console.error("Error fetching business account recommendations:", error);
     return [];
   }
 }
