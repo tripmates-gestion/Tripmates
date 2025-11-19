@@ -29,7 +29,6 @@ import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
 import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
-import com.tripmates.backend.users.dto.plan.PlanUpdateRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.common.constants.DocumentationObjectsExamples;
 import com.tripmates.backend.common.dto.ErrorDTO;
@@ -154,25 +153,6 @@ public class UserController {
 			@AuthenticationPrincipal UserDetails userDetails) {
 		userService.createPlan(userDetails.getUsername(), planCreationRequestDTO);
 
-		return ResponseEntity.noContent().build();
-	}
-
-	@PatchMapping("/plans/{id}")
-	@Operation(summary = "Patch user's plan by id", description = DocumentationObjectsExamples.USER_PLAN_UPDATE_EXAMPLE)
-	@ApiResponses(
-			value = {
-					@ApiResponse(responseCode = "204", description = "User's plan updated successfully",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = void.class))),
-					@ApiResponse(responseCode = "404", description = "User not found",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))),
-					@ApiResponse(responseCode = "401", description = "Invalid credentials",
-							content = @Content(mediaType = "application/json",
-									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> updatePlan(@PathVariable("id") String planId,
-			@RequestBody PlanUpdateRequestDTO planUpdateRequestDTO, @AuthenticationPrincipal UserDetails userDetails) {
-		userService.updatePlan(userDetails.getUsername(), planId, planUpdateRequestDTO);
 		return ResponseEntity.noContent().build();
 	}
 
