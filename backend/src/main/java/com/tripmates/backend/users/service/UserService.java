@@ -51,6 +51,12 @@ public class UserService {
 	@Autowired
 	private StorageService storageService;
 
+	public AccountResumeResponseDTO getUserById(String userId) {
+		Account user = accountRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return AccountResumeResponseDTO.fromAccount(user);
+	}
+
 	/**
 	 * Returns user with email `email`.
 	 * @param email user's email.

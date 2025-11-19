@@ -52,6 +52,21 @@ public class UserController {
 		this.userService = userService;
 	}
 
+  
+  @GetMapping("/{userId}")
+  @Operation(summary = "Get a user by ID", description = "Get a user by ID.")
+  @ApiResponses(value = {
+    @ApiResponse(responseCode = "200", description = "User obtained successfully",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = AccountResumeResponseDTO.class))),
+    @ApiResponse(responseCode = "404", description = "User not found",
+      content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = ErrorDTO.class))) })
+  public ResponseEntity<?> getUserById(@PathVariable("userId") String userId) {
+    AccountResumeResponseDTO accountResumeResponseDTO = userService.getUserById(userId);
+    return ResponseEntity.ok(accountResumeResponseDTO);
+  }
+
 	@GetMapping("/me")
 	@Operation(summary = "Obtains user's account")
 	@ApiResponses(value = {
@@ -440,5 +455,6 @@ public class UserController {
 
 		return ResponseEntity.ok(recommendations);
 	}
+
 
 }
