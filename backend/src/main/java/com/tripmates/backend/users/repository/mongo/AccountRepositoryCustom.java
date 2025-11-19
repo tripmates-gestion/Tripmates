@@ -1,10 +1,16 @@
 package com.tripmates.backend.users.repository.mongo;
 
-import com.tripmates.backend.users.dto.BusinessSearchRequestDTO;
-import com.tripmates.backend.users.dto.UserSearchRequestDTO;
+import com.tripmates.backend.common.types.Plan;
+import com.tripmates.backend.common.types.PlanMetadata;
+import com.tripmates.backend.common.types.PlanMetadataWithContent;
+
+import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface AccountRepositoryCustom {
 
@@ -33,5 +39,21 @@ public interface AccountRepositoryCustom {
 	void addToFollowers(String accountId, String followerId);
 
 	void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers);
+
+	PlanMetadata getPlanMetadataById(String planId);
+
+	void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+
+	void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+
+	void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited);
+
+	List<String> getPlanPublicationsIds(String planId);
+
+	List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId);
+
+	Plan getPlanByPlanId(String planId);
+
+	Plan updateExistingPlan(Plan updatedPlan);
 
 }

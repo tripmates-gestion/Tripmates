@@ -9,7 +9,7 @@ import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
@@ -49,9 +49,6 @@ public class AccountRecommendationTest {
 	private int port;
 
 	@Autowired
-	private TestRestTemplate restTemplate;
-
-	@Autowired
 	private MongoTemplate mongoTemplate;
 
 	@Autowired
@@ -84,10 +81,6 @@ public class AccountRecommendationTest {
 		neo4jClient.query("MATCH (n) DETACH DELETE n").run();
 	}
 
-	private String baseUrl() {
-		return "http://localhost:" + port;
-	}
-
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testNewAccountDoesNotHaveUserAccountRecommendations() throws Exception {
@@ -102,9 +95,7 @@ public class AccountRecommendationTest {
 
 		String uri = String.format("/users/recommendations/user/%s", fran.getId());
 
-		mockMvc.perform(get(uri).contentType(MediaType.APPLICATION_JSON))
-			.andDo(print())
-			.andExpect(status().isNoContent());
+		mockMvc.perform(get(uri).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isNoContent());
 	}
 
 	@Test
@@ -122,11 +113,8 @@ public class AccountRecommendationTest {
 		josh.setPassword("123456789");
 		josh.setRole(Role.USER);
 
-		jeremyWade = accountRepository.save(jeremyWade);
-		josh = accountRepository.save(josh);
-
-		accountNodeRepository.save(AccountNode.fromAccount(jeremyWade));
-		accountNodeRepository.save(AccountNode.fromAccount(josh));
+		accountRepository.saveAll(List.of(jeremyWade, josh));
+		accountNodeRepository.saveAll(List.of(AccountNode.fromAccount(jeremyWade), AccountNode.fromAccount(josh)));
 
 		mockMvc
 			.perform(post("/users/" + jeremyWade.getId() + "/follow").with(csrf())
@@ -159,13 +147,9 @@ public class AccountRecommendationTest {
 		antonioFuoco.setPassword("123456789");
 		antonioFuoco.setRole(Role.USER);
 
-		antonioFuoco = accountRepository.save(antonioFuoco);
-		lewisHamilton = accountRepository.save(lewisHamilton);
-		jamesCalado = accountRepository.save(jamesCalado);
-
-		accountNodeRepository.save(AccountNode.fromAccount(antonioFuoco));
-		accountNodeRepository.save(AccountNode.fromAccount(lewisHamilton));
-		accountNodeRepository.save(AccountNode.fromAccount(jamesCalado));
+		accountRepository.saveAll(List.of(antonioFuoco, lewisHamilton, jamesCalado));
+		accountNodeRepository.saveAll(List.of(AccountNode.fromAccount(antonioFuoco),
+				AccountNode.fromAccount(lewisHamilton), AccountNode.fromAccount(jamesCalado)));
 
 		mockMvc
 			.perform(post("/users/" + lewisHamilton.getId() + "/follow").with(csrf())
@@ -216,13 +200,9 @@ public class AccountRecommendationTest {
 		charlesLeclerc.setPassword("123456789");
 		charlesLeclerc.setRole(Role.USER);
 
-		charlesLeclerc = accountRepository.save(charlesLeclerc);
-		michaelJordan = accountRepository.save(michaelJordan);
-		michaelSchumacher = accountRepository.save(michaelSchumacher);
-
-		accountNodeRepository.save(AccountNode.fromAccount(charlesLeclerc));
-		accountNodeRepository.save(AccountNode.fromAccount(michaelJordan));
-		accountNodeRepository.save(AccountNode.fromAccount(michaelSchumacher));
+		accountRepository.saveAll(List.of(charlesLeclerc, michaelJordan, michaelSchumacher));
+		accountNodeRepository.saveAll(List.of(AccountNode.fromAccount(charlesLeclerc),
+				AccountNode.fromAccount(michaelJordan), AccountNode.fromAccount(michaelSchumacher)));
 
 		mockMvc
 			.perform(post("/users/" + michaelSchumacher.getId() + "/follow").with(csrf())
@@ -260,17 +240,14 @@ public class AccountRecommendationTest {
 		pablo.setPassword("123456789");
 		pablo.setRole(Role.USER);
 
-		fran = accountRepository.save(fran);
-		pablo = accountRepository.save(pablo);
-
-		accountNodeRepository.save(AccountNode.fromAccount(fran));
-		accountNodeRepository.save(AccountNode.fromAccount(pablo));
+		accountRepository.saveAll(List.of(fran, pablo));
+		accountNodeRepository.saveAll(List.of(AccountNode.fromAccount(fran), AccountNode.fromAccount(pablo)));
 
 		Publication publication = new Publication();
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
 
-		publication = publicationRepository.save(publication);
+		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
 
 		Review franReview = new Review(publication.getId(), "Excelente lugar",

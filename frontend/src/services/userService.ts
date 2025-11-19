@@ -167,6 +167,21 @@ export async function getUserByEmail(email: string, accessToken: string | null) 
 }
 
 
+export async function getUserById(id: string, accessToken: string | null) {
+  const token = ensureToken(accessToken);
+  const response = await apiFetch(
+    ENDPOINTS.GET_USER_BY_ID.replace('{id}', id),
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response; // CommonUser
+}
+
+
 export async function likePublication(publicationId: string, accessToken: string | null){
   const token = ensureToken(accessToken);
   await apiFetch(ENDPOINTS.LIKE_PUBLICATION.replace('{id}', publicationId), {

@@ -6,7 +6,7 @@ export const ENDPOINTS = {
 
     MY_FOLLOWERS: '/users/me/followers',
     MY_FOLLOWINGS: '/users/me/followings',
-    
+
     USER_FOLLOWERS: (userId: string) => `/users/${userId}/followers`,
     USER_FOLLOWINGS: (userId: string) => `/users/${userId}/followings`,
     FOLLOW_USER: (userId: string) => `/users/${userId}/follow`,
@@ -23,13 +23,14 @@ export const ENDPOINTS = {
     SEARCH_BUSINESS: "/users/search/business",
     SEARCH_TRAVELERS: "/users/search/user",
     CREATE_PLAN: "/users/plans/create",
-    GET_PLANS: "/users/plans/list",
+    GET_PLANS: "/community/list-plans",
     POST_REVIEW: "/publications/{id}/review",
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
-    PATCH_PLAN: "/users/plans/{id}",
+    PATCH_PLAN: "/community/plans/{id}", // Se cambia users a community
     GET_USER_BY_EMAIL: "/users/{email}",
+    GET_USER_BY_ID: "/users/view/{id}",
 
     LIKE_PUBLICATION: "/publications/{id}/like",
     UNLIKE_PUBLICATION: "/publications/{id}/unlike",
@@ -42,8 +43,11 @@ export const ENDPOINTS = {
     METRICS_REVIEWS: '/metrics/reviews',
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
-    METRICS_VIEW_PROFILE: '/metrics/view-profile'
+    METRICS_VIEW_PROFILE: '/metrics/view-profile',
 
-    // invitaciones a planes 
+    // invitaciones a planes
+    COMMUNITY_PLAN: (planId: string) => `/community/plan/${planId}`,
+    INVITE_USER_TO_PLAN: (planId: string, userId: string) => `/community/${planId}/${userId}/invite-user`,
+    DECLINE_INVITATION: (planId: string) => `/community/${planId}/decline-invitation`,
+    ACCEPT_INVITATION: (planId: string) => `/community/${planId}/accept-invitation`,
 };
-  

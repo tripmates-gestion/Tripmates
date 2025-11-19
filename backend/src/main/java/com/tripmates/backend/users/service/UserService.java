@@ -9,14 +9,17 @@ import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
-import com.tripmates.backend.users.dto.*;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
+import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.PlanBuilder;
 import com.tripmates.backend.utils.updateMe.command.AccountUpdateCommand;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -47,6 +50,12 @@ public class UserService {
 
 	@Autowired
 	private StorageService storageService;
+
+	public AccountResumeResponseDTO getUserById(String userId) {
+		Account user = accountRepository.findById(userId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return AccountResumeResponseDTO.fromAccount(user);
+	}
 
 	/**
 	 * Returns user with email `email`.
@@ -249,37 +258,6 @@ public class UserService {
 		account.getPlansList().add(planBuilder.build());
 
 		accountRepository.save(account);
-	}
-
-	/**
-	 * Obtains all user's plans.
-	 * @param email user's email.
-	 * @return a list of {@link PlanResumeResponseDTO}.
-	 */
-	public List<PlanResumeResponseDTO> getPlans(String email) {
-		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-
-		if (account.getRole() != Role.USER)
-			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-
-		if (account.getPlansList() == null)
-			return new ArrayList<>();
-
-		List<PlanResumeResponseDTO> planResumeResponseDTOList = new ArrayList<>();
-
-		for (Plan plan : account.getPlansList()) {
-			List<PublicationResumeResponseDTO> publicationResumeResponseDTOList = new ArrayList<>();
-
-			for (String publicationId : plan.getPublicationsIdList())
-				publicationRepository.findById(publicationId)
-					.ifPresent(publication -> publicationResumeResponseDTOList
-						.add(PublicationResumeResponseDTO.fromPublication(publication)));
-
-			planResumeResponseDTOList.add(PlanResumeResponseDTO.fromPlan(plan, publicationResumeResponseDTOList));
-		}
-
-		return planResumeResponseDTOList;
 	}
 
 	/**
@@ -552,69 +530,6 @@ public class UserService {
 		return imageURLsList;
 	}
 
-	public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
-		Account account = accountRepository.findByEmail(email)
-			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-
-		if (account.getRole() != Role.USER)
-			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-
-		List<Plan> plans = account.getPlansList();
-		if (plans == null || plans.isEmpty())
-			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
-
-		Plan target = null;
-		for (Plan p : plans) {
-			if (p != null && Objects.equals(p.getId(), planId)) {
-				target = p;
-				break;
-			}
-		}
-
-		if (target == null)
-			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
-
-		if (!Objects.equals(target.getOwnerId(), account.getId()))
-			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-
-		if (planUpdateRequestDTO != null) {
-			if (planUpdateRequestDTO.name() != null)
-				target.setName(planUpdateRequestDTO.name());
-			if (planUpdateRequestDTO.description() != null)
-				target.setDescription(planUpdateRequestDTO.description());
-
-			// delete publications by 0-based indexes if provided (do this first to avoid
-			// index shifts)
-			if (planUpdateRequestDTO.deletePublicationIndexes() != null
-					&& !planUpdateRequestDTO.deletePublicationIndexes().isEmpty()) {
-				List<String> pubs = target.getPublicationsIdList();
-				if (pubs == null || pubs.isEmpty())
-					throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
-
-				// remove in descending order to avoid reindex issues
-				List<Integer> toDelete = new ArrayList<>(planUpdateRequestDTO.deletePublicationIndexes());
-				toDelete.sort(Comparator.reverseOrder());
-				for (Integer i : toDelete) {
-					if (i == null || i < 0 || i >= pubs.size())
-						throw new BadRequestException(ValidationErrorMessage.INDEX_OUT_OF_RANGE);
-					pubs.remove(i.intValue());
-				}
-				target.setPublicationsIdList(pubs);
-			}
-
-			// then append new publications
-			if (planUpdateRequestDTO.publicationsIdList() != null) {
-				List<String> pubs = target.getPublicationsIdList();
-				if (pubs == null)
-					pubs = new ArrayList<>();
-				pubs.addAll(planUpdateRequestDTO.publicationsIdList());
-				target.setPublicationsIdList(pubs);
-			}
-		}
-
-		accountRepository.save(account);
-	}
-
 	/**
 	 * Removes one publication from a user's owned plan by its 0-based index.
 	 * @param email user's email.
@@ -726,6 +641,24 @@ public class UserService {
 	 */
 	public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
 		List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+		for (AccountNode accountNode : accountNodeList) {
+			accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+				accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+			});
+		}
+
+		return accountResumeResponseDTOList;
+	}
+
+	/**
+	 * Given a user's ID, returns all business accounts that may bee to its interest.
+	 * @param userId users account ID.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	public List<AccountResumeResponseDTO> getBusinessAccountRecommendation(String userId) {
+		List<AccountNode> accountNodeList = accountNodeRepository.findAllBusinessRelated(userId);
 
 		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
 		for (AccountNode accountNode : accountNodeList) {

@@ -55,8 +55,10 @@ public class AuthService {
 		account.setBusinessType(authRegisterRequestDTO.businessType());
 
 		accountRepository.save(account);
-		if (authRegisterRequestDTO.role() == Role.USER)
-			accountNodeRepository.save(AccountNode.fromAccount(account));
+		accountNodeRepository.save(AccountNode.fromAccount(account));
+
+		if (account.getRole() == Role.BUSINESS)
+			accountNodeRepository.createSharesBusinessType(account.getId());
 	}
 
 	/**
