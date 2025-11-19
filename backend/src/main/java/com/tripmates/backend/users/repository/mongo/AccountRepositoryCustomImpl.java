@@ -217,173 +217,173 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		return userIDsList;
 	}
 
+	@Override
+	public PlanMetadata getPlanMetadataById(String planId) {
+		ObjectId targetPlanId = new ObjectId(planId);
 
-  @Override
-  public PlanMetadata getPlanMetadataById(String planId) {
-    ObjectId targetPlanId = new ObjectId(planId);
+		Aggregation aggregation = Aggregation.newAggregation(
+				Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)), Aggregation.unwind("plansList"),
+				Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
+				Aggregation.project()
+					.and("plansList.name")
+					.as("name")
+					.and("plansList.description")
+					.as("description")
+					.and("plansList.ownerId")
+					.as("ownerId")
+					.and("plansList.collaboratorsUsersIds")
+					.as("collaboratorsIds")
+					.and("plansList.pendingUsersIdsInvited")
+					.as("pendingUsersIdsInvited")
+					.and("plansList._id")
+					.as("planId"));
 
-    Aggregation aggregation = Aggregation.newAggregation(
-      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
-      Aggregation.unwind("plansList"),
-      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
-      Aggregation.project()
-          .and("plansList.name").as("name")
-          .and("plansList.description").as("description")
-          .and("plansList.ownerId").as("ownerId")
-          .and("plansList.collaboratorsUsersIds").as("collaboratorsIds")
-          .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
-          .and("plansList._id").as("planId")
-    );
+		AggregationResults<PlanMetadata> results = mongoTemplate.aggregate(aggregation, "account", PlanMetadata.class);
 
-    AggregationResults<PlanMetadata> results = mongoTemplate.aggregate(
-      aggregation,
-      "account",
-      PlanMetadata.class
-    );
-    
-    return results.getUniqueMappedResult();
-  }
+		return results.getUniqueMappedResult();
+	}
 
-  @Override
-  public List<String> getPlanPublicationsIds(String planId) {
-    ObjectId planObjectId = new ObjectId(planId);
-    Aggregation aggregation = Aggregation.newAggregation(
-      Aggregation.match(Criteria.where("plansList._id").is(planObjectId)),
-      Aggregation.unwind("plansList"),
-      Aggregation.match(Criteria.where("plansList._id").is(planObjectId)),
-      Aggregation.project("plansList.publicationsIdList")
-          .and("plansList.publicationsIdList").as("publicationsIdList"));
+	@Override
+	public List<String> getPlanPublicationsIds(String planId) {
+		ObjectId planObjectId = new ObjectId(planId);
+		Aggregation aggregation = Aggregation.newAggregation(
+				Aggregation.match(Criteria.where("plansList._id").is(planObjectId)), Aggregation.unwind("plansList"),
+				Aggregation.match(Criteria.where("plansList._id").is(planObjectId)),
+				Aggregation.project("plansList.publicationsIdList")
+					.and("plansList.publicationsIdList")
+					.as("publicationsIdList"));
 
-    AggregationResults<PublicationIdsProjection> results = mongoTemplate.aggregate(aggregation, "account",
-      PublicationIdsProjection.class);
-    PublicationIdsProjection projection = results.getUniqueMappedResult();
-    return projection != null ? projection.publicationsIdList : List.of();
-  }
+		AggregationResults<PublicationIdsProjection> results = mongoTemplate.aggregate(aggregation, "account",
+				PublicationIdsProjection.class);
+		PublicationIdsProjection projection = results.getUniqueMappedResult();
+		return projection != null ? projection.publicationsIdList : List.of();
+	}
 
+	@Override
+	public void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
+		ObjectId planObjectId = new ObjectId(planId);
+		Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
 
-  @Override
-  public void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
-    ObjectId planObjectId = new ObjectId(planId);
-    Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
+		Update update = new Update().addToSet("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
+			.filterArray(Criteria.where("plan._id").is(planObjectId));
 
-    Update update = new Update()
-      .addToSet("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
-      .filterArray(Criteria.where("plan._id").is(planObjectId));
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-    mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
+		ObjectId planObjectId = new ObjectId(planId);
+		Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
 
-  @Override
-  public void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited) {
-    ObjectId planObjectId = new ObjectId(planId);
-    Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
+		Update update = new Update().pull("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
+			.filterArray(Criteria.where("plan._id").is(planObjectId));
 
-    Update update = new Update()
-      .pull("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
-      .filterArray(Criteria.where("plan._id").is(planObjectId));
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-    mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited) {
+		ObjectId planObjectId = new ObjectId(planId);
+		Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
 
-  @Override
-  public void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited) {
-    ObjectId planObjectId = new ObjectId(planId);
-    Query query = new Query(Criteria.where("plansList._id").is(planObjectId));
+		Update update = new Update().pull("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
+			.addToSet("plansList.$[plan].collaboratorsUsersIds", userIdInvited)
+			.filterArray(Criteria.where("plan._id").is(planObjectId));
 
-    Update update = new Update()
-      .pull("plansList.$[plan].pendingUsersIdsInvited", userIdInvited)
-      .addToSet("plansList.$[plan].collaboratorsUsersIds", userIdInvited)
-      .filterArray(Criteria.where("plan._id").is(planObjectId));
+		mongoTemplate.updateFirst(query, update, Account.class);
+	}
 
-    mongoTemplate.updateFirst(query, update, Account.class);
-  }
+	@Override
+	public List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId) {
+		Aggregation aggregation = Aggregation.newAggregation(Aggregation.unwind("plansList"),
+				Aggregation.match(Criteria.where("plansList.collaboratorsUsersIds").is(collaboratorId)),
+				Aggregation.project()
+					.and("plansList._id")
+					.as("planId")
+					.and("plansList.name")
+					.as("name")
+					.and("plansList.description")
+					.as("description")
+					.and("plansList.ownerId")
+					.as("ownerId")
+					.and("plansList.collaboratorsUsersIds")
+					.as("collaboratorsIds")
+					.and("plansList.pendingUsersIdsInvited")
+					.as("pendingUsersIdsInvited")
+					.and("plansList.publicationsIdList")
+					.as("publicationsIds"));
 
-  @Override
-  public List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId) {
-    Aggregation aggregation = Aggregation.newAggregation(
-        Aggregation.unwind("plansList"),
-        Aggregation.match(Criteria.where("plansList.collaboratorsUsersIds").is(collaboratorId)),
-        Aggregation.project()
-            .and("plansList._id").as("planId")
-            .and("plansList.name").as("name")
-            .and("plansList.description").as("description")
-            .and("plansList.ownerId").as("ownerId")
-            .and("plansList.collaboratorsUsersIds").as("collaboratorsIds")
-            .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
-            .and("plansList.publicationsIdList").as("publicationsIds")
-    );
+		AggregationResults<PlanMetadataWithContent> results = mongoTemplate.aggregate(aggregation, "account",
+				PlanMetadataWithContent.class);
 
-    AggregationResults<PlanMetadataWithContent> results = mongoTemplate.aggregate(
-        aggregation,
-        "account",
-        PlanMetadataWithContent.class
-    );
+		return results.getMappedResults();
+	}
 
-    return results.getMappedResults();
-  }
+	@Override
+	public Plan getPlanByPlanId(String planId) {
 
-  @Override
-  public Plan getPlanByPlanId(String planId) {
-        
-    if (!ObjectId.isValid(planId)) {
-      return null; 
-    }
-    ObjectId targetPlanId = new ObjectId(planId);
+		if (!ObjectId.isValid(planId)) {
+			return null;
+		}
+		ObjectId targetPlanId = new ObjectId(planId);
 
-    Aggregation aggregation = Aggregation.newAggregation(
-      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
-      Aggregation.unwind("plansList"),
-      Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
-      Aggregation.project()
-        .andExclude("_id") 
-        .andExpression("{$toString: '$plansList._id'}").as("id") 
-        .and("plansList.name").as("name")
-        .and("plansList.description").as("description")
-        .and("plansList.ownerId").as("ownerId") 
-        .and("plansList.collaboratorsUsersIds").as("collaboratorsUsersIds") 
-        .and("plansList.pendingUsersIdsInvited").as("pendingUsersIdsInvited")
-        .and("plansList.publicationsIdList").as("publicationsIdList")
-    );
-    AggregationResults<Plan> results = mongoTemplate.aggregate(
-      aggregation,
-      "account", 
-      Plan.class 
-    );
+		Aggregation aggregation = Aggregation.newAggregation(
+				Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)), Aggregation.unwind("plansList"),
+				Aggregation.match(Criteria.where("plansList._id").is(targetPlanId)),
+				Aggregation.project()
+					.andExclude("_id")
+					.andExpression("{$toString: '$plansList._id'}")
+					.as("id")
+					.and("plansList.name")
+					.as("name")
+					.and("plansList.description")
+					.as("description")
+					.and("plansList.ownerId")
+					.as("ownerId")
+					.and("plansList.collaboratorsUsersIds")
+					.as("collaboratorsUsersIds")
+					.and("plansList.pendingUsersIdsInvited")
+					.as("pendingUsersIdsInvited")
+					.and("plansList.publicationsIdList")
+					.as("publicationsIdList"));
+		AggregationResults<Plan> results = mongoTemplate.aggregate(aggregation, "account", Plan.class);
 
-    Plan foundPlan = results.getUniqueMappedResult();
+		Plan foundPlan = results.getUniqueMappedResult();
 
-    if (foundPlan != null) {
-      foundPlan.setId(planId);
-    }
-    return foundPlan;
-  }
+		if (foundPlan != null) {
+			foundPlan.setId(planId);
+		}
+		return foundPlan;
+	}
 
-  @Override
-  public Plan updateExistingPlan(Plan updatedPlan) {
-    if (updatedPlan.getId() == null || !ObjectId.isValid(updatedPlan.getId())) {
-        System.err.println("Error: El ID del plan a actualizar no es válido.");
-        return null;
-    }
-    ObjectId targetPlanId = new ObjectId(updatedPlan.getId());
-    String ownerId = updatedPlan.getOwnerId();
-    Query query = new Query(Criteria.where("_id").is(ownerId));
-    Update update = new Update()
-      .set("plansList.$[plan].name", updatedPlan.getName())
-      .set("plansList.$[plan].description", updatedPlan.getDescription())
-      .set("plansList.$[plan].publicationsIdList", updatedPlan.getPublicationsIdList())
-      .set("plansList.$[plan].pendingUsersIdsInvited", updatedPlan.getPendingUsersIdsInvited())
-      .set("plansList.$[plan].collaboratorsUsersIds", updatedPlan.getCollaboratorsUsersIds())
-      .filterArray(Criteria.where("plan._id").is(targetPlanId));
-    UpdateResult result = mongoTemplate.updateFirst(query, update, "account");
-    
-    if (result.getModifiedCount() > 0) {
-      return getPlanByPlanId(updatedPlan.getId());
-    }
-    
-    return null;
-  }
-  private static class PublicationIdsProjection {
-    private List<String> publicationsIdList;
-  }
+	@Override
+	public Plan updateExistingPlan(Plan updatedPlan) {
+		if (updatedPlan.getId() == null || !ObjectId.isValid(updatedPlan.getId())) {
+			System.err.println("Error: El ID del plan a actualizar no es válido.");
+			return null;
+		}
+		ObjectId targetPlanId = new ObjectId(updatedPlan.getId());
+		String ownerId = updatedPlan.getOwnerId();
+		Query query = new Query(Criteria.where("_id").is(ownerId));
+		Update update = new Update().set("plansList.$[plan].name", updatedPlan.getName())
+			.set("plansList.$[plan].description", updatedPlan.getDescription())
+			.set("plansList.$[plan].publicationsIdList", updatedPlan.getPublicationsIdList())
+			.set("plansList.$[plan].pendingUsersIdsInvited", updatedPlan.getPendingUsersIdsInvited())
+			.set("plansList.$[plan].collaboratorsUsersIds", updatedPlan.getCollaboratorsUsersIds())
+			.filterArray(Criteria.where("plan._id").is(targetPlanId));
+		UpdateResult result = mongoTemplate.updateFirst(query, update, "account");
+
+		if (result.getModifiedCount() > 0) {
+			return getPlanByPlanId(updatedPlan.getId());
+		}
+
+		return null;
+	}
+
+	private static class PublicationIdsProjection {
+
+		private List<String> publicationsIdList;
+
+	}
 
 }

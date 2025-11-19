@@ -254,7 +254,6 @@ public class UserService {
 		accountRepository.save(account);
 	}
 
-
 	/**
 	 * Adds a new menu item to the business's restaurant account.
 	 * @param email business's email.
@@ -636,6 +635,24 @@ public class UserService {
 	 */
 	public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
 		List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+		for (AccountNode accountNode : accountNodeList) {
+			accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+				accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+			});
+		}
+
+		return accountResumeResponseDTOList;
+	}
+
+	/**
+	 * Given a user's ID, returns all business accounts that may bee to its interest.
+	 * @param userId users account ID.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	public List<AccountResumeResponseDTO> getBusinessAccountRecommendation(String userId) {
+		List<AccountNode> accountNodeList = accountNodeRepository.findAllBusinessRelated(userId);
 
 		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
 		for (AccountNode accountNode : accountNodeList) {

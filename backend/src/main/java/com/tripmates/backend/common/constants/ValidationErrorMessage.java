@@ -68,11 +68,12 @@ public class ValidationErrorMessage {
 
 	public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS = "Una cuenta de usuario no puede solicitar estadisticas";
 
-  public static final String PLAN_NOT_FOUND = "El plan referido no se encontró";
+	public static final String PLAN_NOT_FOUND = "El plan referido no se encontró";
 
-  public static final String USER_ALREADY_IN_PLAN = "El usuario ya esta en el plan";
+	public static final String USER_ALREADY_IN_PLAN = "El usuario ya esta en el plan";
 
-  public static final String USER_ALREADY_INVITED_TO_PLAN = "El usuario ya esta invitado al plan";
-  
-  public static final String USER_NOT_INVITED_TO_PLAN = "El usuario no esta invitado al plan";
+	public static final String USER_ALREADY_INVITED_TO_PLAN = "El usuario ya esta invitado al plan";
+
+	public static final String USER_NOT_INVITED_TO_PLAN = "El usuario no esta invitado al plan";
+
 }
