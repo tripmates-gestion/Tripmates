@@ -20,3 +20,21 @@ export async function getBusinessPublicationsPublicRecommendations(id: string, a
     return [];
   }
 }
+
+export async function getTravelersRecommendations(id: string, accessToken: string) {
+  try {
+    console.log("Fetching travelers recommendations for ID:", id);
+    const travelers = await apiFetch(
+      ENDPOINTS.USER_RECOMMENDATIONS + id, {
+        method: 'GET',
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${accessToken}` }
+      }
+    );
+    console.log("[API FETCH]: VALUE RETURNED AS TRAVELERS RECOMMENDATIONS:", travelers);
+    return travelers||[];
+  } catch (error) {
+
+    console.error('Error fetching travelers recommendations:', error);
+    return [];
+  }
+}
