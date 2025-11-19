@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Avatar, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
@@ -41,6 +41,11 @@ export default function UserPlansTab() {
   const [planToInvite, setPlanToInvite] = useState<Plan | null>(null);
   const [inviteSearch, setInviteSearch] = useState('');
   const [invitedUserIds, setInvitedUserIds] = useState<Set<string>>(new Set());
+
+
+  // Estado de carga
+  const [invitingUserId, setInvitingUserId] = useState<string | null>(null);
+
 
   const errorMessage = useCallback((err: unknown, fallback: string) => {
     if (err instanceof Error) return err.message;
@@ -210,6 +215,7 @@ export default function UserPlansTab() {
     if (!planToInvite?.id) return;
 
     try {
+      setInvitingUserId(targetUserId); 
       await inviteUserToPlan(accessToken, planToInvite.id, targetUserId);
       enqueueSnackbar('Invitación enviada', { variant: 'success' });
       setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
@@ -221,6 +227,8 @@ export default function UserPlansTab() {
       if (message.toLowerCase().includes('ya') && message.toLowerCase().includes('invit')) {
         setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
       }
+    } finally {
+      setInvitingUserId(null);         
     }
   };
 
@@ -537,7 +545,12 @@ export default function UserPlansTab() {
                         variant="contained"
                         size="small"
                         startIcon={<PersonAddAlt1Icon />}
-                        disabled={isOwner || alreadyCollaborator || alreadyInvited}
+                        disabled={
+                          isOwner ||
+                          alreadyCollaborator ||
+                          alreadyInvited ||
+                          invitingUserId === follower.id   
+                        }
                         onClick={() => handleInviteUser(follower.id)}
                       >
                         {alreadyInvited ? 'Invitado' : 'Invitar'}
