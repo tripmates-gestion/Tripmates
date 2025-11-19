@@ -1,21 +1,23 @@
-import React, { useState, useCallback } from 'react';
-import { Grid, DialogContentText, Typography, Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { Avatar, Box, Button, Chip, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, InputAdornment, Paper, Stack, TextField, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import { useSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
-import { createPlan, getPlans, deletePlan, updatePlan, addPublicationToPlan } from '../../../services/plansService';
+import { createPlan, getPlans, deletePlan, updatePlan, inviteUserToPlan } from '../../../services/plansService';
 import PlansGrid from './PlansGrid';
-import type { BusinessPublicationResponseDTO } from '../../../types/Business';
+import type { CommonUser } from '../../../types/PrivateUserProfiles';
+import type { Plan } from '../../../types/Plans';
 import PublicationCard from '../../publications/PublicationCard';
-
-interface Plan {
-  id?: string;
-  name: string;
-  description: string;
-  publications: BusinessPublicationResponseDTO[];
-}
+import { useConnectionsList } from '../../../hooks/useConnectionsList';
 
 export default function UserPlansTab() {
   const { user, accessToken } = useAuth();
+  const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+  const followersList = useConnectionsList('followers');
+  const followingsList = useConnectionsList('followings');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newPlanName, setNewPlanName] = useState('');
@@ -30,6 +32,17 @@ export default function UserPlansTab() {
   const [editPlanName, setEditPlanName] = useState('');
   const [editPlanDescription, setEditPlanDescription] = useState('');
   const [publicationsToDelete, setPublicationsToDelete] = useState<number[]>([]);
+
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [planToInvite, setPlanToInvite] = useState<Plan | null>(null);
+  const [inviteSearch, setInviteSearch] = useState('');
+  const [invitedUserIds, setInvitedUserIds] = useState<Set<string>>(new Set());
+
+  const errorMessage = useCallback((err: unknown, fallback: string) => {
+    if (err instanceof Error) return err.message;
+    if (typeof err === 'string') return err;
+    return fallback;
+  }, []);
 
 
   if (!accessToken) {
@@ -46,13 +59,19 @@ export default function UserPlansTab() {
 
   const fetchPlans = useCallback(async () => {
     try {
-      const plans = await getPlans(accessToken);
-      console.log('Fetched plans:', plans);
-      setPlans(plans);
+      const plansResponse = await getPlans(accessToken);
+      const normalizedPlans = plansResponse.map((plan) => ({
+        ...plan,
+        collaboratorsIds: plan.collaboratorsIds ?? [],
+        publications: plan.publications ?? [],
+        description: plan.description ?? '',
+      }));
+      setPlans(normalizedPlans);
     } catch (error) {
       console.error('Error fetching plans:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos cargar tus planes.'), { variant: 'error' });
     }
-  }, [accessToken]);
+  }, [accessToken, enqueueSnackbar, errorMessage]);
 
   React.useEffect(() => {
     if (user?.id) {
@@ -61,6 +80,39 @@ export default function UserPlansTab() {
       console.log('No user ID available, skipping fetch of plans.');
     }
   }, [fetchPlans, user?.id]);
+
+  const knownUsersById = useMemo<Record<string, CommonUser>>(() => {
+    const directory: Record<string, CommonUser> = {};
+    const addUser = (item?: CommonUser | null) => {
+      if (item) {
+        directory[item.id] = item;
+      }
+    };
+
+    followersList.items.forEach(addUser);
+    followingsList.items.forEach(addUser);
+
+    if (user) {
+      addUser({
+        id: user.id,
+        name: user.name ?? 'Usuario',
+        email: user.email,
+        avatarURL: (user as CommonUser).avatarURL,
+        role: user.role,
+        description: user.description,
+      });
+    }
+
+    return directory;
+  }, [followersList.items, followingsList.items, user]);
+
+  const filteredFollowers = useMemo(() => {
+    const term = inviteSearch.trim().toLowerCase();
+    if (!term) return followersList.items;
+    return followersList.items.filter((follower) =>
+      follower.name.toLowerCase().includes(term) || follower.email.toLowerCase().includes(term)
+    );
+  }, [followersList.items, inviteSearch]);
 
   const togglePlanExpansion = (planIndex: number) => {
     setExpandedPlans(prev => {
@@ -72,6 +124,16 @@ export default function UserPlansTab() {
       }
       return newSet;
     });
+  };
+
+  const handleUserProfile = useCallback((userId: string) => {
+    navigate(`/userProfile/${userId}`);
+  }, [navigate]);
+
+  const closeInviteDialog = () => {
+    setInviteDialogOpen(false);
+    setPlanToInvite(null);
+    setInviteSearch('');
   };
 
   const handleDeletePlan = async () => {
@@ -87,6 +149,32 @@ export default function UserPlansTab() {
       setPlanToDelete(null);
     } catch (error) {
       console.error('Error deleting plan:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos eliminar el plan.'), { variant: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    if (inviteDialogOpen) {
+      followersList.refresh();
+    }
+  }, [inviteDialogOpen, followersList]);
+
+  const handleInviteUser = async (targetUserId: string) => {
+    if (!planToInvite?.id) return;
+
+    try {
+      await inviteUserToPlan(accessToken, planToInvite.id, targetUserId);
+      enqueueSnackbar('Invitación enviada', { variant: 'success' });
+      setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
+      await fetchPlans();
+    } catch (error) {
+      const message = errorMessage(error, 'No pudimos enviar la invitación.');
+      enqueueSnackbar(message, { variant: 'error' });
+
+      // Si el backend informa que ya fue invitado, marcamos el estado localmente
+      if (message.toLowerCase().includes('ya') && message.toLowerCase().includes('invit')) {
+        setInvitedUserIds((prev) => new Set(prev).add(targetUserId));
+      }
     }
   };
 
@@ -95,11 +183,18 @@ export default function UserPlansTab() {
     setDeleteDialogOpen(true);
   };
 
+  const openInviteDialog = (plan: Plan) => {
+    setPlanToInvite(plan);
+    setInviteSearch('');
+    setInvitedUserIds(new Set());
+    setInviteDialogOpen(true);
+  };
+
   const handleEditPlan = async () => {
     if (!planToEdit || !planToEdit.id || !editPlanName.trim()) return;
 
     try {
-      console.log('Updating plan with id:', planToEdit.id); 
+      console.log('Updating plan with id:', planToEdit.id);
       console.log('New name:', editPlanName.trim());
       console.log('New description:', editPlanDescription.trim());
       console.log('Publications to delete:', publicationsToDelete);
@@ -115,6 +210,7 @@ export default function UserPlansTab() {
       setPublicationsToDelete([]);
     } catch (error) {
       console.error('Error updating plan:', error);
+      enqueueSnackbar(errorMessage(error, 'No pudimos actualizar el plan.'), { variant: 'error' });
     }
   };
 
@@ -122,7 +218,7 @@ export default function UserPlansTab() {
   const handleCreatePlan = async () => {
     if (newPlanName.trim()) {
       console.log('Creando plan:', { name: newPlanName, description: newPlanDescription });
-      
+
       try {
         await createPlan(accessToken, newPlanName.trim(), newPlanDescription.trim());
         await fetchPlans();
@@ -134,6 +230,7 @@ export default function UserPlansTab() {
         setOpenDialog(false);
       } catch (error) {
         console.error('Error creating plan:', error);
+        enqueueSnackbar(errorMessage(error, 'No pudimos crear el plan.'), { variant: 'error' });
       }
     }
   };
@@ -219,8 +316,8 @@ export default function UserPlansTab() {
       </Dialog>
 
       {/* Dialog para editar plan */}
-      <Dialog 
-        open={editDialogOpen} 
+      <Dialog
+        open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -318,6 +415,105 @@ export default function UserPlansTab() {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={inviteDialogOpen}
+        onClose={closeInviteDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <PersonAddAlt1Icon fontSize="small" /> Invitar a "{planToInvite?.name ?? 'tu plan'}"
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Busca entre tus seguidores para sumar co-creadores a tu plan.
+          </Typography>
+
+          <TextField
+            fullWidth
+            placeholder="Buscar por nombre o email"
+            value={inviteSearch}
+            onChange={(e) => setInviteSearch(e.target.value)}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">🔎</InputAdornment>,
+            }}
+          />
+
+          {followersList.loading ? (
+            <Stack alignItems="center" sx={{ py: 3 }}>
+              <CircularProgress size={28} />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Cargando seguidores...
+              </Typography>
+            </Stack>
+          ) : (
+            <Stack spacing={1.5} sx={{ mt: 2 }}>
+              {filteredFollowers.map((follower) => {
+                const isOwner = planToInvite?.ownerId === follower.id;
+                const alreadyCollaborator = planToInvite?.collaboratorsIds?.includes(follower.id);
+                const alreadyInvited = invitedUserIds.has(follower.id);
+                return (
+                  <Paper
+                    key={follower.id}
+                    elevation={0}
+                    sx={{
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                      borderRadius: 2,
+                      p: 1.5,
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Avatar src={follower.avatarURL} alt={follower.name} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography fontWeight={600}>{follower.name}</Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {follower.email}
+                        </Typography>
+                      </Box>
+
+                      {isOwner && (
+                        <Chip label="Creador" color="primary" size="small" variant="outlined" />
+                      )}
+
+                      {alreadyCollaborator && !isOwner && (
+                        <Chip label="Ya participa" color="success" size="small" variant="outlined" />
+                      )}
+
+                      {alreadyInvited && !alreadyCollaborator && (
+                        <Chip label="Invitación enviada" color="info" size="small" variant="outlined" />
+                      )}
+
+                      <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<PersonAddAlt1Icon />}
+                        disabled={isOwner || alreadyCollaborator || alreadyInvited}
+                        onClick={() => handleInviteUser(follower.id)}
+                      >
+                        {alreadyInvited ? 'Invitado' : 'Invitar'}
+                      </Button>
+                    </Stack>
+                  </Paper>
+                );
+              })}
+
+              {!followersList.loading && filteredFollowers.length === 0 && (
+                <Box sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No encontramos seguidores que coincidan con tu búsqueda.
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeInviteDialog} color="inherit">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Grid de planes */}
       <Grid
         container
@@ -333,6 +529,9 @@ export default function UserPlansTab() {
             togglePlanExpansion={togglePlanExpansion}
             openDeleteDialog={openDeleteDialog}
             onEditPlan={openEditDialog}
+            onInvite={openInviteDialog}
+            usersById={knownUsersById}
+            onUserClick={handleUserProfile}
             />
         ) : (
           <Grid item xs={12}>
