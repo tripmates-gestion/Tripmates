@@ -32,20 +32,18 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
-  @Override
-  public List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate) {
-    Aggregation aggregation = Aggregation.newAggregation(
-        Aggregation.match(Criteria.where("ownerId").is(businessId)),
-        Aggregation.unwind("reviews"),
-        Aggregation.match(Criteria.where("reviews.date").gte(startDate).lte(endDate)),
-        Aggregation.project().and("reviews.date").as("reviewDate")
+	@Override
+	public List<Date> findReviewDatesByBusinessIdAndDateRange(String businessId, Date startDate, Date endDate) {
+		Aggregation aggregation = Aggregation.newAggregation(
+				Aggregation.match(Criteria.where("ownerId").is(businessId)), Aggregation.unwind("reviews"),
+				Aggregation.match(Criteria.where("reviews.date").gte(startDate).lte(endDate)),
+				Aggregation.project().and("reviews.date").as("reviewDate")
 
-    );
-    AggregationResults<ReviewDateResult> results = mongoTemplate.aggregate(aggregation, "publications", ReviewDateResult.class);
-    return results.getMappedResults().stream()
-            .map(ReviewDateResult::getReviewDate)
-            .collect(Collectors.toList());
-  }
+		);
+		AggregationResults<ReviewDateResult> results = mongoTemplate.aggregate(aggregation, "publications",
+				ReviewDateResult.class);
+		return results.getMappedResults().stream().map(ReviewDateResult::getReviewDate).collect(Collectors.toList());
+	}
 
 	@Override
 	public Page<Publication> search(PublicationSearchRequestDTO filters, Pageable pageable) {
@@ -98,29 +96,28 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 		mongoTemplate.updateFirst(query, update, Publication.class);
 	}
 
-  @Override
-  public Integer countLikesFromAccountId(String accountId) {
-    Aggregation aggregation = Aggregation.newAggregation(
-        Aggregation.match(Criteria.where("ownerId").is(accountId)),
-        Aggregation.project()
-            .and(ArrayOperators.Size.lengthOfArray("likes")).as("likesCount"),
-        Aggregation.group().sum("likesCount").as("totalLikes")
-    );
+	@Override
+	public Integer countLikesFromAccountId(String accountId) {
+		Aggregation aggregation = Aggregation.newAggregation(Aggregation.match(Criteria.where("ownerId").is(accountId)),
+				Aggregation.project().and(ArrayOperators.Size.lengthOfArray("likes")).as("likesCount"),
+				Aggregation.group().sum("likesCount").as("totalLikes"));
 
-    AggregationResults<Map> results = mongoTemplate.aggregate(
-        aggregation, "publications", Map.class);
+		AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "publications", Map.class);
 
-    if (results.getMappedResults().isEmpty()) {
-        return 0;
-    }
-    
-    return (Integer) results.getMappedResults().get(0).get("totalLikes");
-  }
-  
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  private static class ReviewDateResult {
-      private Date reviewDate;
-  }
+		if (results.getMappedResults().isEmpty()) {
+			return 0;
+		}
+
+		return (Integer) results.getMappedResults().get(0).get("totalLikes");
+	}
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	private static class ReviewDateResult {
+
+		private Date reviewDate;
+
+	}
+
 }

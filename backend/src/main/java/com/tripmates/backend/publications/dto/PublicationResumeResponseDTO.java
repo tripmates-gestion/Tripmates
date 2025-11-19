@@ -7,7 +7,8 @@ import java.time.LocalDate;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
-import com.tripmates.backend.users.dto.AccountResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record PublicationResumeResponseDTO(@Schema(description = "Publication's ID") String id,

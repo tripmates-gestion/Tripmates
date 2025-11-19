@@ -1,4 +1,4 @@
-package com.tripmates.backend.users.dto;
+package com.tripmates.backend.users.dto.account;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripmates.backend.common.types.*;
