@@ -39,19 +39,24 @@ public class CommunityService {
 		this.publicationRepository = publicationRepository;
 	}
 
-	public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
-		Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
-		Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
-		PlanMetadata plan = validateExistentPlan(planId);
+        public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
+                Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
+                Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
+                PlanMetadata plan = validateExistentPlan(planId);
 
-		if (!plan.ownerId().equals(me.getId())) {
-			throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
-		}
-		if (plan.collaboratorsIds().contains(userId)) {
-			throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_IN_PLAN);
-		}
-		if (plan.pendingUsersIdsInvited().contains(userId)) {
-			throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_INVITED_TO_PLAN);
+                if (!plan.ownerId().equals(me.getId())) {
+                        throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+                }
+                boolean iFollowUser = accountRepository.existsFollowing(me.getId(), userId) > 0;
+                boolean userFollowsMe = accountRepository.existsFollowers(me.getId(), userId) > 0;
+                if (!iFollowUser || !userFollowsMe) {
+                        throw new UnauthorizedException(ValidationErrorMessage.CAN_ONLY_INVITE_MUTUAL_FOLLOW);
+                }
+                if (plan.collaboratorsIds().contains(userId)) {
+                        throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_IN_PLAN);
+                }
+                if (plan.pendingUsersIdsInvited().contains(userId)) {
+                        throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_INVITED_TO_PLAN);
 		}
 
 		accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(planId, userId);
