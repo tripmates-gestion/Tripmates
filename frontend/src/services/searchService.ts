@@ -1,6 +1,6 @@
 import { apiFetch } from "../api/client"
 import { ENDPOINTS } from "../api/endpoints"
-import type { SearchBusinessFilters } from "../types/searchBusinessFilters"
+import type { SearchBusinessFilters } from "../types/SearchBusinessFilters"
 
 // QUITAR CUANDO SEA PUBLICO
 export async function searchBusiness(accesstoken: string,filters: SearchBusinessFilters = {}) {

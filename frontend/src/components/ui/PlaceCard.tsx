@@ -14,7 +14,7 @@ import RoomRoundedIcon from '@mui/icons-material/RoomRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import CallRoundedIcon from '@mui/icons-material/CallRounded';
 
-import type { BusinessPost } from '../../types/business';
+import type { BusinessPost } from '../../types/Business';
 
 export type Place = {
   id: string;

@@ -18,7 +18,7 @@ import { BaseSearchBar } from "./utils/BaseSearchBar";
 import { useAuth } from "../../hooks/useAuth";
 import { searchBusiness } from "../../services/searchService";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
-import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
+import type { SearchBusinessFilters } from "../../types/SearchBusinessFilters";
 import type { BusinessType } from "../../types/AccountTypes";
 import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
 import type { RestaurantType } from "../../types/Restaurant";

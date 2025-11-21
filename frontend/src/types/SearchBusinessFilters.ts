@@ -1,7 +1,7 @@
-import type { HotelType } from "../types/Hotel"
-import type { RestaurantType } from "../types/Restaurant"
-import type { BusinessType } from "../types/AccountTypes"
-import type {AveragePrice} from "../types/business"
+import type { HotelType } from "./Hotel"
+import type { RestaurantType } from "./Restaurant"
+import type { BusinessType } from "./AccountTypes"
+import type {AveragePrice} from "./Business"
 
 export type SearchBusinessFilters = {
     //COMUNES
