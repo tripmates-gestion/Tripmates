@@ -38,8 +38,8 @@ import { FollowButton } from '../components/social/FollowButton';
 
 const userRoleChipColor = 'info';
 
-const DEFAULT_COVER_URL =
-  'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg';
+const DEFAULT_COVER_URL = 'https://image.shutterstock.com/image-vector/vector-graphic-depicting-warmcolored-mountain-260nw-2521969157.jpg';
+
 
 export default function UserProfile() {
   const [tab, setTab] = React.useState(0);

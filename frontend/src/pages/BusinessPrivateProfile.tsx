@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
-  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, TextField
+  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
 } from '@mui/material';
 import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
@@ -80,7 +80,7 @@ export default function BusinessProfile() {
         sx={{
           minHeight: { xs: '38vh', md: '30vh' },
           backgroundImage:
-            "url('https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg')",
+            "url('https://image.shutterstock.com/image-vector/vector-graphic-depicting-warmcolored-mountain-260nw-2521969157.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
