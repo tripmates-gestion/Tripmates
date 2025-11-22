@@ -32,9 +32,9 @@ function SearchBoxContainer({
       <Typography
         variant="h3"
         sx={{
-          fontStyle: "oblique",
+          // fontStyle: "oblique",
           fontWeight: 800,
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.primary,
           textAlign: "center",
           letterSpacing: "0.05em",
           mb: 2,
@@ -112,12 +112,7 @@ export default function Search() {
     }
   
     // Si no hay búsqueda activa, mostrar los mocks filtrados
-    return MOCK_BUSINESS_SEARCH_RESULTS.filter((p) =>
-      !q
-        ? true
-        : p.name.toLowerCase().includes(q.toLowerCase()) ||
-          p.location.toLowerCase().includes(q.toLowerCase())
-    );
+    return [];
   }, [q, searchResults, isSearching]);
   
 
@@ -199,7 +194,7 @@ export default function Search() {
       {/* Resultados por defecto cuando no buscas */}
       {!isSearching && (
         <PlaceGrid businessAccounts={items} />
-      )}
+      ) : null}
 
 
     </Stack>

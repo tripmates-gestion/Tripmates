@@ -73,7 +73,8 @@ export function Hero() {
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 6,            // espacio entre columnas
-        py: { xs: 6, md: 10 },
+        pt: { xs: 2, md: 0 },   // padding superior reducido
+        pb: { xs: 6, md: 0 },  // padding inferior igual al original (si querés mantenerlo)
         px: { xs: 2, md: 6 },
       }}
     >
