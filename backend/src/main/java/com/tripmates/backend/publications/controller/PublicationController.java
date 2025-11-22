@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -138,7 +137,7 @@ public class PublicationController {
 					@ApiResponse(responseCode = "401", description = "Invalid credentials",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<Void> delete(@PathVariable String publicationId,
+	public ResponseEntity<?> delete(@PathVariable String publicationId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.deletePublication(publicationId, userDetails.getUsername());
 		return ResponseEntity.noContent().build();

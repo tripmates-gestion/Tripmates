@@ -31,9 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({ TestCloudinaryConfig.class })
 public class AccountPlanTest {
 
-	@LocalServerPort
-	private int port;
-
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
@@ -54,10 +51,6 @@ public class AccountPlanTest {
 	@AfterAll
 	void afterAll() {
 		mongoTemplate.getDb().drop();
-	}
-
-	private String baseUrl() {
-		return "http://localhost:" + port;
 	}
 
 	@Test

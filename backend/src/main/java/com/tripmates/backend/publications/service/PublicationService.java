@@ -117,13 +117,13 @@ public class PublicationService {
 		if (publicationRequestDTO.location() != null)
 			publication.setLocation(publicationRequestDTO.location());
 
-		if (publicationRequestDTO.openingDays() != null)
+		if (!publicationRequestDTO.openingDays().isEmpty())
 			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
 		if (publicationRequestDTO.attentionSchedule() != null)
 			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (publicationRequestDTO.exceptionalClosingDays() != null)
+		if (!publicationRequestDTO.exceptionalClosingDays().isEmpty())
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		publication.setImageUrls(updateImages(publication.getImageUrls(), publicationRequestDTO.deletePhotoIndexes(),
