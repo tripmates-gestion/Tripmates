@@ -32,9 +32,9 @@ function SearchBoxContainer({
       <Typography
         variant="h3"
         sx={{
-          fontStyle: "oblique",
+          // fontStyle: "oblique",
           fontWeight: 800,
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.primary,
           textAlign: "center",
           letterSpacing: "0.05em",
           mb: 2,
@@ -112,12 +112,7 @@ export default function Search() {
     }
   
     // Si no hay búsqueda activa, mostrar los mocks filtrados
-    return MOCK_BUSINESS_SEARCH_RESULTS.filter((p) =>
-      !q
-        ? true
-        : p.name.toLowerCase().includes(q.toLowerCase()) ||
-          p.location.toLowerCase().includes(q.toLowerCase())
-    );
+    return [];
   }, [q, searchResults, isSearching]);
   
 
@@ -142,32 +137,16 @@ export default function Search() {
           ? `Resultados de búsqueda (${searchResults.length} encontrados)`
           : q
           ? `Resultados para “${q}”`
-          : "Explora nuestras opciones"}
+          : ""}
       </Typography>
 
       <BusinessRecommendationsSection />
       
       
       {/* Resultados */}
-      {isSearching ? (
-        items.length > 0 ? (
-          <PlaceGrid businessAccounts={items} />
-        ) : (
-          <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
-            <Typography variant="h6" color="text.secondary" fontStyle="italic">
-              No se encontraron resultados
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Intenta con otros términos o una ubicación distinta.
-            </Typography>
-            <Button variant="outlined" onClick={resetSearch} sx={{ mt: 2 }}>
-              Ver todas las opciones
-            </Button>
-          </Stack>
-        )
-      ) : (
+      {items.length > 0 ? (
         <PlaceGrid businessAccounts={items} />
-      )}
+      ) : null}
 
     </Stack>
   );
