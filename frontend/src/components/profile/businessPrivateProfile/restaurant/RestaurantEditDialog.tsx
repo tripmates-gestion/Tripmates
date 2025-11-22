@@ -4,7 +4,7 @@ import { enqueueSnackbar } from 'notistack';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
-import { dataURLtoFile } from '../common/Utils';
+import { dataURLtoFile } from '../../../GeneralHelpers';
 import { updateBusinessUser } from '../../../../services/userService';
 
 import { type RestaurantForm } from '../common/types';
@@ -17,7 +17,7 @@ import { validateRestaurant, type RestaurantErrors } from '../../../../hooks/use
 type Props = { open: boolean; onClose: () => void };
 
 export default function RestaurantEditDialog({ open, onClose }: Props) {
-  const { accessToken, updateUser, user } = useAuth()
+  const { accessToken, refreshUser, user } = useAuth()
   const { business, refreshProfile } = useBusinessProfile()
 
   if (!business || business.businessType !== BUSINESS_TYPES.restaurant) return null
@@ -103,7 +103,7 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   
       await updateBusinessUser(dto as any, avatarFile, galleryFiles, accessToken)
       await refreshProfile()
-      updateUser(dto.name, dto.description ?? null, form.avatar ? form.avatarUrl ?? null : null)
+      await refreshUser()
       enqueueSnackbar('Cambios guardados', { variant: 'success' })
       onClose()
     } catch (e:any) {

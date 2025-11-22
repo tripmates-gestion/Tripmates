@@ -1,30 +1,33 @@
 package com.tripmates.backend.auth.service;
 
 import com.tripmates.backend.auth.dto.*;
-import com.tripmates.backend.auth.exception.IncorrectPasswordException;
-import com.tripmates.backend.auth.exception.IncorrectTokenException;
-import com.tripmates.backend.auth.exception.UserAlreadyExistsException;
-import com.tripmates.backend.auth.exception.UserNotFoundException;
+import com.tripmates.backend.common.exception.ConflictException;
 import com.tripmates.backend.auth.exception.ValidationErrorException;
+import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.common.exception.UnauthorizedException;
 import com.tripmates.backend.config.security.jwt.JwtService;
 import com.tripmates.backend.config.security.jwt.UserDetailFromJwt;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
-import com.tripmates.backend.users.repository.mongo.AccountRespository;
+import com.tripmates.backend.users.entity.neo4j.AccountNode;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
+import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.tripmates.backend.common.constants.ValidationErrorMessage;
 
 @Service
 @Transactional
 public class AuthService {
 
 	@Autowired
-	private AccountRespository userRepository;
+	private AccountRepository accountRepository;
+
+	@Autowired
+	private AccountNodeRepository accountNodeRepository;
 
 	@Autowired
 	private JwtService jwtService;
@@ -33,74 +36,78 @@ public class AuthService {
 	private PasswordEncoder passwordEncoder;
 
 	/**
-	 * Crea un nuevo usuario y lo persiste en la base de datos MongoDB
-	 * @param authRegisterRequestDTO contiene los datos del nuevo usuario
+	 * Registers a user account in the system.
+	 * @param authRegisterRequestDTO DTO with user's account register information.
 	 */
 	public void register(AuthRegisterRequestDTO authRegisterRequestDTO) {
-		Account user = new Account();
-		userRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(u -> {
-			throw new UserAlreadyExistsException("Email no está disponible");
+		accountRepository.findByEmail(authRegisterRequestDTO.email()).ifPresent(account -> {
+			throw new ConflictException(ValidationErrorMessage.USER_ALREADY_EXISTS);
 		});
+
+		Account account = new Account();
+
 		checkBusinessType(authRegisterRequestDTO);
 
-		user.setName(authRegisterRequestDTO.name());
-		user.setEmail(authRegisterRequestDTO.email());
-		user.setPassword(passwordEncoder.encode(authRegisterRequestDTO.password()));
-		user.setRole(authRegisterRequestDTO.role());
-		user.setBusinessType(authRegisterRequestDTO.businessType());
-		userRepository.save(user);
+		account.setName(authRegisterRequestDTO.name());
+		account.setEmail(authRegisterRequestDTO.email());
+		account.setPassword(passwordEncoder.encode(authRegisterRequestDTO.password()));
+		account.setRole(authRegisterRequestDTO.role());
+		account.setBusinessType(authRegisterRequestDTO.businessType());
+
+		accountRepository.save(account);
+		accountNodeRepository.save(AccountNode.fromAccount(account));
+
+		if (account.getRole() == Role.BUSINESS)
+			accountNodeRepository.createSharesBusinessType(account.getId());
 	}
 
 	/**
-	 * Genera un access y refresh token para el usuario, persiste en la base de datos el
-	 * refresh token generado
-	 * @param authLoginRequestDTO contiene email y password
-	 * @return {@link AuthLoginResponseDTO AuthLoginResponseDTO}
+	 * Logins an existing user account in the system.
+	 * @param authLoginRequestDTO DTO with user's account login information.
+	 * @return {@link AuthLoginResponseDTO}
 	 */
 	public AuthLoginResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
-		Account user = userRepository.findByEmail(authLoginRequestDTO.email())
-			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		Account account = accountRepository.findByEmail(authLoginRequestDTO.email())
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
-		if (!passwordEncoder.matches(authLoginRequestDTO.password(), user.getPassword())) {
-			throw new IncorrectPasswordException("Credenciales invalidas");
-		}
+		if (!passwordEncoder.matches(authLoginRequestDTO.password(), account.getPassword()))
+			throw new UnauthorizedException(ValidationErrorMessage.INVALID_CREDENTIALS);
 
 		var accessToken = this.jwtService
-			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+			.generateAccessToken(new UserDetailFromJwt(account.getEmail(), account.getPassword()));
 
 		var refreshToken = this.jwtService
-			.generateRefreshToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
+			.generateRefreshToken(new UserDetailFromJwt(account.getEmail(), account.getPassword()));
 
-		user.setToken(refreshToken);
-		userRepository.save(user);
+		account.setToken(refreshToken);
+		accountRepository.save(account);
 
 		return new AuthLoginResponseDTO(accessToken, refreshToken);
 	}
 
 	/**
-	 * Elimina el refresh token persistido en la base de datos, del usuario
-	 * @param authLogoutRequestDTO contiene email
+	 * Logouts an existing and active user account from the system.
+	 * @param authLogoutRequestDTO DTO with user's account logout information.
 	 */
 	public void logout(AuthLogoutRequestDTO authLogoutRequestDTO) {
-		Account user = userRepository.findByEmail(authLogoutRequestDTO.email())
-			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		Account account = accountRepository.findByEmail(authLogoutRequestDTO.email())
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
-		user.setToken(null);
-		userRepository.save(user);
+		account.setToken(null);
+		accountRepository.save(account);
 	}
 
 	/**
-	 * Retorna un nuevo access token para el usuario
-	 * @param authRefreshRequestDTO contiene email y refresh token
-	 * @return {@link AuthRefreshResponseDTO AuthRefreshResponseDTO}
+	 * Returns a new refresh token for the user.
+	 * @param authRefreshRequestDTO DTO with user's account refresh information.
+	 * @return {@link AuthRefreshResponseDTO }.
 	 */
 	public AuthRefreshResponseDTO refresh(AuthRefreshRequestDTO authRefreshRequestDTO) {
-		Account user = userRepository.findByEmail(authRefreshRequestDTO.email())
-			.orElseThrow(() -> new UserNotFoundException("Credenciales invalidas"));
+		Account user = accountRepository.findByEmail(authRefreshRequestDTO.email())
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.INVALID_CREDENTIALS));
 
-		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken())) {
-			throw new IncorrectTokenException("Credenciales invalidas");
-		}
+		if (!user.getToken().equals(authRefreshRequestDTO.refreshToken()))
+			throw new UnauthorizedException(ValidationErrorMessage.INVALID_CREDENTIALS);
 
 		var accessToken = this.jwtService
 			.generateAccessToken(new UserDetailFromJwt(user.getEmail(), user.getPassword()));
@@ -108,6 +115,10 @@ public class AuthService {
 		return new AuthRefreshResponseDTO(accessToken);
 	}
 
+	/**
+	 * Validates the user's role and business type.
+	 * @param authRegisterRequestDTO DTO with user's role and business type.
+	 */
 	private void checkBusinessType(AuthRegisterRequestDTO authRegisterRequestDTO) {
 		if (authRegisterRequestDTO.role() == Role.USER && authRegisterRequestDTO.businessType() != null)
 			throw new ValidationErrorException(ValidationErrorMessage.FILD_NO_ALLOWED + "businessType");

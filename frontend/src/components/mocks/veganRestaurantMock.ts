@@ -1,7 +1,7 @@
 // src/mocks/veganRestaurantMock.ts
 
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 
 // ──────────────────────────────────────────────
 // Constantes de imágenes y datos de contacto
@@ -48,7 +48,7 @@ export const VEGAN_RESTAURANT: BusinessPubAccountDataDTO = {
   profileImageUrls: [VEGAN_RESTAURANT_BANNER, ...VEGAN_MENU_IMAGES],
   businessType: "RESTAURANT",
   averagePrice: "$$",
-  restaurantType: "vegano",
+  restaurantType: "Vegano",
   attentionSchedule: {
     openingTime: "09:00",
     closingTime: "23:00",

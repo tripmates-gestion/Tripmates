@@ -5,10 +5,10 @@ import {
 } from "@mui/material";
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
 import { useAuth } from "../../hooks/useAuth";
-
+import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
 
 type Props = {
   open: boolean;
@@ -60,7 +60,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const { user } = useAuth();
 
   // Derivados seguros aunque publication sea null
-  const images = publication?.imageUrls?.length ? publication.imageUrls : ["/placeholder.jpg"];
+  const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
   const max = images.length;
 
   const nextIndex = (i: number) => ((i + 1) % max);
@@ -132,7 +132,27 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         <IconButton onClick={onClose}><Close /></IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: 0 }}>
+      <DialogContent sx={{ 
+        pt: 0,
+        // 👇 AÑADIR ESTILOS DE SCROLLBAR AQUÍ 👇
+          "&::-webkit-scrollbar": {
+            width: "10px", // Ancho de la barra de desplazamiento
+          },
+          "&::-webkit-scrollbar-track": (t) => ({
+            // Fondo de la pista (opcional, puedes usar el color de fondo del Dialog)
+            bgcolor: t.palette.mode === "dark" ? "rgba(64, 64, 64, 0.2)" : "white", 
+          }),
+          "&::-webkit-scrollbar-thumb": (t) => ({
+            // Color del "pulgar" o la barra de desplazamiento que se mueve
+            bgcolor: t.palette.mode === "dark" ? t.palette.grey[700] : t.palette.grey[400],
+            borderRadius: "4px", // Bordes redondeados
+          }),
+          "&::-webkit-scrollbar-thumb:hover": (t) => ({
+            // Color al pasar el ratón
+            bgcolor: t.palette.mode === "dark" ? t.palette.grey[500] : t.palette.grey[600],
+          }),
+          // 👆 HASTA AQUÍ 👆
+        }}>
         <Box
           sx={{ position: "relative", width: "100%", aspectRatio: "16 / 9", overflow: "hidden", borderRadius: 2, bgcolor: "background.paper", mb: 1.5 }}
           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
@@ -280,11 +300,8 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         </Stack>
         
         <Divider sx={{ my: 2 }} />
-        {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} />}
+        {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} userId={user?.id} />}
         <Divider sx={{ my: 2 }} />
-        {/* TODO: Dado el id de la publicacion se debe obtener sus reviews MEDIANTE "GET publication/{idPublication}/reviews" */}
-        {/* <ReviewList/> */}
-
       </DialogContent>
     </Dialog>
   );

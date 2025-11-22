@@ -19,31 +19,41 @@ import {
 } from "@mui/material";
 import PublicationCard from "../../../publications/PublicationCard";
 import PublicationDetailDialog from "../../../publications/PublicationDetailDialog";
-import type { BusinessPublicationResponseDTO } from "../../../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../../../types/Business";
 
 import { useAuth } from "../../../../hooks/useAuth";
 import { getBusinessPublicationsPublic } from "../../../../services/businessPublications";
+import { getPlans, createPlan, addPublicationToPlan } from "../../../../services/plansService"; // 👈 importa tus llamadas reales
 
-// ──────────────────────────────────────────────
-// Mock: obtiene planes del usuario loggeado
-// ──────────────────────────────────────────────
-async function fetchUserBoardsMock(): Promise<string[]> {
-  await new Promise((res) => setTimeout(res, 300));
-  return ["Favoritos", "Imperdibles Perú 2025", "Verano 2026"];
+type PlanInfo = {
+  name: string;
+  id: string
 }
 
-// ──────────────────────────────────────────────
-// Componente principal
-// ──────────────────────────────────────────────
+async function fetchPlans(accessToken: string) : Promise<PlanInfo[]>
+{ 
+  const response = await getPlans(accessToken);
+  const fetchedPlans: PlanInfo[] = Array.isArray(response)
+    ? response.map((p: any) => ({
+    name: typeof p === "string" ? p : p.name,
+    id: typeof p === "string" ? p : p.id
+    })) : [];
+  return fetchedPlans;
+}
+
 export default function BusinessPublicationsTab({ id }: { id: string }) {
-  const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
+  const [selected, setSelected] =
+    React.useState<BusinessPublicationResponseDTO | null>(null);
   const [showLoginMsg, setShowLoginMsg] = React.useState(false);
   const [showSuccessMsg, setShowSuccessMsg] = React.useState(false);
-  const {accessToken} = useAuth();
-  const [publications, setPublications] = React.useState<BusinessPublicationResponseDTO[]>([]); // ← Agregar estado
+
+  const { accessToken } = useAuth();
+
+  const [publications, setPublications] =
+    React.useState<BusinessPublicationResponseDTO[]>([]);
   const [_, setLoading] = React.useState(true);
 
-  const [plans, setPlans] = React.useState<string[]>([]);
+  const [plans, setPlans] = React.useState<PlanInfo[]>([]);
   const [plansLoaded, setPlansLoaded] = React.useState(false);
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const [targetPublication, setTargetPublication] =
@@ -65,7 +75,7 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
         const pubs = await getBusinessPublicationsPublic(id, accessToken);
         setPublications(pubs);
       } catch (error) {
-        console.error('Error loading publications:', error);
+        console.error("Error loading publications:", error);
         setPublications([]);
       } finally {
         setLoading(false);
@@ -81,11 +91,11 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   const handleAddToBoard = async (
     event: React.MouseEvent<HTMLElement>,
     publication: BusinessPublicationResponseDTO,
-    token: string
+    _token: string // viene del PublicationCard, pero usamos accessToken del hook
   ) => {
     event.stopPropagation();
 
-    if (!token) {
+    if (!accessToken) {
       setShowLoginMsg(true);
       return;
     }
@@ -93,24 +103,38 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
     setTargetPublication(publication);
     setMenuAnchor(event.currentTarget);
 
-    // Solo fetchear si no se cargaron antes
+    // Sólo fetchear si no se cargaron antes
     if (!plansLoaded) {
-      const fetched = await fetchUserBoardsMock();
-      setPlans(fetched);
-      setPlansLoaded(true);
+      try {
+        const fetchedPlans = await fetchPlans(accessToken);
+        setPlans(fetchedPlans);
+        setPlansLoaded(true);
+      } catch (error) {
+        console.error("Error fetching plans:", error);
+        setPlans([]);
+      }
     }
   };
 
   // ───────────────────────────────
   // Manejo de selección de plan
   // ───────────────────────────────
-  const handleSelectBoard = (boardName: string) => {
+  const handleSelectBoard = (boardName: string, planId: string, publicationId: string) => {
     if (boardName === "➕ Crear nuevo plan") {
       setOpenCreateDialog(true);
       return;
     }
 
-    console.log(`📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`);
+    if (planId && publicationId && accessToken) {
+      addPublicationToPlan(accessToken, planId, publicationId);
+    } else {
+      console.error("Plan ID or Publication ID is null.");
+    }
+
+    console.log(
+      `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`
+    );
+
     setShowSuccessMsg(true);
     handleCloseBoardsMenu();
   };
@@ -121,16 +145,39 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
   };
 
   // ───────────────────────────────
-  // Crear nuevo plan
+  // Crear nuevo plan (llamando al backend)
   // ───────────────────────────────
-  const handleCreatePlan = () => {
-    if (newPlanName.trim()) {
-      setPlans((prev) => [...prev, newPlanName.trim()]);
-      setShowSuccessMsg(true);
+  const handleCreatePlan = async (id: string) => {
+    const trimmed = newPlanName.trim();
+
+    if (!trimmed) {
+      return;
     }
-    setOpenCreateDialog(false);
-    setNewPlanName("");
-    handleCloseBoardsMenu();
+
+    if (!accessToken) {
+      setShowLoginMsg(true);
+      return;
+    }
+
+    try {
+      // descripción vacía por ahora; la podés extender más tarde
+      await createPlan(accessToken, trimmed, "");
+      const fetchedPlans = await fetchPlans(accessToken);
+      console.log("Planes:", fetchedPlans);
+      console.log("Nombre:", trimmed);
+      const plan = fetchedPlans.find((p) => p.name === trimmed);
+      console.log("Plan creado:", plan);
+      await addPublicationToPlan(accessToken, plan.id, id);
+      // opcional: actualizar la lista local de planes para que aparezca en el menú
+      setShowSuccessMsg(true);
+    } catch (error) {
+      console.error("Error creating plan:", error);
+      // si querés, acá podrías mostrar un Snackbar de error
+    } finally {
+      setOpenCreateDialog(false);
+      setNewPlanName("");
+      handleCloseBoardsMenu();
+    }
   };
 
   if (!publications || publications.length === 0) {
@@ -218,19 +265,22 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
           horizontal: "right",
         }}
       >
-        <MenuItem onClick={() => handleSelectBoard("➕ Crear nuevo plan")}>
+        <MenuItem onClick={() => handleSelectBoard("➕ Crear nuevo plan", undefined!, targetPublication?.id!)}>
           ➕ Crear nuevo plan
         </MenuItem>
         <Divider />
-        {plans.map((p) => (
-          <MenuItem key={p} onClick={() => handleSelectBoard(p)}>
-            {p}
+        {plans.map((plan: PlanInfo) => (
+          <MenuItem key={plan.id} onClick={() => handleSelectBoard(plan.name, plan.id, targetPublication?.id!)}>
+            {plan.name}
           </MenuItem>
         ))}
       </Menu>
 
       {/* Diálogo para crear nuevo plan */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
+      <Dialog
+        open={openCreateDialog}
+        // onClose={() => setOpenCreateDialog(false)} ← Quitar esta línea
+      >
         <DialogTitle>Crear nuevo plan</DialogTitle>
         <DialogContent>
           <TextField
@@ -241,11 +291,27 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
             variant="outlined"
             value={newPlanName}
             onChange={(e) => setNewPlanName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (newPlanName.trim() && targetPublication?.id) {
+                  handleCreatePlan(targetPublication.id);
+                }
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreateDialog(false)}>Cancelar</Button>
-          <Button onClick={handleCreatePlan} variant="contained">
+          <Button 
+            onClick={() => {
+              if (targetPublication?.id) {
+                handleCreatePlan(targetPublication.id);
+              }
+            }} 
+            variant="contained"
+            disabled={!newPlanName.trim()}
+          >
             Crear
           </Button>
         </DialogActions>

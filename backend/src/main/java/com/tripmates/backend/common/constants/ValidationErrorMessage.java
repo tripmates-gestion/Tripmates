@@ -48,4 +48,32 @@ public class ValidationErrorMessage {
 
 	public static final String PUBLICATION_NOT_FOUND = "La publicacion no se encontró";
 
+	public static final String INDEX_OUT_OF_RANGE = "Indice fuera de ranfo";
+
+	public static final String NOTHING_TO_UPDATE = "No existe una entidad para actualizar";
+
+	public static final String NOTHING_TO_DELETE = "No existe una entidad para eliminar";
+
+	public static final String CANNOT_FOLLOW_UNFOLLOW_YOURSELF = "No puedes dejar de seguirte/seguirte a ti mismo";
+
+	public static final String CANNOT_FOLLOW_UNFOLLOW_BUSINESS = "No puedes seguir/dejar de seguir a un cuenta de negocio";
+
+	public static final String CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING = "No puedes dejar de seguir a alguien que no sigues";
+
+	public static final String CANNOT_FOLLOW_SOMEONE_YOU_ARE_ALREADY_FOLLOWING = "No puedes seguir a alguien que ya sigues";
+
+	public static final String CANNOT_LIKE_PUBLICATION_TWICE = "Ya has dado like a esta publicación";
+
+	public static final String CANNOT_UNLIKE_PUBLICATION_NOT_LIKED = "No puedes deshacer like a una publicación que no has likeado";
+
+	public static final String USER_ACCOUNT_CANT_REQUEST_STATISTICS = "Una cuenta de usuario no puede solicitar estadisticas";
+
+	public static final String PLAN_NOT_FOUND = "El plan referido no se encontró";
+
+	public static final String USER_ALREADY_IN_PLAN = "El usuario ya esta en el plan";
+
+	public static final String USER_ALREADY_INVITED_TO_PLAN = "El usuario ya esta invitado al plan";
+
+	public static final String USER_NOT_INVITED_TO_PLAN = "El usuario no esta invitado al plan";
+
 }

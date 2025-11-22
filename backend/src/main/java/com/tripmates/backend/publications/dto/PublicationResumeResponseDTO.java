@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record PublicationResumeResponseDTO(@Schema(description = "Publication's ID") String id,
@@ -24,6 +26,12 @@ public record PublicationResumeResponseDTO(@Schema(description = "Publication's 
 		@Schema(description = "Business's ID") String ownerId,
 		@Schema(description = "Business's username") String ownerUsername,
 		@Schema(description = "Business's avatar URL") String ownerAvatarUrl) {
+
+	/**
+	 * Returns a resume from the attributes of publication.
+	 * @param publication publication information.
+	 * @return {@link AccountResumeResponseDTO}.
+	 */
 	public static PublicationResumeResponseDTO fromPublication(Publication publication) {
 		return new PublicationResumeResponseDTO(publication.getId(), publication.getTitle(),
 				publication.getDescription(), publication.getOpeningDays(), publication.getAttentionSchedule(),

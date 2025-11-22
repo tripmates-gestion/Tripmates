@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Data
@@ -44,6 +45,10 @@ public class Plan {
 	@NotNull
 	@Field(targetType = FieldType.STRING)
 	private String ownerId;
+
+	private HashSet<String> pendingUsersIdsInvited = new HashSet<>();
+
+	private HashSet<String> collaboratorsUsersIds = new HashSet<>();
 
 	/**
 	 * Retorna un plan según lo especificado.

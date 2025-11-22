@@ -9,7 +9,8 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { Link as RouterLink } from 'react-router-dom';
 import { PAGES_ROUTE } from '../constants/Pages';
-
+import { useAuth } from '../hooks/useAuth';
+import BusinessRecommendationFeed from '../components/publicationsFeed/BusinessPublicationRecomendationFeed';
 
 // Otro mock que es igual que el que esta en Search.tsx
 const MOCK: Place[] = [
@@ -44,10 +45,17 @@ const MOCK: Place[] = [
 
 
 export default function Home() {
+  const context = useAuth();
+  const isAuthenticated = context=== undefined || context.accessToken === null? false: true;
+  const isTraveler = isAuthenticated && context.user?.role === 'USER'?true:false;
+
+
     // Página principal con secciones: Hero, Destinos y Pasos
     return (
       <Box sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>
         <Hero />
+        {/* MOSTRAMOS FEED DE RECOMENDACIONES DE PUBLICACIONES DE NEGOCIOS SOLO A VIAJEROS AUTENTICADOS  */}
+        {isTraveler && <BusinessRecommendationFeed />}
         <TopDestinations />
         <Steps />
         <Footer />
@@ -87,7 +95,7 @@ export function Hero() {
           <Button variant="outlined" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.search}>
             Explora destinos
           </Button>
-          <Button variant="contained" color="primary" size="large">
+          <Button variant="contained" color="primary" size="large"component={RouterLink} to={PAGES_ROUTE.searchTravelers}>
             Conecta con otros viajeros
           </Button>
         </Stack>

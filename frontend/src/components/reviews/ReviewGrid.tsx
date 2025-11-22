@@ -1,17 +1,45 @@
 import { Typography, Card, CardContent, CardMedia, Grid, Stack, Avatar, Chip } from "@mui/material";
-import type { Review } from "../../types/review";
+import type { Review } from "../../types/Review";
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { getUserByEmail } from "../../services/userService";
+
+
 
 export function ReviewGrid({ items }: { items: Review[] }) {
+
+    const accessToken = useAuth().accessToken;
+    const navigate = useNavigate();
+
+    const handleUserClick = useCallback(async (authorName: string, authorId: string) => {
+        console.log("Haciendo click en usuario:", authorName);
+        try {
+            const user = await getUserByEmail(authorName, accessToken!);
+            console.log("Usuario obtenido:", user);
+            navigate(`/userProfile/${authorId}`, {
+                state: { account: user } 
+            });
+        } catch (error) {
+            console.error('Error fetching user:', error);
+        }
+    }, [navigate, accessToken]);
+
     return (
     <Grid container spacing={2}>
         {items.map((r: Review) => (
             <Grid key={r.id} item xs={12}>
             <Card variant="outlined">
             <CardContent>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                <Avatar>{r.author.slice(0, 1).toUpperCase()}</Avatar>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1, cursor: 'pointer' }}
+                onClick={(e) => {
+                console.log("Review seleccionada:", r);
+                e.stopPropagation();
+                handleUserClick(r.authorName, r.authorId);}}
+                >
+                <Avatar src={r.avatarUrl} />
                 <Stack spacing={0}>
-                    <Typography variant="subtitle2" fontWeight={700}>{r.author}</Typography>
+                    <Typography variant="subtitle2" fontWeight={700}>{r.authorName}</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {new Date(r.createdAt).toLocaleString()}
                     </Typography>

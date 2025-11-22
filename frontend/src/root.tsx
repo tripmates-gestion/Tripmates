@@ -8,7 +8,7 @@ import { AuthProvider } from './context/AuthProvider';
 import { BusinessProfileProvider } from './context/BusinessProfileProvider';
 
 export function Root() {
-    const [mode, setMode] = useState<'light' | 'dark'>('light');
+    const [mode, setMode] = useState<'light' | 'dark'>('dark');
     const theme = useMemo(() => makeTheme(mode), [mode]);
   
     return (

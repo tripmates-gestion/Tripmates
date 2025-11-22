@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Avatar,
   Box,
@@ -12,105 +13,139 @@ import {
   Tab,
   Tabs,
   Typography,
+  Backdrop,
+  CircularProgress,
 } from '@mui/material';
 import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
-import EditProfileDialog, { type UserProfile } from '../components/profile/businessPrivateProfile/common/EditProfileDialog';
-import { useAuth } from '../hooks/useAuth';
-import { DEFAULT_STATS } from '../constants/DefaultStats'
-import { type AccountType } from '../types/AccountTypes'
-import UserReviewsTab from '../components/profile/userProfile.tsx/UserReviewsTab';
 
+import EditProfileDialog from '../components/profile/userProfile/EditUserProfileDialog';
+import { useAuth } from '../hooks/useAuth';
+import { DEFAULT_STATS } from '../constants/DefaultStats';
+
+import UserReviewsTab from '../components/profile/userProfile/UserReviewsTab';
+import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
 import { Stat } from '../components/profile/stats';
-import UserPlansTab from '../components/profile/userProfile.tsx/UserPlansTab';
 
 import { updateUser } from '../services/userService';
-import type { CommonUser } from '../context/PrivateUserProfilesTypes';
-
+import type {
+  CommonUser,
+  CurrentUser,
+} from '../types/PrivateUserProfiles';
+import { useConnectionsList } from '../hooks/useConnectionsList';
+import { ConnectionsListDialog } from '../components/social/ConnectionsListDialog';
+import { FollowButton } from '../components/social/FollowButton';
 
 const userRoleChipColor = 'info';
 
-
-// ----- tipo User que viene del back -----
-type BackendUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: AccountType;
-  description: string;
-  avatarURL: string | null;
-};
-
-// ----- util: mapea User (back) -> UserProfile (UI) -----
-function toUserProfile(u: BackendUser | null | undefined, prev?: UserProfile): UserProfile {
-  return {
-    name: u?.name ?? prev?.name ?? '',
-    username: u?.name ?? prev?.username ?? '',
-    description: u?.description ?? prev?.description ?? '',
-    avatarUrl: (u?.avatarURL && u.avatarURL.trim() !== '') 
-      ? u.avatarURL 
-      : (prev?.avatarUrl),
-    coverUrl: prev?.coverUrl ?? '',
-    stats: prev?.stats ?? DEFAULT_STATS,
-  };
-}
+const DEFAULT_COVER_URL =
+  'https://png.pngtree.com/background/20250119/original/pngtree-mountain-scenery-natural-banner-images-picture-image_16218538.jpg';
 
 export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const { user, accessToken } = useAuth();
+  const [saving, setSaving] = React.useState(false);
+  const [activeList, setActiveList] = React.useState<'followers' | 'followings' | null>(null);
 
-  // estado local de perfil (UI)
-  //creo que esto debería ser un contexto 
-  //por ahora se está sacando esta información de contexto global de autenticación pero se tendría que sacar del endpoint GET user/me
+  const { user, accessToken, refreshUser } = useAuth();
 
-  const [profile, setProfile] = React.useState<UserProfile>(() => toUserProfile(user as BackendUser | null));
-  React.useEffect(() => {
-    setProfile((prev) => toUserProfile(user as BackendUser | null, prev));
-  }, [user]);
+  const currentUser = user as CurrentUser | null;
 
-  // tabs dinámicos: agregamos "Publicaciones" sólo si es business
+  const followersList = useConnectionsList('followers');
+  const followingsList = useConnectionsList('followings');
+
+  const navigate = useNavigate();
+
+  const handleFollowingChange = React.useCallback(
+    (accountId: string, nextIsFollowing: boolean) => {
+      if (!nextIsFollowing) {
+        followingsList.removeItem(accountId);
+        void followingsList.refresh();
+      }
+    },
+    [followingsList]
+  );
+
   const tabs = [
-      { key: 'actividad', label: 'Actividad' },
-      { key: 'planes', label: 'Planes' },
-      { key: 'fotos', label: 'Fotos' },
-      { key: 'opiniones', label: 'Opiniones' },
-    ];
-
-  // ayuda para saber si el tab actual es "publicaciones"
+    { key: 'actividad', label: 'Actividad' },
+    { key: 'planes', label: 'Planes' },
+    { key: 'fotos', label: 'Fotos' },
+    { key: 'opiniones', label: 'Opiniones' },
+  ];
   const currentTabKey = tabs[tab]?.key;
 
-  // REINTEGRADO: persistencia al back usando updateUser
-  const handleSaveUserData = (updated: UserProfile) => {
+  // PATCH con CommonUser + avatar File
+  const handleSaveUserData = async (
+    changes: Partial<CommonUser>,
+    avatarFile: File | null
+  ) => {
     if (!accessToken) {
       console.error('No auth token available; skipping remote update');
-      setProfile(updated);
       return;
     }
 
-    const dataToUpdate: Partial<CommonUser> = {
-      name: updated.username,
-      description: updated.description,
-    };
-
-    updateUser(dataToUpdate, accessToken)
-      .then(() => {
-        setProfile(updated);
-      })
-      .catch((error) => {
-        console.error('Error updating profile:', error);
-        // si querés, mostrar un toast/alert acá
-      });
+    try {
+      setSaving(true);
+      await updateUser(changes, avatarFile, accessToken);
+      await refreshUser();
+      console.log('Profile updated successfully');
+      setEditOpen(false); // cerramos el modal DESPUÉS de guardar
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const stats = React.useMemo(
+    () => ({
+      aportes: DEFAULT_STATS.aportes,
+      seguidores: followersList.items.length,
+      siguiendo: followingsList.items.length,
+    }),
+    [followersList.items.length, followingsList.items.length]
+  );
+
+  const openFollowers = () => {
+    void followersList.refresh();
+    setActiveList('followers');
+  };
+
+  const openFollowings = () => {
+    void followingsList.refresh();
+    setActiveList('followings');
+  };
+
+  const closeDialog = React.useCallback(() => setActiveList(null), []);
+
+  const handleConnectionClick = React.useCallback(
+    (account: CommonUser) => {
+      if (account.role !== 'USER') {
+        console.warn('Solo los perfiles de viajeros están disponibles para navegar.');
+        return;
+      }
+
+      closeDialog();
+      navigate(`/userProfile/${account.id}`, {
+        state: { account },
+      });
+    },
+    [closeDialog, navigate]
+  );
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+      {/* Overlay de carga, igual que en negocio */}
+      <Backdrop open={saving} sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }}>
+        <CircularProgress />
+      </Backdrop>
+
       {/* Banner */}
       <Box
         sx={{
           minHeight: { xs: '38vh', md: '30vh' },
           position: 'relative',
-          backgroundImage: profile.coverUrl ? `url(${profile.coverUrl})` : 'none',
+          backgroundImage: `url(${DEFAULT_COVER_URL})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -121,27 +156,41 @@ export default function UserProfile() {
         <Card
           elevation={1}
           sx={{
-            maxWidth: 1180, width: '100%', mx: 'auto',
-            mt: { xs: -8, md: -10 }, borderRadius: 2, overflow: 'visible',
+            maxWidth: 1180,
+            width: '100%',
+            mx: 'auto',
+            mt: { xs: -8, md: -10 },
+            borderRadius: 2,
+            overflow: 'visible',
           }}
         >
           <CardContent sx={{ pb: 1.5 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              sx={{ px: { xs: 2, sm: 3, md: 4 } }}
+            >
               <Avatar
-                src={profile.avatarUrl}
-                alt={profile.name}
+                src={currentUser?.avatarURL}
+                alt={currentUser?.name ?? ''}
                 sx={{
-                  width: 96, height: 96, mt: { xs: -6, md: -8 },
+                  width: 96,
+                  height: 96,
+                  mt: { xs: -6, md: -8 },
                   border: (t) => `4px solid ${t.palette.background.paper}`,
                 }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5" fontWeight={800}>{profile.username}</Typography>
-                  {!!(user as BackendUser | null)?.role && (
+                  <Typography variant="h5" fontWeight={800}>
+                    {currentUser?.name ?? 'Usuario'}
+                  </Typography>
+
+                  {!!currentUser?.role && (
                     <Chip
                       size="small"
-                      label={(user as BackendUser).role}
+                      label={currentUser.role}
                       color={userRoleChipColor}
                       variant="outlined"
                       sx={{ ml: 0.5 }}
@@ -149,61 +198,121 @@ export default function UserProfile() {
                   )}
                 </Stack>
 
-                {profile.description && (
-                  <Typography variant="body2" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
-                    {profile.description}
+                {currentUser?.description && (
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 1, whiteSpace: 'pre-wrap' }}
+                  >
+                    {currentUser.description}
                   </Typography>
                 )}
               </Box>
 
               <ButtonGroup variant="outlined" size="small">
-                <Button startIcon={<Edit />} onClick={() => setEditOpen(true)}>Editar perfil</Button>
-                <Button startIcon={<Settings />}>Configuración</Button>
+                <Button
+                  startIcon={<Edit />}
+                  onClick={() => setEditOpen(true)}
+                  disabled={!currentUser || saving}
+                >
+                  Editar perfil
+                </Button>
               </ButtonGroup>
             </Stack>
 
             {/* Stats */}
-            <Stack direction="row" spacing={4} alignItems="center" sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}>
-              <Stat label="Aportes" value={profile.stats.aportes} />
-              <Stat label="Seguidores" value={profile.stats.seguidores} />
-              <Stat label="Siguiendo" value={profile.stats.siguiendo} />
+            <Stack
+              direction="row"
+              spacing={4}
+              alignItems="center"
+              sx={{ mt: 2, px: { xs: 2, sm: 3, md: 4 } }}
+            >
+              <Stat label="Aportes" value={stats.aportes} />
+              <Stat
+                label="Seguidores"
+                value={stats.seguidores}
+                loading={followersList.loading}
+                onClick={openFollowers}
+              />
+              <Stat
+                label="Siguiendo"
+                value={stats.siguiendo}
+                loading={followingsList.loading}
+                onClick={openFollowings}
+              />
             </Stack>
           </CardContent>
 
           <Divider />
-            <Tabs
-              value={tab}
-              onChange={(_, v) => setTab(v)}
-              variant="scrollable"
-              allowScrollButtonsMobile
-              sx={{ px: { xs: 1, sm: 2, md: 3 } }}
-            >
-              {tabs.map((t) => <Tab key={t.key} label={t.label} />)}
-            </Tabs>
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            allowScrollButtonsMobile
+            sx={{ px: { xs: 1, sm: 2, md: 3 } }}
+          >
+            {tabs.map((t) => (
+              <Tab key={t.key} label={t.label} />
+            ))}
+          </Tabs>
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {currentTabKey === 'actividad'     && <EmptyState title="Actualización de actividades" />}
-            {currentTabKey === 'planes'        && 
-              <UserPlansTab/>
-            }
-            {currentTabKey === 'fotos'         && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones'     && <UserReviewsTab />}
+            {currentTabKey === 'actividad' && (
+              <EmptyState title="Actualización de actividades" />
+            )}
+            {currentTabKey === 'planes' && <UserPlansTab />}
+            {currentTabKey === 'fotos' && <EmptyState title="Fotos" />}
+            {currentTabKey === 'opiniones' && <UserReviewsTab />}
           </Box>
         </Card>
       </Box>
 
-      {/* Modal de edición */}
-      <EditProfileDialog
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-        user={profile}
-        onSave={handleSaveUserData}
+      {currentUser && (
+        <EditProfileDialog
+          open={editOpen}
+          onClose={() => !saving && setEditOpen(false)}
+          user={currentUser}
+          onSave={handleSaveUserData}
+          saving={saving}
+        />
+      )}
+
+      <ConnectionsListDialog
+        open={activeList === 'followers'}
+        onClose={closeDialog}
+        type="followers"
+        items={followersList.items}
+        loading={followersList.loading}
+        error={followersList.error}
+        onRefresh={followersList.refresh}
+        onItemClick={handleConnectionClick}
+      />
+
+      <ConnectionsListDialog
+        open={activeList === 'followings'}
+        onClose={closeDialog}
+        type="followings"
+        items={followingsList.items}
+        loading={followingsList.loading}
+        error={followingsList.error}
+        onRefresh={followingsList.refresh}
+        renderAction={(account) => (
+          <FollowButton
+            targetUserId={account.id}
+            size="small"
+            variant="outlined"
+            color="inherit"
+            autoFetch={false}
+            initialIsFollowing
+            onFollowChange={(next) => handleFollowingChange(account.id, next)}
+            sx={{ minWidth: 140 }}
+          />
+        )}
+        onItemClick={handleConnectionClick}
       />
     </Box>
   );
 }
-
 
 function EmptyState({ title }: { title: string }) {
   return (
@@ -217,4 +326,3 @@ function EmptyState({ title }: { title: string }) {
     </Stack>
   );
 }
-

@@ -15,6 +15,9 @@ import { ACCOUNT_TYPES } from './constants/Rol';
 import { SnackbarProvider } from 'notistack';
 import HotelPubProfile from './pages/HotelPubProfile';
 import RestaurantPubProfile from './pages/RestaurantPubProfile';
+import SearchTravelers from './pages/SearchTravelers';
+import TravelerProfilePage from './pages/TravelerProfilePage';
+import PlanInvitation from './pages/PlanInvitation';
 
 function DefaultLayout() {
   return (
@@ -48,6 +51,9 @@ export default function App({ mode, setMode }: AppProps) {
           <Route path={PAGES_ROUTE.search} element={<Search />} />
           <Route path={`${PAGES_ROUTE.restaurantPublic}/:id`} element={<RestaurantPubProfile />} />
           <Route path={`${PAGES_ROUTE.hotelPublic}/:id`} element={<HotelPubProfile />} />
+          <Route path={PAGES_ROUTE.searchTravelers} element={<SearchTravelers />} />
+          <Route path={`${PAGES_ROUTE.userPublicProfile}/:id`} element={<TravelerProfilePage />} />
+          <Route path={`${PAGES_ROUTE.acceptInvitation}/:planId`} element={<PlanInvitation />} />
         </Route>
 
         {/* Profile route with role-based rendering */}

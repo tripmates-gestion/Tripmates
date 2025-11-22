@@ -8,7 +8,7 @@ import { enqueueSnackbar } from 'notistack';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
-import { dataURLtoFile } from '../common/Utils';
+import { dataURLtoFile } from '../../../GeneralHelpers';
 import { updateBusinessUser } from '../../../../services/userService';
 import BusinessCommonFields from '../common/BusinessCommonFields';
 import GalleryManager from '../common/GalleryManager';
@@ -32,7 +32,7 @@ type HotelForm = {
 };
 
 export default function HotelEditDialog({ open, onClose }: Props) {
-  const { accessToken, updateUser } = useAuth();
+  const { accessToken, refreshUser } = useAuth();
   const { business, refreshProfile } = useBusinessProfile();
 
 
@@ -47,7 +47,6 @@ export default function HotelEditDialog({ open, onClose }: Props) {
     location: business?.location ?? '',
     phoneNumber: business?.phoneNumber ?? '',
     publicEmail: business?.publicEmail ?? '',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hotelType: (business as any).hotelType as HotelType | undefined,
     avatarUrl: business?.avatarURL ?? '',
     avatar: null,
@@ -116,7 +115,7 @@ export default function HotelEditDialog({ open, onClose }: Props) {
 
       await updateBusinessUser(dto as any, avatarFile, galleryFiles, accessToken)
       await refreshProfile()
-      updateUser(dto.name, dto.description ?? null, form.avatar ? form.avatarUrl ?? null : null)
+      await refreshUser()
       enqueueSnackbar('¡Los cambios se guardaron correctamente!', { variant: 'success' })
       onClose()
     } catch (err: any) {

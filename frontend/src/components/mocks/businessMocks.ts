@@ -1,8 +1,8 @@
 import { DEFAULT_AVATAR_URL } from "../../constants/DefaultImages";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { VEGAN_RESTAURANT, VEGAN_RESTAURANT_PUBLICATIONS } from "./veganRestaurantMock";
-import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
+import type { SearchBusinessFilters } from "../../types/SearchBusinessFilters";
 
 
 const PRIVATE_HOTEL_MAIL_MOCK = "private@hotel.com"
@@ -83,7 +83,7 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
     menu: null,
     
     // campos solo de hotel
-    hotelType: "hotel",
+    hotelType: "Hotel",
     roomPacks: [
       {
         checkInDate: "2025-12-01",
@@ -122,7 +122,7 @@ export const MOCK_BUSINESS_SEARCH_RESULTS: BusinessPubAccountDataDTO[] = [
     profileImageUrls: CENTRAL_IMAGES,
     businessType: "RESTAURANT",
     averagePrice: "$$$",
-    restaurantType: "peruano",
+    restaurantType: "Peruano",
     attentionSchedule: {
       openingTime: "09:00",
       closingTime: "18:00",

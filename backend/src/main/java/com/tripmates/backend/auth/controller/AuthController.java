@@ -1,7 +1,6 @@
 package com.tripmates.backend.auth.controller;
 
 import com.tripmates.backend.auth.dto.*;
-import jakarta.validation.Valid;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.dto.ErrorDTO;
 
@@ -12,9 +11,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,7 +35,7 @@ public class AuthController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> register(@RequestBody @Valid AuthRegisterRequestDTO authRegisterRequestDTO) {
 		authService.register(authRegisterRequestDTO);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping("/login")
@@ -63,7 +63,7 @@ public class AuthController {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> logout(@RequestBody AuthLogoutRequestDTO authLogoutRequestDTO) {
 		authService.logout(authLogoutRequestDTO);
-		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	@PostMapping("/refresh")

@@ -21,14 +21,15 @@ import ImageUploader from '../ui/ImageUploader'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
 import { createBusinessPublication } from '../../services/businessPublications'
-import { dataURLtoFile, validateFile } from './utils/imageHelpers'
+import { validateFile } from './utils/imageHelpers'
+import { dataURLtoFile } from '../../components/GeneralHelpers';
 import type {
   BusinessPost,
   BusinessPublicationRequestDTO,
   FormState,
-} from '../../types/business'
-import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/business'
-import { type AttentionSchedule } from '../../types/business'
+} from '../../types/Business'
+import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
+import { parseHours } from '../GeneralHelpers'
 import { useSnackbar } from 'notistack';
 
 // ---------------------- Props ----------------------
@@ -73,21 +74,7 @@ export const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }
   { label: "Domingo",    value: "SUNDAY" },
 ] as const satisfies Array<{ label: string; value: typeof DEFAULT_OPENING_DAYS[number] }>;
 
-// ---------------------- Utils ----------------------
 
-/**
- * Parsea string de horario "09:00–18:00" o "09:00-18:00" a AttentionSchedule
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export function parseHours(scheduleString: string): AttentionSchedule {
-  const match = scheduleString.match(/([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d/)
-  if (!match) {
-    // Fallback por defecto
-    return { openingTime: '09:00', closingTime: '18:00' }
-  }
-  const [opening, closing] = match[0].split(/[–-]/).map((x) => x.trim())
-  return { openingTime: opening, closingTime: closing }
-}
 
 // ---------------------- Componente ----------------------
 export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) {
