@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Review } from '../../../types/review';
+import type { Review } from '../../../types/Review';
 import { useAuth } from '../../../hooks/useAuth';
 import { getReviewsForUser } from '../../../services/reviewService';
 import { mapReviewListDTOToReviews } from '../../../services/mappers/reviewsMapper';

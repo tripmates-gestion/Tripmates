@@ -1,7 +1,7 @@
 // src/mocks/veganRestaurantMock.ts
 
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 
 // ──────────────────────────────────────────────
 // Constantes de imágenes y datos de contacto

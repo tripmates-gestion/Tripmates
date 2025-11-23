@@ -5,6 +5,7 @@ import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.common.service.storage.StorageService;
 import com.tripmates.backend.common.types.BenchmarkId;
 import com.tripmates.backend.common.types.BenchmarkId.BenchmarkType;
+import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.*;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
@@ -90,7 +91,7 @@ public class PublicationService {
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
-		accountNodeRepository.createCreated(account.getId(), publication.getId());
+		accountNodeRepository.createOwnsPublication(account.getId(), publication.getId());
 
 		return PublicationResumeResponseDTO.fromPublication(publication);
 	}
@@ -129,13 +130,13 @@ public class PublicationService {
 		if (publicationRequestDTO.location() != null)
 			publication.setLocation(publicationRequestDTO.location());
 
-		if (publicationRequestDTO.openingDays() != null)
+		if (!publicationRequestDTO.openingDays().isEmpty())
 			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
 		if (publicationRequestDTO.attentionSchedule() != null)
 			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (publicationRequestDTO.exceptionalClosingDays() != null)
+		if (!publicationRequestDTO.exceptionalClosingDays().isEmpty())
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		publication.setImageUrls(updateImages(publication.getImageUrls(), publicationRequestDTO.deletePhotoIndexes(),
@@ -408,7 +409,11 @@ public class PublicationService {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
 
-		return new LikesListDTO(formatAccountIdList(publication.getLikes()));
+		List<String> userIdLikes = new ArrayList<>();
+		for (Like like : publication.getLikes())
+			userIdLikes.add(like.getUserId());
+
+		return new LikesListDTO(formatAccountIdList(userIdLikes));
 	}
 
 	/**
@@ -417,8 +422,10 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkLikeInteraction(Publication publication, Account account) {
-		if (publication.getLikes() != null && publication.getLikes().contains(account.getId()))
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
+		for (Like like : publication.getLikes()) {
+			if (like.getUserId().equals(account.getId()))
+				throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
+		}
 	}
 
 	/**
@@ -427,7 +434,8 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
-		if (publication.getLikes() == null || !publication.getLikes().contains(account.getId()))
+		boolean hasLike = publication.getLikes().stream().anyMatch(like -> like.getUserId().equals(account.getId()));
+		if (!hasLike)
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
@@ -447,8 +455,12 @@ public class PublicationService {
 	 * @param userId user's ID.
 	 */
 	private void removeLikeInfoOnPublication(String publicationId, String userId) {
+		long isLiked = publicationRepository.existsLike(publicationId, userId);
+
+		if (isLiked == 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
+
 		publicationRepository.removeFromLikes(publicationId, userId);
-		// Also remove Neo4j relationship
 		accountNodeRepository.removeLiked(userId, publicationId);
 	}
 
@@ -463,12 +475,9 @@ public class PublicationService {
 		if (idList == null || idList.isEmpty())
 			return accounts;
 
-		for (String id : idList) {
-			Account account = accountRepository.findById(id).orElse(null);
-
-			if (account != null)
-				accounts.add(AccountResumeResponseDTO.fromAccount(account));
-		}
+		for (String id : idList)
+			accountRepository.findById(id)
+				.ifPresent(account -> accounts.add(AccountResumeResponseDTO.fromAccount(account)));
 
 		return accounts;
 	}

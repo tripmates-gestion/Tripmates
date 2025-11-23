@@ -194,6 +194,7 @@ const ReviewCard: React.FC<Props> = ({
               <PublicationCard
                 publication={publication}
                 onView={() => onNavigateBusiness(publication.ownerId)}
+                moveOnMouseOver={false}
               />
             </Box>
           </DialogContent>

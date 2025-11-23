@@ -24,7 +24,7 @@ import { useAuth } from "../../hooks/useAuth";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import type { BusinessType } from "../../types/AccountTypes";
 import type { HotelType } from "../../types/Hotel";
-import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
+import type { SearchBusinessFilters } from "../../types/SearchBusinessFilters";
 import {MOCK_BUSINESS_SEARCH_RESULTS, aplyFiltersToMock} from "../mocks/businessMocks";
 import { MOCKEAR_RESULTADOS_DE_PERFILES } from "../../constants/UseMOCK";
 

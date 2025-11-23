@@ -1,5 +1,6 @@
 package com.tripmates.backend.publications.entity.mongo;
 
+import com.tripmates.backend.common.types.Like;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -89,7 +90,7 @@ public class Publication {
 	/**
 	 * Publication's likes (user IDs who liked this publication).
 	 */
-	private List<String> likes = new ArrayList<>();
+	private List<Like> likes = new ArrayList<>();
 
 	/**
 	 * Publication's owner ID.
