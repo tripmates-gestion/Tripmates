@@ -111,8 +111,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (businessSearchRequestDTO.averagePrice() != null)
 			criteria.add(Criteria.where("averagePrice").is(businessSearchRequestDTO.averagePrice()));
 
-		if (businessSearchRequestDTO.location() != null)
-			criteria.add(Criteria.where("location").is(businessSearchRequestDTO.location()));
+		if (businessSearchRequestDTO.location() != null && businessSearchRequestDTO.location().address() != null) {
+			criteria.add(Criteria.where("location.address").regex(businessSearchRequestDTO.location().address(), "i"));
+		}
 
 		if (businessSearchRequestDTO.username() != null)
 			criteria.add(Criteria.where("name").regex(businessSearchRequestDTO.username(), "i"));
@@ -190,9 +191,8 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (userSearchRequestDTO.followers() != null)
 			criteria.add(Criteria.where("followers." + (userSearchRequestDTO.followers() - 1)).exists(true));
 
-		if (userSearchRequestDTO.location() != null)
-			criteria.add(Criteria.where("_id")
-				.in(userIDsWithReviewInPublicationWithLocation(userSearchRequestDTO.location())));
+		if (userSearchRequestDTO.address() != null)
+			criteria.add(Criteria.where("location.address").regex(userSearchRequestDTO.address(), "i"));
 
 		return criteria;
 	}
@@ -202,10 +202,10 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	 * @param location location where the publication was made.
 	 * @return list of {@link String} IDs.
 	 */
-	private List<String> userIDsWithReviewInPublicationWithLocation(String location) {
+	private List<String> userIDsWithReviewInPublicationWithLocationAddress(String address) {
 		List<String> userIDsList = new ArrayList<>();
 
-		Query query = new Query(Criteria.where("location").regex(location, "i"));
+		Query query = new Query(Criteria.where("location").regex(address, "i"));
 		query.fields().include("reviews.ownerId");
 
 		List<Publication> publicationList = mongoTemplate.find(query, Publication.class);

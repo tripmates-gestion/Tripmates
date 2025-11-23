@@ -107,7 +107,7 @@ public class DocumentationObjectsExamples {
 			### Updatable Fields
 			- `name`: Business name
 			- `description`: Business description
-			- `restaurantType`: Type of restaurant (e.g., ITALIAN, MEXICAN, etc.)
+			- `restaurantType`: Type of restaurant (e.g., Italiano, Argentino, etc.)
 			- `location`: Business address
 			- `phoneNumber`: Contact number
 			- `publicEmail`: Public contact email
@@ -121,7 +121,7 @@ public class DocumentationObjectsExamples {
 			{
 			  "name": "Updated Restaurant Name",
 			  "description": "Updated description with new details about our services.",
-			  "restaurantType": "ITALIAN",
+			  "restaurantType": "Italiano",
 			  "location": "456 New Street, City, Country",
 			  "phoneNumber": "+541119876543",
 			  "publicEmail": "new-email@restaurant.com",
@@ -257,8 +257,8 @@ public class DocumentationObjectsExamples {
 			- `username`: Filters by user's username.
 			- `followers`: Filters by this minimum amount of followers.
 			- `following`: Filters by this minimum amount of followings.
-			- `location`: Filters by users that have made a review from a business publication that has
-			this specific location.
+			- `address`: Filters by users that have made a review from a business publication that has
+			this specific location address.
 
 			### Example Request
 			```json
@@ -266,7 +266,7 @@ public class DocumentationObjectsExamples {
 			    "username": "string",
 			    "followers": 0,
 			    "following": 0,
-			    "location": "string"
+			    "address": "string"
 			}
 			```
 

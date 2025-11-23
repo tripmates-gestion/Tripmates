@@ -190,7 +190,7 @@ update_business_picture() {
         "La Buena Mesa")
             name="La Buena Mesa"
             description="Un restaurante familiar con los mejores platos de la cocina tradicional"
-            location="Av. Corrientes 1234, Buenos Aires"
+            location='{"address": "Av. Corrientes 1234, Buenos Aires", "latitude": -34.6037, "longitude": -58.3816}'
             phoneNumber="+54 11 1234-5678"
             publicEmail="contacto@labuenamesa.com"
             businessType="RESTAURANT"
@@ -203,7 +203,7 @@ update_business_picture() {
         "Hotel Playa Dorada")
             name="Hotel Playa Dorada"
             description="Un hotel de lujo frente al mar con todas las comodidades"
-            location="Av. Costanera 2345, Mar del Plata"
+            location='{"address": "Av. Costanera 2345, Mar del Plata", "latitude": -38.0055, "longitude": -57.5426}'
             phoneNumber="+54 223 123-4567"
             publicEmail="reservas@hotelplayadorada.com"
             businessType="HOSTING"
@@ -214,7 +214,7 @@ update_business_picture() {
         "Café del Centro")
             name="Café del Centro"
             description="Un acogedor café en el corazón de la ciudad con especialidades artesanales"
-            location="Av. Santa Fe 1234, Buenos Aires"
+            location='{"address": "Av. Santa Fe 1234, Buenos Aires", "latitude": -34.5895, "longitude": -58.3816}'
             phoneNumber="+54 11 9876-5432"
             publicEmail="contacto@cafedelcentro.com"
             businessType="RESTAURANT"
@@ -227,7 +227,7 @@ update_business_picture() {
         "Hostel Montaña")
             name="Hostel Montaña Mágica"
             description="Un hostel ecológico en las montañas con vistas panorámicas"
-            location="Ruta 234, San Carlos de Bariloche"
+            location='{"address": "Ruta 234, San Carlos de Bariloche", "latitude": -41.1335, "longitude": -71.3103}'
             phoneNumber="+54 294 123-4567"
             publicEmail="info@hostelmontana.com"
             businessType="HOSTING"
@@ -244,13 +244,13 @@ update_business_picture() {
     # Create a temporary file for the update data
     local temp_file=$(mktemp)
     
-    # Create the JSON data for the update with properly escaped dollar signs
+    # Create the JSON data for the update
     if [ "$business_type" = "restaurant" ] || [ "$business_type" = "cafe" ]; then
         cat > "$temp_file" << EOF
 {
-    "name": "$name",
-    "description": "$description",
-    "location": "$location",
+    "name": "$(echo "$name" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
+    "location": $location,
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
     "averagePrice": "$averagePrice",
@@ -262,9 +262,9 @@ EOF
     else
         cat > "$temp_file" << EOF
 {
-    "name": "$name",
-    "description": "$description",
-    "location": "$location",
+    "name": "$(echo "$name" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
+    "location": $location,
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
     "averagePrice": "$averagePrice",
@@ -550,7 +550,7 @@ create_publication() {
     local description=""
     local phone=""
     local email=""
-    local location=""
+    local location='null'
     local opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]'
     local opening_time="09:00"
     local closing_time="23:00"
@@ -565,7 +565,7 @@ create_publication() {
                 description="Disfruta de nuestro menú de temporada con ingredientes frescos y locales."
                 phone="+54 11 1234-5678"
                 email="reservas@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
+                location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
                 opening_time="12:00"
                 closing_time="23:00"
                 exceptional_days='["2025-12-25", "2026-01-01"]'
@@ -577,7 +577,7 @@ create_publication() {
                 description="Degustación de vinos de bodegas locales con maridaje incluido."
                 phone="+54 11 1234-5678"
                 email="eventos@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
+                location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
                 opening_time="20:00"
                 closing_time="23:30"
                 exceptional_days='[]'
@@ -589,7 +589,7 @@ create_publication() {
                 description="Disfruta de nuestro brunch los domingos de 10:00 a 15:00."
                 phone="+54 11 1234-5678"
                 email="reservas@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
+                location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
                 opening_days='["SUNDAY"]'
                 opening_time="10:00"
                 closing_time="15:00"
@@ -605,7 +605,7 @@ create_publication() {
                 description="Disfruta de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido."
                 phone="+54 223 123-4567"
                 email="reservas@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
+                location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                 opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
                 opening_time="00:00"
                 closing_time="23:59"
@@ -618,7 +618,7 @@ create_publication() {
                 description="Escapada romántica con cena gourmet y masajes para dos."
                 phone="+54 223 123-4567"
                 email="romance@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
+                location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                 opening_days='["FRIDAY","SATURDAY"]'
                 opening_time="14:00"
                 closing_time="23:00"
@@ -631,7 +631,7 @@ create_publication() {
                 description="Diversión para toda la familia con actividades para niños y adultos."
                 phone="+54 223 123-4567"
                 email="familias@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
+                location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                 opening_days='["SATURDAY","SUNDAY"]'
                 opening_time="09:00"
                 closing_time="20:00"
@@ -647,7 +647,7 @@ create_publication() {
                 description="Disfruta de nuestros cafés de especialidad tostados artesanalmente."
                 phone="+54 11 9876-5432"
                 email="contacto@cafedelcentro.com"
-                location="Av. Santa Fe 1234, Buenos Aires"
+                location='{"address":"Av. Santa Fe 1234, Buenos Aires","latitude":-34.5895,"longitude":-58.3816}'
                 opening_time="07:00"
                 closing_time="20:00"
                 tags='["café", "especialidad", "tostado"]'
@@ -658,7 +658,7 @@ create_publication() {
                 description="Relájate con nuestra selección de tés e infusiones con pastelería casera."
                 phone="+54 11 9876-5432"
                 email="contacto@cafedelcentro.com"
-                location="Av. Santa Fe 1234, Buenos Aires"
+                location='{"address":"Av. Santa Fe 1234, Buenos Aires","latitude":-34.5895,"longitude":-58.3816}'
                 opening_time="15:00"
                 closing_time="19:00"
                 tags='["té", "infusiones", "pastelería"]'
@@ -672,7 +672,7 @@ create_publication() {
                 description="Paquete de aventura con caminatas guiadas y alojamiento en la naturaleza."
                 phone="+54 294 123-4567"
                 email="info@hostelmontana.com"
-                location="Ruta 234, San Carlos de Bariloche"
+                location='{"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
                 opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
                 opening_time="00:00"
                 closing_time="23:59"
@@ -684,7 +684,7 @@ create_publication() {
                 description="Escapada relajante con desayuno incluido y actividades al aire libre."
                 phone="+54 294 123-4567"
                 email="reservas@hostelmontana.com"
-                location="Ruta 234, San Carlos de Bariloche"
+                location='{"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
                 opening_days='["FRIDAY","SATURDAY","SUNDAY"]'
                 opening_time="14:00"
                 closing_time="12:00"
@@ -696,13 +696,14 @@ create_publication() {
 
     # Create a temporary file for the JSON data
     local temp_json=$(mktemp)
-    cat << EOF > "$temp_json"
+    # Create a temporary file with properly formatted JSON
+    cat > "$temp_json" << EOF
 {
-    "title": "$title",
-    "description": "$description",
+    "title": "$(echo "$title" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
     "phoneNumber": "$phone",
     "email": "$email",
-    "location": "$location",
+    "location": $location,
     "openingDays": $opening_days,
     "attentionSchedule": {
         "openingTime": "$opening_time",

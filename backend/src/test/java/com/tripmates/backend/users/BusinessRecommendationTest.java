@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.common.types.Role;
+import com.tripmates.backend.common.types.Location;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
@@ -31,9 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -42,6 +41,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import({ TestCloudinaryConfig.class })
 public class BusinessRecommendationTest {
+
+	private Location createLocation(String address, Double latitude, Double longitude) {
+		return new Location(address, latitude, longitude);
+	}
 
 	@LocalServerPort
 	private int port;
@@ -82,6 +85,7 @@ public class BusinessRecommendationTest {
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testAccountWithoutReviewsAndLikesHasNoBusinessRecommendations() throws Exception {
+		// Arrange
 		Account fran = new Account();
 		fran.setName("Fran Infanti");
 		fran.setEmail("franInfanti@gmail.com.ar");
@@ -101,7 +105,7 @@ public class BusinessRecommendationTest {
 		Publication publication = new Publication();
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
-		publication.setLocation("Islas del Ibicuy, Entre Rios");
+		publication.setLocation(createLocation("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
@@ -114,6 +118,7 @@ public class BusinessRecommendationTest {
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testAccountWithLikesHasBusinessRecommendations() throws Exception {
+		// Arrange
 		Account fran = new Account();
 		fran.setName("Fran Infanti");
 		fran.setEmail("franInfanti@gmail.com.ar");
@@ -131,7 +136,7 @@ public class BusinessRecommendationTest {
 		hiltonPilar.setName("Hilton Pilar");
 		hiltonPilar.setEmail("hiltonPilar@gmail.com");
 		hiltonPilar.setPassword("123456");
-		hiltonPilar.setLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina");
+		hiltonPilar.setLocation(createLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina", -34.4732, -58.8746));
 		hiltonPilar.setRole(Role.BUSINESS);
 		hiltonPilar.setBusinessType(BusinessType.HOTEL);
 
@@ -146,7 +151,7 @@ public class BusinessRecommendationTest {
 		publication.setOwnerId(carlos.getId());
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
-		publication.setLocation("Islas del Ibicuy, Entre Rios");
+		publication.setLocation(createLocation("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 		publication.setLikes(List.of(fran.getId()));
 
 		publicationRepository.save(publication);
@@ -175,6 +180,7 @@ public class BusinessRecommendationTest {
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testAccountWithReviewsHasBusinessRecommendations() throws Exception {
+		// Arrange
 		Account fran = new Account();
 		fran.setName("Fran Infanti");
 		fran.setEmail("franInfanti@gmail.com.ar");
@@ -192,7 +198,7 @@ public class BusinessRecommendationTest {
 		hiltonPilar.setName("Hilton Pilar");
 		hiltonPilar.setEmail("hiltonPilar@gmail.com");
 		hiltonPilar.setPassword("123456");
-		hiltonPilar.setLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina");
+		hiltonPilar.setLocation(createLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina", -34.4732, -58.8746));
 		hiltonPilar.setRole(Role.BUSINESS);
 		hiltonPilar.setBusinessType(BusinessType.HOTEL);
 
@@ -207,7 +213,7 @@ public class BusinessRecommendationTest {
 		publication.setOwnerId(carlos.getId());
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
-		publication.setLocation("Islas del Ibicuy, Entre Rios");
+		publication.setLocation(createLocation("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
