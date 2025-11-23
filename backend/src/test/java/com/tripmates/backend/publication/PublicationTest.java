@@ -354,26 +354,34 @@ public class PublicationTest {
 	@Test
 	void testCanLikeAndUnlikeAnExistingPublication() throws Exception {
 		String businessTestingJwt = testHelper.getBusinessTestingJwt("contact@hostel.com", BusinessType.HOTEL);
-		String userTestingJwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+
+		String franTestingJwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+		String lewisTestingJwt = testHelper.getUserTestingJwt("lewis.hamilton44@gmail.com.gb");
 
 		PublicationResumeResponseDTO publicationResumeResponseDTO = createPublication(businessTestingJwt);
 
 		mockMvc
 			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/like")
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + userTestingJwt))
+				.header("Authorization", "Bearer " + franTestingJwt))
+			.andExpect(status().isNoContent());
+
+		mockMvc
+			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/like")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + lewisTestingJwt))
 			.andExpect(status().isNoContent());
 
 		mockMvc
 			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/unlike")
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + userTestingJwt))
+				.header("Authorization", "Bearer " + franTestingJwt))
 			.andExpect(status().isNoContent());
 
 		String body = mockMvc
 			.perform(get("/publications/" + publicationResumeResponseDTO.id() + "/likes")
 				.accept(MediaType.APPLICATION_JSON)
-				.header("Authorization", "Bearer " + userTestingJwt))
+				.header("Authorization", "Bearer " + businessTestingJwt))
 			.andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
@@ -381,7 +389,44 @@ public class PublicationTest {
 
 		List<AccountResumeResponseDTO> likes = objectMapper.readValue(body, LikesListDTO.class).likes();
 
-		Assertions.assertEquals(0, likes.size());
+		Assertions.assertEquals(1, likes.size());
+		Assertions.assertEquals("lewis.hamilton44@gmail.com.gb", likes.getFirst().email());
+	}
+
+	@Test
+	void testCanNotUnlikeANotLikedPublication() throws Exception {
+		String businessTestingJwt = testHelper.getBusinessTestingJwt("contact@hostel.com", BusinessType.HOTEL);
+
+		String franTestingJwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+		String lewisTestingJwt = testHelper.getUserTestingJwt("lewis.hamilton44@gmail.com.gb");
+
+		PublicationResumeResponseDTO publicationResumeResponseDTO = createPublication(businessTestingJwt);
+
+		mockMvc
+			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/like")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + lewisTestingJwt))
+			.andExpect(status().isNoContent());
+
+		mockMvc
+			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/unlike")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + franTestingJwt))
+			.andExpect(status().isBadRequest());
+
+		String body = mockMvc
+			.perform(get("/publications/" + publicationResumeResponseDTO.id() + "/likes")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + businessTestingJwt))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		List<AccountResumeResponseDTO> likes = objectMapper.readValue(body, LikesListDTO.class).likes();
+
+		Assertions.assertEquals(1, likes.size());
+		Assertions.assertEquals("lewis.hamilton44@gmail.com.gb", likes.getFirst().email());
 	}
 
 }
