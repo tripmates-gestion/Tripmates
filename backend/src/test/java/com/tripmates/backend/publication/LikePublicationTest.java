@@ -199,7 +199,6 @@ public class LikePublicationTest {
         mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
                 .andExpect(status().isNoContent())
                 .andDo(print());
-
         mockMvc.perform(
                 post("/publications/" + publicationId + "/unlike").header("Authorization", "Bearer " + jwtLiker))
                 .andExpect(status().isNoContent())
@@ -208,5 +207,4 @@ public class LikePublicationTest {
         Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
         assertEquals(0, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 0");
     }
-
 }
