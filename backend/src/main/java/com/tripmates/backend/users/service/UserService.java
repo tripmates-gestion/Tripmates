@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -146,6 +147,31 @@ public class UserService {
 		checkFollowingInteractionBetweenTwoUsers(unfollower, unfollowed);
 
 		removeFollowingInfoOnAccount(unfollower.getId(), unfollowedUserId);
+	}
+
+	/**
+	 * Returns all publications that the user liked.
+	 * @param userId user account ID.
+	 * @return list of {@link PublicationResumeResponseDTO}.
+	 */
+	public List<PublicationResumeResponseDTO> getHistoryLikes(String userId) {
+		return publicationRepository.findByLikesUserId(userId).stream().sorted((p1, p2) -> {
+			Date date1 = p1.getLikes()
+				.stream()
+				.filter(like -> like.getUserId().equals(userId))
+				.map(Like::getCreatedAt)
+				.findFirst()
+				.orElse(new Date(0));
+
+			Date date2 = p2.getLikes()
+				.stream()
+				.filter(like -> like.getUserId().equals(userId))
+				.map(Like::getCreatedAt)
+				.findFirst()
+				.orElse(new Date(0));
+
+			return date2.compareTo(date1);
+		}).map(PublicationResumeResponseDTO::fromPublication).collect(Collectors.toList());
 	}
 
 	/**
