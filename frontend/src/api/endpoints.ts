@@ -53,5 +53,5 @@ export const ENDPOINTS = {
     ACCEPT_INVITATION: (planId: string) => `/community/${planId}/accept-invitation`,
 
     // historial
-    GET_HISTORY_LIKED: '/users/history/liked/',
+    GET_HISTORY_LIKED: '/users/history/likes/',
 };

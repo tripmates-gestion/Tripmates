@@ -3,11 +3,11 @@ import {
   Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
   Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, TextField
 } from '@mui/material';
-import { Edit, Room, Phone, Email, EmojiEvents } from '@mui/icons-material';
+import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
-import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../types/PrivateUserProfiles';
+import type { BusinessCommon } from '../types/PrivateUserProfiles';
 
 import PublicationGrid from '../components/publications/PublicationGrid';
 import type { BusinessPublicationResponseDTO } from '../types/Business';
@@ -222,11 +222,6 @@ export default function BusinessProfile() {
     </Box>
   );
 }
-
-
-
-
-
 
 export function BusinessPublicationsTab({ accessToken }: { accessToken: string | null }) {
   const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([]);

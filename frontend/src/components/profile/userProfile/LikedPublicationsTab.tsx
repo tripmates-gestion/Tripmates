@@ -8,7 +8,7 @@ import {
     Alert
 } from '@mui/material';
 import BusinessPublicationCard from '../../publications/PublicationCard';
-import { getHistoryLiked } from '../../../services/history';
+import { getHistoryLikedAPI } from '../../../services/history';
 import type { BusinessPublicationResponseDTO } from '../../../types/Business';
 import PublicationDetailDialog from '../../publications/PublicationDetailDialog';
 
@@ -29,7 +29,7 @@ export default function LikedPublicationsTab({ userId, accessToken }: LikedPubli
         const fetchLiked = async () => {
             try {
                 setLoading(true);
-                const data = await getHistoryLiked(userId, accessToken);
+                const data = await getHistoryLikedAPI(userId, accessToken);
                 if (mounted) {
                     setPublications(data);
                 }
