@@ -475,7 +475,8 @@ public class UserController {
 	}
 
 	@GetMapping("/history/likes/{userId}")
-	@Operation(summary = "Returns all the publications where the user has left a like")
+	@Operation(summary = "Returns all the publications where the user has left a like",
+    description = DocumentationObjectsExamples.USER_HISTORY_LIKES)
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Publications obtained successfully",
 					content = @Content(mediaType = "application/json",
