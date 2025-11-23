@@ -8,7 +8,7 @@ import { enqueueSnackbar } from 'notistack';
 import { useAuth } from '../../../../hooks/useAuth';
 import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
-import { dataURLtoFile } from '../common/Utils';
+import { dataURLtoFile } from '../../../GeneralHelpers';
 import { updateBusinessUser } from '../../../../services/userService';
 import BusinessCommonFields from '../common/BusinessCommonFields';
 import GalleryManager from '../common/GalleryManager';

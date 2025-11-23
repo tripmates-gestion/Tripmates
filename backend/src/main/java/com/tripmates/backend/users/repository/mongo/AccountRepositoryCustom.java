@@ -40,14 +40,20 @@ public interface AccountRepositoryCustom {
 
 	void removeFromFollowers(String accountId, String userIdToDeleteFromFollowers);
 
-  PlanMetadata getPlanMetadataById(String planId);
+	PlanMetadata getPlanMetadataById(String planId);
 
-  void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
-  void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
-  void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited);
-  List<String> getPlanPublicationsIds(String planId);
-  List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId);
-  Plan getPlanByPlanId(String planId);
-  Plan updateExistingPlan(Plan updatedPlan);
+	void addUserIdToPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+
+	void removeUserIdFromPendingUsersIdsInvitedToPlan(String planId, String userIdInvited);
+
+	void upgradeUserFromInvitedToCollaborator(String planId, String userIdInvited);
+
+	List<String> getPlanPublicationsIds(String planId);
+
+	List<PlanMetadataWithContent> getCollaborationsPlansByUserId(String collaboratorId);
+
+	Plan getPlanByPlanId(String planId);
+
+	Plan updateExistingPlan(Plan updatedPlan);
 
 }

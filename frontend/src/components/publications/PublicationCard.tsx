@@ -15,18 +15,30 @@ import {
   Alert,
   Snackbar
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { 
+  MoreVert, 
+  ThumbUp,  
+  ThumbUpOutlined, 
+} from "@mui/icons-material";
 import { useMemo, useState, type MouseEvent } from "react";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { useAuth } from "../../hooks/useAuth";
+import React from "react";
+import { likePublication, unlikePublication } from "../../services/userService";
+import { getLikesForPublication } from "../../services/businessPublications";
+import { alpha } from "@mui/material/styles";
+
 
 type Props = {
   publication: BusinessPublicationResponseDTO;
   onView: (p: BusinessPublicationResponseDTO) => void;
   onEdit?: (p: BusinessPublicationResponseDTO) => void;
   onDelete?: (id: string) => void;
-  onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>;//opción para guardar en un plan 
+  onAddToBoard?:  (e: React.MouseEvent<HTMLElement>, p: BusinessPublicationResponseDTO, token: string) => Promise<void>; 
+  sx?: object;
+  moveOnMouseOver?: boolean;
 };
+
 const IMG_PLACEHOLDER_URL= "https://images.unsplash.com/photo-1610513320995-1ad4bbf25e55?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2070";
 const DAYS_ORDER: Array<"MONDAY"|"TUESDAY"|"WEDNESDAY"|"THURSDAY"|"FRIDAY"|"SATURDAY"|"SUNDAY"> = [
   "MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"
@@ -73,7 +85,13 @@ function initials(name?: string) {
   return parts.map(p => p[0]?.toUpperCase() ?? "").join("") || "U";
 }
 
-export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard }: Props) {
+function getUserLiked(likes: Array<{id: string}>, userId?: string) {
+  if (!userId) return false;
+  console.log(likes);
+  return likes.some(l => l.id === userId);
+}
+
+export default function PublicationCard({ publication, onView, onEdit, onDelete, onAddToBoard, sx, moveOnMouseOver }: Props) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const handleMenu = (e: MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
@@ -84,8 +102,58 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
   const authContext = useAuth();
   const [showAuthError, setShowAuthError] = useState(false);
 
+  const [userLiked, setUserLiked] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [likesLoaded, setLikesLoaded] = useState(false);
+
   const hasMenuOptions = onEdit || onDelete || onAddToBoard;
   
+  React.useEffect(() => {
+    const loadLikes = async () => {
+      if (!authContext.accessToken) return;
+      
+      try {
+        const response = await getLikesForPublication(publication.id, authContext.accessToken);
+        const likes = response.likes || []; 
+        setUserLiked(getUserLiked(likes, authContext?.user?.id));
+        setLikesCount(likes.length);
+        setLikesLoaded(true);
+      } catch (error) {
+        console.error('Error loading likes:', error);
+        setLikesLoaded(true);
+      }
+    };
+
+    loadLikes();
+  }, [publication.id, authContext.accessToken, authContext?.user?.id]);
+  
+
+  const handleLike = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    
+    if (!authContext.accessToken) {
+      setShowAuthError(true);
+      return;
+    }
+
+    try {
+      if (userLiked) {
+        await unlikePublication(publication.id, authContext.accessToken);
+        setUserLiked(false);
+        setLikesCount((prev: number) => prev - 1);
+      } else {
+        await likePublication(publication.id, authContext.accessToken);
+        setUserLiked(true);
+        setLikesCount((prev: number) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error handling like:', error);
+    }
+  };
+
+
+  // console.log("Publication card ",publication.id, " has onAddToBoard: ",onAddToBoard)
+  const moveOnMouseOverLocal = moveOnMouseOver ?? true;
   return (
     <>
     <Card
@@ -95,7 +163,8 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         borderRadius: 3,
         overflow: "hidden",
         transition: "0.25s",
-        "&:hover": { boxShadow: 6, transform: "translateY(-2px)" }
+        ...(moveOnMouseOverLocal ? { "&:hover": { transform: "translateY(-2px)" } } : {}),
+        ...sx
       }}
     >
       <Box sx={{ position: "relative", height: 220, overflow: "hidden" }}>
@@ -149,8 +218,9 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
           )}
 
         </Stack>
+
         {hasMenuOptions && (
-          <IconButton
+          <IconButton 
           onClick={(e) => {
             e.stopPropagation();
             handleMenu(e);
@@ -161,11 +231,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             right: 8,
             bgcolor:
               theme.palette.mode === "dark"
-          ? "rgba(255,255,255,0.2)"
+          ? "rgba(255, 255, 255, 0.7)"
           : "rgba(255,255,255,0.9)",
             "&:hover": {
               bgcolor:
-          theme.palette.mode === "dark" ? "rgba(255,255,255,0.3)" : "white",
+          theme.palette.mode === "dark" ? "rgba(244, 239, 239, 0.93)" : "white",
             },
           })}
         >
@@ -247,6 +317,83 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             Dueño: {publication.ownerUsername}
           </Typography>
         </Stack>
+        {/* Like & Dislike abajo a la derecha */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            mt: 1.5,
+          }}
+        >
+          <Stack direction="row" spacing={1.2} alignItems="center">
+
+            {/* LIKE */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mt: 1.5,
+              }}
+            >
+              <Stack direction="row" spacing={1.2} alignItems="center">
+              <Box
+                component="button"
+                onClick={handleLike}
+                sx={(theme) => ({
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.8,
+                  px: 1.8,
+                  py: 0.9,
+                  borderRadius: "22px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  transition: "all .25s ease",
+                  opacity: likesLoaded ? 1 : 0.6,
+
+                  backgroundColor: userLiked
+                    ? theme.palette.primary.main
+                    : alpha(theme.palette.primary.main, theme.palette.mode === "dark" ? 0.3 : 0.1),
+
+                  color: userLiked
+                    ? theme.palette.primary.contrastText
+                    : theme.palette.primary.main,
+
+                  boxShadow: userLiked ? theme.shadows[4] : theme.shadows[1],
+
+                  "&:hover": {
+                    transform: "scale(1.08)",
+                    boxShadow: theme.shadows[6],
+                    backgroundColor: userLiked
+                      ? theme.palette.primary.dark
+                      : alpha(
+                          theme.palette.primary.main,
+                          theme.palette.mode === "dark" ? 0.4 : 0.2
+                        ),
+                  },
+
+                  "&:disabled": {
+                    cursor: "default",
+                    boxShadow: "none",
+                    opacity: 0.4,
+                  },
+                })}
+              >
+                {userLiked ? (
+                  <ThumbUp fontSize="medium" />
+                ) : (
+                  <ThumbUpOutlined fontSize="medium" />
+                )}
+                <Typography variant="body1" fontWeight={700}>
+                  {likesCount}
+                </Typography>
+              </Box>
+
+              </Stack>
+            </Box>
+          </Stack>
+        </Box>
       </CardContent>
     </Card>
     {/* 🆕 Snackbar de error si no hay token */}

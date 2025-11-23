@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import PublicationCard from "../../../publications/PublicationCard";
 import PublicationDetailDialog from "../../../publications/PublicationDetailDialog";
-import type { BusinessPublicationResponseDTO } from "../../../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../../../types/Business";
 
 import { useAuth } from "../../../../hooks/useAuth";
 import { getBusinessPublicationsPublic } from "../../../../services/businessPublications";
@@ -125,7 +125,11 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
       return;
     }
 
-    addPublicationToPlan(accessToken, planId, publicationId);
+    if (planId && publicationId && accessToken) {
+      addPublicationToPlan(accessToken, planId, publicationId);
+    } else {
+      console.error("Plan ID or Publication ID is null.");
+    }
 
     console.log(
       `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`

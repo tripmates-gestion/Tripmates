@@ -3,7 +3,7 @@ import { Grid } from "@mui/material"
 import { useState } from "react"
 import PublicationCard from "./PublicationCard"
 import PublicationDetailDialog from "./PublicationDetailDialog"
-import type { BusinessPublicationResponseDTO } from "../../types/business"
+import type { BusinessPublicationResponseDTO } from "../../types/Business"
 
 type Props = {
   publications: BusinessPublicationResponseDTO[]

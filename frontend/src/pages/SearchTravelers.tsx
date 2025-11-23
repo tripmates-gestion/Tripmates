@@ -11,6 +11,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from "react";
 import BackgroundLayer from "../components/searchTravelers/BackgroundLayer";
+import DefaultTravelersSection from "../components/searchTravelers/DefaultTravelersSection";
+import { getTravelersRecommendations } from "../services/recommendations";
 
 const TravelersSearchPage: React.FC = () => {
   const authContext = useAuth();
@@ -21,6 +23,35 @@ const TravelersSearchPage: React.FC = () => {
   const [searchType, setSearchType] = useState<"name" | "location">("name");
   const [results, setResults] = useState<any[]>([]);
   const navigate = useNavigate();
+
+  const [defaultUsers, setDefaultUsers] = useState<any[]>([]);
+  const [loadingDefault, setLoadingDefault] = useState(true);
+
+  const fetchDefaultUsers = useCallback(async () => {
+    if (!authContext.accessToken) return;
+    console.log("Fetching default users with accessToken:", authContext.accessToken);
+    try {
+      setLoadingDefault(true);
+      // getTravelersRecommendations ya devuelve el array directamente
+      const users = await getTravelersRecommendations(authContext.user?.id, authContext.accessToken);
+      console.log("Usuarios por defecto:", users);
+
+      // Cambiar de response?.content a users directamente
+      if (Array.isArray(users)) {
+        setDefaultUsers(users.slice(0, 5)); // Tomar solo 5
+      }
+    } catch (error) {
+      console.error('Error fetching default users:', error);
+    } finally {
+      setLoadingDefault(false);
+    }
+  }, [authContext.accessToken, authContext.user?.id]);
+
+  useEffect(() => {
+    if (authContext.accessToken) {
+      fetchDefaultUsers();
+    }
+  }, [authContext.accessToken, fetchDefaultUsers]);
 
 
   // Rotación de fondo
@@ -47,19 +78,19 @@ const TravelersSearchPage: React.FC = () => {
     console.log("accessToken actual:", authContext.accessToken);
 
     const resultsSearch: any[] = [];
-   
-    if (searchType==="name") {
-      const response = await searchTravelers(authContext.accessToken, searchTerm,null);
-      console.log("Respuesta de la busqueda de viajeros",response);
 
-      if (response!=null){
+    if (searchType === "name") {
+      const response = await searchTravelers(authContext.accessToken, searchTerm, null);
+      console.log("Respuesta de la busqueda de viajeros", response);
+
+      if (response != null) {
         resultsSearch.push(...response.content);
       }
     } else {
       const response = await searchTravelers(authContext.accessToken, null, searchTerm);
-      console.log("Respuesta de la busqueda de viajeros",response);
+      console.log("Respuesta de la busqueda de viajeros", response);
 
-      if (response!=null){
+      if (response != null) {
         resultsSearch.push(...response.content);
       }
     }
@@ -69,40 +100,51 @@ const TravelersSearchPage: React.FC = () => {
 
   const handleUserClick = useCallback((user: any) => {
     console.log("Usuario seleccionado:", user);
-    navigate(`/userProfile/${user.id}`, { 
-      state: { account: user } 
+    navigate(`/userProfile/${user.id}`, {
+      state: { account: user }
     });
   }, [navigate]);
 
   return (
-  <Box sx={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-    <BackgroundLayer bgIndex={bgIndex} />
-    <Box
-      sx={{
-        position: "relative",
-        zIndex: 3,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        px: 2,
-        textAlign: "center",
-      }}
-    >
-      <SearchHeader />
-      <SearchControls
-        bgColor={bgColor}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        searchType={searchType}
-        setSearchType={setSearchType}
-        onSearch={handleSearch}
-      />
-      <SearchResults results={results} onUserClick={handleUserClick} />
+    <Box sx={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
+      <BackgroundLayer bgIndex={bgIndex} />
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 3,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          px: 2,
+          textAlign: "center",
+        }}
+      >
+        <SearchHeader />
+        <SearchControls
+          bgColor={bgColor}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          searchType={searchType}
+          setSearchType={setSearchType}
+          onSearch={handleSearch}
+        />
+        {/* Mostrar usuarios por defecto solo si no hay resultados de búsqueda */}
+        {results.length === 0 && (
+          <DefaultTravelersSection
+            loadingDefault={loadingDefault}
+            defaultUsers={defaultUsers}
+            bgColor={bgColor}
+            handleUserClick={handleUserClick}
+          />
+        )}
+
+        {/* Mostrar resultados de búsqueda */}
+        <SearchResults results={results} onUserClick={handleUserClick} />
+      </Box>
     </Box>
-  </Box>
-);
+  );
 };
 
 export default TravelersSearchPage;

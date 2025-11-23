@@ -25,136 +25,141 @@ import com.tripmates.backend.publications.repository.mongo.PublicationRepository
 @Service
 @Transactional
 public class CommunityService {
-  private final AccountRepository accountRepository;
-  private final EmailService emailService;
-  private final PublicationRepository publicationRepository;
 
-  public CommunityService(AccountRepository accountRepository, EmailService emailService, PublicationRepository publicationRepository) {
-    this.accountRepository = accountRepository;
-    this.emailService = emailService;
-    this.publicationRepository = publicationRepository;
-  }
+	private final AccountRepository accountRepository;
 
-  public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
-    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
-    Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
-    PlanMetadata plan = validateExistentPlan(planId);
+	private final EmailService emailService;
 
-    if (!plan.ownerId().equals(me.getId())) {
-      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
-    }
-    if (plan.collaboratorsIds().contains(userId)) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_IN_PLAN);
-    }
-    if (plan.pendingUsersIdsInvited().contains(userId)) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_INVITED_TO_PLAN);
-    }
+	private final PublicationRepository publicationRepository;
 
-    accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(planId, userId);
-    Dictionary<String, String> variables = new Hashtable<>();
-    variables.put("planId", planId);
-    variables.put("toUsername", userToInvite.getUsername());
-    variables.put("planName", plan.name());
-    variables.put("ownerUsername", me.getUsername());
-    emailService.sendHtmlEmail(userToInvite.getEmail(), String.format("Collaborate on %s", plan.name()),"plan_invitation.html", variables);    
-  }
+	public CommunityService(AccountRepository accountRepository, EmailService emailService,
+			PublicationRepository publicationRepository) {
+		this.accountRepository = accountRepository;
+		this.emailService = emailService;
+		this.publicationRepository = publicationRepository;
+	}
 
-  public void acceptInvitation(String planId, String currentUserEmail) {
-    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail); 
-    PlanMetadata plan = validateExistentPlan(planId);
-    if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
-    }
-    accountRepository.upgradeUserFromInvitedToCollaborator(planId, me.getId());
-  }
+	public void inviteUserToPlan(String planId, String userId, String currentUserEmail) {
+		Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
+		Account userToInvite = validateUserOrThrowUnauthorizedFromId(userId);
+		PlanMetadata plan = validateExistentPlan(planId);
 
-  public void declineInvitation(String planId, String currentUserEmail) {
-    Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail); 
-    PlanMetadata plan = validateExistentPlan(planId);
-    if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
-      throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
-    }
-    accountRepository.removeUserIdFromPendingUsersIdsInvitedToPlan(planId, me.getId());
-  }
+		if (!plan.ownerId().equals(me.getId())) {
+			throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+		}
+		if (plan.collaboratorsIds().contains(userId)) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_IN_PLAN);
+		}
+		if (plan.pendingUsersIdsInvited().contains(userId)) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_ALREADY_INVITED_TO_PLAN);
+		}
 
-  public List<PlanWithPublicationsResponseDTO> getPlans(String email) {
+		accountRepository.addUserIdToPendingUsersIdsInvitedToPlan(planId, userId);
+		Dictionary<String, String> variables = new Hashtable<>();
+		variables.put("planId", planId);
+		variables.put("toUsername", userToInvite.getUsername());
+		variables.put("planName", plan.name());
+		variables.put("ownerUsername", me.getUsername());
+		emailService.sendHtmlEmail(userToInvite.getEmail(), String.format("Collaborate on %s", plan.name()),
+				"plan_invitation.html", variables);
+	}
+
+	public void acceptInvitation(String planId, String currentUserEmail) {
+		Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
+		PlanMetadata plan = validateExistentPlan(planId);
+		if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
+		}
+		accountRepository.upgradeUserFromInvitedToCollaborator(planId, me.getId());
+	}
+
+	public void declineInvitation(String planId, String currentUserEmail) {
+		Account me = validateUserOrThrowUnauthorizedFromEmail(currentUserEmail);
+		PlanMetadata plan = validateExistentPlan(planId);
+		if (!plan.pendingUsersIdsInvited().contains(me.getId())) {
+			throw new UnauthorizedException(ValidationErrorMessage.USER_NOT_INVITED_TO_PLAN);
+		}
+		accountRepository.removeUserIdFromPendingUsersIdsInvitedToPlan(planId, me.getId());
+	}
+
+	public List<PlanWithPublicationsResponseDTO> getPlans(String email) {
 		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
-    List<PlanWithPublicationsResponseDTO> plansResponse = new ArrayList<>();
-    addCollaborationsPlansToResponse(plansResponse, account.getId());
-    if (account.getPlansList() != null) {
-      addMyOwnPlansToResponse(plansResponse, account.getPlansList());
-    }
+		List<PlanWithPublicationsResponseDTO> plansResponse = new ArrayList<>();
+		addCollaborationsPlansToResponse(plansResponse, account.getId());
+		if (account.getPlansList() != null) {
+			addMyOwnPlansToResponse(plansResponse, account.getPlansList());
+		}
 		return plansResponse;
 	}
 
-  public PlanWithPublicationsResponseDTO getPlanById(String planId, String email) {
-    validateUserOrThrowUnauthorizedFromEmail(email);
-    PlanMetadata planMetadata = validateExistentPlan(planId);
-    List<String> planPublicationsIds = accountRepository.getPlanPublicationsIds(planId);
-    PlanMetadataWithContent planMetadataWithContent = new PlanMetadataWithContent(
-      planMetadata.planId(), 
-      planMetadata.name(), 
-      planMetadata.description(), 
-      planMetadata.ownerId(), 
-      planMetadata.collaboratorsIds(), 
-      planMetadata.pendingUsersIdsInvited(), 
-      planPublicationsIds);
-    
-    return PlanWithPublicationsResponseDTO.fromPlanMetadataWithContent(planMetadataWithContent, publicationRepository);
-  }
+	public PlanWithPublicationsResponseDTO getPlanById(String planId, String email) {
+		validateUserOrThrowUnauthorizedFromEmail(email);
+		PlanMetadata planMetadata = validateExistentPlan(planId);
+		List<String> planPublicationsIds = accountRepository.getPlanPublicationsIds(planId);
+		PlanMetadataWithContent planMetadataWithContent = new PlanMetadataWithContent(planMetadata.planId(),
+				planMetadata.name(), planMetadata.description(), planMetadata.ownerId(),
+				planMetadata.collaboratorsIds(), planMetadata.pendingUsersIdsInvited(), planPublicationsIds);
 
-  private Account validateUserOrThrowUnauthorizedFromId(String accountId) {
-    Account account = accountRepository.findById(accountId).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return checkUserRolOrThrowUnauthorized(account);
-  }
-  
-  private Account validateUserOrThrowUnauthorizedFromEmail(String email) {
-    Account account = accountRepository.findByEmail(email).orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    return checkUserRolOrThrowUnauthorized(account);
-  }
+		return PlanWithPublicationsResponseDTO.fromPlanMetadataWithContent(planMetadataWithContent,
+				publicationRepository);
+	}
 
-  private Account checkUserRolOrThrowUnauthorized(Account account) {
-    if (account.getRole() != Role.USER) {
-      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
-    }
-    return account;
-  }
+	private Account validateUserOrThrowUnauthorizedFromId(String accountId) {
+		Account account = accountRepository.findById(accountId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return checkUserRolOrThrowUnauthorized(account);
+	}
 
-  private PlanMetadata validateExistentPlan(String planId) {
-    PlanMetadata plan = accountRepository.getPlanMetadataById(planId);
-    if (plan == null) {
-      throw new NotFoundException(ValidationErrorMessage.PLAN_NOT_FOUND);
-    }
-    return plan;
-  }
+	private Account validateUserOrThrowUnauthorizedFromEmail(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		return checkUserRolOrThrowUnauthorized(account);
+	}
 
+	private Account checkUserRolOrThrowUnauthorized(Account account) {
+		if (account.getRole() != Role.USER) {
+			throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+		}
+		return account;
+	}
 
-  private void addCollaborationsPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, String collaboratorUserId) {
-    List<PlanMetadataWithContent> plansMetadataCollaborations = accountRepository.getCollaborationsPlansByUserId(collaboratorUserId);
-      for (PlanMetadataWithContent planMetadataWithContent : plansMetadataCollaborations) {
-        var planWithPublications = PlanWithPublicationsResponseDTO.fromPlanMetadataWithContent(planMetadataWithContent, publicationRepository);
-        plansResponse.add(planWithPublications);
-      }
-  }
+	private PlanMetadata validateExistentPlan(String planId) {
+		PlanMetadata plan = accountRepository.getPlanMetadataById(planId);
+		if (plan == null) {
+			throw new NotFoundException(ValidationErrorMessage.PLAN_NOT_FOUND);
+		}
+		return plan;
+	}
 
-  private void addMyOwnPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, List<Plan> myPlans) {
-    for (Plan plan : myPlans) {
-      var planWithPublications = PlanWithPublicationsResponseDTO.fromPlan(plan, publicationRepository);
-      plansResponse.add(planWithPublications);
-    }
-  }
+	private void addCollaborationsPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse,
+			String collaboratorUserId) {
+		List<PlanMetadataWithContent> plansMetadataCollaborations = accountRepository
+			.getCollaborationsPlansByUserId(collaboratorUserId);
+		for (PlanMetadataWithContent planMetadataWithContent : plansMetadataCollaborations) {
+			var planWithPublications = PlanWithPublicationsResponseDTO
+				.fromPlanMetadataWithContent(planMetadataWithContent, publicationRepository);
+			plansResponse.add(planWithPublications);
+		}
+	}
 
-  public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
-    Plan target = accountRepository.getPlanByPlanId(planId);
+	private void addMyOwnPlansToResponse(List<PlanWithPublicationsResponseDTO> plansResponse, List<Plan> myPlans) {
+		for (Plan plan : myPlans) {
+			var planWithPublications = PlanWithPublicationsResponseDTO.fromPlan(plan, publicationRepository);
+			plansResponse.add(planWithPublications);
+		}
+	}
+
+	public void updatePlan(String email, String planId, PlanUpdateRequestDTO planUpdateRequestDTO) {
+		Plan target = accountRepository.getPlanByPlanId(planId);
 		if (target == null)
 			throw new BadRequestException(ValidationErrorMessage.NOTHING_TO_UPDATE);
-    System.out.println("\n\n\nse encuentra el plan para el id: " + planId + " y el plan es: " + target);
+		System.out.println("\n\n\nse encuentra el plan para el id: " + planId + " y el plan es: " + target);
 
-    validateMyPlanOrCollaboratinOn(target, email);
+		validateMyPlanOrCollaboratinOn(target, email);
 
 		if (planUpdateRequestDTO != null) {
 			if (planUpdateRequestDTO.name() != null)
@@ -189,18 +194,19 @@ public class CommunityService {
 		accountRepository.updateExistingPlan(target);
 	}
 
-  private Account validateMyPlanOrCollaboratinOn(Plan plan, String email) {
-    Account account = accountRepository.findByEmail(email)
+	private Account validateMyPlanOrCollaboratinOn(Plan plan, String email) {
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-    
-    var imOwner = plan.getOwnerId().equals(account.getId());
-    var imCollaborator = plan.getCollaboratorsUsersIds().contains(account.getId());
-    if (!imOwner && !imCollaborator) {
-      throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
-    }
-    return account;
-  }
+
+		var imOwner = plan.getOwnerId().equals(account.getId());
+		var imCollaborator = plan.getCollaboratorsUsersIds().contains(account.getId());
+		if (!imOwner && !imCollaborator) {
+			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
+		}
+		return account;
+	}
+
 }

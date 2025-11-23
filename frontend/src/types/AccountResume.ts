@@ -1,4 +1,4 @@
-import type { AveragePrice, AttentionSchedule, DayOfWeek } from './business';
+import type { AveragePrice, AttentionSchedule, DayOfWeek } from './Business';
 import type { MenuItem } from './Restaurant';
 import type { HotelType, RoomPack } from './Hotel';
 import type { AccountType, BusinessType } from './AccountTypes';

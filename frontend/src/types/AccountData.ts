@@ -1,6 +1,6 @@
 import type {AccountType, BusinessType} from "./AccountTypes";
-import type {DayOfWeek} from "./business";
-import type {AttentionSchedule, AveragePrice} from "./business";
+import type {DayOfWeek} from "./Business";
+import type {AttentionSchedule, AveragePrice} from "./Business";
 import type {RestaurantType, MenuItem} from "./Restaurant";
 import type { HotelType, RoomPack } from "./Hotel";
 

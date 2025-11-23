@@ -1,8 +1,8 @@
 import { DEFAULT_AVATAR_URL } from "../../constants/DefaultImages";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
-import type { BusinessPublicationResponseDTO } from "../../types/business";
+import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import { VEGAN_RESTAURANT, VEGAN_RESTAURANT_PUBLICATIONS } from "./veganRestaurantMock";
-import type { SearchBusinessFilters } from "../../types/searchBusinessFilters";
+import type { SearchBusinessFilters } from "../../types/SearchBusinessFilters";
 
 
 const PRIVATE_HOTEL_MAIL_MOCK = "private@hotel.com"

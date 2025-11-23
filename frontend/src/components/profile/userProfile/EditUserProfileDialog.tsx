@@ -11,7 +11,7 @@ import { PROFILE_LIMITS } from '../../../constants/UserProfile';
 import CountedTextField from '../../ui/CountedTextField';
 import ImageUploader from '../../ui/ImageUploader';
 import { type CommonUser } from '../../../types/PrivateUserProfiles';
-import { dataURLtoFile } from '../businessPrivateProfile/common/Utils';
+import { dataURLtoFile } from '../../GeneralHelpers';
 
 
 type Props = {
