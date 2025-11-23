@@ -16,7 +16,7 @@ import { deleteBusinessPublication, getBusinessPublications } from '../services/
 import HotelEditDialog from '../components/profile/businessPrivateProfile/hotel/HotelEditDialog';
 import RestaurantEditDialog from '../components/profile/businessPrivateProfile/restaurant/RestaurantEditDialog';
 import BusinessPresentationTab from '../components/profile/businessPrivateProfile/common/BusinessPresentationTab';
-import BusinessAchievements from '../components/profile/businessPrivateProfile/common/BusinessAchievements';
+import BusinessBenchmarks from '../components/profile/businessPrivateProfile/common/BusinessBenchmarks';
 
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
@@ -142,7 +142,10 @@ export default function BusinessProfile() {
               <ShareProfileButton shareUrl={makeUrl(business)} />
             </Stack>
           </CardContent>
-          <BusinessAchievements />
+
+          {/* Logros */}
+          <BusinessBenchmarks />
+
           <Divider />
 
           <Tabs

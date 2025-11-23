@@ -23,11 +23,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import SaveIcon from '@mui/icons-material/Save';
 import { ACHIEVEMENTS_LIST } from '../../../../constants/BusinessAchievementsData';
 import { useAuth } from '../../../../hooks/useAuth';
-import { getMyBusinessAchievementsAPI, updateMyBusinessAchievementsVisibilityAPI } from '../../../../services/businessAchievements';
+import { getMyBenchmarksAPI, updateMyBenchmarksVisibilityAPI } from '../../../../services/benchmarks';
 
 import { Edit, Close } from '@mui/icons-material';
 
-export default function BusinessAchievements() {
+export default function BusinessBenchmarks() {
     const [achievedIds, setAchievedIds] = React.useState<string[]>([]);
     const [publicVisibility, setPublicVisibility] = React.useState<Set<string>>(new Set());
     const [tempVisibility, setTempVisibility] = React.useState<Set<string>>(new Set());
@@ -42,7 +42,7 @@ export default function BusinessAchievements() {
     React.useEffect(() => {
         const fetchAchievements = async () => {
             try {
-                const data = await getMyBusinessAchievementsAPI(accessToken);
+                const data = await getMyBenchmarksAPI(accessToken);
                 setAchievedIds(data.map(a => a.id));
                 setPublicVisibility(new Set(data.filter(a => a.visible).map(a => a.id)));
             } catch (error) {
@@ -95,7 +95,7 @@ export default function BusinessAchievements() {
         }
 
         try {
-            await updateMyBusinessAchievementsVisibilityAPI(accessToken, changes);
+            await updateMyBenchmarksVisibilityAPI(accessToken, changes);
             setPublicVisibility(tempVisibility);
             setIsEditing(false);
             enqueueSnackbar('Cambios de visibilidad guardados', { variant: 'success' });
