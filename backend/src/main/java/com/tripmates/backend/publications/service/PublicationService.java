@@ -347,11 +347,11 @@ public class PublicationService {
 		checkLikeInteraction(publication, account);
 
 		addLikeInfoOnPublication(publicationId, account.getId());
-		addLikeOnOwnerInfo(publication.getOwnerId());
+		addLikeOnOwnerInfoAndRegisteBenchmark(publication.getOwnerId());
 
 	}
 
-	private void addLikeOnOwnerInfo(String ownerId) {
+	private void addLikeOnOwnerInfoAndRegisteBenchmark(String ownerId) {
 		accountRepository.incrementNumberTotalLikes(ownerId);
 		Account updatedAccount = accountRepository.findById(ownerId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
@@ -361,27 +361,17 @@ public class PublicationService {
 				? updatedAccount.getHistoricMaxNumberTotalLikes() : 0;
 		if (numberTotalLikes > historicMax) {
 			accountRepository.updateHistoricMaxNumberTotalLikes(ownerId, numberTotalLikes);
-			/* benchmarkService.updaBenchmarkProgress(ownerId, numberTotalLikes); */
-
 			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.LIKES, numberTotalLikes);
 			if (benchmarkId != null) {
 				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
 					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
 				if (maybeBenchmarkProgress.isEmpty()) {
-					// no existía, guardo y mando email
-					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, true, ownerId);
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
 					benchmarkRepository.save(benchmarkProgress);
 					emailService.sendEmail(updatedAccount.getEmail(), "New Benchmark Progress",
 							"You have reached a new benchmark progress");
-
 				}
-				// esto es que se podría desbloquear un logro
-				// benchmarkRepository.findByOwnerId(new BenchmarkProgress(benchmarkId,
-				// true,
-				// ownerId));
 			}
-			// ya tengo al que estoy llegando? si es que sí no hago nada
-			// si no lo tengo es un nuevo record
 		}
 
 	}// en el repository solo se agregan, no se quitan. si
