@@ -192,7 +192,7 @@ public class PublicationController {
 					@ApiResponse(responseCode = "404", description = "Publication not found",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<Void> addLike(@PathVariable String publicationId,
+	public ResponseEntity<?> addLike(@PathVariable String publicationId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.addLike(publicationId, userDetails.getUsername());
 		return ResponseEntity.noContent().build();
@@ -209,7 +209,7 @@ public class PublicationController {
 					@ApiResponse(responseCode = "404", description = "Publication not found",
 							content = @Content(mediaType = "application/json",
 									schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<Void> removeLike(@PathVariable String publicationId,
+	public ResponseEntity<?> removeLike(@PathVariable String publicationId,
 			@AuthenticationPrincipal UserDetails userDetails) {
 		publicationService.removeLike(publicationId, userDetails.getUsername());
 		return ResponseEntity.noContent().build();

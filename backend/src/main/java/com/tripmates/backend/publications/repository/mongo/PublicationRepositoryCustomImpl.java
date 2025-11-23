@@ -1,5 +1,6 @@
 package com.tripmates.backend.publications.repository.mongo;
 
+import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.publications.dto.PublicationSearchRequestDTO;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -20,8 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
-import java.util.Date;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
@@ -40,8 +42,10 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 				Aggregation.project().and("reviews.date").as("reviewDate")
 
 		);
+
 		AggregationResults<ReviewDateResult> results = mongoTemplate.aggregate(aggregation, "publications",
 				ReviewDateResult.class);
+
 		return results.getMappedResults().stream().map(ReviewDateResult::getReviewDate).collect(Collectors.toList());
 	}
 
@@ -83,16 +87,17 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 	@Override
 	public void addToLikes(String publicationId, String userId) {
 		Query query = new Query(Criteria.where("_id").is(publicationId));
-		org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update()
-			.addToSet("likes", userId);
+		Update update = new Update().addToSet("likes", new Like(userId, new Date()));
+
 		mongoTemplate.updateFirst(query, update, Publication.class);
 	}
 
 	@Override
 	public void removeFromLikes(String publicationId, String userId) {
 		Query query = new Query(Criteria.where("_id").is(publicationId));
-		org.springframework.data.mongodb.core.query.Update update = new org.springframework.data.mongodb.core.query.Update()
-			.pull("likes", userId);
+
+		Update update = new Update().pull("likes", Query.query(Criteria.where("userId").is(userId)));
+
 		mongoTemplate.updateFirst(query, update, Publication.class);
 	}
 
@@ -104,11 +109,15 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 
 		AggregationResults<Map> results = mongoTemplate.aggregate(aggregation, "publications", Map.class);
 
-		if (results.getMappedResults().isEmpty()) {
+		if (results.getMappedResults().isEmpty())
 			return 0;
-		}
 
-		return (Integer) results.getMappedResults().get(0).get("totalLikes");
+		Object totalLikesObj = results.getMappedResults().getFirst().get("totalLikes");
+
+		if (totalLikesObj instanceof Number)
+			return ((Number) totalLikesObj).intValue();
+
+		return 0;
 	}
 
 	@Data
