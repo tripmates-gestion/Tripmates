@@ -17,8 +17,10 @@ import {
   TextField,
   Button,
   Snackbar,
-  useTheme
+  useTheme,
+  IconButton
 } from '@mui/material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
@@ -113,13 +115,38 @@ export default function BusinessPublicationsRecomendationFeed() {
   const isHoveringRef = useRef(false);
   const isInteractingRef = useRef(false);
   const [isReady, setIsReady] = useState(false);
+  const [visibleSlides, setVisibleSlides] = useState(3); // Default to 3
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: true,
     renderMode: "performance",
     drag: true,
-    created: () => setIsReady(true),
+    created: (_s) => {
+      setIsReady(true);
+      // Determine initial visible slides based on window width
+      const width = window.innerWidth;
+      if (width >= 960) {
+        setVisibleSlides(3);
+      } else if (width >= 600) {
+        setVisibleSlides(2);
+      } else {
+        setVisibleSlides(1);
+      }
+    },
     destroyed: () => setIsReady(false),
+    slideChanged: (_s) => {
+      // Update visible slides count when breakpoint changes
+      const width = window.innerWidth;
+      if (width >= 960) {
+        setVisibleSlides(3);
+      } else if (width >= 600) {
+        setVisibleSlides(2);
+      } else {
+        setVisibleSlides(1);
+      }
+    },
     slides: {
       perView: 1,
       spacing: 15,
@@ -134,11 +161,16 @@ export default function BusinessPublicationsRecomendationFeed() {
     },
   });
 
+  // Determine if auto-scroll should be enabled
+  useEffect(() => {
+    setShouldAutoScroll(publications.length > visibleSlides);
+  }, [publications.length, visibleSlides]);
+
   // Animation loop
   const animation = (_timestamp: number) => {
     if (!slider.current) return;
 
-    if (!isHoveringRef.current && !isInteractingRef.current) {
+    if (!isHoveringRef.current && !isInteractingRef.current && shouldAutoScroll) {
       const distance = 0.002;
       slider.current.track.add(distance);
     }
@@ -147,12 +179,12 @@ export default function BusinessPublicationsRecomendationFeed() {
   };
 
   useEffect(() => {
-    if (!isReady || !slider.current) return;
+    if (!isReady || !slider.current || !shouldAutoScroll) return;
     animationRef.current = requestAnimationFrame(animation);
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, [slider, isReady]);
+  }, [slider, isReady, shouldAutoScroll]);
 
   // Sync interaction state
   useEffect(() => {
@@ -289,34 +321,82 @@ export default function BusinessPublicationsRecomendationFeed() {
           <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti</Typography>
           {/* Carrusel Keen */}
           <Box
-            ref={sliderRef}
-            className="keen-slider"
-            sx={{
-              mt: 3,
-              borderRadius: 1,
-              py: 0
-            }}
+            sx={{ position: 'relative' }}
             onMouseEnter={() => {
               isHoveringRef.current = true;
+              setIsHovering(true);
             }}
             onMouseLeave={() => {
               isHoveringRef.current = false;
+              setIsHovering(false);
             }}
           >
-            {publications.map((p: any) => (
-              <Box
-                key={p.id}
-                className="keen-slider__slide"
-                sx={{ px: { xs: 1, md: 1 }, display: 'flex' }}
-              >
-                <BusinessPublicationCard
-                  publication={p}
-                  onView={(pub: any) => setSelected(pub)}
-                  onAddToBoard={(e: React.MouseEvent<HTMLElement>) => handleAddToBoard(e, p)}
-                  sx={{ width: '100%' }}
-                />
-              </Box>
-            ))}
+            <Box
+              ref={sliderRef}
+              className="keen-slider"
+              sx={{
+                mt: 3,
+                borderRadius: 1,
+                py: 0
+              }}
+            >
+              {publications.map((p: any) => (
+                <Box
+                  key={p.id}
+                  className="keen-slider__slide"
+                  sx={{ px: { xs: 1, md: 1 }, display: 'flex' }}
+                >
+                  <BusinessPublicationCard
+                    publication={p}
+                    onView={(pub: any) => setSelected(pub)}
+                    onAddToBoard={(e: React.MouseEvent<HTMLElement>) => handleAddToBoard(e, p)}
+                    sx={{ width: '100%' }}
+                  />
+                </Box>
+              ))}
+            </Box>
+
+            {/* Navigation Arrows - Only show when hovering and there are more publications than visible */}
+            {shouldAutoScroll && isHovering && (
+              <>
+                <IconButton
+                  onClick={() => slider.current?.prev()}
+                  sx={{
+                    position: 'absolute',
+                    left: -20,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                    },
+                    zIndex: 10,
+                    boxShadow: 2,
+                  }}
+                >
+                  <ChevronLeft />
+                </IconButton>
+                <IconButton
+                  onClick={() => slider.current?.next()}
+                  sx={{
+                    position: 'absolute',
+                    right: -20,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                    },
+                    zIndex: 10,
+                    boxShadow: 2,
+                  }}
+                >
+                  <ChevronRight />
+                </IconButton>
+              </>
+            )}
           </Box>
         </Container>
       </Box>
