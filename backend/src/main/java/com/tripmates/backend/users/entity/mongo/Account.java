@@ -144,6 +144,11 @@ public class Account implements UserDetails {
 	 */
 	private List<String> followers = new ArrayList<>();
 
+	/**
+	 * Account's total likes.
+	 */
+	private Integer numberTotalLikes = 0;
+
 	@Override
 	public String getPassword() {
 		return this.password;
