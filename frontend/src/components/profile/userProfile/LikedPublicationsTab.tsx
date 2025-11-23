@@ -8,7 +8,7 @@ import {
     Alert
 } from '@mui/material';
 import BusinessPublicationCard from '../../publications/PublicationCard';
-import { getBusinessPublicationsPublicRecommendations } from '../../../services/recommendations';
+import { getHistoryLiked } from '../../../services/history';
 import type { BusinessPublicationResponseDTO } from '../../../types/Business';
 import PublicationDetailDialog from '../../publications/PublicationDetailDialog';
 
@@ -29,8 +29,7 @@ export default function LikedPublicationsTab({ userId, accessToken }: LikedPubli
         const fetchLiked = async () => {
             try {
                 setLoading(true);
-                // TODO: cambiar por un llamado al endpoint real (Using recommendations as a mock for liked publications as requested)
-                const data = await getBusinessPublicationsPublicRecommendations(userId, accessToken);
+                const data = await getHistoryLiked(userId, accessToken);
                 if (mounted) {
                     setPublications(data);
                 }
