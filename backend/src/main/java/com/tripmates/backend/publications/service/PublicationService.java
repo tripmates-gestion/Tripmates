@@ -420,11 +420,6 @@ public class PublicationService {
 	 * @param userId        user's ID.
 	 */
 	private void addLikeInfoOnPublication(String publicationId, String userId) {
-		long isLiked = publicationRepository.existsLike(publicationId, userId);
-
-		if (isLiked > 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
-
 		publicationRepository.addToLikes(publicationId, userId);
 		accountNodeRepository.createLiked(userId, publicationId);
 	}
@@ -436,11 +431,6 @@ public class PublicationService {
 	 * @param userId        user's ID.
 	 */
 	private void removeLikeInfoOnPublication(String publicationId, String userId) {
-		long isLiked = publicationRepository.existsLike(publicationId, userId);
-
-		if (isLiked == 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
-
 		publicationRepository.removeFromLikes(publicationId, userId);
 		// Also remove Neo4j relationship
 		accountNodeRepository.removeLiked(userId, publicationId);
