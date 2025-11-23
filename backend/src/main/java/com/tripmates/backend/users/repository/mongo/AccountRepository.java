@@ -50,4 +50,8 @@ public interface AccountRepository extends MongoRepository<Account, String>, Acc
 	@Update("{ '$inc' : { 'numberTotalLikes' : -1 } }")
 	void decrementNumberTotalLikes(String userId);
 
+	@Query("{ '_id' : ?0 }")
+	@Update("{ '$set' : { 'historicMaxNumberTotalLikes' : ?1 } }")
+	void updateHistoricMaxNumberTotalLikes(String userId, Integer newHistoricMaxNumberTotalLikes);
+
 }
