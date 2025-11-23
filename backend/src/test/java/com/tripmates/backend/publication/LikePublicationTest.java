@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.common.types.BenchmarkId;
 import com.tripmates.backend.common.types.BusinessType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.BeforeAll;
 import com.tripmates.backend.TestHelper;
+import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
+import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
+
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+
 import com.tripmates.backend.common.service.email.EmailService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -54,6 +60,9 @@ public class LikePublicationTest {
 	@Autowired
 	private AccountRepository accountRepository;
 
+	@Autowired
+	private BenchmarkRepository benchmarkRepository;
+
 	@MockBean
 	private EmailService emailService;
 
@@ -73,11 +82,11 @@ public class LikePublicationTest {
 		String jwt = testHelper.getUserTestingJwt("liker@example.com");
 
 		mockMvc.perform(post("/publications/non-existent-id/like").header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isNotFound());
+				.andExpect(status().isNotFound());
 	}
 
 	@Test
-	void testGivenPublication_WhenUserLikesIt_ThenTheGlobalNumberTotalLikesShouldIncreaseAlsoHistoricMaxNumberTotalLikesShouldIncrease()
+	void testGivenPublication_WhenUserLikesIt_ThenTheGlobalNumberTotalLikesShouldIncreaseAlsoHistoricMaxNumberTotalLikesShouldIncreaseAndBenchmarkShouldBeSaved()
 			throws Exception {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
@@ -101,12 +110,12 @@ public class LikePublicationTest {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andDo(print())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
+				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
 
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
@@ -114,13 +123,18 @@ public class LikePublicationTest {
 		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
 
 		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
-			.andExpect(status().isNoContent())
-			.andDo(print());
+				.andExpect(status().isNoContent())
+				.andDo(print());
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(1, updatedOwner.getNumberTotalLikes(), "Owner's total likes should increase by 1");
 		assertEquals(1, updatedOwner.getHistoricMaxNumberTotalLikes(),
 				"Owner's historic max total likes should increase by 1");
+
+		List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(ownerId);
+		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+		BenchmarkProgress updatedBenchmark = benchmarks.get(0);
+		assertEquals(BenchmarkId.firstLike, updatedBenchmark.getBenchmarkId(), "Owner's benchmark should be firstLike");
 	}
 
 	@Test
@@ -147,12 +161,12 @@ public class LikePublicationTest {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publication1CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andDo(print())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
+				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
 
 		String publication2CreationRequestJson = """
 				{
@@ -168,15 +182,15 @@ public class LikePublicationTest {
 		MockMultipartFile dataPart2 = new MockMultipartFile("data", "", "application/json",
 				publication2CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		mockMvc.perform(multipart("/publications/business").file(dataPart2).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andDo(print());
+				.andExpect(status().isOk())
+				.andDo(print());
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(0, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 0");
 	}
 
 	@Test
-	void testGivenBusinessAccountWithLikes_ThenTheGlobalNumberTotalLikesDecreasesButHistoricMaxNumberTotalLikesDoesNotChange()
+	void testGivenBusinessAccountWithLikes_ThenTheGlobalNumberTotalLikesDecreasesButHistoricMaxNumberTotalLikesDoesNotChangeAlsoIsStillThere()
 			throws Exception {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
@@ -200,27 +214,85 @@ public class LikePublicationTest {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publication1CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-			.andExpect(status().isOk())
-			.andDo(print())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
+				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 
 		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
 		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
-			.andExpect(status().isNoContent())
-			.andDo(print());
+				.andExpect(status().isNoContent())
+				.andDo(print());
 		mockMvc
-			.perform(post("/publications/" + publicationId + "/unlike").header("Authorization", "Bearer " + jwtLiker))
-			.andExpect(status().isNoContent())
-			.andDo(print());
+				.perform(post("/publications/" + publicationId + "/unlike").header("Authorization",
+						"Bearer " + jwtLiker))
+				.andExpect(status().isNoContent())
+				.andDo(print());
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(0, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 0");
 		assertEquals(1, updatedOwner.getHistoricMaxNumberTotalLikes(), "Owner's historic max total likes should be 1");
+		List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(ownerId);
+		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+		BenchmarkProgress updatedBenchmark = benchmarks.get(0);
+		assertEquals(BenchmarkId.firstLike, updatedBenchmark.getBenchmarkId(), "Owner's benchmark should be firstLike");
 	}
 
-}
+	@Test
+	void givenBusinessPublication_WhenAdd9likes_ThenTheGlobalNumberTotalLikesAndMaxNumberTotalLikesAre9OnlyHavingFirstLikeBenchmark()
+			throws Exception {
+		String jwtBusiness = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
+
+		String publicationCreationRequestJson = """
+				{
+				  "title": "Beautiful place with amazing views and full amenities.",
+				  "description": "Beautiful place with amazing views and full amenities.",
+				  "phoneNumber": "+541112345678",
+				  "email": "contact@hostel.com",
+				  "location": "San Carlos de Bariloche, Argentina",
+				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+				  "attentionSchedule": {
+				      "openingTime": "09:00",
+				      "closingTime": "18:00"
+				  },
+				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+				  "tags": ["hostel", "mountain", "nature"]
+				}
+				""";
+
+		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+				publicationCreationRequestJson.getBytes(StandardCharsets.UTF_8));
+		String response = mockMvc
+				.perform(
+						multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwtBusiness))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
+		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
+
+		List<String> jwtLikers = testHelper.getNUserTestingJwt(9);
+		for(String jwtLiker:jwtLikers)
+		{
+			mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
+				.andExpect(status().isNoContent())
+				.andDo(print());
+			}
+
+		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
+
+		assertEquals(9, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 9");
+		assertEquals(9, updatedOwner.getHistoricMaxNumberTotalLikes(), "Owner's historic max total likes should be 9");
+		List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(ownerId);
+		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+		BenchmarkProgress updatedBenchmark = benchmarks.get(0);
+		assertEquals(BenchmarkId.firstLike, updatedBenchmark.getBenchmarkId(), "Owner's benchmark should be firstLike");
+		}
+	}
