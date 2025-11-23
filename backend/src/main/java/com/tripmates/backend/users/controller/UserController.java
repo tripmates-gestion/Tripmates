@@ -48,6 +48,9 @@ public class UserController {
 	@Autowired
 	private ObjectParsingService parsingService;
 
+	@Autowired
+	private org.springframework.data.neo4j.core.mapping.Schema schema;
+
 	public UserController(UserService userService) {
 		this.userService = userService;
 	}
@@ -469,6 +472,24 @@ public class UserController {
 	public ResponseEntity<?> getUserById(@PathVariable("userId") String userId) {
 		AccountResumeResponseDTO accountResumeResponseDTO = userService.getUserById(userId);
 		return ResponseEntity.ok(accountResumeResponseDTO);
+	}
+
+	@GetMapping("/history/likes/{userId}")
+	@Operation(summary = "Returns all the publications where the user has left a like")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Publications obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = PublicationResumeResponseDTO.class))),
+			@ApiResponse(responseCode = "204", description = "No publications found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = void.class))) })
+	public ResponseEntity<?> getHistoryLikes(@PathVariable("userId") String userId) {
+		List<PublicationResumeResponseDTO> publicationResumeResponseDTOList = userService.getHistoryLikes(userId);
+
+		if (publicationResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(publicationResumeResponseDTOList);
 	}
 
 }
