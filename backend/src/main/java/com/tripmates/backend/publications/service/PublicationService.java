@@ -120,13 +120,13 @@ public class PublicationService {
 		if (publicationRequestDTO.location() != null)
 			publication.setLocation(publicationRequestDTO.location());
 
-		if (publicationRequestDTO.openingDays() != null)
+		if (!publicationRequestDTO.openingDays().isEmpty())
 			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
 		if (publicationRequestDTO.attentionSchedule() != null)
 			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (publicationRequestDTO.exceptionalClosingDays() != null)
+		if (!publicationRequestDTO.exceptionalClosingDays().isEmpty())
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		publication.setImageUrls(updateImages(publication.getImageUrls(), publicationRequestDTO.deletePhotoIndexes(),
@@ -416,10 +416,10 @@ public class PublicationService {
 	 * @param account     user's account.
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
-		for (Like like : publication.getLikes()) {
-			if (!like.getUserId().equals(account.getId()))
-				throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
-		}
+		boolean hasLike = publication.getLikes().stream().anyMatch(like -> like.getUserId().equals(account.getId()));
+
+		if (!hasLike)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
 	/**
@@ -437,9 +437,14 @@ public class PublicationService {
 	 * Removes like info from publication.
 	 * 
 	 * @param publicationId publication's ID.
-	 * @param userId        user's ID.
+	 * @param userId user's ID.
 	 */
 	private void removeLikeInfoOnPublication(String publicationId, String userId) {
+		long isLiked = publicationRepository.existsLike(publicationId, userId);
+
+		if (isLiked == 0)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
+
 		publicationRepository.removeFromLikes(publicationId, userId);
 		accountNodeRepository.removeLiked(userId, publicationId);
 	}

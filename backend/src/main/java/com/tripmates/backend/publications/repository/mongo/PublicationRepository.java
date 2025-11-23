@@ -17,7 +17,7 @@ public interface PublicationRepository extends MongoRepository<Publication, Stri
 	 * @param userId The ID of the user who liked
 	 * @return true if the user has liked the publication, false otherwise
 	 */
-	@Query(value = "{ '_id' : ?0, 'likes' : ?1 }", count = true)
+	@Query(value = "{ '_id': ?0, 'likes.userId': ?1 }", count = true)
 	long existsLike(String publicationId, String userId);
 
 	/**

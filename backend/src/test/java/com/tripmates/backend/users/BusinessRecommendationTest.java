@@ -45,9 +45,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({ TestCloudinaryConfig.class })
 public class BusinessRecommendationTest {
 
-	@LocalServerPort
-	private int port;
-
 	@Autowired
 	private MongoTemplate mongoTemplate;
 

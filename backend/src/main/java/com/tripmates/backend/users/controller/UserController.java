@@ -48,9 +48,6 @@ public class UserController {
 	@Autowired
 	private ObjectParsingService parsingService;
 
-	@Autowired
-	private org.springframework.data.neo4j.core.mapping.Schema schema;
-
 	public UserController(UserService userService) {
 		this.userService = userService;
 	}
