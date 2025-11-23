@@ -67,10 +67,10 @@ export default function UserProfile() {
   );
 
   const tabs = [
-    { key: 'actividad', label: 'Actividad' },
     { key: 'planes', label: 'Planes' },
-    { key: 'fotos', label: 'Fotos' },
-    { key: 'opiniones', label: 'Opiniones' },
+    { key: 'experiencias', label: 'Experiencias' },
+    { key: 'liked', label: 'Liked' },
+    { key: 'historial', label: 'Historial' }
   ];
   const currentTabKey = tabs[tab]?.key;
 
@@ -257,12 +257,14 @@ export default function UserProfile() {
           <Divider />
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
-            {currentTabKey === 'actividad' && (
-              <EmptyState title="Actualización de actividades" />
-            )}
             {currentTabKey === 'planes' && <UserPlansTab />}
-            {currentTabKey === 'fotos' && <EmptyState title="Fotos" />}
-            {currentTabKey === 'opiniones' && <UserReviewsTab />}
+            {currentTabKey === 'experiencias' && <UserReviewsTab />}
+            {/* TODO: AGREGAR TAB DE LIKED */}
+            {currentTabKey === 'liked' && (
+              <EmptyState title="Publicaciones a las que les diste like" />
+            )}
+            {/* TODO: Agregar TAB de  historial*/}
+            {currentTabKey === 'historial' && <EmptyState title="Historial" />}
           </Box>
         </Card>
       </Box>
