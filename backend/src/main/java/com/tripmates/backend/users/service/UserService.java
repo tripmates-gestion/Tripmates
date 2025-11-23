@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -149,6 +150,31 @@ public class UserService {
 	}
 
 	/**
+	 * Returns all publications that the user liked.
+	 * @param userId user account ID.
+	 * @return list of {@link PublicationResumeResponseDTO}.
+	 */
+	public List<PublicationResumeResponseDTO> getHistoryLikes(String userId) {
+		return publicationRepository.findByLikesUserId(userId).stream().sorted((p1, p2) -> {
+			Date date1 = p1.getLikes()
+				.stream()
+				.filter(like -> like.getUserId().equals(userId))
+				.map(Like::getCreatedAt)
+				.findFirst()
+				.orElse(new Date(0));
+
+			Date date2 = p2.getLikes()
+				.stream()
+				.filter(like -> like.getUserId().equals(userId))
+				.map(Like::getCreatedAt)
+				.findFirst()
+				.orElse(new Date(0));
+
+			return date2.compareTo(date1);
+		}).map(PublicationResumeResponseDTO::fromPublication).collect(Collectors.toList());
+	}
+
+	/**
 	 * Checks if the interaction (follow / unfollow) between two users is valid.
 	 * @param follower follower's account.
 	 * @param followed followed user's account.
@@ -259,7 +285,6 @@ public class UserService {
 
 		accountRepository.save(account);
 	}
-
 
 	/**
 	 * Adds a new menu item to the business's restaurant account.
@@ -642,6 +667,24 @@ public class UserService {
 	 */
 	public List<AccountResumeResponseDTO> getUserAccountRecommendation(String userId) {
 		List<AccountNode> accountNodeList = accountNodeRepository.findAllAccountsRelated(userId);
+
+		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
+		for (AccountNode accountNode : accountNodeList) {
+			accountRepository.findById(accountNode.getId()).ifPresent((account) -> {
+				accountResumeResponseDTOList.add(AccountResumeResponseDTO.fromAccount(account));
+			});
+		}
+
+		return accountResumeResponseDTOList;
+	}
+
+	/**
+	 * Given a user's ID, returns all business accounts that may bee to its interest.
+	 * @param userId users account ID.
+	 * @return list of {@link AccountResumeResponseDTO}.
+	 */
+	public List<AccountResumeResponseDTO> getBusinessAccountRecommendation(String userId) {
+		List<AccountNode> accountNodeList = accountNodeRepository.findAllBusinessRelated(userId);
 
 		List<AccountResumeResponseDTO> accountResumeResponseDTOList = new ArrayList<>();
 		for (AccountNode accountNode : accountNodeList) {

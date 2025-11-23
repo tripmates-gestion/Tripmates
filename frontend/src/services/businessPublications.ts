@@ -1,7 +1,7 @@
 import type {
   BusinessPublicationRequestDTO,
   BusinessPublicationResponseDTO,
-} from '../types/business'
+} from '../types/Business'
 import { apiFetch } from "../api/client"; // ruta a tu apiFetch
 import { ENDPOINTS } from "../api/endpoints";
 import { MOCK_BUSINESS_PUBLICATIONS } from "../components/mocks/businessMocks";
@@ -93,4 +93,12 @@ export async function getBusinessPublicationsPublic(id: string, accessToken: str
     console.error('Error fetching business publications:', error);
     return [];
   }
+}
+
+export async function getLikesForPublication(publicationId: string, accessToken: string | null) {
+  if (!accessToken) throw new Error("No estás autenticado.");
+  return apiFetch(ENDPOINTS.GET_LIKES_FOR_PUBLICATION.replace("{id}", publicationId), {
+    method: "GET",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
 }

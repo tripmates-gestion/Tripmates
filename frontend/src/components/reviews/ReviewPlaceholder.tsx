@@ -5,7 +5,7 @@ import {
   CardMedia, Chip, Grid, IconButton
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import type { Review } from "../../types/review";
+import type { Review } from "../../types/Review";
 import { saveReview, getReviews } from "../../services/reviewService";
 import { useAuth } from "../../hooks/useAuth";
 import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";

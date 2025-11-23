@@ -1,7 +1,7 @@
 // ──────────────────────────────────────────────────────────────────────────────
 // utils/placeHelpers.ts
 // ──────────────────────────────────────────────────────────────────────────────
-import type { DayOfWeek } from "../../../types/business";
+import type { DayOfWeek } from "../../../types/Business";
 import type {BusinessPubAccountDataDTO} from "../../../types/AccountData";
 import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
 
