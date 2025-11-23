@@ -69,9 +69,12 @@ public class PublicationController {
 	public ResponseEntity<?> createReview(@RequestPart("data") String data,
 			@RequestPart(value = "files", required = false) List<MultipartFile> files,
 			@PathVariable String publicationId, @AuthenticationPrincipal UserDetails userDetails) {
-		ReviewCreationRequestDTO review = parsingService.parseAndValidate(data, ReviewCreationRequestDTO.class);
+		ReviewCreationRequestDTO reviewCreationRequestDTO = parsingService.parseAndValidate(data,
+				ReviewCreationRequestDTO.class);
+
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(publicationService.createReview(review, files, publicationId, userDetails.getUsername()));
+			.body(publicationService.createReview(reviewCreationRequestDTO, files, publicationId,
+					userDetails.getUsername()));
 	}
 
 	@GetMapping(value = "/{publicationId}/review")
@@ -89,7 +92,6 @@ public class PublicationController {
 			@ApiResponse(responseCode = "200", description = "Reviews obtained successfully",
 					content = { @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ReviewsListDTO.class)) }),
-
 			@ApiResponse(responseCode = "404", description = "User not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
 	public ResponseEntity<?> getProfile(@PathVariable String userId) {

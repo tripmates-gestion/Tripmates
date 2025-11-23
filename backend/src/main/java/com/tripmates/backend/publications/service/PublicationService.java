@@ -390,10 +390,10 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
-		for (Like like : publication.getLikes()) {
-			if (!like.getUserId().equals(account.getId()))
-				throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
-		}
+		boolean hasLike = publication.getLikes().stream().anyMatch(like -> like.getUserId().equals(account.getId()));
+
+		if (!hasLike)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
 	/**
@@ -420,7 +420,7 @@ public class PublicationService {
 		long isLiked = publicationRepository.existsLike(publicationId, userId);
 
 		if (isLiked == 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 
 		publicationRepository.removeFromLikes(publicationId, userId);
 		accountNodeRepository.removeLiked(userId, publicationId);
