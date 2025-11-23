@@ -14,6 +14,8 @@ import com.tripmates.backend.common.exception.NotFoundException;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.benchmarks.dto.BenchmarkItemDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.common.exception.UnauthorizedException;
+import com.tripmates.backend.common.types.Role;
 
 @Component
 @Transactional
@@ -29,30 +31,19 @@ public class BenchmarkService {
 	private String checkExistentBussinessAccountByEmail(String authUserEmail) {
 		Account authUser = accountRepository.findByEmail(authUserEmail)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    if (authUser.getRole() != Role.BUSINESS)
+      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
 		return authUser.getId();
 	}
 
-	/*
-	 * private String checkExistentBussinessAccountById(String authUserId) { Account
-	 * authUser = accountRepository.findById(authUserId) .orElseThrow(() -> new
-	 * NotFoundException(ValidationErrorMessage.USER_NOT_FOUND)); return authUserId; }
-	 */
 	public List<BenchmarkItemDTO> getMyBenchmarks(String authUserEmail) {
 		String authUserId = checkExistentBussinessAccountByEmail(authUserEmail);
-		List<BenchmarkItemDTO> progress = getBenchMarks(authUserId);
+		List<BenchmarkItemDTO> progress = getBenchmarks(authUserId);
 		return progress;
 	}
 
-	/*
-	 * public List<BenchmarkItemDTO> getPublicBenchmarks(String userId) { String
-	 * authUserId = checkExistentBussinessAccountById(userId); List<BenchmarkItemDTO>
-	 * progress = benchmarkRepository.findByUserId(userId) .stream() .filter(progressItem
-	 * -> progressItem.getIsVisible()) .map(progressItem ->
-	 * BenchmarkItemDTO.from(progressItem)) .collect(Collectors.toList());
-	 *
-	 * return progress; }
-	 */
-	public List<BenchmarkItemDTO> getBenchMarks(String userId) {
+
+	public List<BenchmarkItemDTO> getBenchmarks(String userId) {
 		List<BenchmarkItemDTO> progress = benchmarkRepository.findByUserId(userId)
 			.stream()
 			.map(progressItem -> BenchmarkItemDTO.from(progressItem))
@@ -60,5 +51,29 @@ public class BenchmarkService {
 
 		return progress;
 	}
+
+  public List<BenchmarkItemDTO> updateBenchmarkVisibility(List<BenchmarkItemDTO> updates, String authUserEmail) {
+    String authUserId = checkExistentBussinessAccountByEmail(authUserEmail);
+    Boolean benchmarkNotFound=false;
+    Boolean benchmarkCannotBeUpdated=false;
+
+    for (BenchmarkItemDTO update : updates) {
+      if (benchmarkRepository.findByUserIdAndBenchmarkId(authUserId, update.id()).isEmpty()){
+        benchmarkNotFound=true;
+        continue;
+      }
+      if (benchmarkRepository.updateVisibility(authUserId, update.id(), update.visible()) == 0)
+        benchmarkCannotBeUpdated=true;
+    }
+
+    if (benchmarkNotFound)
+      throw new NotFoundException(ValidationErrorMessage.BENCHMARK_NOT_FOUND);
+    if (benchmarkCannotBeUpdated)
+      throw new NotFoundException(ValidationErrorMessage.BENCHMARK_CANNOT_BE_UPDATED);
+
+    return updates;
+  }
+
+
 
 }

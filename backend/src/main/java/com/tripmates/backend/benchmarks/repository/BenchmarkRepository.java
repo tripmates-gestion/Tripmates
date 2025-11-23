@@ -9,7 +9,7 @@ import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
 import java.util.Optional;
 import com.tripmates.backend.common.types.BenchmarkId;
 
-public interface BenchmarkRepository extends MongoRepository<BenchmarkProgress, String> {
+public interface BenchmarkRepository extends MongoRepository<BenchmarkProgress, String>, BenchmarkRepositoryCustom {
 
 	List<BenchmarkProgress> findByUserId(String userId);
 
@@ -20,5 +20,14 @@ public interface BenchmarkRepository extends MongoRepository<BenchmarkProgress, 
 	 * @return an Optional containing the benchmark progress if found
 	 */
 	Optional<BenchmarkProgress> findByUserIdAndBenchmarkId(String userId, BenchmarkId benchmarkId);
+
+	/**
+	 * Updates the visibility of a benchmark for a user.
+	 * @param userId the user's ID
+	 * @param benchmarkId the benchmark ID
+	 * @param visible the new visibility status
+	 * @return the number of documents updated
+	 */
+	int updateVisibility(String userId, BenchmarkId benchmarkId, boolean visible);
 
 }

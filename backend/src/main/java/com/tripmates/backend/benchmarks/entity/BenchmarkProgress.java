@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BenchmarkProgress {
 
-	private BenchmarkId benchmarkId;// si es 10, de 100, etc likes
+	private BenchmarkId benchmarkId;
 
 	private Boolean isVisible;
 
