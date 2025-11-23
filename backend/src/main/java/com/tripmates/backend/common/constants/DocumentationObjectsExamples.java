@@ -29,7 +29,7 @@ public class DocumentationObjectsExamples {
 			  "description": "Beautiful place with amazing views and full amenities.",
 			  "phoneNumber": "+541112345678",
 			  "email": "contact@hostel.com",
-			  "location": "San Carlos de Bariloche, Argentina",
+			  "location": {"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103},
 			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
 			  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
@@ -51,7 +51,7 @@ public class DocumentationObjectsExamples {
 			  "description": "Updated description",
 			  "phoneNumber": "+541112345678",
 			  "email": "contact@hostel.com",
-			  "location": "123 Address, City",
+			  "location": {"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103},
 			  "openingDays": ["MONDAY", "TUESDAY"],
 			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
 			  "exceptionalClosingDays": ["2025-12-25"],
@@ -122,7 +122,7 @@ public class DocumentationObjectsExamples {
 			  "name": "Updated Restaurant Name",
 			  "description": "Updated description with new details about our services.",
 			  "restaurantType": "Italiano",
-			  "location": "456 New Street, City, Country",
+			  "location": {"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103},
 			  "phoneNumber": "+541119876543",
 			  "publicEmail": "new-email@restaurant.com",
 			  "averagePrice": "$$$",
@@ -285,120 +285,128 @@ public class DocumentationObjectsExamples {
 			""";
 
 	public static final String BUSINESS_ACCOUNT_SEARCH_EXAMPLE = """
-			Search a business account by the filters provided.
+				Search a business account by the filters provided.
 
-			### Filters
-			- `username`: Filters by business's username.
-			- `averagePrice`: Filters by the average price.
-			- `location`: Filters by business's location.
-			- `businessType`: Filter by the business type.
-			- `restaurantType`: Filter by the restaurant type.
-			- `hotelType`: Filter by the hotel type.
-			- `attentionSchedule`: Filter by the attention schedule.
-			    - `openingTime`: Filter by the opening time.
-			    - `closingTime`: Filter by the closing time.
-			- `roomPacksList`: Filter by business hosting room packs.
-			    - `numberOfGuests`: Filter by number of guests.
-			    - `checkInDate`: Filter by the checkin date.
-			    - `checkOutDate`: Filter by the checkout date.
+				### Filters
+				- `username`: Filters by business's username.
+				- `averagePrice`: Filters by the average price.
+				- `location`: Filters by business's location.
+				- `businessType`: Filter by the business type.
+				- `restaurantType`: Filter by the restaurant type.
+				- `hotelType`: Filter by the hotel type.
+				- `attentionSchedule`: Filter by the attention schedule.
+				    - `openingTime`: Filter by the opening time.
+				    - `closingTime`: Filter by the closing time.
+				- `roomPacksList`: Filter by business hosting room packs.
+				    - `numberOfGuests`: Filter by number of guests.
+				    - `checkInDate`: Filter by the checkin date.
+				    - `checkOutDate`: Filter by the checkout date.
 
-			### Example Request
-			```json
-			         {
-			              "username": "string",
-			              "businessType": "RESTAURANT",
-			              "location": "string",
-			              "averagePrice": "$",
-			              "restaurantType": "Cafe",
-			              "attentionSchedule": {
-			                  "openingTime": {
-			                      "hour": 0,
-			                      "minute": 0,
-			                      "second": 0,
-			                      "nano": 0
-			                  },
-			                  "closingTime": {
-			                      "hour": 0,
-			                      "minute": 0,
-			                      "second": 0,
-			                      "nano": 0
-			                  }
-			              },
-			              "hotelType": "Hotel",
-			              "roomPacks": [
-			                 {
-			                     "checkInDate": "2025-11-10",
-			                     "checkOutDate": "2025-11-10",
-			                     "numberOfGuests": 0,
-			                 }
-			              ]
-			          }
-			```
+				### Example Request
+				```json
+				         {
+				              "username": "string",
+				              "businessType": "RESTAURANT",
+				              "location": {
+			  "address": "string",
+			  "latitude": 0,
+			  "longitude": 0
+			},
+				              "averagePrice": "$",
+				              "restaurantType": "Cafe",
+				              "attentionSchedule": {
+				                  "openingTime": {
+				                      "hour": 0,
+				                      "minute": 0,
+				                      "second": 0,
+				                      "nano": 0
+				                  },
+				                  "closingTime": {
+				                      "hour": 0,
+				                      "minute": 0,
+				                      "second": 0,
+				                      "nano": 0
+				                  }
+				              },
+				              "hotelType": "Hotel",
+				              "roomPacks": [
+				                 {
+				                     "checkInDate": "2025-11-10",
+				                     "checkOutDate": "2025-11-10",
+				                     "numberOfGuests": 0,
+				                 }
+				              ]
+				          }
+				```
 
-			### Returns
-			This endpoint returns the following JSON.
-			```json
-			          {
-			              "id": "string",
-			              "avatarURL": "string",
-			              "name": "string",
-			              "email": "string",
-			              "role": "BUSINESS",
-			              "description": "string",
-			              "businessType": "RESTAURANT",
-			              "location": "string",
-			              "phoneNumber": "string",
-			              "publicEmail": "string",
-			              "profileImageUrls": [
-			                  "string"
-			              ],
-			              "averagePrice": "$",
-			              "restaurantType": "Cafe",
-			              "attentionSchedule": {
-			                  "openingTime": {
-			                      "hour": 0,
-			                      "minute": 0,
-			                      "second": 0,
-			                      "nano": 0
-			                  },
-			                  "closingTime": {
-			                      "hour": 0,
-			                      "minute": 0,
-			                      "second": 0,
-			                      "nano": 0
-			                  }
-			              },
-			              "openingDays": [
-			                  "MONDAY"
-			              ],
-			              "menu": [
-			                 {
-			                     "photosURLs": [
-			                        "string"
-			                     ],
-			                     "foodName": "string",
-			                     "price": 0,
-			                     "description": "string"
-			                 }
-			              ],
-			              "hotelType": "Hotel",
-			              "roomPacks": [
-			                 {
-			                     "checkInDate": "2025-11-10",
-			                     "checkOutDate": "2025-11-10",
-			                     "numberOfGuests": 0,
-			                     "services": [
-			                         "string"
-			                     ],
-			                     "price": 0,
-			                     "description": "string",
-			                     "photosURLs": [
-			                         "string"
-			                     ]
-			                 }
-			              ]
-			          }
-			```
-			""";
+				### Returns
+				This endpoint returns the following JSON.
+				```json
+				          {
+				              "id": "string",
+				              "avatarURL": "string",
+				              "name": "string",
+				              "email": "string",
+				              "role": "BUSINESS",
+				              "description": "string",
+				              "businessType": "RESTAURANT",
+				              "location": {
+			  "address": "string",
+			  "latitude": 0,
+			  "longitude": 0
+			},
+				              "phoneNumber": "string",
+				              "publicEmail": "string",
+				              "profileImageUrls": [
+				                  "string"
+				              ],
+				              "averagePrice": "$",
+				              "restaurantType": "Cafe",
+				              "attentionSchedule": {
+				                  "openingTime": {
+				                      "hour": 0,
+				                      "minute": 0,
+				                      "second": 0,
+				                      "nano": 0
+				                  },
+				                  "closingTime": {
+				                      "hour": 0,
+				                      "minute": 0,
+				                      "second": 0,
+				                      "nano": 0
+				                  }
+				              },
+				              "openingDays": [
+				                  "MONDAY"
+				              ],
+				              "menu": [
+				                 {
+				                     "photosURLs": [
+				                        "string"
+				                     ],
+				                     "foodName": "string",
+				                     "price": 0,
+				                     "description": "string"
+				                 }
+				              ],
+				              "hotelType": "Hotel",
+				              "roomPacks": [
+				                 {
+				                     "checkInDate": "2025-11-10",
+				                     "checkOutDate": "2025-11-10",
+				                     "numberOfGuests": 0,
+				                     "services": [
+				                         "string"
+				                     ],
+				                     "price": 0,
+				                     "description": "string",
+				                     "photosURLs": [
+				                         "string"
+				                     ]
+				                 }
+				              ]
+				          }
+				```
+				""";
 
 }

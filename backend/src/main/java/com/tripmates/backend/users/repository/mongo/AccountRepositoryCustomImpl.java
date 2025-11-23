@@ -2,6 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.mongodb.client.result.UpdateResult;
 import com.tripmates.backend.common.types.AttentionSchedule;
+import java.util.regex.Pattern;
 import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.PlanMetadataWithContent;
@@ -15,7 +16,10 @@ import com.tripmates.backend.users.entity.mongo.Account;
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -191,33 +195,50 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (userSearchRequestDTO.followers() != null)
 			criteria.add(Criteria.where("followers." + (userSearchRequestDTO.followers() - 1)).exists(true));
 
-		if (userSearchRequestDTO.address() != null)
-			criteria.add(Criteria.where("location.address").regex(userSearchRequestDTO.address(), "i"));
+		if (userSearchRequestDTO.address() != null) {
+			List<String> userIdsWithMatchingReviews = userIDsWithReviewInPublicationWithLocationAddress(
+					userSearchRequestDTO.address());
+			if (!userIdsWithMatchingReviews.isEmpty()) {
+				criteria.add(Criteria.where("id").in(userIdsWithMatchingReviews));
+			}
+			else {
+				// If no users found with matching reviews, ensure no results are returned
+				criteria.add(Criteria.where("id").is("non-existent-id"));
+			}
+		}
 
 		return criteria;
 	}
 
 	/**
-	 * Returns all users ID which have made a review in a publication with location.
-	 * @param location location where the publication was made.
-	 * @return list of {@link String} IDs.
+	 * Returns all users ID which have made a review in a publication with a matching
+	 * address.
+	 * @param address partial address to search for in publication locations
+	 * @return list of unique {@link String} user IDs.
 	 */
 	private List<String> userIDsWithReviewInPublicationWithLocationAddress(String address) {
-		List<String> userIDsList = new ArrayList<>();
+		Set<String> userIds = new HashSet<>();
 
-		Query query = new Query(Criteria.where("location").regex(address, "i"));
+		// Search for publications with address containing the search term (case
+		// insensitive)
+		String searchPattern = ".*" + Pattern.quote(address.trim()) + ".*";
+		Query query = new Query();
+		query.addCriteria(Criteria.where("location.address").regex(searchPattern, "i"));
 		query.fields().include("reviews.ownerId");
 
 		List<Publication> publicationList = mongoTemplate.find(query, Publication.class);
-		for (Publication publication : publicationList) {
-			if (publication.getReviews() == null)
-				continue;
 
-			for (Review review : publication.getReviews())
-				userIDsList.add(review.getOwnerId());
+		for (Publication publication : publicationList) {
+			if (publication.getReviews() != null) {
+				publication.getReviews()
+					.stream()
+					.map(Review::getOwnerId)
+					.filter(Objects::nonNull)
+					.forEach(userIds::add);
+			}
 		}
 
-		return userIDsList;
+		return new ArrayList<>(userIds);
 	}
 
 	@Override
