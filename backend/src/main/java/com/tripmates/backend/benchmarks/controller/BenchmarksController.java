@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.tripmates.backend.benchmarks.dto.ChangeBenchmarkVisibilityRequestDTO;
 import com.tripmates.backend.benchmarks.service.BenchmarkService;
@@ -30,10 +31,11 @@ public class BenchmarksController {
     return ResponseEntity.ok().body(benchmarkService.updateBenchmarkVisibility(updateRequest.updates(), userDetails.getUsername()));
   }
 
-	/*
-	 * @GetMapping("/{userId}") // publicos public ResponseEntity<?>
-	 * getAllBenchmarks(@PathVariable String userId) { return ResponseEntity.ok().build();
-	 * }
-	 */
+
+	@GetMapping("/user/{userId}") // publicos public ResponseEntity<?>
+	public ResponseEntity<?>getAllBenchmarks(@PathVariable String userId) { 
+    return ResponseEntity.ok().body(benchmarkService.getPublicBenchmarks(userId));
+	}
+	
 
 }
