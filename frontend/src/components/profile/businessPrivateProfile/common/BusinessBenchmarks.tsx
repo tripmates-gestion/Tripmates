@@ -116,6 +116,7 @@ export default function BusinessBenchmarks() {
         <Box sx={{ padding: '0 20px', width: '100%', my: 2, alignSelf: 'center' }}>
             <Accordion elevation={0} variant="outlined" sx={{ borderRadius: 2, '&:before': { display: 'none' } }}>
                 <AccordionSummary
+                    component="div"
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="achievements-content"
                     id="achievements-header"
