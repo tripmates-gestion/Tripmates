@@ -41,11 +41,8 @@ import com.tripmates.backend.TestHelper;
 import com.tripmates.backend.benchmarks.dto.BenchmarkItemDTO;
 import com.tripmates.backend.benchmarks.dto.ChangeBenchmarkVisibilityRequestDTO;
 import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
-import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
 import com.tripmates.backend.common.service.email.EmailService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -72,9 +69,6 @@ public class BenchmarkTest {
 
 	@Autowired
 	private AccountRepository accountRepository;
-
-	@Autowired
-	private BenchmarkRepository benchmarkRepository;
 
 	@MockBean
 	private EmailService emailService;
@@ -209,6 +203,39 @@ public class BenchmarkTest {
     assertTrue(benchmarks.get(1).visible());
     assertEquals(BenchmarkId.tenLikes, benchmarks.get(1).id());
 
+  }
+  @Test
+  void testGivenOneBenchmarkPublicAndOnePrivate_WhenGetPublicBenchmarks_ThenJustSeeOnePublic()throws Exception{
+    String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+    String businessId = accountRepository.findByEmail("business@example.com").get().getId();
+    PublicationResumeResponseDTO publication = createPublication(jwt);
+    for (String jwtLiker : testHelper.getNUserTestingJwt(20)) {
+      likePublication(jwtLiker, publication.id());
+    }
+    BenchmarkItemDTO updateTenLikes=new BenchmarkItemDTO(BenchmarkId.tenLikes, true);
+    ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(List.of( updateTenLikes));
+
+    mockMvc.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
+    .content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
+    .contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+    String userJwt = testHelper.getUserTestingJwt("leti@example.com");
+    String response = mockMvc.perform(get("/benchmarks/user/"+businessId).header("Authorization", "Bearer " + userJwt))
+				.andExpect(status().isOk())
+				.andDo(print())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
+    assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+    assertEquals(BenchmarkId.tenLikes, benchmarks.get(0).id());
   }
 
 }
