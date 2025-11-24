@@ -68,7 +68,12 @@ export async function getPublicBusinessBenchmarks(
             }
         );
         console.log("[API FETCH]: Public benchmarks returned:", benchmarks);
-        return benchmarks || [];
+
+        if (Array.isArray(benchmarks)) {
+            return benchmarks.map((b: any) => (typeof b === 'object' && b.id ? b.id : b));
+        }
+
+        return [];
     } catch (error) {
         console.error("Error fetching public benchmarks:", error);
         return [];
