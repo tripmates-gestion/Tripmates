@@ -3,6 +3,7 @@ package com.tripmates.backend.publication;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.TestHelper;
+import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -59,6 +61,8 @@ public class PublicationTest {
 	private MockMvc mockMvc;
 
 	private TestHelper testHelper;
+  @MockBean
+	private EmailService emailService;
 
 	@BeforeAll
 	void setUp() {
