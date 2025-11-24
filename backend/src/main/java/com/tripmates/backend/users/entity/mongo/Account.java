@@ -149,6 +149,11 @@ public class Account implements UserDetails {
 	 */
 	private Integer numberTotalLikes = 0;
 
+	/**
+	 * Account's historic max total likes.
+	 */
+	private Integer historicMaxNumberTotalLikes = 0;
+
 	@Override
 	public String getPassword() {
 		return this.password;

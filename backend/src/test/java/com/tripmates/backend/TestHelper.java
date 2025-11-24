@@ -9,7 +9,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
@@ -65,6 +66,14 @@ public class TestHelper {
 				});
 		Map<String, String> response = responseEntity.getBody();
 		return response.get("accessToken");
+	}
+
+	public List<String> getNUserTestingJwt(int n) {
+		List<String> jwts = new ArrayList<>();
+		for (int i = 0; i < n; i++) {
+			jwts.add(getUserTestingJwt("user" + i + "@example.com"));
+		}
+		return jwts;
 	}
 
 }
