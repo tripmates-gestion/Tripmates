@@ -19,8 +19,8 @@ public class BenchmarkRepositoryImpl implements BenchmarkRepositoryCustom {
     @Override
     public int updateVisibility(String userId, BenchmarkId benchmarkId, boolean visible) {
         Query query = new Query(where("userId").is(userId).and("benchmarkId").is(benchmarkId));
-        Update update = new Update().set("visible", visible);
+        Update update = new Update().set("isVisible", visible);
         
-        return (int) mongoTemplate.updateFirst(query, update, "benchmarkProgress").getModifiedCount();
+        return (int) mongoTemplate.updateFirst(query, update, "benchmark_progress").getModifiedCount();
     }
 }
