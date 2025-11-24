@@ -428,6 +428,6 @@ public class DocumentationObjectsExamples {
 			             ...
 			         ]
 			```
-			         """;
+			""";
 
 }
