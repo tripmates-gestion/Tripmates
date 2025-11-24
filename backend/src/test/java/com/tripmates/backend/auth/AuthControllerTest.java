@@ -4,14 +4,14 @@ import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
 import com.tripmates.backend.auth.dto.AuthLoginResponseDTO;
 import com.tripmates.backend.auth.dto.AuthLogoutRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
-import org.json.JSONException;
-
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.TestHelper;
 
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.http.*;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import com.tripmates.backend.TestHelper;
 
 import java.util.Objects;
 

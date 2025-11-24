@@ -27,75 +27,75 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex,
 			HttpServletRequest request) {
 		String errorMessage = ex.getBindingResult()
-			.getFieldErrors()
-			.stream()
-			.map(FieldError::getDefaultMessage)
-			.collect(Collectors.joining("; "));
+				.getFieldErrors()
+				.stream()
+				.map(FieldError::getDefaultMessage)
+				.collect(Collectors.joining("; "));
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
 	public ResponseEntity<?> handleConstraintViolation(ConstraintViolationException ex, HttpServletRequest request) {
 		String errorMessage = ex.getConstraintViolations()
-			.stream()
-			.map(violation -> String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
-			.collect(Collectors.joining("; "));
+				.stream()
+				.map(violation -> String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
+				.collect(Collectors.joining("; "));
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), errorMessage,
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(UnauthorizedException.class)
 	public ResponseEntity<?> handleUnauthorizedException(UnauthorizedException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-			.body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Unauthorized", HttpStatus.UNAUTHORIZED.value(), e.getMessage(),
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(ValidationErrorException.class)
 	public ResponseEntity<?> handleValidationErrorException(ValidationErrorException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Validation Error", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(NotFoundException.class)
 	public ResponseEntity<?> handleNotFoundException(NotFoundException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND)
-			.body(new ErrorDTO("about:blank", "Not Found Error", HttpStatus.NOT_FOUND.value(), e.getMessage(),
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Not Found Error", HttpStatus.NOT_FOUND.value(), e.getMessage(),
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(BadRequestException.class)
 	public ResponseEntity<?> handleBadRequestException(BadRequestException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-			.body(new ErrorDTO("about:blank", "Bad Request", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Bad Request", HttpStatus.BAD_REQUEST.value(), e.getMessage(),
+						String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(FileUploadException.class)
 	public ResponseEntity<?> handleFileUploadException(FileUploadException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.body(new ErrorDTO("about:blank", "File Upload Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-					e.getMessage(), String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "File Upload Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+						e.getMessage(), String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleException(Exception e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
-					e.getMessage(), String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR.value(),
+						e.getMessage(), String.valueOf(request.getRequestURI())));
 	}
 
 	@ExceptionHandler(ConflictException.class)
 	public ResponseEntity<?> handleConflictException(ConflictException e, HttpServletRequest request) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
-			.body(new ErrorDTO("about:blank", "Conflict", HttpStatus.CONFLICT.value(), e.getMessage(),
-					String.valueOf(request.getRequestURI())));
+				.body(new ErrorDTO("about:blank", "Conflict", HttpStatus.CONFLICT.value(), e.getMessage(),
+						String.valueOf(request.getRequestURI())));
 	}
 
 }

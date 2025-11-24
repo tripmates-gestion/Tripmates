@@ -25,6 +25,7 @@ import { DEFAULT_STATS } from '../constants/DefaultStats';
 
 import UserReviewsTab from '../components/profile/userProfile/UserReviewsTab';
 import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
+import LikedPublicationsTab from '../components/profile/userProfile/LikedPublicationsTab';
 import { Stat } from '../components/profile/stats';
 
 import { updateUser } from '../services/userService';
@@ -260,8 +261,8 @@ export default function UserProfile() {
             {currentTabKey === 'planes' && <UserPlansTab />}
             {currentTabKey === 'experiencias' && <UserReviewsTab />}
             {/* TODO: AGREGAR TAB DE LIKED */}
-            {currentTabKey === 'liked' && (
-              <EmptyState title="Publicaciones a las que les diste like" />
+            {currentTabKey === 'liked' && currentUser?.id && accessToken && (
+              <LikedPublicationsTab userId={currentUser.id} accessToken={accessToken} />
             )}
             {/* TODO: Agregar TAB de  historial*/}
             {currentTabKey === 'historial' && <EmptyState title="Historial" />}
