@@ -171,10 +171,9 @@ export default function BusinessPublicationsRecomendationFeed() {
     if (!slider.current) return;
 
     if (!isHoveringRef.current && !isInteractingRef.current && shouldAutoScroll) {
-      const distance = 0.002;
-      slider.current.track.add(distance);
+      const SCROLL_SPEED = 0.001; // Reduced speed for smoother carousel
+      slider.current.track.add(SCROLL_SPEED);
     }
-
     animationRef.current = requestAnimationFrame(animation);
   };
 
@@ -316,7 +315,7 @@ export default function BusinessPublicationsRecomendationFeed() {
 
   return (
     <>
-      <Box sx={{ py: { xs: 4, md: 5 }, bgcolor: 'background.paper' }}>
+      <Box sx={{ py: { width: '100%' }, bgcolor: 'background.paper' }}>
         <Container>
           <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti</Typography>
           {/* Carrusel Keen */}
@@ -337,14 +336,14 @@ export default function BusinessPublicationsRecomendationFeed() {
               sx={{
                 mt: 3,
                 borderRadius: 1,
-                py: 0
+                py: 1,
               }}
             >
               {publications.map((p: any) => (
                 <Box
                   key={p.id}
                   className="keen-slider__slide"
-                  sx={{ px: { xs: 1, md: 1 }, display: 'flex' }}
+                  sx={{ px: { xs: 1, md: 1, paddingBottom: 1 }, display: 'flex' }}
                 >
                   <BusinessPublicationCard
                     publication={p}

@@ -56,7 +56,6 @@ export const ENDPOINTS = {
     GET_HISTORY_LIKED: '/users/history/likes/',
 
     //TODO: coordinar enpoints de logros
-    GET_BUSINESS_BENCHMARKS: '/benchmarks/mine',
-    PATCH_BUSINESS_BENCHMARKS_VISIBLE: '/benchmarks/visibility',
+    BUSINESS_BENCHMARKS: '/benchmarks/mine',
     GET_PUBLIC_BENCHMARKS: '/benchmarks/',
 };
