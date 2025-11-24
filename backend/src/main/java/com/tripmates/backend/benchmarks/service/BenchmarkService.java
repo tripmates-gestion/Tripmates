@@ -68,8 +68,8 @@ public class BenchmarkService {
 
     if (benchmarkNotFound)
       throw new NotFoundException(ValidationErrorMessage.BENCHMARK_NOT_FOUND);
-    if (benchmarkCannotBeUpdated)
-      throw new NotFoundException(ValidationErrorMessage.BENCHMARK_CANNOT_BE_UPDATED);
+    // if (benchmarkCannotBeUpdated)
+    //   throw new NotFoundException(ValidationErrorMessage.BENCHMARK_CANNOT_BE_UPDATED);
 
     return updates;
   }
