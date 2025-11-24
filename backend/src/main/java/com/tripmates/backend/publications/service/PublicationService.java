@@ -1,7 +1,10 @@
 package com.tripmates.backend.publications.service;
 
 import com.tripmates.backend.common.exception.UnauthorizedException;
+import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.common.service.storage.StorageService;
+import com.tripmates.backend.common.types.BenchmarkId;
+import com.tripmates.backend.common.types.BenchmarkId.BenchmarkType;
 import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.*;
@@ -16,6 +19,8 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
+import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.BusinessPublicationBuilder;
@@ -30,6 +35,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.ArrayList;
 
 @Component
@@ -54,6 +60,12 @@ public class PublicationService {
 
 	@Autowired
 	private StorageService storageService;
+
+	@Autowired
+	private BenchmarkRepository benchmarkRepository;
+
+	@Autowired
+	private EmailService emailService;
 
 	/**
 	 * Creates a new publication for a business.
@@ -118,13 +130,13 @@ public class PublicationService {
 		if (publicationRequestDTO.location() != null)
 			publication.setLocation(publicationRequestDTO.location());
 
-		if (publicationRequestDTO.openingDays() != null)
+		if (!publicationRequestDTO.openingDays().isEmpty())
 			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
 		if (publicationRequestDTO.attentionSchedule() != null)
 			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (publicationRequestDTO.exceptionalClosingDays() != null)
+		if (!publicationRequestDTO.exceptionalClosingDays().isEmpty())
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		publication.setImageUrls(updateImages(publication.getImageUrls(), publicationRequestDTO.deletePhotoIndexes(),
@@ -336,7 +348,34 @@ public class PublicationService {
 		checkLikeInteraction(publication, account);
 
 		addLikeInfoOnPublication(publicationId, account.getId());
+		addLikeOnOwnerInfoAndRegisteBenchmark(publication.getOwnerId());
+
 	}
+
+	private void addLikeOnOwnerInfoAndRegisteBenchmark(String ownerId) {
+		accountRepository.incrementNumberTotalLikes(ownerId);
+		Account updatedAccount = accountRepository.findById(ownerId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		Integer numberTotalLikes = updatedAccount.getNumberTotalLikes() != null ? updatedAccount.getNumberTotalLikes()
+				: 0;
+		Integer historicMax = updatedAccount.getHistoricMaxNumberTotalLikes() != null
+				? updatedAccount.getHistoricMaxNumberTotalLikes() : 0;
+		if (numberTotalLikes > historicMax) {
+			accountRepository.updateHistoricMaxNumberTotalLikes(ownerId, numberTotalLikes);
+			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.LIKES, numberTotalLikes);
+			if (benchmarkId != null) {
+				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+				if (maybeBenchmarkProgress.isEmpty()) {
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+					benchmarkRepository.save(benchmarkProgress);
+					emailService.sendEmail(updatedAccount.getEmail(), "New Benchmark Progress",
+							"You have reached a new benchmark progress");
+				}
+			}
+		}
+
+	}// en el repository solo se agregan, no se quitan. si
 
 	/**
 	 * Removes a like from a publication.
@@ -353,6 +392,11 @@ public class PublicationService {
 		checkUnlikeInteraction(publication, account);
 
 		removeLikeInfoOnPublication(publicationId, account.getId());
+		removeLikeOnOwnerInfo(publication.getOwnerId());
+	}
+
+	private void removeLikeOnOwnerInfo(String ownerId) {
+		accountRepository.decrementNumberTotalLikes(ownerId);
 	}
 
 	/**
@@ -390,10 +434,9 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
-		for (Like like : publication.getLikes()) {
-			if (!like.getUserId().equals(account.getId()))
-				throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
-		}
+		boolean hasLike = publication.getLikes().stream().anyMatch(like -> like.getUserId().equals(account.getId()));
+		if (!hasLike)
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
 	/**
@@ -402,11 +445,6 @@ public class PublicationService {
 	 * @param userId user's ID.
 	 */
 	private void addLikeInfoOnPublication(String publicationId, String userId) {
-		long isLiked = publicationRepository.existsLike(publicationId, userId);
-
-		if (isLiked > 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
-
 		publicationRepository.addToLikes(publicationId, userId);
 		accountNodeRepository.createLiked(userId, publicationId);
 	}
@@ -420,7 +458,7 @@ public class PublicationService {
 		long isLiked = publicationRepository.existsLike(publicationId, userId);
 
 		if (isLiked == 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 
 		publicationRepository.removeFromLikes(publicationId, userId);
 		accountNodeRepository.removeLiked(userId, publicationId);

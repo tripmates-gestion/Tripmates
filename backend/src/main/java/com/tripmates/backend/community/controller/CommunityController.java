@@ -124,6 +124,7 @@ public class CommunityController {
 	public ResponseEntity<?> getPlans(@AuthenticationPrincipal UserDetails userDetails) {
 		List<PlanWithPublicationsResponseDTO> planResumeResponseDTOList = communityService
 			.getPlans(userDetails.getUsername());
+
 		if (planResumeResponseDTOList.isEmpty())
 			return ResponseEntity.noContent().build();
 
