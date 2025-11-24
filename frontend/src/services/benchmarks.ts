@@ -27,7 +27,11 @@ export const getMyBenchmarksAPI = async (accessToken: string): Promise<BusinessB
     }
 };
 
-export const updateMyBenchmarksVisibilityAPI = async (accessToken: string, changes: { id: string; visible: boolean }[]): Promise<void> => {
+export interface UpdateBusinessBenchmarksVisibilityRequest {
+    updates: { id: string; visible: boolean }[];
+}
+
+export const updateMyBenchmarksVisibilityAPI = async (accessToken: string, changes: UpdateBusinessBenchmarksVisibilityRequest): Promise<void> => {
     try {
         await apiFetch(
             ENDPOINTS.PATCH_BUSINESS_BENCHMARKS_VISIBLE,

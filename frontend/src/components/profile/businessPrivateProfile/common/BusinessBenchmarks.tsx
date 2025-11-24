@@ -23,7 +23,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import SaveIcon from '@mui/icons-material/Save';
 import { ACHIEVEMENTS_LIST } from '../../../../constants/BusinessAchievementsData';
 import { useAuth } from '../../../../hooks/useAuth';
-import { getMyBenchmarksAPI, updateMyBenchmarksVisibilityAPI } from '../../../../services/benchmarks';
+import { getMyBenchmarksAPI, updateMyBenchmarksVisibilityAPI, type UpdateBusinessBenchmarksVisibilityRequest } from '../../../../services/benchmarks';
 
 import { Edit, Close } from '@mui/icons-material';
 
@@ -79,16 +79,18 @@ export default function BusinessBenchmarks() {
         if (!accessToken) return;
         setSaving(true);
 
-        const changes: { id: string; visible: boolean }[] = [];
+        const changes: UpdateBusinessBenchmarksVisibilityRequest = {
+            updates: []
+        };
         ACHIEVEMENTS_LIST.forEach(ach => {
             const wasVisible = publicVisibility.has(ach.id);
             const isVisible = tempVisibility.has(ach.id);
             if (wasVisible !== isVisible) {
-                changes.push({ id: ach.id, visible: isVisible });
+                changes.updates.push({ id: ach.id, visible: isVisible });
             }
         });
 
-        if (changes.length === 0) {
+        if (changes.updates.length === 0) {
             setIsEditing(false);
             setSaving(false);
             return;
