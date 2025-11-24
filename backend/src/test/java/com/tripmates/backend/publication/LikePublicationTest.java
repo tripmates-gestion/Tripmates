@@ -350,4 +350,6 @@ public class LikePublicationTest {
     BenchmarkProgress updatedBenchmark2 = benchmarks.get(1);
 		assertEquals(BenchmarkId.tenLikes, updatedBenchmark2.getBenchmarkId(), "Owner's benchmark should be tenLikes");
 	}
+
+  
 }
