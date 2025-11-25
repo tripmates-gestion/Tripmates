@@ -4,7 +4,11 @@ import ImageUploader from '../../../ui/ImageUploader';
 export type BusinessCommonErrors = Partial<{
   name: string
   description: string
-  location: string
+  location: {
+    address: string
+    latitude: number
+    longitude: number
+  }
   phoneNumber: string
   publicEmail: string
 }>
@@ -15,10 +19,14 @@ export default function BusinessCommonFields({
 }: {
   name: string
   description: string
-  location: string
+  location: {
+    address: string
+    latitude: number
+    longitude: number
+  }
   phoneNumber: string
   publicEmail: string
-  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string)=>void
+  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string | { address: string; latitude: number; longitude: number })=>void
   avatarUrl?: string
   onAvatarSelected: (base64:string)=>void
   disabled?: boolean
@@ -49,11 +57,14 @@ export default function BusinessCommonFields({
       <TextField
         label="Ubicación"
         fullWidth
-        value={location}
-        onChange={e=>onChange('location', e.target.value)}
+        value={location?.address || ''}
+        onChange={e => onChange('location', { 
+          ...(location || { latitude: 0, longitude: 0 }), 
+          address: e.target.value 
+        })}
         disabled={disabled}
         error={Boolean(errors?.location)}
-        helperText={errors?.location || 'Ej: Buenos Aires, Palermo'}
+        helperText={errors?.location?.address || 'Ej: Buenos Aires, Palermo'}
       />
       <TextField
         label="Teléfono"

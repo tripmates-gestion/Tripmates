@@ -21,7 +21,11 @@ export type BusinessCommon = {
   role: AccountType;
   businessType: BusinessType; // viene en /me
   description?: string;
-  location?: string;
+  location?: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
   phoneNumber?: string;
   publicEmail?: string;
   profileImageUrls?: string[];
