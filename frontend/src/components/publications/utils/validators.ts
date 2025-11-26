@@ -1,3 +1,5 @@
+import type { LocationDTO } from '../../types/Location'
+
 // ---------------------- Validadores ----------------------
 
 /**
@@ -30,15 +32,51 @@ export function isValidSchedule(input: string): boolean {
   return /^([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d$/.test(clean)
 }
 
-/**
- * Valida ubicaciones básicas
- * Debe contener al menos una palabra, coma o espacio
- * Ejemplo: "Buenos Aires, Palermo"
- */
-export function isValidLocation(input: string): boolean {
-  const clean = input.trim()
-  if (clean === '') return true
-  return clean.length >= 4 && /[a-zA-Záéíóúñ\s,.-]+/.test(clean)
+export type LocationFieldError = Partial<{
+  address: string
+  latitude: string
+  longitude: string
+}>
+
+function hasCoordinates(value?: number) {
+  return typeof value === 'number' && !Number.isNaN(value)
+}
+
+export function validateLocation(
+  location: LocationDTO | undefined,
+  { required = false }: { required?: boolean } = {}
+): LocationFieldError | undefined {
+  const errors: LocationFieldError = {}
+
+  const hasAnyValue = Boolean(location?.address?.trim()) || hasCoordinates(location?.latitude) || hasCoordinates(location?.longitude)
+
+  if (!required && !hasAnyValue) return undefined
+
+  if (!location?.address?.trim()) {
+    errors.address = 'Ingresá una ciudad o dirección'
+  } else if (location.address.trim().length < 3) {
+    errors.address = 'La ubicación debe tener al menos 3 caracteres'
+  }
+
+  const lat = location?.latitude
+  if (!hasCoordinates(lat)) {
+    errors.latitude = 'Ingresá una latitud válida'
+  } else if (lat! < -90 || lat! > 90) {
+    errors.latitude = 'La latitud debe estar entre -90 y 90'
+  }
+
+  const lng = location?.longitude
+  if (!hasCoordinates(lng)) {
+    errors.longitude = 'Ingresá una longitud válida'
+  } else if (lng! < -180 || lng! > 180) {
+    errors.longitude = 'La longitud debe estar entre -180 y 180'
+  }
+
+  return Object.keys(errors).length > 0 ? errors : undefined
+}
+
+export function isValidLocation(location: LocationDTO | undefined): boolean {
+  return !validateLocation(location, { required: true })
 }
 
 /**

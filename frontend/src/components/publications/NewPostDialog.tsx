@@ -18,6 +18,7 @@ import {
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
 import ImageUploader from '../ui/ImageUploader'
+import OpenStreetMapPicker from '../map/OpenStreetMapPicker'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
 import { createBusinessPublication } from '../../services/businessPublications'
@@ -103,7 +104,14 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
   // ---------------------- Helpers ----------------------
   const hasError = (key: keyof FormState) => Boolean(touched[key] && errors[key])
-  const helper = (key: keyof FormState) => (touched[key] ? errors[key] : '')
+  const helper = (key: keyof FormState) => {
+    if (!touched[key]) return ''
+    if (key === 'location') {
+      const locError = errors.location
+      return locError?.address || locError?.latitude || locError?.longitude || ''
+    }
+    return errors[key as Exclude<keyof FormState, 'location'>] || ''
+  }
 
   const addPhoto = (base64: string) => {
     setForm((prev) => ({ ...prev, photos: [...prev.photos, base64] }))
@@ -148,7 +156,11 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         description: form.description.trim(),
         phoneNumber: form.contact.trim(),
         email: '', // Agregar campo si lo necesitas
-        location: form.location.trim(),
+        location: {
+          address: form.location.address.trim(),
+          latitude: form.location.latitude,
+          longitude: form.location.longitude,
+        },
         openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
         attentionSchedule: parseHours(form.hours),
         exceptionalClosingDays: [],
@@ -312,15 +324,53 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               </Grid>
             </Grid>
                 
-            {/* Ubicación (opcional) */}
+            {/* Ubicación */}
             <TextField
-              label="Ubicación (opcional)"
+              label="Ubicación"
               placeholder="Ciudad, provincia / Dirección"
-              value={form.location}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+              value={form.location.address}
+              onChange={(e) => setForm((prev) => ({ ...prev, location: { ...prev.location, address: e.target.value } }))}
               onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
               error={hasError('location')}
-              helperText={helper('location')}
+              helperText={helper('location') || 'Ej: Buenos Aires, Palermo'}
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Latitud"
+                  type="number"
+                  value={form.location.latitude}
+                  onChange={(e) => setForm((prev) => ({
+                    ...prev,
+                    location: { ...prev.location, latitude: Number(e.target.value) }
+                  }))}
+                  onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
+                  error={Boolean(errors.location?.latitude) && hasError('location')}
+                  helperText={errors.location?.latitude || 'Ej: -34.6037'}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Longitud"
+                  type="number"
+                  value={form.location.longitude}
+                  onChange={(e) => setForm((prev) => ({
+                    ...prev,
+                    location: { ...prev.location, longitude: Number(e.target.value) }
+                  }))}
+                  onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
+                  error={Boolean(errors.location?.longitude) && hasError('location')}
+                  helperText={errors.location?.longitude || 'Ej: -58.3816'}
+                />
+              </Grid>
+            </Grid>
+            <OpenStreetMapPicker
+              location={form.location}
+              onChange={(value) => {
+                setForm((prev) => ({ ...prev, location: value }))
+                setTouched((prev) => ({ ...prev, location: true }))
+              }}
+              disabled={submitting}
             />
 
               </Stack>

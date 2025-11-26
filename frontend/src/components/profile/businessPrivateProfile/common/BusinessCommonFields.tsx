@@ -1,14 +1,12 @@
 import { Stack, TextField } from '@mui/material';
 import ImageUploader from '../../../ui/ImageUploader';
+import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker';
+import type { LocationDTO } from '../../../../types/Location';
 
 export type BusinessCommonErrors = Partial<{
   name: string
   description: string
-  location: {
-    address: string
-    latitude: number
-    longitude: number
-  }
+  location: Partial<Record<keyof LocationDTO, string>>
   phoneNumber: string
   publicEmail: string
 }>
@@ -19,14 +17,10 @@ export default function BusinessCommonFields({
 }: {
   name: string
   description: string
-  location: {
-    address: string
-    latitude: number
-    longitude: number
-  }
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
-  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string | { address: string; latitude: number; longitude: number })=>void
+  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string | LocationDTO)=>void
   avatarUrl?: string
   onAvatarSelected: (base64:string)=>void
   disabled?: boolean
@@ -58,14 +52,41 @@ export default function BusinessCommonFields({
         label="Ubicación"
         fullWidth
         value={location?.address || ''}
-        onChange={e => onChange('location', { 
-          ...(location || { latitude: 0, longitude: 0 }), 
-          address: e.target.value 
+        onChange={e => onChange('location', {
+          ...(location || { latitude: 0, longitude: 0 }),
+          address: e.target.value
         })}
         disabled={disabled}
-        error={Boolean(errors?.location)}
+        error={Boolean(errors?.location?.address)}
         helperText={errors?.location?.address || 'Ej: Buenos Aires, Palermo'}
       />
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <TextField
+          label="Latitud"
+          fullWidth
+          value={location?.latitude ?? ''}
+          onChange={e => onChange('location', {
+            ...location,
+            latitude: Number(e.target.value)
+          })}
+          disabled={disabled}
+          error={Boolean(errors?.location?.latitude)}
+          helperText={errors?.location?.latitude || 'Ej: -34.6037'}
+        />
+        <TextField
+          label="Longitud"
+          fullWidth
+          value={location?.longitude ?? ''}
+          onChange={e => onChange('location', {
+            ...location,
+            longitude: Number(e.target.value)
+          })}
+          disabled={disabled}
+          error={Boolean(errors?.location?.longitude)}
+          helperText={errors?.location?.longitude || 'Ej: -58.3816'}
+        />
+      </Stack>
+      <OpenStreetMapPicker location={location} onChange={(value)=>onChange('location', value)} disabled={disabled} />
       <TextField
         label="Teléfono"
         fullWidth
