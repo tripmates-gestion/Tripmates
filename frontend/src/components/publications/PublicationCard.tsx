@@ -87,7 +87,6 @@ function initials(name?: string) {
 
 function getUserLiked(likes: Array<{id: string}>, userId?: string) {
   if (!userId) return false;
-  console.log(likes);
   return likes.some(l => l.id === userId);
 }
 

@@ -11,6 +11,19 @@ declare global {
 const LEAFLET_SCRIPT = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 const LEAFLET_STYLES = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
 
+// Definí esta env var en tu .env: VITE_MAPTILER_API_KEY=tu_api_key
+const MAPTILER_API_KEY = "UHjZSSUL8xvlIQpi6qYm"
+const MAPTILER_STYLE_ID = 'streets-v2' // podés cambiarlo por satellite, outdoor, etc.
+
+// URL base de tiles de MapTiler
+const MAPTILER_TILE_URL = MAPTILER_API_KEY
+  ? `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/{z}/{x}/{y}.png?key=${MAPTILER_API_KEY}`
+  : '' // si no hay key, luego mostramos error
+
+const MAPTILER_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ' +
+  '<a href="https://www.maptiler.com/copyright/">MapTiler</a>'
+
 let leafletLoader: Promise<LeafletLib> | null = null
 
 type LeafletMap = {
@@ -26,7 +39,9 @@ type LeafletMarker = {
 
 type LeafletLib = {
   map: (container: HTMLElement, options: Record<string, unknown>) => LeafletMap
-  tileLayer: (url: string, options: Record<string, unknown>) => { addTo: (map: LeafletMap) => void }
+  tileLayer: (url: string, options: Record<string, unknown>) => {
+    addTo: (map: LeafletMap) => void
+  }
   marker: (coords: [number, number]) => LeafletMarker
 }
 
@@ -82,7 +97,13 @@ type Props = {
 
 const DEFAULT_CENTER: [number, number] = [-34.6037, -58.3816]
 
-export function OpenStreetMapPicker({ location, onChange, disabled = false, height = 260, interactive = true }: Props) {
+export function OpenStreetMapPicker({
+  location,
+  onChange,
+  disabled = false,
+  height = 260,
+  interactive = true,
+}: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<LeafletMap | null>(null)
   const markerRef = useRef<LeafletMarker | null>(null)
@@ -113,6 +134,11 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
   useEffect(() => {
     let cancelled = false
 
+    if (!MAPTILER_API_KEY) {
+      setError('Falta la API key de MapTiler (VITE_MAPTILER_API_KEY)')
+      return
+    }
+
     loadLeaflet()
       .then((L) => {
         if (cancelled || !containerRef.current || mapRef.current) return
@@ -124,8 +150,9 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
           zoomControl: true,
         })
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors',
+        // 🔹 Acá usamos MapTiler en lugar de los tiles OSM default
+        L.tileLayer(MAPTILER_TILE_URL, {
+          attribution: MAPTILER_ATTRIBUTION,
           maxZoom: 19,
         }).addTo(mapRef.current)
 
@@ -134,7 +161,7 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
             if (disabled) return
             const { lat, lng } = e.latlng
             if (!markerRef.current) {
-              markerRef.current = L.marker([lat, lng]).addTo(mapRef.current)
+              markerRef.current = L.marker([lat, lng]).addTo(mapRef.current!)
             } else {
               markerRef.current.setLatLng([lat, lng])
             }
@@ -146,7 +173,7 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
       })
       .catch(() => {
         if (cancelled) return
-        setError('No se pudo cargar el mapa de OpenStreetMap')
+        setError('No se pudo cargar el mapa')
       })
 
     return () => {
@@ -165,9 +192,11 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
 
   return (
     <Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        Seleccioná una ubicación sobre el mapa (OpenStreetMap)
-      </Typography>
+      {interactive && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          Seleccioná una ubicación sobre el mapa
+        </Typography>
+      )}
       <Box
         ref={containerRef}
         sx={{

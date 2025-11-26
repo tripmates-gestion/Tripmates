@@ -17,6 +17,7 @@ import HotelEditDialog from '../components/profile/businessPrivateProfile/hotel/
 import RestaurantEditDialog from '../components/profile/businessPrivateProfile/restaurant/RestaurantEditDialog';
 import BusinessPresentationTab from '../components/profile/businessPrivateProfile/common/BusinessPresentationTab';
 import BusinessBenchmarks from '../components/profile/businessPrivateProfile/common/BusinessBenchmarks';
+import { NewPostDialog } from '../components/publications/NewPostDialog';
 
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
@@ -233,6 +234,10 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const [toDeleteId, setToDeleteId] = React.useState<string | null>(null);
   const [deleting, setDeleting] = React.useState(false);
+  
+  // Estados para edición
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [publicationToEdit, setPublicationToEdit] = React.useState<BusinessPublicationResponseDTO | null>(null);
 
   const fetchAll = React.useCallback(async () => {
     if (!accessToken) {
@@ -259,6 +264,21 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
   const handleDeleteRequest = (id: string) => {
     setToDeleteId(id);
     setConfirmOpen(true);
+  };
+  
+  const handleEditRequest = (publication: BusinessPublicationResponseDTO) => {
+    setPublicationToEdit(publication);
+    setEditDialogOpen(true);
+  };
+  
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setPublicationToEdit(null);
+  };
+  
+  const handlePublicationUpdated = () => {
+    fetchAll(); // Recargar publicaciones después de editar
+    handleCloseEditDialog();
   };
 
   const handleConfirmDelete = async () => {
@@ -305,8 +325,21 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
           Aún no publicaste nada. Tus publicaciones aparecerán aquí.
         </Typography>
       ) : (
-        <PublicationGrid publications={items} onDelete={handleDeleteRequest} letReview={false} />
+        <PublicationGrid 
+          publications={items} 
+          onEdit={handleEditRequest}
+          onDelete={handleDeleteRequest} 
+          letReview={false} 
+        />
       )}
+
+      {/* Diálogo de edición */}
+      <NewPostDialog 
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        onCreated={handlePublicationUpdated}
+        publicationToEdit={publicationToEdit}
+      />
 
       <Dialog
         open={confirmOpen}
