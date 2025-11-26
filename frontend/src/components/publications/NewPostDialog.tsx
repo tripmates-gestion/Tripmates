@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState, useEffect, useRef } from 'react'
 import {
+  Autocomplete,
   Box,
   Button,
+  Card,
+  CardMedia,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,9 +16,6 @@ import {
   Stack,
   TextField,
   Typography,
-  Card,
-  CardMedia,
-  Chip, Autocomplete,
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
 import ImageUploader from '../ui/ImageUploader'
@@ -34,6 +35,7 @@ import type {
 import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
 import { parseHours } from '../GeneralHelpers'
 import { useSnackbar } from 'notistack';
+import { isValidLocation } from './utils/validators'
 
 // ---------------------- Props ----------------------
 type NewPostDialogProps = {
@@ -122,7 +124,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
         openingDays: publicationToEdit.openingDays || DEFAULT_OPENING_DAYS,
         hours: hours,
         contact: publicationToEdit.phoneNumber || '',
-        location: publicationToEdit.location || '',
+        location: publicationToEdit.location || initialFormState.location,
         photos: publicationToEdit.imageUrls || [],
       });
       setImagesToDelete([]); // Resetear imágenes a eliminar
@@ -181,26 +183,54 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
 
     setSubmitting(true)
     try {
-      // Armar DTO para el backend
-      const dto: BusinessPublicationRequestDTO = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        phoneNumber: form.contact.trim(),
-        email: '', // Agregar campo si lo necesitas
-        location: form.location.trim(),
-        openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
-        attentionSchedule: parseHours(form.hours),
-        exceptionalClosingDays: [],
-        tags: form.tags.length > 0 ? form.tags : ["Otros:"],
+      const isEditing = Boolean(publicationToEdit)
+
+      // Convertir imágenes nuevas (base64) a File y validar
+      const files: File[] = form.photos
+        .map((photo, index) => photo.startsWith('data:') ? dataURLtoFile(photo, `photo-${index}.png`) : null)
+        .filter((file): file is File => Boolean(file))
+
+      files.forEach(validateFile)
+
+      let response: BusinessPublicationResponseDTO
+
+      if (isEditing && publicationToEdit) {
+        const existingPhotoCount = publicationToEdit.imageUrls?.length ?? 0
+        const deletePhotoIndexes = imagesToDelete
+          .filter((idx) => idx < existingPhotoCount)
+
+        const updateDto: PublicationUpdateRequestDTO = {
+          title: form.title.trim() || undefined,
+          description: form.description.trim() || undefined,
+          phoneNumber: form.contact.trim() || undefined,
+          email: undefined,
+          location: isValidLocation(form.location) ? form.location : undefined,
+          openingDays: form.openingDays.length ? form.openingDays : undefined,
+          attentionSchedule: form.hours ? parseHours(form.hours) : undefined,
+          exceptionalClosingDays: undefined,
+          tags: form.tags.length ? form.tags : undefined,
+          deletePhotoIndexes: deletePhotoIndexes.length ? deletePhotoIndexes : undefined,
+        }
+
+        response = await updateBusinessPublication(publicationToEdit.id, updateDto, files, accessToken)
+      } else {
+        const createDto: BusinessPublicationRequestDTO = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          phoneNumber: form.contact.trim(),
+          email: '',
+          location: form.location,
+          openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
+          attentionSchedule: parseHours(form.hours),
+          exceptionalClosingDays: [],
+          tags: form.tags.length > 0 ? form.tags : ['Otros:'],
+        }
+
+        response = await createBusinessPublication(createDto, files, accessToken)
       }
 
-        response = await createBusinessPublication(dto, files, accessToken);
-      }
-
-      // Si el componente fue desmontado, salir
       if (!mountedRef.current) return
 
-      // Crear objeto de publicación (para uso interno si lo necesitas)
       const savedPost: BusinessPost = {
         id: response.id || crypto.randomUUID(),
         title: response.title,
@@ -216,19 +246,15 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
 
       console.log(isEditing ? 'Publicación actualizada:' : 'Publicación creada:', savedPost)
 
-      // Notificar éxito
-      if (mountedRef.current) {
-        enqueueSnackbar(
-          isEditing ? '¡Publicación actualizada!' : '¡Publicación creada!',
-          { variant: 'success' }
-        );
-        onCreated()
-        handleClose()
-      }
+      enqueueSnackbar(
+        isEditing ? '¡Publicación actualizada!' : '¡Publicación creada!',
+        { variant: 'success' }
+      );
+      onCreated()
+      handleClose()
     } catch (error: any) {
       console.error('Error al guardar publicación:', error)
       enqueueSnackbar('Error al publicar. Intentá nuevamente.', { variant: 'error' });
-      
     } finally {
       if (mountedRef.current) {
         setSubmitting(false)
@@ -368,14 +394,14 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
               disabled={submitting}
             />
             <Typography variant="body2" color="text.secondary">
-              {Number.isFinite(form.location.latitude) && Number.isFinite(form.location.longitude) && !(form.location.latitude === 0 && form.location.longitude === 0)
+              {Number.isFinite(form.location.latitude) && Number.isFinite(form.location.longitude) &&
+                !(form.location.latitude === 0 && form.location.longitude === 0)
                 ? `Coordenadas seleccionadas: ${form.location.latitude.toFixed(5)}, ${form.location.longitude.toFixed(5)}`
                 : 'Elegí la ubicación en el mapa para completar latitud y longitud'}
             </Typography>
 
-              </Stack>
+            </Stack>
             <Divider />
-            
 
             {/* Fotos */}
             <Stack spacing={1}>
