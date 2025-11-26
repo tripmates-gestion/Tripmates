@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import type { LocationDTO } from '../../types/Location'
 
@@ -31,6 +31,14 @@ type LeafletLib = {
 }
 
 type LeafletClickEvent = { latlng: { lat: number; lng: number } }
+
+const hasValidCoords = (loc: LocationDTO) => {
+  return (
+    Number.isFinite(loc.latitude) &&
+    Number.isFinite(loc.longitude) &&
+    !(loc.latitude === 0 && loc.longitude === 0)
+  )
+}
 
 function loadLeaflet(): Promise<LeafletLib> {
   if (window.L) return Promise.resolve(window.L as LeafletLib)
@@ -65,17 +73,38 @@ type Props = {
   onChange: (value: LocationDTO) => void
   disabled?: boolean
   height?: number
+  /**
+   * When false, the map is only used to visualize the current location and
+   * clicks will not move the marker nor trigger onChange.
+   */
+  interactive?: boolean
 }
 
 const DEFAULT_CENTER: [number, number] = [-34.6037, -58.3816]
 
-export function OpenStreetMapPicker({ location, onChange, disabled = false, height = 260 }: Props) {
+export function OpenStreetMapPicker({ location, onChange, disabled = false, height = 260, interactive = true }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<LeafletMap | null>(null)
   const markerRef = useRef<LeafletMarker | null>(null)
   const leafletRef = useRef<LeafletLib | null>(null)
   const locationRef = useRef<LocationDTO>(location)
   const [error, setError] = useState<string | null>(null)
+
+  const updateMarker = useCallback((loc: LocationDTO, zoom = 14) => {
+    if (!mapRef.current || !leafletRef.current) return
+
+    if (hasValidCoords(loc)) {
+      const coords: [number, number] = [loc.latitude, loc.longitude]
+      mapRef.current.setView(coords, zoom)
+      if (!markerRef.current) {
+        markerRef.current = leafletRef.current.marker(coords).addTo(mapRef.current)
+      } else {
+        markerRef.current.setLatLng(coords)
+      }
+    } else {
+      mapRef.current.setView(DEFAULT_CENTER, 12)
+    }
+  }, [])
 
   useEffect(() => {
     locationRef.current = location
@@ -100,16 +129,20 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
           maxZoom: 19,
         }).addTo(mapRef.current)
 
-        mapRef.current.on('click', (e: LeafletClickEvent) => {
-          if (disabled) return
-          const { lat, lng } = e.latlng
-          if (!markerRef.current) {
-            markerRef.current = L.marker([lat, lng]).addTo(mapRef.current)
-          } else {
-            markerRef.current.setLatLng([lat, lng])
-          }
-          onChange({ ...locationRef.current, latitude: lat, longitude: lng })
-        })
+        if (interactive) {
+          mapRef.current.on('click', (e: LeafletClickEvent) => {
+            if (disabled) return
+            const { lat, lng } = e.latlng
+            if (!markerRef.current) {
+              markerRef.current = L.marker([lat, lng]).addTo(mapRef.current)
+            } else {
+              markerRef.current.setLatLng([lat, lng])
+            }
+            onChange({ ...locationRef.current, latitude: lat, longitude: lng })
+          })
+        }
+
+        updateMarker(locationRef.current)
       })
       .catch(() => {
         if (cancelled) return
@@ -124,22 +157,11 @@ export function OpenStreetMapPicker({ location, onChange, disabled = false, heig
       }
       markerRef.current = null
     }
-  }, [disabled, onChange])
+  }, [disabled, interactive, onChange, updateMarker])
 
   useEffect(() => {
-    const lat = Number.isFinite(location.latitude) ? location.latitude : DEFAULT_CENTER[0]
-    const lng = Number.isFinite(location.longitude) ? location.longitude : DEFAULT_CENTER[1]
-    const hasValidCoords = Number.isFinite(location.latitude) && Number.isFinite(location.longitude)
-
-    if (mapRef.current && hasValidCoords) {
-      mapRef.current.setView([lat, lng], 14)
-      if (!markerRef.current && leafletRef.current) {
-        markerRef.current = leafletRef.current.marker([lat, lng]).addTo(mapRef.current)
-      } else {
-        markerRef.current.setLatLng([lat, lng])
-      }
-    }
-  }, [location])
+    updateMarker(location)
+  }, [location, updateMarker])
 
   return (
     <Box>

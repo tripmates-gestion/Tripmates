@@ -334,36 +334,6 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               error={hasError('location')}
               helperText={helper('location') || 'Ej: Buenos Aires, Palermo'}
             />
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Latitud"
-                  type="number"
-                  value={form.location.latitude}
-                  onChange={(e) => setForm((prev) => ({
-                    ...prev,
-                    location: { ...prev.location, latitude: Number(e.target.value) }
-                  }))}
-                  onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
-                  error={Boolean(errors.location?.latitude) && hasError('location')}
-                  helperText={errors.location?.latitude || 'Ej: -34.6037'}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Longitud"
-                  type="number"
-                  value={form.location.longitude}
-                  onChange={(e) => setForm((prev) => ({
-                    ...prev,
-                    location: { ...prev.location, longitude: Number(e.target.value) }
-                  }))}
-                  onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
-                  error={Boolean(errors.location?.longitude) && hasError('location')}
-                  helperText={errors.location?.longitude || 'Ej: -58.3816'}
-                />
-              </Grid>
-            </Grid>
             <OpenStreetMapPicker
               location={form.location}
               onChange={(value) => {
@@ -372,6 +342,11 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               }}
               disabled={submitting}
             />
+            <Typography variant="body2" color="text.secondary">
+              {Number.isFinite(form.location.latitude) && Number.isFinite(form.location.longitude) && !(form.location.latitude === 0 && form.location.longitude === 0)
+                ? `Coordenadas seleccionadas: ${form.location.latitude.toFixed(5)}, ${form.location.longitude.toFixed(5)}`
+                : 'Elegí la ubicación en el mapa para completar latitud y longitud'}
+            </Typography>
 
               </Stack>
             <Divider />
