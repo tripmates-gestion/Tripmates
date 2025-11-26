@@ -1,4 +1,4 @@
-import { Stack, TextField } from '@mui/material';
+import { Stack, TextField, Typography } from '@mui/material';
 import ImageUploader from '../../../ui/ImageUploader';
 import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker';
 import type { LocationDTO } from '../../../../types/Location';
@@ -60,33 +60,12 @@ export default function BusinessCommonFields({
         error={Boolean(errors?.location?.address)}
         helperText={errors?.location?.address || 'Ej: Buenos Aires, Palermo'}
       />
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-        <TextField
-          label="Latitud"
-          fullWidth
-          value={location?.latitude ?? ''}
-          onChange={e => onChange('location', {
-            ...location,
-            latitude: Number(e.target.value)
-          })}
-          disabled={disabled}
-          error={Boolean(errors?.location?.latitude)}
-          helperText={errors?.location?.latitude || 'Ej: -34.6037'}
-        />
-        <TextField
-          label="Longitud"
-          fullWidth
-          value={location?.longitude ?? ''}
-          onChange={e => onChange('location', {
-            ...location,
-            longitude: Number(e.target.value)
-          })}
-          disabled={disabled}
-          error={Boolean(errors?.location?.longitude)}
-          helperText={errors?.location?.longitude || 'Ej: -58.3816'}
-        />
-      </Stack>
       <OpenStreetMapPicker location={location} onChange={(value)=>onChange('location', value)} disabled={disabled} />
+      <Typography variant="body2" color="text.secondary">
+        {Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && !(location.latitude === 0 && location.longitude === 0)
+          ? `Coordenadas seleccionadas: ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
+          : 'Hacé clic en el mapa para fijar la ubicación exacta'}
+      </Typography>
       <TextField
         label="Teléfono"
         fullWidth
