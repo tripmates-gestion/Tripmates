@@ -3,7 +3,7 @@ import type { Review } from "../../types/Review";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { getUserByEmail } from "../../services/userService";
+import { getUserByEmail, getUserFollowers } from "../../services/userService";
 import { renderTextWithMentions } from "./NewReviewPlace";
 
 
@@ -12,6 +12,7 @@ export function ReviewGrid({ items }: { items: Review[] }) {
 
     const accessToken = useAuth().accessToken;
     const navigate = useNavigate();
+    const user = useAuth().user!;
 
     const handleUserClick = useCallback(async (authorName: string, authorId: string) => {
         console.log("Haciendo click en usuario:", authorName);
@@ -23,6 +24,22 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             });
         } catch (error) {
             console.error('Error fetching user:', error);
+        }
+    }, [navigate, accessToken]);
+
+    const handleTaggedUserClick = useCallback(async (mention: { name: string }) => {
+        console.log("Usuario mencionado:", mention.name);
+        try {
+            const followers = await getUserFollowers(user.id, accessToken!);
+            const email = followers.find((follower) => follower.name === mention.name)?.email;
+            // Buscar el usuario por nombre (asumiendo que el nombre es el email o username)
+            const mentionedUser = await getUserByEmail(email, accessToken!);
+            console.log("Usuario obtenido:", mentionedUser);
+            navigate(`/userProfile/${mentionedUser.id}`, {
+                state: { account: mentionedUser }
+            });
+        } catch (error) {
+            console.error('Error fetching tagged user:', error);
         }
     }, [navigate, accessToken]);
 
@@ -67,7 +84,7 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             {/* Título + texto */}
             <Typography variant="subtitle1" fontWeight={700}>{r.title}</Typography>
             <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-              {renderTextWithMentions(r.text)}
+              {renderTextWithMentions(r.text, handleTaggedUserClick)}
             </Typography>
   
             {/* Galería */}

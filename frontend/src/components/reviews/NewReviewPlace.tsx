@@ -15,7 +15,10 @@ import { ReviewGrid } from "./ReviewGrid";
 import { getUserFollowers } from "../../services/userService";
 
 // Función para renderizar texto con mentions
-export function renderTextWithMentions(text: string) {
+export function renderTextWithMentions(
+  text: string,
+  onMentionClick?: (mention: { name: string }) => void
+) {
   // Regex mejorado: captura @nombre o @nombre apellido (hasta 2 palabras después del @)
   // Permite letras, números, guiones y espacios entre palabras
   const mentionRegex = /@([\w\-]+(?:\s+[\w\-]+)?)/g;
@@ -29,11 +32,18 @@ export function renderTextWithMentions(text: string) {
       parts.push(text.substring(lastIndex, match.index));
     }
     
+    const mentionName = match[1]; // Sin el @
+    const fullMention = match[0]; // Con el @
+    
     // Agregar el mention con estilo
     parts.push(
       <Box
         component="span"
         key={match.index}
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation();
+          onMentionClick?.({ name: mentionName });
+        }}
         sx={{
           color: '#2196F3',
           fontWeight: 700,
@@ -43,7 +53,7 @@ export function renderTextWithMentions(text: string) {
           }
         }}
       >
-        {match[0]}
+        {fullMention}
       </Box>
     );
     
