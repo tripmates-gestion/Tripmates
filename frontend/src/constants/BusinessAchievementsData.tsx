@@ -55,4 +55,36 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         icon: <WorkspacePremiumIcon fontSize="large" />,
         color: '#9932CC', // Dark Orchid
     },
+    {
+        id: 'firstReview',
+        title: 'Primer review',
+        description: 'Recibiste tu primer review en una publicación.',
+        target: 1,
+        icon: <ThumbUpIcon fontSize="large" />,
+        color: '#9932CC', // Dark Orchid
+    },
+    {
+        id: '10Reviews',
+        title: 'Ganando tracción',
+        description: 'Acumulaste 10 reviews en tus publicaciones.',
+        target: 10,
+        icon: <StarIcon fontSize="large" />,
+        color: '#f5bbd9ff',
+    },
+    {
+        id: '50Reviews',
+        title: 'Favorito local',
+        description: 'Llegaste a los 50 reviews. ¡Estas en boca de todos!',
+        target: 50,
+        icon: <EmojiEventsIcon fontSize="large" />,
+        color: '#FFD700', // Gold
+    },
+    {
+        id: '100Reviews',
+        title: 'Tendencia',
+        description: '¡100 reviews! Tu negocio está siendo trending topic!',
+        target: 100,
+        icon: <VerifiedIcon fontSize="large" />,
+        color: '#b0deedff',
+    },
 ];
