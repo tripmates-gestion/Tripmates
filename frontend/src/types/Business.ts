@@ -57,7 +57,7 @@ export type PublicationUpdateRequestDTO = {
   description?: string
   phoneNumber?: string
   email?: string
-  location?: string
+  location?: LocationDTO
   openingDays?: DayOfWeek[]
   attentionSchedule?: AttentionSchedule
   exceptionalClosingDays?: string[]
