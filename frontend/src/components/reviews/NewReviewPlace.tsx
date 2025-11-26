@@ -2,7 +2,7 @@ import * as React from "react";
 import {
   Box, Stack, Typography, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Rating, Snackbar, Alert,
-  CardMedia, Chip, Grid, IconButton
+  CardMedia, Chip, Grid, IconButton, List, ListItem, ListItemButton, ListItemText
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Review } from "../../types/Review";
@@ -83,6 +83,15 @@ export default function NewReviewPlace({
   const [images, setImages] = React.useState<string[]>([]);
   const [touched, setTouched] = React.useState(false);
 
+  // Estados para autocompletado de menciones
+  const [showMentions, setShowMentions] = React.useState(false);
+  const [mentionSearch, setMentionSearch] = React.useState("");
+  const [cursorPosition, setCursorPosition] = React.useState(0);
+  const textFieldRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Lista de usuarios sugeridos (puedes reemplazar con datos reales de tu API)
+  const suggestedUsers = ["juan", "maria", "pedro", "ana", "carlos", "laura", "diego", "sofia"];
+
 
   const [snack, setSnack] = React.useState<{ open: boolean; msg: string; sev: "success" | "error" }>({
     open: false,
@@ -101,12 +110,76 @@ export default function NewReviewPlace({
     setImages((xs) => xs.filter((_, idx) => idx !== i));
   };
 
+  // Función para manejar cambios en el texto y detectar @
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    
+    
+    setText(newText);
+    setCursorPosition(cursorPos);
+
+    // Buscar si hay un @ antes del cursor
+    const textBeforeCursor = newText.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      // Verificar que no haya espacio después del @
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      
+      if (!textAfterAt.includes(' ') && textAfterAt.length <= 20) {
+        setMentionSearch(textAfterAt);
+        setShowMentions(true);
+        return;
+      }
+    }
+    
+    setShowMentions(false);
+    setMentionSearch("");
+  };
+
+  // Función para insertar una mención seleccionada
+  const insertMention = (username: string) => {
+    const textBeforeCursor = text.substring(0, cursorPosition);
+    const textAfterCursor = text.substring(cursorPosition);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const newText = 
+        text.substring(0, lastAtIndex) + 
+        '@' + username + ' ' + 
+        textAfterCursor;
+      
+      setText(newText);
+      setShowMentions(false);
+      setMentionSearch("");
+      
+      // Enfocar el TextField después de insertar
+      setTimeout(() => {
+        if (textFieldRef.current) {
+          const newCursorPos = lastAtIndex + username.length + 2;
+          textFieldRef.current.focus();
+          textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
+        }
+      }, 0);
+    }
+  };
+
+  // Filtrar usuarios basados en la búsqueda
+  const filteredUsers = suggestedUsers
+    .filter(user => user.toLowerCase().startsWith(mentionSearch.toLowerCase()))
+    .slice(0, 3); // Máximo 3 sugerencias
+  
   const handleOpen = () => {
     setTouched(false);
     setTitle("");
     setText("");
     setRating(null);
     setImages([]);
+    setShowMentions(false);
+    setMentionSearch("");
+    setCursorPosition(0);
     setOpen(true);
   };
 
@@ -225,39 +298,71 @@ export default function NewReviewPlace({
               <Rating value={rating} onChange={(_, val) => setRating(val)} precision={0.5} />
             </Stack>
 
-            {/* Texto con preview de mentions */}
-            <Stack spacing={1}>
-              <TextField
-                label="Tu experiencia (usa @nombre para mencionar a alguien)"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onBlur={() => setTouched(true)}
-                error={hasTextError}
-                helperText={hasTextError ? "El texto es obligatorio. Tip: Escribe @nombre para mencionar a alguien" : "Tip: Escribe @nombre para mencionar a alguien"}
-                multiline
-                minRows={4}
-                autoFocus
-                fullWidth
-              />
-              {/* Preview del texto formateado - siempre visible */}
-              {text.trim() && (
-                <Box 
-                  sx={{ 
-                    p: 2, 
-                    border: '2px solid #2196F3', 
-                    borderRadius: 2, 
-                    bgcolor: '#E3F2FD',
-                  }}
-                >
-                  <Typography variant="caption" color="primary" sx={{ mb: 1, display: 'block', fontWeight: 600 }}>
-                    📝 Vista previa:
-                  </Typography>
-                  <Typography variant="body2" component="div" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {renderTextWithMentions(text)}
-                  </Typography>
-                </Box>
-              )}
-            </Stack>
+            {/* Texto con autocompletado */}
+            <TextField
+              inputRef={textFieldRef}
+              label="Tu experiencia (usa @nombre para mencionar a alguien)"
+              value={text}
+              onChange={handleTextChange}
+              error={hasTextError}
+              helperText={hasTextError ? "El texto es obligatorio. Tip: Escribe @nombre para mencionar a alguien" : "Tip: Escribe @nombre para mencionar a alguien"}
+              multiline
+              minRows={4}
+              fullWidth
+            />
+            
+            {/* Modal de sugerencias de menciones */}
+            <Dialog
+              open={showMentions && filteredUsers.length > 0}
+              onClose={() => {
+                setShowMentions(false);
+                setMentionSearch("");
+              }}
+              maxWidth="xs"
+              fullWidth
+            >
+              <DialogTitle>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography variant="h6">Mencionar a alguien</Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setShowMentions(false);
+                      setMentionSearch("");
+                    }}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Stack>
+              </DialogTitle>
+              <DialogContent>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Selecciona un usuario para mencionar:
+                </Typography>
+                <List>
+                  {filteredUsers.map((username) => (
+                    <ListItem key={username} disablePadding>
+                      <ListItemButton 
+                        onClick={() => insertMention(username)}
+                        sx={{
+                          borderRadius: 1,
+                          '&:hover': {
+                            bgcolor: '#E3F2FD'
+                          }
+                        }}
+                      >
+                        <ListItemText 
+                          primary={`@${username}`}
+                          primaryTypographyProps={{
+                            sx: { color: '#2196F3', fontWeight: 600, fontSize: '1.1rem' }
+                          }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </DialogContent>
+            </Dialog>
 
             {/* Imágenes */}
             <Stack spacing={1}>
