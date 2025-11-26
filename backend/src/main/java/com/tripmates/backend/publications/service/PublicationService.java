@@ -272,8 +272,8 @@ public class PublicationService {
           benchmarkRepository.save(benchmarkProgress);
           emailService.sendHtmlAchievementEmail(
               updatedAccount.getEmail(),
-              "¡Nuevo logro desbloqueado!",
-              "Benchmark de reseñas alcanzado: " + numberTotalReviews + " reseñas",
+              "¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
+              "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
               updatedAccount.getUsername()
           );
         }
@@ -384,7 +384,6 @@ public class PublicationService {
 
 	}
 
-  //TODO: improve email msg
 	private void addLikeOnOwnerInfoAndRegisteBenchmark(String ownerId) {
 		accountRepository.incrementNumberTotalLikes(ownerId);
 		Account updatedAccount = accountRepository.findById(ownerId)
@@ -402,8 +401,12 @@ public class PublicationService {
 				if (maybeBenchmarkProgress.isEmpty()) {
 					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
 					benchmarkRepository.save(benchmarkProgress);
-					emailService.sendEmail(updatedAccount.getEmail(), "New Benchmark Progress",
-							"You have reached a new benchmark progress");
+					emailService.sendHtmlAchievementEmail(
+          			    updatedAccount.getEmail(),
+          			    "¡Nuevo progreso de benchmark alcanzado!",
+          			    "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+          			    updatedAccount.getUsername()
+          			);
 				}
 			}
 		}
