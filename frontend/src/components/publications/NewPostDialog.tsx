@@ -20,12 +20,14 @@ import Grid from '@mui/material/Grid'
 import ImageUploader from '../ui/ImageUploader'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
-import { createBusinessPublication } from '../../services/businessPublications'
+import { createBusinessPublication, updateBusinessPublication } from '../../services/businessPublications'
 import { validateFile } from './utils/imageHelpers'
 import { dataURLtoFile } from '../../components/GeneralHelpers';
 import type {
   BusinessPost,
   BusinessPublicationRequestDTO,
+  BusinessPublicationResponseDTO,
+  PublicationUpdateRequestDTO,
   FormState,
 } from '../../types/Business'
 import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
@@ -37,6 +39,7 @@ type NewPostDialogProps = {
   open: boolean
   onClose: () => void
   onCreated: () => void
+  publicationToEdit?: BusinessPublicationResponseDTO | null
 }
 
 
@@ -77,12 +80,15 @@ export const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }
 
 
 // ---------------------- Componente ----------------------
-export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) {
+export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: NewPostDialogProps) {
   const { accessToken } = useAuth()
   const [form, setForm] = useState<FormState>(initialFormState)
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const { enqueueSnackbar } = useSnackbar();
+  
+  // Estado para rastrear imágenes a eliminar (índices)
+  const [imagesToDelete, setImagesToDelete] = useState<number[]>([])
 
   const validate = usePostValidation()
   const errors = useMemo(() => validate(form), [form, validate])
@@ -100,6 +106,31 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   useEffect(() => {
     if (open) setTouched({})
   }, [open])
+  
+  // Cargar datos de publicación a editar
+  useEffect(() => {
+    if (open && publicationToEdit) {
+      const hours = publicationToEdit.attentionSchedule 
+        ? `${publicationToEdit.attentionSchedule.openingTime}–${publicationToEdit.attentionSchedule.closingTime}`
+        : '';
+      
+      setForm({
+        title: publicationToEdit.title || '',
+        description: publicationToEdit.description || '',
+        tags: publicationToEdit.tags || [],
+        openingDays: publicationToEdit.openingDays || DEFAULT_OPENING_DAYS,
+        hours: hours,
+        contact: publicationToEdit.phoneNumber || '',
+        location: publicationToEdit.location || '',
+        photos: publicationToEdit.imageUrls || [],
+      });
+      setImagesToDelete([]); // Resetear imágenes a eliminar
+    } else if (open && !publicationToEdit) {
+      // Si no hay publicación a editar, resetear el formulario
+      setForm(initialFormState);
+      setImagesToDelete([]);
+    }
+  }, [open, publicationToEdit]);
 
   // ---------------------- Helpers ----------------------
   const hasError = (key: keyof FormState) => Boolean(touched[key] && errors[key])
@@ -142,29 +173,54 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
     setSubmitting(true)
     try {
-      // Armar DTO para el backend
-      const dto: BusinessPublicationRequestDTO = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        phoneNumber: form.contact.trim(),
-        email: '', // Agregar campo si lo necesitas
-        location: form.location.trim(),
-        openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
-        attentionSchedule: parseHours(form.hours),
-        exceptionalClosingDays: [],
-        tags: form.tags.length > 0 ? form.tags : ["Otros:"],
-      }
-
-      // Convertir base64 a Files
-      const files: File[] = form.photos.map((photo, i) =>
-        dataURLtoFile(photo, `photo_${i + 1}.jpg`)
-      )
+      const isEditing = !!publicationToEdit;
+      
+      // Convertir base64 a Files (solo nuevas fotos)
+      const files: File[] = form.photos
+        .filter((photo) => photo.startsWith('data:')) // Solo base64 (nuevas)
+        .map((photo, i) => dataURLtoFile(photo, `photo_${i + 1}.jpg`))
 
       // Validar tamaño/tipo de archivos
       files.forEach(validateFile)
 
-      // Llamada al backend
-      const response = await createBusinessPublication(dto, files, accessToken)
+      let response: BusinessPublicationResponseDTO;
+
+      if (isEditing) {
+        // Modo edición (sin tags, no se pueden editar)
+        const dto: PublicationUpdateRequestDTO = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          phoneNumber: form.contact.trim(),
+          email: '',
+          location: form.location.trim(),
+          openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
+          attentionSchedule: parseHours(form.hours),
+          exceptionalClosingDays: [],
+          deletePhotoIndexes: imagesToDelete.length > 0 ? imagesToDelete : undefined,
+        }
+
+        response = await updateBusinessPublication(
+          publicationToEdit.id,
+          dto,
+          files,
+          accessToken
+        );
+      } else {
+        // Modo creación
+        const dto: BusinessPublicationRequestDTO = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          phoneNumber: form.contact.trim(),
+          email: '',
+          location: form.location.trim(),
+          openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
+          attentionSchedule: parseHours(form.hours),
+          exceptionalClosingDays: [],
+          tags: form.tags.length > 0 ? form.tags : ["Otros:"],
+        }
+
+        response = await createBusinessPublication(dto, files, accessToken);
+      }
 
       // Si el componente fue desmontado, salir
       if (!mountedRef.current) return
@@ -173,7 +229,6 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
       const savedPost: BusinessPost = {
         id: response.id || crypto.randomUUID(),
         title: response.title,
-        // type: form.type as BusinessType,
         description: response.description,
         hours: `${response.attentionSchedule.openingTime}–${response.attentionSchedule.closingTime}`,
         contact: response.phoneNumber,
@@ -184,16 +239,19 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         openingDays: response.openingDays,
       }
 
-      console.log('Publicación creada:', savedPost)
+      console.log(isEditing ? 'Publicación actualizada:' : 'Publicación creada:', savedPost)
 
       // Notificar éxito
       if (mountedRef.current) {
-        enqueueSnackbar('¡Publicación creada!', { variant: 'success' });
+        enqueueSnackbar(
+          isEditing ? '¡Publicación actualizada!' : '¡Publicación creada!',
+          { variant: 'success' }
+        );
         onCreated()
         handleClose()
       }
     } catch (error: any) {
-      console.error('Error al crear publicación:', error)
+      console.error('Error al guardar publicación:', error)
       enqueueSnackbar('Error al publicar. Intentá nuevamente.', { variant: 'error' });
       
     } finally {
@@ -207,7 +265,9 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   return (
     <>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Nueva publicación de negocio</DialogTitle>
+        <DialogTitle>
+          {publicationToEdit ? 'Editar publicación' : 'Nueva publicación de negocio'}
+        </DialogTitle>
 
         <DialogContent>
             <Stack spacing={2} sx={{ pt: 1 }}>
@@ -235,26 +295,28 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
               required
             />
 
-            {/* Tags (multiple + freeSolo) */}
-            <Autocomplete
-              multiple
-              freeSolo
-              options={TAG_OPTIONS}
-              value={form.tags}
-              onChange={(_, newValue) => setForm((prev) => ({ ...prev, tags: newValue }))}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} key={`${option}-${index}`} />
-                ))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Etiquetas (tags)"
-                  placeholder="Ej: Familiar, Romántico, Pet-friendly…"
-                />
-              )}
-            />
+            {/* Tags (multiple + freeSolo) - Solo en modo creación */}
+            {!publicationToEdit && (
+              <Autocomplete
+                multiple
+                freeSolo
+                options={TAG_OPTIONS}
+                value={form.tags}
+                onChange={(_, newValue) => setForm((prev) => ({ ...prev, tags: newValue }))}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} key={`${option}-${index}`} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Etiquetas (tags)"
+                    placeholder="Ej: Familiar, Romántico, Pet-friendly…"
+                  />
+                )}
+              />
+            )}
 
             {/* Días de apertura (opcional: si no elige, usás tu default en el DTO) */}
 
@@ -330,25 +392,54 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
             {/* Fotos */}
             <Stack spacing={1}>
               <Typography variant="subtitle1" fontWeight={700}>
-                Fotos (opcional)
+                Fotos {publicationToEdit ? '' : '(opcional)'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Hasta 6 imágenes. Formato: JPG/PNG/WebP.
+                {publicationToEdit 
+                  ? 'Seleccioná las imágenes que querés eliminar' 
+                  : 'Hasta 6 imágenes. Formato: JPG/PNG/WebP.'
+                }
               </Typography>
 
               <Grid container spacing={2}>
-                {form.photos.map((photo, i) => (
-                  <Grid item key={i} xs={12} sm={6} md={4}>
-                    <Card variant="outlined">
-                      <CardMedia component="img" image={photo} height={160} />
-                      <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        <Button size="small" onClick={() => removePhotoAt(i)}>
-                          Quitar
-                        </Button>
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
+                {form.photos.map((photo, i) => {
+                  const isSelected = imagesToDelete.includes(i);
+                  return (
+                    <Grid item key={i} xs={12} sm={6} md={4}>
+                      <Card 
+                        variant="outlined"
+                        sx={{
+                          position: 'relative',
+                          opacity: isSelected ? 0.5 : 1,
+                          border: isSelected ? '2px solid red' : undefined,
+                        }}
+                      >
+                        <CardMedia component="img" image={photo} height={160} />
+                        <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                          {publicationToEdit ? (
+                            <Button 
+                              size="small" 
+                              color={isSelected ? 'error' : 'primary'}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setImagesToDelete(prev => prev.filter(idx => idx !== i));
+                                } else {
+                                  setImagesToDelete(prev => [...prev, i]);
+                                }
+                              }}
+                            >
+                              {isSelected ? 'Cancelar' : 'Eliminar'}
+                            </Button>
+                          ) : (
+                            <Button size="small" onClick={() => removePhotoAt(i)}>
+                              Quitar
+                            </Button>
+                          )}
+                        </Box>
+                      </Card>
+                    </Grid>
+                  );
+                })}
                 {form.photos.length < 6 && (
                   <Grid item xs={12} md={6}>
                     <Box sx={{ p: 1 }}>
@@ -369,7 +460,10 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
             Cancelar
           </Button>
           <Button variant="contained" onClick={onSubmit} disabled={submitting}>
-            {submitting ? 'Publicando...' : 'Publicar'}
+            {submitting 
+              ? (publicationToEdit ? 'Guardando...' : 'Publicando...') 
+              : (publicationToEdit ? 'Guardar cambios' : 'Publicar')
+            }
           </Button>
         </DialogActions>
       </Dialog>
