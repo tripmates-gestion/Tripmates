@@ -12,6 +12,48 @@ import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper"
 import { ACCOUNT_TYPES } from "../../constants/Rol";
 import { ReviewGrid } from "./ReviewGrid";
 
+// Función para renderizar texto con mentions
+export function renderTextWithMentions(text: string) {
+  const mentionRegex = /@(\w+)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = mentionRegex.exec(text)) !== null) {
+    // Agregar texto antes del mention
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    
+    // Agregar el mention con estilo
+    parts.push(
+      <Box
+        component="span"
+        key={match.index}
+        sx={{
+          color: '#2196F3',
+          fontWeight: 700,
+          cursor: 'pointer',
+          '&:hover': {
+            textDecoration: 'underline'
+          }
+        }}
+      >
+        {match[0]}
+      </Box>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Agregar el texto restante
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
+
 type Props = {
   /** Nombre a mostrar como autor (placeholder) */
   currentUserName?: string;
@@ -183,18 +225,39 @@ export default function NewReviewPlace({
               <Rating value={rating} onChange={(_, val) => setRating(val)} precision={0.5} />
             </Stack>
 
-            {/* Texto */}
-            <TextField
-              label="Tu experiencia"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onBlur={() => setTouched(true)}
-              error={hasTextError}
-              helperText={hasTextError ? "El texto es obligatorio" : ""}
-              multiline
-              minRows={4}
-              autoFocus
-            />
+            {/* Texto con preview de mentions */}
+            <Stack spacing={1}>
+              <TextField
+                label="Tu experiencia (usa @nombre para mencionar a alguien)"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onBlur={() => setTouched(true)}
+                error={hasTextError}
+                helperText={hasTextError ? "El texto es obligatorio. Tip: Escribe @nombre para mencionar a alguien" : "Tip: Escribe @nombre para mencionar a alguien"}
+                multiline
+                minRows={4}
+                autoFocus
+                fullWidth
+              />
+              {/* Preview del texto formateado - siempre visible */}
+              {text.trim() && (
+                <Box 
+                  sx={{ 
+                    p: 2, 
+                    border: '2px solid #2196F3', 
+                    borderRadius: 2, 
+                    bgcolor: '#E3F2FD',
+                  }}
+                >
+                  <Typography variant="caption" color="primary" sx={{ mb: 1, display: 'block', fontWeight: 600 }}>
+                    📝 Vista previa:
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {renderTextWithMentions(text)}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
 
             {/* Imágenes */}
             <Stack spacing={1}>

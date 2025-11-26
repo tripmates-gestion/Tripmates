@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getUserByEmail } from "../../services/userService";
+import { renderTextWithMentions } from "./NewReviewPlace";
 
 
 
@@ -65,7 +66,9 @@ export function ReviewGrid({ items }: { items: Review[] }) {
   
             {/* Título + texto */}
             <Typography variant="subtitle1" fontWeight={700}>{r.title}</Typography>
-            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{r.text}</Typography>
+            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+              {renderTextWithMentions(r.text)}
+            </Typography>
   
             {/* Galería */}
             {r.images.length > 0 && (
