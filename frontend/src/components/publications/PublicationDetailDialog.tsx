@@ -9,7 +9,7 @@ import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
-import { MapTilerMap } from '../map/MapTilerMap';
+//import { MapTilerMap } from '../map/MapTilerMap';
 
 type Props = {
   open: boolean;
@@ -268,8 +268,6 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
           <Stack spacing={0.5} flex={1}>
             <Typography variant="subtitle2" fontWeight={700}>Información</Typography>
             <Typography variant="body2" color="text.secondary">📍 {publication.location.address}</Typography>
-            <Box sx={{ mt: 2, height: 300, borderRadius: 1, overflow: 'hidden' }}>
-</Box>
             <Typography variant="body2" color="text.secondary">☎ {publication.phoneNumber || publication.email}</Typography>
             <Typography variant="body2" color="text.secondary">
               🕘 {publication.attentionSchedule.openingTime}–{publication.attentionSchedule.closingTime}
