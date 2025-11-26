@@ -27,8 +27,8 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const initial: RestaurantForm = {
     name: business.name ?? '',
     description: business.description ?? '',
-    location: typeof business.location === 'string' 
-      ? { address: business.location, latitude: 0, longitude: 0 }
+    location: typeof business.location === 'string'
+      ? { address: business.location, latitude: business.latitude ?? 0, longitude: business.longitude ?? 0 }
       : business.location ?? { address: '', latitude: 0, longitude: 0 },
     phoneNumber: business.phoneNumber ?? '',
     publicEmail: business.publicEmail ?? '',
@@ -45,30 +45,18 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const [form, setForm] = React.useState<RestaurantForm>(initial)
   const [saving, setSaving] = React.useState(false)
   const [toDelete, setToDelete] = React.useState<string[]>([])
-  type FormErrors = {
-    name?: string;
-    description?: string;
-    location?: string | { address?: string; latitude?: string; longitude?: string };
-    phoneNumber?: string;
-    publicEmail?: string;
-    openingDays?: string;
-    openingHours?: string;
-    averagePrice?: string;
-    restaurantType?: string;
-  };
-
-  const [errors, setErrors] = React.useState<FormErrors>({})
+  const [errors, setErrors] = React.useState<RestaurantErrors>({})
 
   React.useEffect(()=>{ if (open){ setForm(initial); setToDelete([]); setErrors({}) } }, [open])
 
   const setField = (k: keyof RestaurantForm, v: any) => {
     if (k === 'location' && typeof v === 'string') {
       setForm(prev => ({
-        ...prev, 
-        location: { 
-          address: v, 
-          latitude: 0, 
-          longitude: 0 
+        ...prev,
+        location: {
+          address: v,
+          latitude: prev.location.latitude ?? 0,
+          longitude: prev.location.longitude ?? 0
         }
       }));
     } else {
@@ -87,13 +75,10 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   
   const openingHoursLines = splitLines(form.openingHours);
   
-  // Convert Location object to string for the API
-  const locationString = form.location.address;
-  
   const preDto = {
     name: form.name.trim(),
     description: form.description,
-    location: locationString,
+    location: form.location,
       phoneNumber: form.phoneNumber.trim(),
       publicEmail: form.publicEmail.trim() || '',
       openingDays: form.openingDays,
@@ -189,21 +174,7 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
               errors={{
                 name: errors.name,
                 description: errors.description,
-                location: (() => {
-                  if (!errors.location) return undefined;
-                  if (typeof errors.location === 'string') {
-                    return { 
-                      address: errors.location, 
-                      latitude: 0, 
-                      longitude: 0 
-                    };
-                  }
-                  return {
-                    address: errors.location.address || '',
-                    latitude: typeof errors.location.latitude === 'number' ? errors.location.latitude : 0,
-                    longitude: typeof errors.location.longitude === 'number' ? errors.location.longitude : 0
-                  };
-                })(),
+                location: errors.location,
                 phoneNumber: errors.phoneNumber,
                 publicEmail: errors.publicEmail
               }}
