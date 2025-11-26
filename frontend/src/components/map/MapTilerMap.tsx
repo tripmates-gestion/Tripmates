@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
 
 // Initialize MapTiler SDK
-maptilersdk.config.apiKey = 'YOUR_MAPTILER_API_KEY'; // You'll need to get this from MapTiler
+maptilersdk.config.apiKey = 'UHjZSSUL8xvlIQpi6qYm'; // You'll need to get this from MapTiler
 
 interface MapTilerMapProps {
   latitude: number;

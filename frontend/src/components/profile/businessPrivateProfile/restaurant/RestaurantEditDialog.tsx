@@ -27,9 +27,9 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const initial: RestaurantForm = {
     name: business.name ?? '',
     description: business.description ?? '',
-    location: typeof business.location === 'string'
-      ? { address: business.location, latitude: business.latitude ?? 0, longitude: business.longitude ?? 0 }
-      : business.location ?? { address: '', latitude: 0, longitude: 0 },
+    location: typeof business?.location === 'string'
+      ? { address: business.location, latitude: (business as any)?.latitude ?? 0, longitude: (business as any)?.longitude ?? 0 }
+      : business?.location ?? { address: '', latitude: 0, longitude: 0 },
     phoneNumber: business.phoneNumber ?? '',
     publicEmail: business.publicEmail ?? '',
     avatarUrl: business.avatarURL ?? '',
