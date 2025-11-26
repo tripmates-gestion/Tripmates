@@ -86,6 +86,9 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const { enqueueSnackbar } = useSnackbar();
+  
+  // Estado para rastrear imágenes a eliminar (índices)
+  const [imagesToDelete, setImagesToDelete] = useState<number[]>([])
 
   const validate = usePostValidation()
   const errors = useMemo(() => validate(form), [form, validate])
@@ -121,9 +124,11 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
         location: publicationToEdit.location || '',
         photos: publicationToEdit.imageUrls || [],
       });
+      setImagesToDelete([]); // Resetear imágenes a eliminar
     } else if (open && !publicationToEdit) {
       // Si no hay publicación a editar, resetear el formulario
       setForm(initialFormState);
+      setImagesToDelete([]);
     }
   }, [open, publicationToEdit]);
 
@@ -192,6 +197,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
           attentionSchedule: parseHours(form.hours),
           exceptionalClosingDays: [],
           tags: form.tags.length > 0 ? form.tags : ["Otros:"],
+          deletePhotoIndexes: imagesToDelete.length > 0 ? imagesToDelete : undefined,
         }
 
         response = await updateBusinessPublication(
@@ -385,26 +391,55 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             {/* Fotos */}
             <Stack spacing={1}>
               <Typography variant="subtitle1" fontWeight={700}>
-                Fotos (opcional)
+                Fotos {publicationToEdit ? '' : '(opcional)'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Hasta 6 imágenes. Formato: JPG/PNG/WebP.
+                {publicationToEdit 
+                  ? 'Seleccioná las imágenes que querés eliminar' 
+                  : 'Hasta 6 imágenes. Formato: JPG/PNG/WebP.'
+                }
               </Typography>
 
               <Grid container spacing={2}>
-                {form.photos.map((photo, i) => (
-                  <Grid item key={i} xs={12} sm={6} md={4}>
-                    <Card variant="outlined">
-                      <CardMedia component="img" image={photo} height={160} />
-                      <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        <Button size="small" onClick={() => removePhotoAt(i)}>
-                          Quitar
-                        </Button>
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
-                {form.photos.length < 6 && (
+                {form.photos.map((photo, i) => {
+                  const isSelected = imagesToDelete.includes(i);
+                  return (
+                    <Grid item key={i} xs={12} sm={6} md={4}>
+                      <Card 
+                        variant="outlined"
+                        sx={{
+                          position: 'relative',
+                          opacity: isSelected ? 0.5 : 1,
+                          border: isSelected ? '2px solid red' : undefined,
+                        }}
+                      >
+                        <CardMedia component="img" image={photo} height={160} />
+                        <Box sx={{ px: 1, py: 1, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                          {publicationToEdit ? (
+                            <Button 
+                              size="small" 
+                              color={isSelected ? 'error' : 'primary'}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setImagesToDelete(prev => prev.filter(idx => idx !== i));
+                                } else {
+                                  setImagesToDelete(prev => [...prev, i]);
+                                }
+                              }}
+                            >
+                              {isSelected ? 'Cancelar' : 'Eliminar'}
+                            </Button>
+                          ) : (
+                            <Button size="small" onClick={() => removePhotoAt(i)}>
+                              Quitar
+                            </Button>
+                          )}
+                        </Box>
+                      </Card>
+                    </Grid>
+                  );
+                })}
+                {!publicationToEdit && form.photos.length < 6 && (
                   <Grid item xs={12} md={6}>
                     <Box sx={{ p: 1 }}>
                       <ImageUploader
