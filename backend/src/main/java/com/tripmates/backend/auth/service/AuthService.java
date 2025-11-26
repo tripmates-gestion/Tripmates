@@ -56,6 +56,9 @@ public class AuthService {
 
 		accountRepository.save(account);
 		accountNodeRepository.save(AccountNode.fromAccount(account));
+
+		if (account.getRole() == Role.BUSINESS)
+			accountNodeRepository.createSharesBusinessType(account.getId());
 	}
 
 	/**

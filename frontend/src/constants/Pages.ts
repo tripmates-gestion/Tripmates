@@ -3,6 +3,7 @@ export const PAGES_ROUTE = {
   search: '/search',
   searchTravelers: '/search/travelers',
   profile: '/profile',
+  acceptInvitation: '/accept-invitation',
   businessPosts: "/business/posts", //parece que NO se usa
   restaurantPublic: "/restaurant",
   hotelPublic: "/hotel",
