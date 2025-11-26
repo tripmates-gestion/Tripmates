@@ -245,10 +245,14 @@ public class PublicationService {
 		publicationRepository.save(publication);
 		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
 				review.getRating());
-    registerReviewBenchmarkOnOwner(publication.getOwnerId());
+        registerReviewBenchmarkOnOwner(publication.getOwnerId());
 		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
 
+  /**
+   * Registers review benchmark progress on publication owner. Also send a email if a new benchmark is reached.
+   * @param ownerId publication owner's ID.
+  */
   private void registerReviewBenchmarkOnOwner(String ownerId) {
     accountRepository.incrementNumberTotalReviews(ownerId);
     Account updatedAccount = accountRepository.findById(ownerId)
@@ -266,8 +270,12 @@ public class PublicationService {
         if (maybeBenchmarkProgress.isEmpty()) {
           BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
           benchmarkRepository.save(benchmarkProgress);
-          emailService.sendEmail(updatedAccount.getEmail(), "New Benchmark Progress",
-            "You have reached a new benchmark progress by receiving reviews");
+          emailService.sendHtmlAchievementEmail(
+              updatedAccount.getEmail(),
+              "¡Nuevo logro desbloqueado!",
+              "Benchmark de reseñas alcanzado: " + numberTotalReviews + " reseñas",
+              updatedAccount.getUsername()
+          );
         }
       }
     }
