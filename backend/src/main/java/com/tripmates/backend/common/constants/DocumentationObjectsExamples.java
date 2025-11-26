@@ -3,40 +3,27 @@ package com.tripmates.backend.common.constants;
 public class DocumentationObjectsExamples {
 
 	/**
- * Example JSON for business publication creation
- */
-public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" +
-        "  \"title\": \"Mountain lodge\",\n" +
-        "  \"description\": \"Beautiful place with amazing views and full amenities.\",\n" +
-        "  \"phoneNumber\": \"+541112345678\",\n" +
-        "  \"email\": \"contact@hostel.com\",\n" +
-        "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n" +
-        "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"],\n" +
-        "  \"attentionSchedule\": {\n" +
-        "    \"openingTime\": \"09:00\",\n" +
-        "    \"closingTime\": \"18:00\"\n" +
-        "  },\n" +
-        "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2025-01-01\"],\n" +
-        "  \"tags\": [\"hostel\", \"mountain\", \"nature\"]\n" +
-        "}";
+	 * Example JSON for business publication creation
+	 */
+	public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" + "  \"title\": \"Mountain lodge\",\n"
+			+ "  \"description\": \"Beautiful place with amazing views and full amenities.\",\n"
+			+ "  \"phoneNumber\": \"+541112345678\",\n" + "  \"email\": \"contact@hostel.com\",\n"
+			+ "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n"
+			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"],\n"
+			+ "  \"attentionSchedule\": {\n" + "    \"openingTime\": \"09:00\",\n" + "    \"closingTime\": \"18:00\"\n"
+			+ "  },\n" + "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2025-01-01\"],\n"
+			+ "  \"tags\": [\"hostel\", \"mountain\", \"nature\"]\n" + "}";
 
 	/**
 	 * Example JSON for business publication update
 	 */
-	public static final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = "{\n" +
-	        "  \"title\": \"New title\",\n" +
-	        "  \"description\": \"Updated description\",\n" +
-	        "  \"phoneNumber\": \"+541112345678\",\n" +
-	        "  \"email\": \"contact@hostel.com\",\n" +
-	        "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n" +
-	        "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n" +
-	        "  \"attentionSchedule\": {\n" +
-	        "    \"openingTime\": \"09:00\",\n" +
-	        "    \"closingTime\": \"18:00\"\n" +
-	        "  },\n" +
-	        "  \"exceptionalClosingDays\": [\"2025-12-25\"],\n" +
-	        "  \"deletePhotoIndexes\": [0, 2]\n" +
-	        "}";
+	public static final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = "{\n" + "  \"title\": \"New title\",\n"
+			+ "  \"description\": \"Updated description\",\n" + "  \"phoneNumber\": \"+541112345678\",\n"
+			+ "  \"email\": \"contact@hostel.com\",\n"
+			+ "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n"
+			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n" + "  \"attentionSchedule\": {\n"
+			+ "    \"openingTime\": \"09:00\",\n" + "    \"closingTime\": \"18:00\"\n" + "  },\n"
+			+ "  \"exceptionalClosingDays\": [\"2025-12-25\"],\n" + "  \"deletePhotoIndexes\": [0, 2]\n" + "}";
 
 	static public final String BUSINESS_PUBLICATION_SEARCH_EXAMPLE = """
 			Filters are received as query params via model attributes.
@@ -267,129 +254,129 @@ public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" +
 			""";
 
 	public static final String BUSINESS_ACCOUNT_SEARCH_EXAMPLE = """
-				Search a business account by the filters provided.
+			Search a business account by the filters provided.
 
-				### Filters
-				- `username`: Filters by business's username.
-				- `averagePrice`: Filters by the average price.
-				- `location`: Filters by business's location.
-				- `businessType`: Filter by the business type.
-				- `restaurantType`: Filter by the restaurant type.
-				- `hotelType`: Filter by the hotel type.
-				- `attentionSchedule`: Filter by the attention schedule.
-				    - `openingTime`: Filter by the opening time.
-				    - `closingTime`: Filter by the closing time.
-				- `roomPacksList`: Filter by business hosting room packs.
-				    - `numberOfGuests`: Filter by number of guests.
-				    - `checkInDate`: Filter by the checkin date.
-				    - `checkOutDate`: Filter by the checkout date.
+			### Filters
+			- `username`: Filters by business's username.
+			- `averagePrice`: Filters by the average price.
+			- `location`: Filters by business's location.
+			- `businessType`: Filter by the business type.
+			- `restaurantType`: Filter by the restaurant type.
+			- `hotelType`: Filter by the hotel type.
+			- `attentionSchedule`: Filter by the attention schedule.
+			    - `openingTime`: Filter by the opening time.
+			    - `closingTime`: Filter by the closing time.
+			- `roomPacksList`: Filter by business hosting room packs.
+			    - `numberOfGuests`: Filter by number of guests.
+			    - `checkInDate`: Filter by the checkin date.
+			    - `checkOutDate`: Filter by the checkout date.
 
-				### Example Request
-				```json
-				         {
-				              "username": "string",
-				              "businessType": "RESTAURANT",
-				              "location": {
-				                "address": "string",
-				                "latitude": 0,
-				                "longitude": 0
-				              },
-				              "averagePrice": "$",
-				              "restaurantType": "Cafe",
-				              "attentionSchedule": {
-				                  "openingTime": {
-				                      "hour": 0,
-				                      "minute": 0,
-				                      "second": 0,
-				                      "nano": 0
-				                  },
-				                  "closingTime": {
-				                      "hour": 0,
-				                      "minute": 0,
-				                      "second": 0,
-				                      "nano": 0
-				                  }
-				              },
-				              "hotelType": "Hotel",
-				              "roomPacks": [
-				                 {
-				                     "checkInDate": "2025-11-10",
-				                     "checkOutDate": "2025-11-10",
-				                     "numberOfGuests": 0,
-				                 }
-				              ]
-				          }
-				```
+			### Example Request
+			```json
+			         {
+			              "username": "string",
+			              "businessType": "RESTAURANT",
+			              "location": {
+			                "address": "string",
+			                "latitude": 0,
+			                "longitude": 0
+			              },
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                 }
+			              ]
+			          }
+			```
 
-				### Returns
-				This endpoint returns the following JSON.
-				```json
-				          {
-				              "id": "string",
-				              "avatarURL": "string",
-				              "name": "string",
-				              "email": "string",
-				              "role": "BUSINESS",
-				              "description": "string",
-				              "businessType": "RESTAURANT",
-				              "location": {
-				                "address": "string",
-				                "latitude": 0,
-				                "longitude": 0
-				              },
-				              "phoneNumber": "string",
-				              "publicEmail": "string",
-				              "profileImageUrls": [
-				                  "string"
-				              ],
-				              "averagePrice": "$",
-				              "restaurantType": "Cafe",
-				              "attentionSchedule": {
-				                  "openingTime": {
-				                      "hour": 0,
-				                      "minute": 0,
-				                      "second": 0,
-				                      "nano": 0
-				                  },
-				                  "closingTime": {
-				                      "hour": 0,
-				                      "minute": 0,
-				                      "second": 0,
-				                      "nano": 0
-				                  }
-				              },
-				              "openingDays": [
-				                  "MONDAY"
-				              ],
-				              "menu": [
-				                 {
-				                     "photosURLs": [
-				                        "string"
-				                     ],
-				                     "foodName": "string",
-				                     "price": 0,
-				                     "description": "string"
-				                 }
-				              ],
-				              "hotelType": "Hotel",
-				              "roomPacks": [
-				                 {
-				                     "checkInDate": "2025-11-10",
-				                     "checkOutDate": "2025-11-10",
-				                     "numberOfGuests": 0,
-				                     "services": [
-				                         "string"
-				                     ],
-				                     "price": 0,
-				                     "description": "string",
-				                     "photosURLs": [
-				                         "string"
-				                     ]
-				                 }
-				              ]
-				          }
-				```
-				""";
+			### Returns
+			This endpoint returns the following JSON.
+			```json
+			          {
+			              "id": "string",
+			              "avatarURL": "string",
+			              "name": "string",
+			              "email": "string",
+			              "role": "BUSINESS",
+			              "description": "string",
+			              "businessType": "RESTAURANT",
+			              "location": {
+			                "address": "string",
+			                "latitude": 0,
+			                "longitude": 0
+			              },
+			              "phoneNumber": "string",
+			              "publicEmail": "string",
+			              "profileImageUrls": [
+			                  "string"
+			              ],
+			              "averagePrice": "$",
+			              "restaurantType": "Cafe",
+			              "attentionSchedule": {
+			                  "openingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  },
+			                  "closingTime": {
+			                      "hour": 0,
+			                      "minute": 0,
+			                      "second": 0,
+			                      "nano": 0
+			                  }
+			              },
+			              "openingDays": [
+			                  "MONDAY"
+			              ],
+			              "menu": [
+			                 {
+			                     "photosURLs": [
+			                        "string"
+			                     ],
+			                     "foodName": "string",
+			                     "price": 0,
+			                     "description": "string"
+			                 }
+			              ],
+			              "hotelType": "Hotel",
+			              "roomPacks": [
+			                 {
+			                     "checkInDate": "2025-11-10",
+			                     "checkOutDate": "2025-11-10",
+			                     "numberOfGuests": 0,
+			                     "services": [
+			                         "string"
+			                     ],
+			                     "price": 0,
+			                     "description": "string",
+			                     "photosURLs": [
+			                         "string"
+			                     ]
+			                 }
+			              ]
+			          }
+			```
+			""";
 
 	public static final String USER_HISTORY_LIKES = """
 			         Returns the publications where the user has left a like.
