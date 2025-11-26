@@ -60,7 +60,7 @@ public class CommunityService {
 		variables.put("toUsername", userToInvite.getUsername());
 		variables.put("planName", plan.name());
 		variables.put("ownerUsername", me.getUsername());
-		emailService.sendHtmlEmail(userToInvite.getEmail(), String.format("Collaborate on %s", plan.name()),
+		emailService.sendHtmlInvitationEmail(userToInvite.getEmail(), String.format("Collaborate on %s", plan.name()),
 				"plan_invitation.html", variables);
 	}
 
