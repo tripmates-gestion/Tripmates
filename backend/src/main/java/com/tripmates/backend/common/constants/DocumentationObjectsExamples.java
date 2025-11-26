@@ -224,7 +224,7 @@ public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" +
 			### Example JSON (PATCH body)
 			```json
 			{
-			  "name": "Roadtrip 2026",
+			  "name": "Road trip 2026",
 			  "description": "Costa atlántica",
 			  "publicationsIdList": ["11111111111", "22222222222"],
 			  "deletePublicationIndexes": [0, 2]
@@ -390,5 +390,34 @@ public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" +
 				          }
 				```
 				""";
+
+	public static final String USER_HISTORY_LIKES = """
+			         Returns the publications where the user has left a like.
+
+			         ### Example Request
+			         Should just use this endpoint
+			         ```
+			         /users/history/likes/{userId}
+			         ```
+
+			         ### Example Response
+			         This endpoint returns the following JSON.
+			```json
+			         [
+			             {
+			                 "title": "Mountain lodge",
+			                 "description": "Beautiful place with amazing views and full amenities.",
+			                 "phoneNumber": "+541112345678",
+			                 "email": "contact@hostel.com",
+			                 "location": "San Carlos de Bariloche, Argentina",
+			                 "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+			                 "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
+			                 "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+			                 "tags": ["hostel", "mountain", "nature"]
+			             },
+			             ...
+			         ]
+			```
+			""";
 
 }

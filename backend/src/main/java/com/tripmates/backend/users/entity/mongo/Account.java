@@ -143,6 +143,16 @@ public class Account implements UserDetails {
 	 */
 	private List<String> followers = new ArrayList<>();
 
+	/**
+	 * Account's total likes.
+	 */
+	private Integer numberTotalLikes = 0;
+
+	/**
+	 * Account's historic max total likes.
+	 */
+	private Integer historicMaxNumberTotalLikes = 0;
+
 	@Override
 	public String getPassword() {
 		return this.password;

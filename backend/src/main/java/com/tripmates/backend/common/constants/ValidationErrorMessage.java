@@ -76,4 +76,7 @@ public class ValidationErrorMessage {
 
 	public static final String USER_NOT_INVITED_TO_PLAN = "El usuario no esta invitado al plan";
 
+  public static final String BENCHMARK_NOT_FOUND = "El benchmark no se encontró o no fue alcanzado";
+
+  public static final String BENCHMARK_CANNOT_BE_UPDATED = "El benchmark no se pudo actualizar";
 }

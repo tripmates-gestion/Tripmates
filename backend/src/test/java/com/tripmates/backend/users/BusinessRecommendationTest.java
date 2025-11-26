@@ -3,6 +3,7 @@ package com.tripmates.backend.users;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.Location;
@@ -30,6 +31,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -153,6 +155,8 @@ public class BusinessRecommendationTest {
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
 		publication.setLocation(createLocation("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 		publication.setLikes(List.of(fran.getId()));
+		publication.setLocation("Islas del Ibicuy, Entre Rios");
+		publication.setLikes(List.of(new Like(fran.getId(), new Date())));
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
