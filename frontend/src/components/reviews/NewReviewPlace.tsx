@@ -16,7 +16,9 @@ import { getUserFollowers } from "../../services/userService";
 
 // Función para renderizar texto con mentions
 export function renderTextWithMentions(text: string) {
-  const mentionRegex = /@(\w+)/g;
+  // Regex mejorado: captura @nombre o @nombre apellido (hasta 2 palabras después del @)
+  // Permite letras, números, guiones y espacios entre palabras
+  const mentionRegex = /@([\w\-]+(?:\s+[\w\-]+)?)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -131,11 +133,20 @@ export default function NewReviewPlace({
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
     
     if (lastAtIndex !== -1) {
-      // Verificar que no haya espacio después del @
+      // Obtener el texto después del @
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
       
-      if (!textAfterAt.includes(' ') && textAfterAt.length <= 20) {
-        setMentionSearch(textAfterAt);
+      // Permitir espacios pero cerrar si:
+      // - Hay doble espacio (termina la mención)
+      // - Hay salto de línea
+      // - Es muy largo (más de 30 caracteres)
+      const shouldClose = 
+        textAfterAt.includes('  ') || // doble espacio
+        textAfterAt.includes('\n') || // salto de línea
+        textAfterAt.length > 30; // muy largo
+      
+      if (!shouldClose) {
+        setMentionSearch(textAfterAt.trim()); // trim para filtrar sin espacios extra
         setShowMentions(true);
         return;
       }
