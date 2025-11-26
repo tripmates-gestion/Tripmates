@@ -1,19 +1,21 @@
 package com.tripmates.backend.users;
 
+import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.TestHelper;
+import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.common.types.Role;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import com.tripmates.backend.config.TestCloudinaryConfig;
-import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
-import com.tripmates.backend.users.entity.mongo.Account;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -24,12 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.TestHelper;
-import com.tripmates.backend.common.types.BusinessType;
-import com.tripmates.backend.common.types.Role;
-import com.tripmates.backend.users.repository.mongo.AccountRepository;
 
-import jakarta.validation.constraints.AssertFalse.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -64,7 +62,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenNoJwt_WhenFollowUser_ThenShouldFailAndReturnError403() throws Exception {
+	void testGivenNoJwt_WhenFollowUser_ThenShouldFailAndReturnError403() {
 		String userIdToFollow = "id-inexistente";
 		ResponseEntity<String> response = restTemplate
 			.postForEntity(testHelper.url("/users/" + userIdToFollow + "/follow"), null, String.class);
@@ -87,7 +85,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenTwoExistingUsers_WhenFollowUser_ThenShouldSucceed() throws Exception {
+	void testGivenTwoExistingUsers_WhenFollowUser_ThenShouldSucceed() {
 		Account leti = new Account();
 		leti.setEmail("letia@gmail.com.ar");
 		leti.setName("Leti");
@@ -106,7 +104,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenTwoExistingUsers_WhenFollowUser_ThenAppearInFollowersOnDb() throws Exception {
+	void testGivenTwoExistingUsers_WhenFollowUser_ThenAppearInFollowersOnDb() {
 		Account followedAccount = new Account();
 		followedAccount.setEmail("leti@gmail.com.ar");
 		followedAccount.setName("Leti");
@@ -129,7 +127,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenManyExistingUsers_WhenFollowOneUser_ThenAppearManyFollowersOnDb() throws Exception {
+	void testGivenManyExistingUsers_WhenFollowOneUser_ThenAppearManyFollowersOnDb() {
 		Account followedAccount = new Account();
 		followedAccount.setEmail("leti@gmail.com.ar");
 		followedAccount.setName("Leti");
@@ -146,7 +144,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenManyExistingUsers_WhenFollowOneUser_ThenAppearOnFollowingsOnDb() throws Exception {
+	void testGivenManyExistingUsers_WhenFollowOneUser_ThenAppearOnFollowingsOnDb() {
 		Account followedAccount = new Account();
 		followedAccount.setEmail("leti@gmail.com.ar");
 		followedAccount.setName("Leti");
@@ -298,7 +296,7 @@ public class FollowUserTest {
 	}
 
 	@Test
-	void testGivenUserAccount_WhenUnfollowAnotherUserFollowed_ThenShouldSuccessAndReturn204() throws Exception {
+	void testGivenUserAccount_WhenUnfollowAnotherUserFollowed_ThenShouldSuccessAndReturn204() {
 		String jwt = testHelper.getUserTestingJwt("other@example.com");
 		Account userAccount = new Account();
 		userAccount.setEmail("leti@gmail.com.ar");
@@ -372,7 +370,7 @@ public class FollowUserTest {
 		JSONAssert.assertEquals(expectedJson, response.getBody(), false);
 	}
 
-	void followUserWithPreviusJwt(String jwt, String followedUserId) {
+	private void followUserWithPreviusJwt(String jwt, String followedUserId) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(jwt);
 		HttpEntity<?> entity = new HttpEntity<>(headers);

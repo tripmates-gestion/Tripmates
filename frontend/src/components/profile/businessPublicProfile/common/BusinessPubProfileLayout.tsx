@@ -13,11 +13,17 @@ import {
   Typography,
   Card,
   CardContent,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
+import { ChevronRight } from "@mui/icons-material";
 import BusinessPublicationsTab from "./BusinessPublicationsTab";
 import ImageCarousel from "../../../ui/ImageCarousel";
 import type { BusinessPubAccountDataDTO } from "../../../../types/AccountData";
-import {COMMING_SOON_IMG} from "../../../../constants/DefaultImages";
+import { COMMING_SOON_IMG } from "../../../../constants/DefaultImages";
+import { ACHIEVEMENTS_LIST } from "../../../../constants/BusinessAchievementsData";
+import { getPublicBusinessBenchmarks } from "../../../../services/benchmarks";
+import { useAuth } from "../../../../hooks/useAuth";
 
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;
@@ -30,7 +36,35 @@ export default function BusinessPubProfileLayout({
   specificTab,
   infoTabLabel = "Más información",
 }: BusinessPubProfileLayoutProps) {
+  const { accessToken } = useAuth();
   const [tab, setTab] = React.useState(0);
+  const [visibleAchievements, setVisibleAchievements] = React.useState<string[]>([]);
+  const [achievementPage, setAchievementPage] = React.useState(0);
+  const PAGE_SIZE = 2;
+
+  React.useEffect(() => {
+    const fetchVisibleBenchmarks = async () => {
+      if (!accessToken) {
+        console.warn("No access token available for fetching benchmarks");
+        return;
+      }
+
+      const benchmarkIds = await getPublicBusinessBenchmarks(business.id, accessToken);
+      setVisibleAchievements(benchmarkIds);
+    };
+
+    fetchVisibleBenchmarks();
+  }, [business.id, accessToken]);
+
+  const handleNextAchievements = () => {
+    setAchievementPage(prev => {
+      const nextStart = (prev + 1) * PAGE_SIZE;
+      if (nextStart >= visibleAchievements.length) return 0;
+      return prev + 1;
+    });
+  };
+
+  const currentAchievements = visibleAchievements.slice(achievementPage * PAGE_SIZE, (achievementPage + 1) * PAGE_SIZE);
 
   const images =
     business.profileImageUrls?.length > 0
@@ -49,30 +83,30 @@ export default function BusinessPubProfileLayout({
               sx={{ width: 100, height: 100 }}
             />
           </Grid>
-          <Grid item>
+          <Grid item xs>
             <Stack direction="row" alignItems="center" spacing={2}>
               <Typography variant="h4" fontWeight="bold">
                 {business.name}
               </Typography>
               <Chip
-                label={business.businessType?business.businessType:"not available yet"}
+                label={business.businessType ? business.businessType : "not available yet"}
                 color="primary"
                 variant="outlined"
               />
             </Stack>
             {business.averagePrice && (
-            <Stack direction="row" alignItems="center" spacing={2}> 
-              <Typography variant="subtitle1" color="text.secondary">
-                Precio promedio:
-              </Typography>
-              <Typography variant="subtitle1" color="green">
-                {business.averagePrice}
-              </Typography>
-            </Stack>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  Precio promedio:
+                </Typography>
+                <Typography variant="subtitle1" color="green">
+                  {business.averagePrice}
+                </Typography>
+              </Stack>
             )}
 
             {business.businessType === "HOTEL" && business.hotelType && (
-              <Stack direction="row" alignItems="center" spacing={2}> 
+              <Stack direction="row" alignItems="center" spacing={2}>
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
@@ -80,7 +114,7 @@ export default function BusinessPubProfileLayout({
               </Stack>
             )}
             {business.businessType === "RESTAURANT" && business.restaurantType && (
-              <Stack direction="row" alignItems="center" spacing={2}> 
+              <Stack direction="row" alignItems="center" spacing={2}>
                 <Typography variant="subtitle1" color="text.secondary">
                   Tipo:
                 </Typography>
@@ -88,6 +122,49 @@ export default function BusinessPubProfileLayout({
               </Stack>
             )}
           </Grid>
+
+          {/* Badges Carousel - Extreme Right */}
+          {visibleAchievements.length > 0 && (
+            <Grid item>
+              <Stack alignItems="flex-end" spacing={1}>
+                <Typography variant="caption" color="text.secondary" fontWeight="bold">
+                  Logros del negocio
+                </Typography>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{
+                    p: 0.5,
+                    pl: 1.5,
+                    pr: 0.5,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 8,
+                    bgcolor: 'background.paper',
+                    boxShadow: 1
+                  }}
+                >
+                  {currentAchievements.map(id => {
+                    const ach = ACHIEVEMENTS_LIST.find(a => a.id === id);
+                    if (!ach) return null;
+                    return (
+                      <Tooltip key={ach.id} title={ach.title}>
+                        <Avatar sx={{ bgcolor: ach.color, width: 32, height: 32, border: '2px solid white' }}>
+                          {React.cloneElement(ach.icon as React.ReactElement<any>, { sx: { fontSize: 20 } })}
+                        </Avatar>
+                      </Tooltip>
+                    )
+                  })}
+                  {visibleAchievements.length > PAGE_SIZE && (
+                    <IconButton size="small" onClick={handleNextAchievements} sx={{ width: 28, height: 28 }}>
+                      <ChevronRight fontSize="small" />
+                    </IconButton>
+                  )}
+                </Stack>
+              </Stack>
+            </Grid>
+          )}
         </Grid>
 
         {/* ──────────────────────── Carrusel + Información ──────────────────────── */}

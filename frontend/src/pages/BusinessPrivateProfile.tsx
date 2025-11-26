@@ -7,17 +7,17 @@ import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
-import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../types/PrivateUserProfiles';
-import ImageCarousel from '../components/ui/ImageCarousel';
-import { formatHours } from './utils/Utils';
+import type { BusinessCommon } from '../types/PrivateUserProfiles';
+
 import PublicationGrid from '../components/publications/PublicationGrid';
 import type { BusinessPublicationResponseDTO } from '../types/Business';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
 import HotelEditDialog from '../components/profile/businessPrivateProfile/hotel/HotelEditDialog';
 import RestaurantEditDialog from '../components/profile/businessPrivateProfile/restaurant/RestaurantEditDialog';
-import { InfoRow } from '../components/profile/businessPublicProfile/common/BusinessPubProfileLayout';
-import { PriceBadge, OpeningDaysRow} from "../components/profile/businessPublicProfile/Utils";
+import BusinessPresentationTab from '../components/profile/businessPrivateProfile/common/BusinessPresentationTab';
+import BusinessBenchmarks from '../components/profile/businessPrivateProfile/common/BusinessBenchmarks';
+
 import RestaurantMenuTab from '../components/profile/businessPublicProfile/restaurant/RestaurantMenuTab';
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
 import { BusinessMetricsButton } from '../components/metrics/BottonMetrics';
@@ -30,22 +30,7 @@ const BASE_TABS = [
   { key: 'fotos', label: 'Fotos' },
 ];
 
-function isRestaurant(
-  b: BusinessUser
-): b is BusinessCommon & { businessType: 'RESTAURANT' } & RestaurantExtras {
-  return b.businessType === 'RESTAURANT';
-}
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
-        {title}
-      </Typography>
-      {children}
-    </Box>
-  );
-}
 
 function makeUrl(business: BusinessCommon | null | undefined): string {
   if (!business) return '';
@@ -59,13 +44,13 @@ export default function BusinessProfile() {
   const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  
+
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
       ? [...BASE_TABS, { key: 'menu', label: 'Menú' }]
       : business?.businessType === BUSINESS_TYPES.hotel
-      ? [...BASE_TABS, { key: 'habitaciones', label: 'Habitaciones' }]
-      : BASE_TABS;
+        ? [...BASE_TABS, { key: 'habitaciones', label: 'Habitaciones' }]
+        : BASE_TABS;
 
   const currentTabKey = tabs[tab]?.key;
 
@@ -158,6 +143,9 @@ export default function BusinessProfile() {
             </Stack>
           </CardContent>
 
+          {/* Logros */}
+          <BusinessBenchmarks />
+
           <Divider />
 
           <Tabs
@@ -176,108 +164,7 @@ export default function BusinessProfile() {
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'mi-presentacion' && (
-              <Stack spacing={3}>
-                <Box>
-                  {!business.profileImageUrls || business.profileImageUrls.length === 0 ? (
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Aún no subiste fotos a tu perfil.
-                    </Typography>
-                  ) : (
-                    <ImageCarousel
-                      images={business.profileImageUrls ?? []}
-                      aspectRatio={16 / 9}
-                      height={300}
-                      fit="contain"
-                    />
-                  )}
-                </Box>
-
-                <Grid container spacing={3} alignItems="flex-start">
-                  <Grid item xs={12} md={7}>
-                    {!!business.description && (
-                      <Section title="Descripción">
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ lineHeight: 1.7 }}
-                        >
-                          {business.description}
-                        </Typography>
-                      </Section>
-                    )}
-
-                    {isRestaurant(business) ? (
-                      <>
-                        <Section title="Atención">
-                          <OpeningDaysRow openingDays={business.openingDays} />
-                        </Section>
-
-                        <Section title="Detalles del restaurante">
-                          <Stack
-                            direction="row"
-                            spacing={1.5}
-                            flexWrap="wrap"
-                            alignItems="center"
-                          >
-                            {business.attentionSchedule && (
-                              <Chip
-                                size="small"
-                                variant="outlined"
-                                label={formatHours(business.attentionSchedule)}
-                              />
-                            )}
-                            {!!business.restaurantType && (
-                              <Chip
-                                size="small"
-                                variant="outlined"
-                                label={business.restaurantType}
-                              />
-                            )}
-                            {!!business.averagePrice && (
-                              <PriceBadge value={business.averagePrice} />
-                            )}
-                          </Stack>
-                        </Section>
-                      </>
-                    ) : business.businessType === BUSINESS_TYPES.hotel ? (
-                      <>
-                        <Section title="Detalles del hotel">
-                          <Stack
-                            direction="row"
-                            spacing={1.5}
-                            flexWrap="wrap"
-                            alignItems="center"
-                          >
-                            {!!business.hotelType && (
-                              <Chip
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                                label={business.hotelType}
-                                sx={{
-                                  fontWeight: 600,
-                                  textTransform: 'capitalize',
-                                }}
-                              />
-                            )}
-                            {!!business.averagePrice && (
-                              <PriceBadge value={business.averagePrice} />
-                            )}
-                          </Stack>
-                        </Section>
-                      </>
-                    ) : null}
-                  </Grid>
-
-                  <Grid item xs={12} md={5}>
-                    <Section title="Contacto">
-                      <InfoRow label="Ubicación" value={business.location} icon="📍" />
-                      <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />
-                      <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />
-                    </Section>
-                  </Grid>
-                </Grid>
-              </Stack>
+              <BusinessPresentationTab business={business} />
             )}
 
             {currentTabKey === 'publicaciones' && (
@@ -338,11 +225,6 @@ export default function BusinessProfile() {
     </Box>
   );
 }
-
-
-
-
-
 
 export function BusinessPublicationsTab({ accessToken }: { accessToken: string | null }) {
   const [items, setItems] = React.useState<BusinessPublicationResponseDTO[]>([]);
@@ -412,54 +294,54 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
       </Stack>
     );
 
-    return (
-      <Box>
-        {items.length === 0 ? (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ textAlign: "center", mt: 4 }}
-          >
-            Aún no publicaste nada. Tus publicaciones aparecerán aquí.
-          </Typography>
-        ) : (
-          <PublicationGrid publications={items} onDelete={handleDeleteRequest} letReview={false} />
-        )}
-    
-        <Dialog
-          open={confirmOpen}
-          onClose={deleting ? undefined : handleCancelDelete}
-          maxWidth="xs"
-          fullWidth
+  return (
+    <Box>
+      {items.length === 0 ? (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: "center", mt: 4 }}
         >
-          <DialogTitle>Eliminar publicación</DialogTitle>
-          <DialogContent>
-            <Typography variant="body2" color="text.secondary">
-              {toDeletePub ? (
-                <>
-                  ¿Seguro que querés eliminar <strong>{toDeletePub.title}</strong>?
-                  Esta acción no se puede deshacer.
-                </>
-              ) : (
-                "¿Seguro que querés eliminar esta publicación? Esta acción no se puede deshacer."
-              )}
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCancelDelete} disabled={deleting}>
-              Cancelar
-            </Button>
-            <Button
-              color="error"
-              variant="contained"
-              onClick={handleConfirmDelete}
-              disabled={deleting}
-              startIcon={deleting ? <CircularProgress size={18} /> : undefined}
-            >
-              Eliminar
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    );
+          Aún no publicaste nada. Tus publicaciones aparecerán aquí.
+        </Typography>
+      ) : (
+        <PublicationGrid publications={items} onDelete={handleDeleteRequest} letReview={false} />
+      )}
+
+      <Dialog
+        open={confirmOpen}
+        onClose={deleting ? undefined : handleCancelDelete}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar publicación</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {toDeletePub ? (
+              <>
+                ¿Seguro que querés eliminar <strong>{toDeletePub.title}</strong>?
+                Esta acción no se puede deshacer.
+              </>
+            ) : (
+              "¿Seguro que querés eliminar esta publicación? Esta acción no se puede deshacer."
+            )}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} disabled={deleting}>
+            Cancelar
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={18} /> : undefined}
+          >
+            Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
 }

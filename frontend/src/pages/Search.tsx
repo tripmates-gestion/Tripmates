@@ -138,8 +138,8 @@ export default function Search() {
         {isSearching
           ? `🔎 Resultados (${searchResults.length})`
           : q
-          ? `🔎 Resultados para “${q}”`
-          : "✨ Recomendados para vos"}
+          ? `Resultados para “${q}”`
+          : ""}
       </Typography>
 
       {/* Resultados de búsqueda */}
@@ -190,12 +190,12 @@ export default function Search() {
 
       {/* Recomendaciones */}
       <BusinessRecommendationsSection />
-
-      {/* Resultados por defecto cuando no buscas */}
-      {!isSearching && (
+      
+      
+      {/* Resultados */}
+      {items.length > 0 ? (
         <PlaceGrid businessAccounts={items} />
       ) : null}
-
 
     </Stack>
   );

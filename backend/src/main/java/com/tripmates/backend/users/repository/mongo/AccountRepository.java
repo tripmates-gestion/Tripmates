@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 
 public interface AccountRepository extends MongoRepository<Account, String>, AccountRepositoryCustom {
 
@@ -32,5 +33,25 @@ public interface AccountRepository extends MongoRepository<Account, String>, Acc
 	 */
 	@Query(value = "{ '_id' : ?0, 'followers' : ?1 }", count = true)
 	long existsFollowers(String followedUserId, String followerUserId);
+
+	/**
+	 * Increment the number of total likes of an account.
+	 * @param userId user's ID.
+	 */
+	@Query("{ '_id' : ?0 }")
+	@Update("{ '$inc' : { 'numberTotalLikes' : 1 } }")
+	void incrementNumberTotalLikes(String userId);
+
+	/**
+	 * Decrement the number of total likes of an account.
+	 * @param userId user's ID.
+	 */
+	@Query("{ '_id' : ?0 }")
+	@Update("{ '$inc' : { 'numberTotalLikes' : -1 } }")
+	void decrementNumberTotalLikes(String userId);
+
+	@Query("{ '_id' : ?0 }")
+	@Update("{ '$set' : { 'historicMaxNumberTotalLikes' : ?1 } }")
+	void updateHistoricMaxNumberTotalLikes(String userId, Integer newHistoricMaxNumberTotalLikes);
 
 }

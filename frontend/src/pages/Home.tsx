@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import { Box, Button, Container, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import type { Place } from '../components/ui/PlaceCard';
@@ -12,109 +11,90 @@ import { PAGES_ROUTE } from '../constants/Pages';
 import { useAuth } from '../hooks/useAuth';
 import BusinessRecommendationFeed from '../components/publicationsFeed/BusinessPublicationRecomendationFeed';
 
-// Otro mock que es igual que el que esta en Search.tsx
-const MOCK: Place[] = [
-  {
-    id: '4', 
-    name: 'London', 
-    city: 'London', 
-    country: 'United Kingdom', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.londoninfoguide.com/images/oxford-street-in-london-england-uk.webp' 
-  },
-  {
-    id: '5', 
-    name: 'Helsinki', 
-    city: 'Helsinki', 
-    country: 'Finland', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://content.r9cdn.net/rimg/dimg/30/00/adff18cf-city-7232-16480d2ee82.jpg?crop=true&width=1020&height=498' 
-  },
-  { 
-    id: '6', 
-    name: 'Santorini', 
-    city: 'Santorini', 
-    country: 'Greece', 
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.greekexclusiveproperties.com/wp-content/uploads/2019/10/Santorini-Declared-No1-Island-in-the-World-.jpg' 
-  },
-];
-
-
 export default function Home() {
   const context = useAuth();
-  const isAuthenticated = context=== undefined || context.accessToken === null? false: true;
-  const isTraveler = isAuthenticated && context.user?.role === 'USER'?true:false;
+  const isAuthenticated = context === undefined || context.accessToken === null ? false : true;
+  const isTraveler = isAuthenticated && context.user?.role === 'USER' ? true : false;
 
 
-    // Página principal con secciones: Hero, Destinos y Pasos
-    return (
-      <Box sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>
-        <Hero />
-        {/* MOSTRAMOS FEED DE RECOMENDACIONES DE PUBLICACIONES DE NEGOCIOS SOLO A VIAJEROS AUTENTICADOS  */}
-        {isTraveler && <BusinessRecommendationFeed />}
-        <TopDestinations />
-        <Steps />
-        <Footer />
-      </Box>
-    );
-  }
-  
+  // Página principal con secciones: Hero, Destinos y Pasos
+  return (
+    <Box sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>
+      <Hero isTraveler={isTraveler} />
+      <TopDestinations />
+      <Steps />
+      <Footer />
+    </Box>
+  );
+}
+
 // --- Sección principal con imagen e introducción ---
-export function Hero() {
+export function Hero({ isTraveler }: { isTraveler: boolean }) {
   return (
     <Box
       sx={{
         display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 6,            // espacio entre columnas
-        pt: { xs: 2, md: 0 },   // padding superior reducido
-        pb: { xs: 6, md: 0 },  // padding inferior igual al original (si querés mantenerlo)
+        flexDirection: 'column',
+        pt: { xs: 2, md: 0 },
         px: { xs: 2, md: 6 },
+        position: 'relative',
       }}
     >
-      {/* Texto */}
-      <Box sx={{ flex: 1, maxWidth: { md: '50%' } }}>
-        <Typography variant="overline" color="primary" gutterBottom>
-          Destinos alrededor del mundo
-        </Typography>
+      {/* Contenido principal en dos columnas */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        {/* Texto */}
+        <Box sx={{ flex: 1, maxWidth: { md: '50%' } }}>
+          <Typography variant="overline" color="primary" gutterBottom>
+            Destinos alrededor del mundo
+          </Typography>
 
-        <Typography variant="h3" fontWeight={800} lineHeight={1.2} gutterBottom>
-          Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y conecta con otros viajeros
-        </Typography>
+          <Typography variant="h4" fontWeight={800} lineHeight={1.2} gutterBottom>
+            Viaja, disfruta <Box component="span" sx={{ color: '#f17832' }}>—</Box> y conecta con otros viajeros
+          </Typography>
 
-        <Typography variant="body1" color="text.secondary" sx={{ mt: 3 }}>
-          Descubre experiencias lugares y personas inolvidables. Deja que TripMates te inspire en tu próxima aventura.
-        </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5 }}>
+            Descubre experiencias lugares y personas inolvidables. Deja que TripMates te inspire en tu próxima aventura.
+          </Typography>
 
-        <Stack direction="row" spacing={2} mt={4}>
-          <Button variant="outlined" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.search}>
-            Explora destinos
-          </Button>
-          <Button variant="contained" color="primary" size="large"component={RouterLink} to={PAGES_ROUTE.searchTravelers}>
-            Conecta con otros viajeros
-          </Button>
-        </Stack>
+          <Stack direction="row" spacing={2} mt={2}>
+            <Button variant="outlined" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.search}>
+              Explora destinos
+            </Button>
+            <Button variant="contained" color="primary" size="large" component={RouterLink} to={PAGES_ROUTE.searchTravelers}>
+              Conecta con otros viajeros
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* Imagen */}
+        <Box sx={{ flex: 1, maxWidth: { md: '50%' } }}>
+          <Card sx={{ borderRadius: 4, boxShadow: 6, overflow: 'hidden' }}>
+            <CardMedia
+              component="img"
+              height="350"
+              image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
+              alt="Viajero"
+            />
+          </Card>
+        </Box>
       </Box>
 
-      {/* Imagen */}
-      <Box sx={{ flex: 1, maxWidth: { md: '50%' } }}>
-        <Card sx={{ borderRadius: 4, boxShadow: 6, overflow: 'hidden' }}>
-          <CardMedia
-            component="img"
-            image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
-            alt="Viajero"
-          />
-        </Card>
-      </Box>
+      {/* CARRUSEL DE RECOMENDACIONES (solo viajeros) */}
+      {isTraveler && (
+        <BusinessRecommendationFeed />
+      )}
     </Box>
   );
 }
+
 
 // --- Sección de destinos más populares ---
 function TopDestinations() {
@@ -130,9 +110,9 @@ function TopDestinations() {
         {/* Grilla de tarjetas con los destinos */}
         <Grid container spacing={4}>
           {MOCK.map((p) => (
-                      <Grid key={p.id} xs={12} sm={6} md={4} item sx={{ mb: 3 }}>
-                        <PlaceCard place={p} />
-                      </Grid> 
+            <Grid key={p.id} xs={12} sm={6} md={4} item sx={{ mb: 3 }}>
+              <PlaceCard place={p} />
+            </Grid>
           ))}
         </Grid>
       </Container>
@@ -173,9 +153,9 @@ function Steps() {
 // --- Sección de pie de página ---
 function Footer() {
   return (
-    <Box sx={{ bgcolor: 'background.default', py: 6, mx: 'calc(50% - 50vw)', mt: 8}}>
+    <Box sx={{ bgcolor: 'background.default', py: 6, mx: 'calc(50% - 50vw)', mt: 8 }}>
       <Container>
-      <Divider sx={{ my: 4 }} />
+        <Divider sx={{ my: 4 }} />
         <Grid container spacing={4}>
           {/* Separador entre secciones */}
           <Grid item xs={12}>
@@ -256,3 +236,34 @@ function Footer() {
     </Box>
   );
 }
+
+// Otro mock que es igual que el que esta en Search.tsx
+const MOCK: Place[] = [
+  {
+    id: '4',
+    name: 'London',
+    city: 'London',
+    country: 'United Kingdom',
+    rating: 4.7,
+    priceLabel: '$$$',
+    photoUrl: 'https://www.londoninfoguide.com/images/oxford-street-in-london-england-uk.webp'
+  },
+  {
+    id: '5',
+    name: 'Helsinki',
+    city: 'Helsinki',
+    country: 'Finland',
+    rating: 4.7,
+    priceLabel: '$$$',
+    photoUrl: 'https://content.r9cdn.net/rimg/dimg/30/00/adff18cf-city-7232-16480d2ee82.jpg?crop=true&width=1020&height=498'
+  },
+  {
+    id: '6',
+    name: 'Santorini',
+    city: 'Santorini',
+    country: 'Greece',
+    rating: 4.7,
+    priceLabel: '$$$',
+    photoUrl: 'https://www.greekexclusiveproperties.com/wp-content/uploads/2019/10/Santorini-Declared-No1-Island-in-the-World-.jpg'
+  },
+];

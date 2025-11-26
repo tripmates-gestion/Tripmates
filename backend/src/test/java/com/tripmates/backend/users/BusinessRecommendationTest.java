@@ -3,6 +3,7 @@ package com.tripmates.backend.users;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.config.TestCloudinaryConfig;
@@ -29,6 +30,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,9 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import({ TestCloudinaryConfig.class })
 public class BusinessRecommendationTest {
-
-	@LocalServerPort
-	private int port;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -147,7 +146,7 @@ public class BusinessRecommendationTest {
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
 		publication.setLocation("Islas del Ibicuy, Entre Rios");
-		publication.setLikes(List.of(fran.getId()));
+		publication.setLikes(List.of(new Like(fran.getId(), new Date())));
 
 		publicationRepository.save(publication);
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
