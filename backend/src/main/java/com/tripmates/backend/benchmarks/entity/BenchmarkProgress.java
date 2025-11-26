@@ -24,9 +24,9 @@ public class BenchmarkProgress {
 
 	private String userId;
 
-	public BenchmarkProgress(BenchmarkId benchmarkId,  String userId) {
+	public BenchmarkProgress(BenchmarkId benchmarkId, String userId) {
 		this.benchmarkId = benchmarkId;
-		this.isVisible = false;//by default
+		this.isVisible = false;// by default
 		this.userId = userId;
 	}
 

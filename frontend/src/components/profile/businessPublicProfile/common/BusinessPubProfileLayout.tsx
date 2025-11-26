@@ -196,10 +196,26 @@ export default function BusinessPubProfileLayout({
                 <Divider sx={{ my: 2 }} />
 
                 <Stack spacing={1.2}>
-                  {business.location && <InfoRow label="Ubicación" value={business.location} icon="📍" />}
+                  {business.location && (
+                    <InfoRow 
+                      label="Ubicación" 
+                      value={
+                        business.location && typeof business.location === 'object' 
+                          ? business.location.address || 'Ubicación no disponible'
+                          : 'Ubicación no disponible'
+                      } 
+                      icon="📍" 
+                    />
+                  )}
                   {business.phoneNumber && <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />}
                   {business.publicEmail && <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />}
-                  {business.location == null && business.phoneNumber == null && business.publicEmail == null && <InfoRow label="Comming soon" value="Disculpa las molestias, esta información aun no está disponible." icon="⏳" />}
+                  {!business.location && !business.phoneNumber && !business.publicEmail && (
+                    <InfoRow 
+                      label="Comming soon" 
+                      value="Disculpa las molestias, esta información aun no está disponible." 
+                      icon="⏳" 
+                    />
+                  )}
                 </Stack>
               </CardContent>
             </Card>
@@ -237,20 +253,39 @@ export function InfoRow({
   icon,
 }: {
   label: string;
-  value: string | undefined;
+  value: any;
   icon?: string;
 }) {
-  if (!value) return null;
+  // Safely convert value to string
+  const displayValue = React.useMemo(() => {
+    if (!value) return '';
+    if (value && typeof value === 'object') {
+      // If it's an object with an address property, use that
+      if ('address' in value) return value.address;
+      // If it's a React element, return it directly
+      if (React.isValidElement(value)) return value;
+      // Otherwise stringify the object (for debugging)
+      return JSON.stringify(value);
+    }
+    return String(value);
+  }, [value]);
+
+  if (!displayValue) return null;
+  
   return (
     <Stack direction="row" spacing={1.5} alignItems="center">
-      <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
-        {icon}
-      </Typography>
+      {icon && (
+        <Typography variant="body1" sx={{ fontSize: "1.1rem" }}>
+          {icon}
+        </Typography>
+      )}
       <Box>
         <Typography variant="body2" color="text.secondary">
           {label}
         </Typography>
-        <Typography variant="body1">{value}</Typography>
+        <Typography variant="body1">
+          {typeof displayValue === 'string' ? displayValue : 'Invalid value'}
+        </Typography>
       </Box>
     </Stack>
   );

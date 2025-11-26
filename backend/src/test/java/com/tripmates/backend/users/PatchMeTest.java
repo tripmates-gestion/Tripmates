@@ -68,7 +68,11 @@ public class PatchMeTest {
 				  "name": "Beautiful place with amazing views and full amenities.",
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
-				  "location": "contact@hostel.com",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "phoneNumber": "+541112345678",
 				  "publicEmail": "contact@hostel.com",
 				  "averagePrice": "$$",
@@ -384,7 +388,11 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"location": "New Location"
+				"location": {
+						"address": "New Location",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					}
 				}
 				""";
 

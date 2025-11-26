@@ -10,7 +10,11 @@ export type BusinessPost = {
   description: string
   hours: string
   contact: string
-  location: string
+  location: {
+    address: string
+    latitude: number
+    longitude: number
+  }
   photos: string[]
   createdAt: string
   rating?: number // opcional para usar con PlaceCard
@@ -61,7 +65,11 @@ export type BusinessPublicationResponseDTO = {
   exceptionalClosingDays: string[]
   phoneNumber: string
   email: string
-  location: string
+  location: {
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
   imageUrls: string[]
   ownerId: string
   ownerUsername: string

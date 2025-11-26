@@ -9,6 +9,7 @@ import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/NewReviewPlace";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
+//import { MapTilerMap } from '../map/MapTilerMap';
 
 type Props = {
   open: boolean;
@@ -67,7 +68,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const prevIndex = (i: number) => ((i - 1 + max) % max);
   const next = () => setIndex(i => nextIndex(i));
   const prev = () => setIndex(i => prevIndex(i));
-
+  const [showMap, setShowMap] = useState(false);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -266,7 +267,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mt={2}>
           <Stack spacing={0.5} flex={1}>
             <Typography variant="subtitle2" fontWeight={700}>Información</Typography>
-            <Typography variant="body2" color="text.secondary">📍 {publication.location}</Typography>
+            <Typography variant="body2" color="text.secondary">📍 {publication.location.address}</Typography>
             <Typography variant="body2" color="text.secondary">☎ {publication.phoneNumber || publication.email}</Typography>
             <Typography variant="body2" color="text.secondary">
               🕘 {publication.attentionSchedule.openingTime}–{publication.attentionSchedule.closingTime}

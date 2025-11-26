@@ -12,7 +12,7 @@ import java.util.List;
 @Validated
 public record BusinessSearchRequestDTO(@Schema(description = "Filter by user's username") String username,
 		@Schema(description = "Filter by business's average price") AveragePrice averagePrice,
-		@Schema(description = "Filter by business's location") String location,
+		@Schema(description = "Filter by business's address location") Location location,
 		@Schema(description = "Filter by business's type") BusinessType businessType,
 		@Schema(description = "Filter by restaurant's type") RestaurantType restaurantType,
 		@Schema(description = "Filter by hotel's type") HotelType hotelType,

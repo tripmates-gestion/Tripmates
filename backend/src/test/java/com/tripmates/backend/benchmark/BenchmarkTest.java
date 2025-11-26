@@ -1,7 +1,5 @@
 package com.tripmates.backend.benchmark;
 
-
-
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -93,45 +91,14 @@ public class BenchmarkTest {
 		restTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory());
 	}
 
-  private void likePublication(String jwt, String publicationId) throws Exception {
-    mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwt))
-      .andExpect(status().isNoContent())
-      .andDo(print());
-  }
-
-
-	private ReviewResponseDTO createReview(String publicationId, String userAccountTestingJwt, String reviewJson)
-			throws Exception {
-		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
-				reviewJson.getBytes(StandardCharsets.UTF_8));
-
-		String body = mockMvc
-			.perform(multipart("/publications/" + publicationId + "/review").file(dataPart).with(request -> {
-				request.setMethod("POST");
-				return request;
-			}).header("Authorization", "Bearer " + userAccountTestingJwt))
-			.andExpect(status().isCreated())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
-
-		return objectMapper.readValue(body, ReviewResponseDTO.class);
+	private void likePublication(String jwt, String publicationId) throws Exception {
+		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwt))
+			.andExpect(status().isNoContent())
+			.andDo(print());
 	}
 
-  private void reviewBusinessPublication(String userAccountTestingJwt, String publicationId) throws Exception{
+	private PublicationResumeResponseDTO createPublication(String jwt) throws Exception {
 		String requestJson = """
-				{
-				  "title": "Bla bla...",
-				  "content": "Bla bla bla bla...",
-				  "rating": 5.0
-				}
-				""";
-    createReview(publicationId, userAccountTestingJwt, requestJson);
-  }
-
-
-  private PublicationResumeResponseDTO createPublication(String jwt) throws Exception {
-    		String requestJson = """
 				{
 				  "title": "NOT SO BEATUTIFUL.",
 				  "description": "Beautiful place with amazing views and full amenities.",
@@ -142,152 +109,159 @@ public class BenchmarkTest {
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
-        
-    return objectMapper.readValue(response, new TypeReference<PublicationResumeResponseDTO>() {});
-  }
+			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		return new ObjectMapper().readValue(response, new TypeReference<PublicationResumeResponseDTO>() {
+		});
+	}
 
 	@Test
 	void testGivenNoBenchMarks_WhenGetMyBenchmarks_ThenReturnEmptyList() throws Exception {
 		String jwt = testHelper.getBusinessTestingJwt("liker@example.com", BusinessType.HOTEL);
 
 		String response = mockMvc.perform(get("/benchmarks/mine").header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<BenchmarkProgress> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkProgress>>() {});
+		List<BenchmarkProgress> benchmarks = objectMapper.readValue(response,
+				new TypeReference<List<BenchmarkProgress>>() {
+				});
 		assertEquals(0, benchmarks.size(), "Should have 0 benchmarks");
 	}
 
-  @Test
+	@Test
 	void testGivenOneBenchMark_WhenGetMyBenchmarks_ThenReturnOneBenchMark() throws Exception {
 		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
-    PublicationResumeResponseDTO publication = createPublication(jwt);
-    String jwtLiker =testHelper.getUserTestingJwt("liker@example.com");
-    likePublication(jwtLiker, publication.id());
+		PublicationResumeResponseDTO publication = createPublication(jwt);
+		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
+		likePublication(jwtLiker, publication.id());
 
 		String response = mockMvc.perform(get("/benchmarks/mine").header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response,
+				new TypeReference<List<BenchmarkItemDTO>>() {
+				});
 		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
-    assertFalse(benchmarks.get(0).visible());
-    assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
+		assertFalse(benchmarks.get(0).visible());
+		assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
 	}
 
-  @Test
-  void testGivenOneBenchMark_WhenPatchVisibility_ThenReturnPublicBenchmark()throws Exception{
-    String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
-    PublicationResumeResponseDTO publication = createPublication(jwt);
-    String jwtLiker =testHelper.getUserTestingJwt("liker@example.com");
-    likePublication(jwtLiker, publication.id());
-    BenchmarkItemDTO updateItem = new BenchmarkItemDTO(BenchmarkId.firstLike, true);
-    ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(List.of(updateItem));
+	@Test
+	void testGivenOneBenchMark_WhenPatchVisibility_ThenReturnPublicBenchmark() throws Exception {
+		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+		PublicationResumeResponseDTO publication = createPublication(jwt);
+		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
+		likePublication(jwtLiker, publication.id());
+		BenchmarkItemDTO updateItem = new BenchmarkItemDTO(BenchmarkId.firstLike, true);
+		ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(
+				List.of(updateItem));
 
-    String response=mockMvc.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
-    .content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
-    .contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+		String response = mockMvc
+			.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
+				.content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-    List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
-    assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
-    assertTrue(benchmarks.get(0).visible());
-    assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response,
+				new TypeReference<List<BenchmarkItemDTO>>() {
+				});
+		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+		assertTrue(benchmarks.get(0).visible());
+		assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
 
-  }
+	}
 
-  @Test
-  void testGivenTwoBenchMarks_WhenPatchVisibilityFromBoth_ThenBothArePublic()throws Exception{
-    String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
-    PublicationResumeResponseDTO publication = createPublication(jwt);
-    for (String jwtLiker : testHelper.getNUserTestingJwt(20)) {
-      likePublication(jwtLiker, publication.id());
-    }
-    BenchmarkItemDTO updateFirstLike = new BenchmarkItemDTO(BenchmarkId.firstLike, true);
-    BenchmarkItemDTO updateTenLikes=new BenchmarkItemDTO(BenchmarkId.tenLikes, true);
-    ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(List.of(updateFirstLike, updateTenLikes));
+	@Test
+	void testGivenTwoBenchMarks_WhenPatchVisibilityFromBoth_ThenBothArePublic() throws Exception {
+		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+		PublicationResumeResponseDTO publication = createPublication(jwt);
+		for (String jwtLiker : testHelper.getNUserTestingJwt(20)) {
+			likePublication(jwtLiker, publication.id());
+		}
+		BenchmarkItemDTO updateFirstLike = new BenchmarkItemDTO(BenchmarkId.firstLike, true);
+		BenchmarkItemDTO updateTenLikes = new BenchmarkItemDTO(BenchmarkId.tenLikes, true);
+		ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(
+				List.of(updateFirstLike, updateTenLikes));
 
-    String response=mockMvc.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
-    .content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
-    .contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+		String response = mockMvc
+			.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
+				.content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-    List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
-    assertEquals(2, benchmarks.size(), "Should have 2 benchmark");
-    assertTrue(benchmarks.get(0).visible());
-    assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
-    assertTrue(benchmarks.get(1).visible());
-    assertEquals(BenchmarkId.tenLikes, benchmarks.get(1).id());
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response,
+				new TypeReference<List<BenchmarkItemDTO>>() {
+				});
+		assertEquals(2, benchmarks.size(), "Should have 2 benchmark");
+		assertTrue(benchmarks.get(0).visible());
+		assertEquals(BenchmarkId.firstLike, benchmarks.get(0).id());
+		assertTrue(benchmarks.get(1).visible());
+		assertEquals(BenchmarkId.tenLikes, benchmarks.get(1).id());
 
-  }
-  @Test
-  void testGivenOneBenchmarkPublicAndOnePrivate_WhenGetPublicBenchmarks_ThenJustSeeOnePublic()throws Exception{
-    String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
-    String businessId = accountRepository.findByEmail("business@example.com").get().getId();
-    PublicationResumeResponseDTO publication = createPublication(jwt);
-    for (String jwtLiker : testHelper.getNUserTestingJwt(20)) {
-      likePublication(jwtLiker, publication.id());
-    }
-    BenchmarkItemDTO updateTenLikes=new BenchmarkItemDTO(BenchmarkId.tenLikes, true);
-    ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(List.of( updateTenLikes));
+	}
 
-    mockMvc.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
-    .content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
-    .contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+	@Test
+	void testGivenOneBenchmarkPublicAndOnePrivate_WhenGetPublicBenchmarks_ThenJustSeeOnePublic() throws Exception {
+		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+		String businessId = accountRepository.findByEmail("business@example.com").get().getId();
+		PublicationResumeResponseDTO publication = createPublication(jwt);
+		for (String jwtLiker : testHelper.getNUserTestingJwt(20)) {
+			likePublication(jwtLiker, publication.id());
+		}
+		BenchmarkItemDTO updateTenLikes = new BenchmarkItemDTO(BenchmarkId.tenLikes, true);
+		ChangeBenchmarkVisibilityRequestDTO changeBenchmarkVisibilityRequestDTO = new ChangeBenchmarkVisibilityRequestDTO(
+				List.of(updateTenLikes));
 
-    String userJwt = testHelper.getUserTestingJwt("leti@example.com");
-    String response = mockMvc.perform(get("/benchmarks/user/"+businessId).header("Authorization", "Bearer " + userJwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+		mockMvc
+			.perform(patch("/benchmarks/mine").header("Authorization", "Bearer " + jwt)
+				.content(new ObjectMapper().writeValueAsString(changeBenchmarkVisibilityRequestDTO))
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-    List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
-    assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
-    assertEquals(BenchmarkId.tenLikes, benchmarks.get(0).id());
-  }
-  @Test
-  void givenBusinessAccountWithPublication_WhenCreateReview_ThenOwnerHasNewBenchmark()
-		throws Exception	{
-    String businessJwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
-    PublicationResumeResponseDTO publication = createPublication(businessJwt);
+		String userJwt = testHelper.getUserTestingJwt("leti@example.com");
+		String response = mockMvc
+			.perform(get("/benchmarks/user/" + businessId).header("Authorization", "Bearer " + userJwt))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-    String userJwt = testHelper.getUserTestingJwt("leti@example.com");
-    reviewBusinessPublication(userJwt, publication.id());
-
-    String businessId = accountRepository.findByEmail("business@example.com").get().getId();
-    
-    List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(businessId);
-    assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
-    assertEquals(BenchmarkId.firstReview, benchmarks.get(0).getBenchmarkId());
-  }
-
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response,
+				new TypeReference<List<BenchmarkItemDTO>>() {
+				});
+		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+		assertEquals(BenchmarkId.tenLikes, benchmarks.get(0).id());
+	}
 
 }

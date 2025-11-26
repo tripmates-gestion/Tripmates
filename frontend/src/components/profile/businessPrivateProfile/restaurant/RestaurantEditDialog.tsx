@@ -27,7 +27,9 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const initial: RestaurantForm = {
     name: business.name ?? '',
     description: business.description ?? '',
-    location: business.location ?? '',
+    location: typeof business.location === 'string' 
+      ? { address: business.location, latitude: 0, longitude: 0 }
+      : business.location ?? { address: '', latitude: 0, longitude: 0 },
     phoneNumber: business.phoneNumber ?? '',
     publicEmail: business.publicEmail ?? '',
     avatarUrl: business.avatarURL ?? '',
@@ -43,14 +45,37 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const [form, setForm] = React.useState<RestaurantForm>(initial)
   const [saving, setSaving] = React.useState(false)
   const [toDelete, setToDelete] = React.useState<string[]>([])
-  const [errors, setErrors] = React.useState<RestaurantErrors>({})
+  type FormErrors = {
+    name?: string;
+    description?: string;
+    location?: string | { address?: string; latitude?: string; longitude?: string };
+    phoneNumber?: string;
+    publicEmail?: string;
+    openingDays?: string;
+    openingHours?: string;
+    averagePrice?: string;
+    restaurantType?: string;
+  };
+
+  const [errors, setErrors] = React.useState<FormErrors>({})
 
   React.useEffect(()=>{ if (open){ setForm(initial); setToDelete([]); setErrors({}) } }, [open])
 
   const setField = (k: keyof RestaurantForm, v: any) => {
-    setForm(prev => ({ ...prev, [k]: v }))
-    setErrors(prev => ({ ...prev, [k]: undefined }))
-  }
+    if (k === 'location' && typeof v === 'string') {
+      setForm(prev => ({
+        ...prev, 
+        location: { 
+          address: v, 
+          latitude: 0, 
+          longitude: 0 
+        }
+      }));
+    } else {
+      setForm(prev => ({ ...prev, [k]: v }));
+    }
+    setErrors(prev => ({ ...prev, [k]: undefined }));
+  };
 
 
   const splitLines = (text: string) =>
@@ -60,12 +85,15 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
   const onSave = async () => {
     if (!accessToken || saving) return
   
-    const openingHoursLines = splitLines(form.openingHours) // ← de string a string[]
+  const openingHoursLines = splitLines(form.openingHours);
   
-    const preDto = {
-      name: form.name.trim(),
-      description: form.description,
-      location: form.location.trim(),
+  // Convert Location object to string for the API
+  const locationString = form.location.address;
+  
+  const preDto = {
+    name: form.name.trim(),
+    description: form.description,
+    location: locationString,
       phoneNumber: form.phoneNumber.trim(),
       publicEmail: form.publicEmail.trim() || '',
       openingDays: form.openingDays,
@@ -136,16 +164,46 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
         <DialogContent dividers>
           <Stack spacing={3} sx={{ mt:1 }}>
             <BusinessCommonFields
-              name={form.name} description={form.description} location={form.location}
-              phoneNumber={form.phoneNumber} publicEmail={form.publicEmail}
-              onChange={(k,v)=> setField(k as keyof RestaurantForm, v)}
+              name={form.name} 
+              description={form.description} 
+              location={typeof form.location === 'string' 
+                ? { address: form.location, latitude: 0, longitude: 0 }
+                : form.location}
+              phoneNumber={form.phoneNumber} 
+              publicEmail={form.publicEmail}
+              onChange={(field, value) => {
+              if (field === 'location') {
+                setForm(prev => ({
+                  ...prev,
+                  location: typeof value === 'string' 
+                    ? { address: value, latitude: 0, longitude: 0 }
+                    : value
+                }));
+              } else {
+                setForm(prev => ({ ...prev, [field]: value }));
+              }
+            }}
               avatarUrl={form.avatarUrl} 
-              onAvatarSelected={(b64)=> setForm(prev=>({...prev, avatar:b64, avatarUrl:b64}))}
+              onAvatarSelected={(b64) => setForm(prev => ({...prev, avatar: b64, avatarUrl: b64}))}
               disabled={saving}
               errors={{
                 name: errors.name,
                 description: errors.description,
-                location: errors.location,
+                location: (() => {
+                  if (!errors.location) return undefined;
+                  if (typeof errors.location === 'string') {
+                    return { 
+                      address: errors.location, 
+                      latitude: 0, 
+                      longitude: 0 
+                    };
+                  }
+                  return {
+                    address: errors.location.address || '',
+                    latitude: typeof errors.location.latitude === 'number' ? errors.location.latitude : 0,
+                    longitude: typeof errors.location.longitude === 'number' ? errors.location.longitude : 0
+                  };
+                })(),
                 phoneNumber: errors.phoneNumber,
                 publicEmail: errors.publicEmail
               }}

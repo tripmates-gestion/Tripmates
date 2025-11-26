@@ -44,7 +44,7 @@ public class EmailService {
 		mailSender.send(message);
 	}
 
-	public void sendHtmlEmail(String to, String subject, String htmlContentFileName,
+	public void sendHtmlInvitationEmail(String to, String subject, String htmlContentFileName,
 			Dictionary<String, String> variables) {
 		try {
 			ClassPathResource resource = new ClassPathResource(htmlContentFileName);
@@ -61,8 +61,7 @@ public class EmailService {
 			substitutionMap.put("toUsername", toUsername);
 			substitutionMap.put("planName", planName);
 			substitutionMap.put("ownerUsername", ownerUsername);
-			substitutionMap.put("invitationPlanUrl", invitationPlanUrl); // Usamos la URL
-																			// calculada
+			substitutionMap.put("invitationPlanUrl", invitationPlanUrl);
 
 			String htmlContent = htmlTemplate;
 			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
@@ -90,4 +89,40 @@ public class EmailService {
 		}
 	}
 
+	public void sendHtmlAchievementEmail(String to, String subject, String achievementName, String toUsername) {
+        try {
+            ClassPathResource resource = new ClassPathResource("achievement_unlocked.html");
+            String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+
+			//cambiar esto
+            String achievementUrl = frontendRedirectionBaseUrl + "/achievements/" + achievementName.replaceAll(" ", "-").toLowerCase();
+
+            Map<String, String> substitutionMap = new HashMap<>();
+            substitutionMap.put("toUsername", toUsername);
+            substitutionMap.put("achievementName", achievementName);
+            substitutionMap.put("achievementUrl", achievementUrl);
+
+            String htmlContent = htmlTemplate;
+            for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+                String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+                htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+            }
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+        } catch (IOException e) {
+            System.out.println("Error: No se pudo leer el archivo de plantilla HTML (achievement_unlocked.html). Asegúrate de que existe en src/main/resources. " + e.getMessage());
+        } catch (MessagingException e) {
+            System.out.println("Error al enviar el email: " + e.getMessage());
+        }
+    }
 }

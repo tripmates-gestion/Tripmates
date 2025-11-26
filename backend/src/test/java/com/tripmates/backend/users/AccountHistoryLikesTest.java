@@ -3,6 +3,7 @@ package com.tripmates.backend.users;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.common.types.Like;
+import com.tripmates.backend.common.types.Location;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
@@ -75,7 +76,7 @@ public class AccountHistoryLikesTest {
 		Publication publication = new Publication();
 		publication.setTitle("Rosmarie");
 		publication.setDescription("Hostel in Villa Paranacito, Entre Rios");
-		publication.setLocation("Islas del Ibicuy, Entre Rios");
+		publication.setLocation(new Location("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 
 		publicationRepository.save(publication);
 
@@ -98,13 +99,13 @@ public class AccountHistoryLikesTest {
 		Publication rosmariePublication = new Publication();
 		rosmariePublication.setTitle("Rosmarie");
 		rosmariePublication.setDescription("Hostel in Villa Paranacito, Entre Rios");
-		rosmariePublication.setLocation("Islas del Ibicuy, Entre Rios");
+		rosmariePublication.setLocation(new Location("Islas del Ibicuy, Entre Rios", -33.4475, -58.4864));
 		rosmariePublication.setLikes(List.of(new Like(fran.getId(), new Date(0))));
 
 		Publication hiltonPilarPublication = new Publication();
 		hiltonPilarPublication.setTitle("Hilton Pilar");
 		hiltonPilarPublication.setDescription("Super luxury hilton pilar");
-		hiltonPilarPublication.setLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina");
+		hiltonPilarPublication.setLocation(new Location("Ruta 8, Km 60.5, Pilar B1633 Argentina", -34.4719, -58.9117));
 		hiltonPilarPublication.setLikes(List.of(new Like(fran.getId(), new Date())));
 
 		publicationRepository.saveAll(List.of(rosmariePublication, hiltonPilarPublication));
