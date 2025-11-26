@@ -2,9 +2,10 @@ import * as React from "react";
 import {
   Box, Stack, Typography, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, TextField, Rating, Snackbar, Alert,
-  CardMedia, Chip, Grid, IconButton, List, ListItem, ListItemButton, ListItemText
+  CardMedia, Chip, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, InputAdornment
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
 import type { Review } from "../../types/Review";
 import { saveReview, getReviews } from "../../services/reviewService";
 import { useAuth } from "../../hooks/useAuth";
@@ -336,31 +337,52 @@ export default function NewReviewPlace({
                 </Stack>
               </DialogTitle>
               <DialogContent>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Selecciona un usuario para mencionar:
-                </Typography>
-                <List>
-                  {filteredUsers.map((username) => (
-                    <ListItem key={username} disablePadding>
-                      <ListItemButton 
-                        onClick={() => insertMention(username)}
-                        sx={{
-                          borderRadius: 1,
-                          '&:hover': {
-                            bgcolor: '#E3F2FD'
-                          }
-                        }}
-                      >
-                        <ListItemText 
-                          primary={`@${username}`}
-                          primaryTypographyProps={{
-                            sx: { color: '#2196F3', fontWeight: 600, fontSize: '1.1rem' }
+                {/* Campo de búsqueda con lupita */}
+                <TextField
+                  fullWidth
+                  placeholder="Buscar usuario..."
+                  value={mentionSearch}
+                  onChange={(e) => setMentionSearch(e.target.value)}
+                  autoFocus
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                
+                {/* Lista de usuarios filtrados */}
+                {filteredUsers.length > 0 ? (
+                  <List sx={{ maxHeight: 300, overflow: 'auto' }}>
+                    {filteredUsers.map((username) => (
+                      <ListItem key={username} disablePadding>
+                        <ListItemButton 
+                          onClick={() => insertMention(username)}
+                          sx={{
+                            borderRadius: 1,
+                            '&:hover': {
+                              bgcolor: '#E3F2FD'
+                            }
                           }}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  ))}
-                </List>
+                        >
+                          <ListItemText 
+                            primary={`@${username}`}
+                            primaryTypographyProps={{
+                              sx: { color: '#2196F3', fontWeight: 600, fontSize: '1.1rem' }
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 3 }}>
+                    No se encontraron usuarios
+                  </Typography>
+                )}
               </DialogContent>
             </Dialog>
 
