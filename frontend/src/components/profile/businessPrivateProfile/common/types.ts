@@ -3,10 +3,16 @@ import type { HotelType, HotelService } from '../../../../types/Hotel';
 
 export type TimeLike = string | { hour?: number; minute?: number | null } | null | undefined;
 
+export type Location = {
+  address: string;
+  latitude: number;
+  longitude: number;
+};
+
 export type BusinessCommonForm = {
   name: string;
   description: string;
-  location: string;
+  location: Location;
   phoneNumber: string;
   publicEmail: string;
   avatarUrl?: string;

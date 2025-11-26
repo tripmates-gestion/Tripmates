@@ -10,6 +10,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.common.types.Location;
 
 public record PublicationRequestDTO(
 		@Schema(description = "Publication's title") @NotBlank(
@@ -19,7 +20,7 @@ public record PublicationRequestDTO(
 		@Schema(description = "Business publication phone number") String phoneNumber,
 		@Schema(description = "Business publication email") @Email(
 				message = ValidationErrorMessage.INVALID_EMAIL) String email,
-		@Schema(description = "Business publication location") String location,
+		@Schema(description = "Business publication location") Location location,
 		@Schema(description = "Business opening days") @JsonSetter(nulls = Nulls.AS_EMPTY) List<DayOfWeek> openingDays,
 		@Schema(description = "Business opening hours") AttentionSchedule attentionSchedule,
 		@Schema(description = "Business exceptional closing days") @JsonSetter(

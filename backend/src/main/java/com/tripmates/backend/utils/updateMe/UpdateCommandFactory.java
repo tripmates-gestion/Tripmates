@@ -19,6 +19,7 @@ import com.tripmates.backend.utils.updateMe.command.DeletePhotosUrls;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.AveragePrice;
+import com.tripmates.backend.common.types.Location;
 import com.tripmates.backend.common.types.MenuItem;
 import com.tripmates.backend.common.types.RoomPack;
 import java.util.List;
@@ -42,7 +43,7 @@ public class UpdateCommandFactory {
 			case "description" -> new UpdateDescription((String) value);
 			case "restaurantType" -> new UpdateRestaurantType((RestaurantType) value);
 			case "hotelType" -> new UpdateHotelType((HotelType) value);
-			case "location" -> new UpdateLocation((String) value);
+			case "location" -> new UpdateLocation((Location) value);
 			case "phoneNumber" -> new UpdatePhoneNumber((String) value);
 			case "publicEmail" -> new UpdatePublicEmail((String) value);
 			case "averagePrice" -> new UpdateAveragePrice((AveragePrice) value);

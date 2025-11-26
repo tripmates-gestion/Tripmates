@@ -13,7 +13,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.tripmates.backend.common.types.Location;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -66,8 +66,7 @@ public class Account implements UserDetails {
 	private String description;
 
 	/** Account's business location. Only allowed in BUSINESS account. */
-	@Field(targetType = FieldType.STRING)
-	private String location;
+	private Location location;
 
 	/** User's phone number. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)

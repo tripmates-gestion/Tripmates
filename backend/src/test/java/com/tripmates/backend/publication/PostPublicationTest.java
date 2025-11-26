@@ -70,7 +70,11 @@ public class PostPublicationTest {
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -103,7 +107,11 @@ public class PostPublicationTest {
 				  "title": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -171,7 +179,11 @@ public class PostPublicationTest {
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "San Carlos de Bariloche, Argentina",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -196,7 +208,9 @@ public class PostPublicationTest {
 			.andExpect(jsonPath("$.attentionSchedule.closingTime").value("18:00"))
 			.andExpect(jsonPath("$.phoneNumber").value("+541112345678"))
 			.andExpect(jsonPath("$.email").value("contact@hostel.com"))
-			.andExpect(jsonPath("$.location").value("San Carlos de Bariloche, Argentina"))
+			.andExpect(jsonPath("$.location.address").value("San Carlos de Bariloche, Argentina"))
+			.andExpect(jsonPath("$.location.latitude").value(-41.1335))
+			.andExpect(jsonPath("$.location.longitude").value(-71.3103))
 			.andExpect(jsonPath("$.imageUrls").isArray())
 			.andExpect(jsonPath("$.imageUrls").isEmpty())
 			.andExpect(jsonPath("$.tags").isArray())
