@@ -28,7 +28,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#CD7F32', // Bronze
     },
     {
-        id: '10Likes',
+        id: 'tenLikes',
         title: 'Ganando tracción',
         description: 'Acumulaste 10 likes en tus publicaciones.',
         target: 10,
@@ -36,7 +36,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#C0C0C0', // Silver
     },
     {
-        id: '50Likes',
+        id: 'fiftyLikes',
         title: 'Favorito local',
         description: 'Llegaste a los 50 likes. ¡A la gente le gusta lo que haces!',
         target: 50,
@@ -44,7 +44,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#FFD700', // Gold
     },
     {
-        id: '100Likes',
+        id: 'hundredLikes',
         title: 'Tendencia',
         description: '¡100 likes! Tu negocio está en boca de todos.',
         target: 100,
@@ -52,7 +52,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#00BFFF', // Deep Sky Blue
     },
     {
-        id: '1000Likes',
+        id: 'thousandLikes',
         title: 'Leyenda',
         description: '1000 likes. Eres un referente en la comunidad.',
         target: 1000,
@@ -68,7 +68,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#9932CC',
     },
     {
-        id: '10Reviews',
+        id: 'tenReviews',
         title: 'Generando Conversación',
         description: 'Ya tienes 10 reseñas. Tu negocio está dando de qué hablar.',
         target: 10,
@@ -76,7 +76,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#f5bbd9ff',
     },
     {
-        id: '50Reviews',
+        id: 'fiftyReviews',
         title: 'Favorito Local',
         description: '¡50 reseñas! Te estás convirtiendo en un referente de la comunidad.',
         target: 50,
@@ -84,7 +84,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#FFD700', // Gold
     },
     {
-        id: '100Reviews',
+        id: 'hundredReviews',
         title: 'En Llamas',
         description: '¡100 reseñas! Tu negocio está on fire, ¡todos quieren opinar!',
         target: 100,
