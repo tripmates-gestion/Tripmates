@@ -440,7 +440,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
                     </Grid>
                   );
                 })}
-                {!publicationToEdit && form.photos.length < 6 && (
+                {form.photos.length < 6 && (
                   <Grid item xs={12} md={6}>
                     <Box sx={{ p: 1 }}>
                       <ImageUploader
