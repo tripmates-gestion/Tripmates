@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.common.types.BenchmarkId;
 import com.tripmates.backend.common.types.BusinessType;
@@ -41,6 +42,8 @@ import com.tripmates.backend.TestHelper;
 import com.tripmates.backend.benchmarks.dto.BenchmarkItemDTO;
 import com.tripmates.backend.benchmarks.dto.ChangeBenchmarkVisibilityRequestDTO;
 import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
+import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import com.tripmates.backend.common.service.email.EmailService;
@@ -70,11 +73,17 @@ public class BenchmarkTest {
 	@Autowired
 	private AccountRepository accountRepository;
 
+  @Autowired
+	private BenchmarkRepository benchmarkRepository;
+
 	@MockBean
 	private EmailService emailService;
 
+  ObjectMapper objectMapper;
+
 	@BeforeAll
 	void setUp() {
+    objectMapper = new ObjectMapper();
 		testHelper = new TestHelper(port, restTemplate);
 	}
 
@@ -89,6 +98,37 @@ public class BenchmarkTest {
       .andExpect(status().isNoContent())
       .andDo(print());
   }
+
+
+	private ReviewResponseDTO createReview(String publicationId, String userAccountTestingJwt, String reviewJson)
+			throws Exception {
+		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+				reviewJson.getBytes(StandardCharsets.UTF_8));
+
+		String body = mockMvc
+			.perform(multipart("/publications/" + publicationId + "/review").file(dataPart).with(request -> {
+				request.setMethod("POST");
+				return request;
+			}).header("Authorization", "Bearer " + userAccountTestingJwt))
+			.andExpect(status().isCreated())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		return objectMapper.readValue(body, ReviewResponseDTO.class);
+	}
+
+  private void reviewBusinessPublication(String userAccountTestingJwt, String publicationId) throws Exception{
+		String requestJson = """
+				{
+				  "title": "Bla bla...",
+				  "content": "Bla bla bla bla...",
+				  "rating": 5.0
+				}
+				""";
+    createReview(publicationId, userAccountTestingJwt, requestJson);
+  }
+
 
   private PublicationResumeResponseDTO createPublication(String jwt) throws Exception {
     		String requestJson = """
@@ -109,7 +149,7 @@ public class BenchmarkTest {
 				.getResponse()
 				.getContentAsString();
         
-    return new ObjectMapper().readValue(response, new TypeReference<PublicationResumeResponseDTO>() {});
+    return objectMapper.readValue(response, new TypeReference<PublicationResumeResponseDTO>() {});
   }
 
 	@Test
@@ -142,7 +182,6 @@ public class BenchmarkTest {
 				.getResponse()
 				.getContentAsString();
 
-		ObjectMapper objectMapper = new ObjectMapper();
 		List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
 		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
     assertFalse(benchmarks.get(0).visible());
@@ -167,7 +206,6 @@ public class BenchmarkTest {
 				.getResponse()
 				.getContentAsString();
 
-    ObjectMapper objectMapper = new ObjectMapper();
     List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
     assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
     assertTrue(benchmarks.get(0).visible());
@@ -195,7 +233,6 @@ public class BenchmarkTest {
 				.getResponse()
 				.getContentAsString();
 
-    ObjectMapper objectMapper = new ObjectMapper();
     List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
     assertEquals(2, benchmarks.size(), "Should have 2 benchmark");
     assertTrue(benchmarks.get(0).visible());
@@ -232,10 +269,25 @@ public class BenchmarkTest {
 				.getResponse()
 				.getContentAsString();
 
-    ObjectMapper objectMapper = new ObjectMapper();
     List<BenchmarkItemDTO> benchmarks = objectMapper.readValue(response, new TypeReference<List<BenchmarkItemDTO>>() {});
     assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
     assertEquals(BenchmarkId.tenLikes, benchmarks.get(0).id());
   }
+  @Test
+  void givenBusinessAccountWithPublication_WhenCreateReview_ThenOwnerHasNewBenchmark()
+		throws Exception	{
+    String businessJwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+    PublicationResumeResponseDTO publication = createPublication(businessJwt);
+
+    String userJwt = testHelper.getUserTestingJwt("leti@example.com");
+    reviewBusinessPublication(userJwt, publication.id());
+
+    String businessId = accountRepository.findByEmail("business@example.com").get().getId();
+    
+    List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(businessId);
+    assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
+    assertEquals(BenchmarkId.firstReview, benchmarks.get(0).getBenchmarkId());
+  }
+
 
 }
