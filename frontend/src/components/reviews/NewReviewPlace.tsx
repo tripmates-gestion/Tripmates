@@ -12,6 +12,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";
 import { ACCOUNT_TYPES } from "../../constants/Rol";
 import { ReviewGrid } from "./ReviewGrid";
+import { getUserFollowers } from "../../services/userService";
 
 // Función para renderizar texto con mentions
 export function renderTextWithMentions(text: string) {
@@ -91,8 +92,13 @@ export default function NewReviewPlace({
   const textFieldRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Lista de usuarios sugeridos (puedes reemplazar con datos reales de tu API)
-  const suggestedUsers = ["juan", "maria", "pedro", "ana", "carlos", "laura", "diego", "sofia"];
+  const [suggestedUsers, setSuggestedUsers] = React.useState<string[]>([]);
 
+  React.useEffect(() => {
+    getUserFollowers(user.id, accessToken)
+      .then(followers => setSuggestedUsers(followers.map(f => f.name)))
+      .catch(() => setSuggestedUsers([]));
+  }, [user, accessToken]);
 
   const [snack, setSnack] = React.useState<{ open: boolean; msg: string; sev: "success" | "error" }>({
     open: false,
