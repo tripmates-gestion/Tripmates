@@ -194,7 +194,7 @@ export default function Search() {
       {/* Resultados por defecto cuando no buscas */}
       {!isSearching && (
         <PlaceGrid businessAccounts={items} />
-      ) : null}
+      )}
 
 
     </Stack>
