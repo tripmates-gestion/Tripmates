@@ -186,7 +186,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
       let response: BusinessPublicationResponseDTO;
 
       if (isEditing) {
-        // Modo edición
+        // Modo edición (sin tags, no se pueden editar)
         const dto: PublicationUpdateRequestDTO = {
           title: form.title.trim(),
           description: form.description.trim(),
@@ -196,7 +196,6 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
           openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
           attentionSchedule: parseHours(form.hours),
           exceptionalClosingDays: [],
-          tags: form.tags.length > 0 ? form.tags : ["Otros:"],
           deletePhotoIndexes: imagesToDelete.length > 0 ? imagesToDelete : undefined,
         }
 
@@ -296,26 +295,28 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
               required
             />
 
-            {/* Tags (multiple + freeSolo) */}
-            <Autocomplete
-              multiple
-              freeSolo
-              options={TAG_OPTIONS}
-              value={form.tags}
-              onChange={(_, newValue) => setForm((prev) => ({ ...prev, tags: newValue }))}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
-                  <Chip variant="outlined" label={option} {...getTagProps({ index })} key={`${option}-${index}`} />
-                ))
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Etiquetas (tags)"
-                  placeholder="Ej: Familiar, Romántico, Pet-friendly…"
-                />
-              )}
-            />
+            {/* Tags (multiple + freeSolo) - Solo en modo creación */}
+            {!publicationToEdit && (
+              <Autocomplete
+                multiple
+                freeSolo
+                options={TAG_OPTIONS}
+                value={form.tags}
+                onChange={(_, newValue) => setForm((prev) => ({ ...prev, tags: newValue }))}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip variant="outlined" label={option} {...getTagProps({ index })} key={`${option}-${index}`} />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Etiquetas (tags)"
+                    placeholder="Ej: Familiar, Romántico, Pet-friendly…"
+                  />
+                )}
+              />
+            )}
 
             {/* Días de apertura (opcional: si no elige, usás tu default en el DTO) */}
 
