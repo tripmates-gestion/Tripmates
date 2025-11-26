@@ -129,7 +129,7 @@ export default function BusinessProfile() {
                   {!!business.location && (
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Room fontSize="small" />
-                      <Typography variant="caption">{business.location}</Typography>
+                      <Typography variant="caption">{business.location.address}</Typography>
                     </Stack>
                   )}
                   {!!business.phoneNumber && (
@@ -271,7 +271,7 @@ export default function BusinessProfile() {
 
                   <Grid item xs={12} md={5}>
                     <Section title="Contacto">
-                      <InfoRow label="Ubicación" value={business.location} icon="📍" />
+                      <InfoRow label="Ubicación" value={business.location?.address ?? 'Dirección no disponible'} icon="📍" />
                       <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />
                       <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />
                     </Section>

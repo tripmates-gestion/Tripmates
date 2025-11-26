@@ -19,6 +19,7 @@ type Props = {
   publicationId?: string;
   /** Título de la publicación (opcional, solo visual) */
   publicationTitle?: string;
+  userId?: string;
   /** Callback para notificar al padre que se creó una reseña */
   onCreate?: (r: Review) => void;
 };

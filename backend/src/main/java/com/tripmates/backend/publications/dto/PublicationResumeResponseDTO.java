@@ -5,6 +5,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.Location;
 import java.util.Date;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
@@ -22,7 +23,7 @@ public record PublicationResumeResponseDTO(@Schema(description = "Publication's 
 		@Schema(description = "Publication's creation date") Date createdAt,
 		@Schema(description = "Business's phone number") String phoneNumber,
 		@Schema(description = "Business's email") String email,
-		@Schema(description = "Business's location") String location,
+		@Schema(description = "Business's location") Location location,
 		@Schema(description = "Business's ID") String ownerId,
 		@Schema(description = "Business's username") String ownerUsername,
 		@Schema(description = "Business's avatar URL") String ownerAvatarUrl) {

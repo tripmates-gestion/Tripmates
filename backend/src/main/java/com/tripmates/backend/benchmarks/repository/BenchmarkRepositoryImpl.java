@@ -13,14 +13,15 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @Repository
 public class BenchmarkRepositoryImpl implements BenchmarkRepositoryCustom {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+	@Autowired
+	private MongoTemplate mongoTemplate;
 
-    @Override
-    public int updateVisibility(String userId, BenchmarkId benchmarkId, boolean visible) {
-        Query query = new Query(where("userId").is(userId).and("benchmarkId").is(benchmarkId));
-        Update update = new Update().set("isVisible", visible);
-        
-        return (int) mongoTemplate.updateFirst(query, update, "benchmark_progress").getModifiedCount();
-    }
+	@Override
+	public int updateVisibility(String userId, BenchmarkId benchmarkId, boolean visible) {
+		Query query = new Query(where("userId").is(userId).and("benchmarkId").is(benchmarkId));
+		Update update = new Update().set("isVisible", visible);
+
+		return (int) mongoTemplate.updateFirst(query, update, "benchmark_progress").getModifiedCount();
+	}
+
 }
