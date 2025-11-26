@@ -51,6 +51,19 @@ export type BusinessPublicationRequestDTO = {
   tags: string[]
 }
 
+export type PublicationUpdateRequestDTO = {
+  title?: string
+  description?: string
+  phoneNumber?: string
+  email?: string
+  location?: string
+  openingDays?: DayOfWeek[]
+  attentionSchedule?: AttentionSchedule
+  exceptionalClosingDays?: string[]
+  tags?: string[]
+  deletePhotoIndexes?: number[]
+}
+
 // ---------------------- Contrato del backend (response) ----------------------
 export type BusinessPublicationResponseDTO = {
   id: string

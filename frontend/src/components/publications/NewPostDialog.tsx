@@ -20,12 +20,14 @@ import Grid from '@mui/material/Grid'
 import ImageUploader from '../ui/ImageUploader'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
-import { createBusinessPublication } from '../../services/businessPublications'
+import { createBusinessPublication, updateBusinessPublication } from '../../services/businessPublications'
 import { validateFile } from './utils/imageHelpers'
 import { dataURLtoFile } from '../../components/GeneralHelpers';
 import type {
   BusinessPost,
   BusinessPublicationRequestDTO,
+  BusinessPublicationResponseDTO,
+  PublicationUpdateRequestDTO,
   FormState,
 } from '../../types/Business'
 import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
@@ -37,6 +39,7 @@ type NewPostDialogProps = {
   open: boolean
   onClose: () => void
   onCreated: () => void
+  publicationToEdit?: BusinessPublicationResponseDTO | null
 }
 
 
@@ -77,7 +80,7 @@ export const DAYS: { label: string; value: typeof DEFAULT_OPENING_DAYS[number] }
 
 
 // ---------------------- Componente ----------------------
-export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) {
+export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: NewPostDialogProps) {
   const { accessToken } = useAuth()
   const [form, setForm] = useState<FormState>(initialFormState)
   const [submitting, setSubmitting] = useState(false)
@@ -100,6 +103,29 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   useEffect(() => {
     if (open) setTouched({})
   }, [open])
+  
+  // Cargar datos de publicación a editar
+  useEffect(() => {
+    if (open && publicationToEdit) {
+      const hours = publicationToEdit.attentionSchedule 
+        ? `${publicationToEdit.attentionSchedule.openingTime}–${publicationToEdit.attentionSchedule.closingTime}`
+        : '';
+      
+      setForm({
+        title: publicationToEdit.title || '',
+        description: publicationToEdit.description || '',
+        tags: publicationToEdit.tags || [],
+        openingDays: publicationToEdit.openingDays || DEFAULT_OPENING_DAYS,
+        hours: hours,
+        contact: publicationToEdit.phoneNumber || '',
+        location: publicationToEdit.location || '',
+        photos: publicationToEdit.imageUrls || [],
+      });
+    } else if (open && !publicationToEdit) {
+      // Si no hay publicación a editar, resetear el formulario
+      setForm(initialFormState);
+    }
+  }, [open, publicationToEdit]);
 
   // ---------------------- Helpers ----------------------
   const hasError = (key: keyof FormState) => Boolean(touched[key] && errors[key])
@@ -142,29 +168,54 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
 
     setSubmitting(true)
     try {
-      // Armar DTO para el backend
-      const dto: BusinessPublicationRequestDTO = {
-        title: form.title.trim(),
-        description: form.description.trim(),
-        phoneNumber: form.contact.trim(),
-        email: '', // Agregar campo si lo necesitas
-        location: form.location.trim(),
-        openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
-        attentionSchedule: parseHours(form.hours),
-        exceptionalClosingDays: [],
-        tags: form.tags.length > 0 ? form.tags : ["Otros:"],
-      }
-
-      // Convertir base64 a Files
-      const files: File[] = form.photos.map((photo, i) =>
-        dataURLtoFile(photo, `photo_${i + 1}.jpg`)
-      )
+      const isEditing = !!publicationToEdit;
+      
+      // Convertir base64 a Files (solo nuevas fotos)
+      const files: File[] = form.photos
+        .filter((photo) => photo.startsWith('data:')) // Solo base64 (nuevas)
+        .map((photo, i) => dataURLtoFile(photo, `photo_${i + 1}.jpg`))
 
       // Validar tamaño/tipo de archivos
       files.forEach(validateFile)
 
-      // Llamada al backend
-      const response = await createBusinessPublication(dto, files, accessToken)
+      let response: BusinessPublicationResponseDTO;
+
+      if (isEditing) {
+        // Modo edición
+        const dto: PublicationUpdateRequestDTO = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          phoneNumber: form.contact.trim(),
+          email: '',
+          location: form.location.trim(),
+          openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
+          attentionSchedule: parseHours(form.hours),
+          exceptionalClosingDays: [],
+          tags: form.tags.length > 0 ? form.tags : ["Otros:"],
+        }
+
+        response = await updateBusinessPublication(
+          publicationToEdit.id,
+          dto,
+          files,
+          accessToken
+        );
+      } else {
+        // Modo creación
+        const dto: BusinessPublicationRequestDTO = {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          phoneNumber: form.contact.trim(),
+          email: '',
+          location: form.location.trim(),
+          openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
+          attentionSchedule: parseHours(form.hours),
+          exceptionalClosingDays: [],
+          tags: form.tags.length > 0 ? form.tags : ["Otros:"],
+        }
+
+        response = await createBusinessPublication(dto, files, accessToken);
+      }
 
       // Si el componente fue desmontado, salir
       if (!mountedRef.current) return
@@ -173,7 +224,6 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
       const savedPost: BusinessPost = {
         id: response.id || crypto.randomUUID(),
         title: response.title,
-        // type: form.type as BusinessType,
         description: response.description,
         hours: `${response.attentionSchedule.openingTime}–${response.attentionSchedule.closingTime}`,
         contact: response.phoneNumber,
@@ -184,16 +234,19 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         openingDays: response.openingDays,
       }
 
-      console.log('Publicación creada:', savedPost)
+      console.log(isEditing ? 'Publicación actualizada:' : 'Publicación creada:', savedPost)
 
       // Notificar éxito
       if (mountedRef.current) {
-        enqueueSnackbar('¡Publicación creada!', { variant: 'success' });
+        enqueueSnackbar(
+          isEditing ? '¡Publicación actualizada!' : '¡Publicación creada!',
+          { variant: 'success' }
+        );
         onCreated()
         handleClose()
       }
     } catch (error: any) {
-      console.error('Error al crear publicación:', error)
+      console.error('Error al guardar publicación:', error)
       enqueueSnackbar('Error al publicar. Intentá nuevamente.', { variant: 'error' });
       
     } finally {
@@ -207,7 +260,9 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   return (
     <>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-        <DialogTitle>Nueva publicación de negocio</DialogTitle>
+        <DialogTitle>
+          {publicationToEdit ? 'Editar publicación' : 'Nueva publicación de negocio'}
+        </DialogTitle>
 
         <DialogContent>
             <Stack spacing={2} sx={{ pt: 1 }}>
@@ -369,7 +424,10 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
             Cancelar
           </Button>
           <Button variant="contained" onClick={onSubmit} disabled={submitting}>
-            {submitting ? 'Publicando...' : 'Publicar'}
+            {submitting 
+              ? (publicationToEdit ? 'Guardando...' : 'Publicando...') 
+              : (publicationToEdit ? 'Guardar cambios' : 'Publicar')
+            }
           </Button>
         </DialogActions>
       </Dialog>
