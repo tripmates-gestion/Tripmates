@@ -20,7 +20,7 @@ public class BenchmarksController {
 	@Autowired
 	private BenchmarkService benchmarkService;
 
-	@GetMapping("/mine") // publicos y privados
+	@GetMapping("/mine")
 	public ResponseEntity<?> getBenchmarks(@AuthenticationPrincipal UserDetails userDetails) {
 
 		return ResponseEntity.ok().body(benchmarkService.getMyBenchmarks(userDetails.getUsername()));

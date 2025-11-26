@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.common.types.BenchmarkId;
 import com.tripmates.backend.common.types.BusinessType;
@@ -39,6 +40,8 @@ import com.tripmates.backend.TestHelper;
 import com.tripmates.backend.benchmarks.dto.BenchmarkItemDTO;
 import com.tripmates.backend.benchmarks.dto.ChangeBenchmarkVisibilityRequestDTO;
 import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
+import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import com.tripmates.backend.common.service.email.EmailService;
@@ -68,11 +71,17 @@ public class BenchmarkTest {
 	@Autowired
 	private AccountRepository accountRepository;
 
+  @Autowired
+	private BenchmarkRepository benchmarkRepository;
+
 	@MockBean
 	private EmailService emailService;
 
+  ObjectMapper objectMapper;
+
 	@BeforeAll
 	void setUp() {
+    objectMapper = new ObjectMapper();
 		testHelper = new TestHelper(port, restTemplate);
 	}
 

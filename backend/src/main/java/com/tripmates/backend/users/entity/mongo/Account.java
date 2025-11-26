@@ -144,14 +144,26 @@ public class Account implements UserDetails {
 	private List<String> followers = new ArrayList<>();
 
 	/**
-	 * Account's total likes.
+	 * Account's total likes (for business benchmark).
 	 */
 	private Integer numberTotalLikes = 0;
 
 	/**
-	 * Account's historic max total likes.
+	 * Account's historic max total likes (for business benchmark).
 	 */
 	private Integer historicMaxNumberTotalLikes = 0;
+
+	/**
+	 * Account's total reviews (for business benchmark).
+	 */
+	private Integer numberTotalReviews = 0;
+
+	/**
+	 * Account's historic max total reviews (for business benchmark).
+	 */
+	private Integer historicMaxNumberTotalReviews = 0;
+
+
 
 	@Override
 	public String getPassword() {

@@ -2,11 +2,9 @@ package com.tripmates.backend.common.types;
 
 public enum BenchmarkId {
 
-	// Likes benchmarks
 	firstLike(1, BenchmarkType.LIKES), tenLikes(10, BenchmarkType.LIKES), fiftyLikes(50, BenchmarkType.LIKES),
 	hundredLikes(100, BenchmarkType.LIKES), thousandLikes(1000, BenchmarkType.LIKES),
 
-	// Reviews benchmarks
 	firstReview(1, BenchmarkType.REVIEWS), tenReviews(10, BenchmarkType.REVIEWS),
 	fiftyReviews(50, BenchmarkType.REVIEWS), hundredReviews(100, BenchmarkType.REVIEWS);
 
@@ -14,7 +12,6 @@ public enum BenchmarkId {
 
 	private final BenchmarkType type;
 
-	// Composite key for O(1) lookup: (type, threshold) -> BenchmarkId
 	private static final java.util.Map<String, BenchmarkId> LOOKUP_MAP;
 
 	static {

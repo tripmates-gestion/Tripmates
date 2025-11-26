@@ -245,9 +245,33 @@ public class PublicationService {
 		publicationRepository.save(publication);
 		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
 				review.getRating());
-
+    registerReviewBenchmarkOnOwner(publication.getOwnerId());
 		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
+
+  private void registerReviewBenchmarkOnOwner(String ownerId) {
+    accountRepository.incrementNumberTotalReviews(ownerId);
+    Account updatedAccount = accountRepository.findById(ownerId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+    Integer numberTotalReviews = updatedAccount.getNumberTotalReviews() != null ? updatedAccount.getNumberTotalReviews()
+				: 0;
+		Integer historicMax = updatedAccount.getHistoricMaxNumberTotalReviews() != null
+				? updatedAccount.getHistoricMaxNumberTotalReviews() : 0;
+    if (numberTotalReviews > historicMax) {
+      accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
+      BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
+      if (benchmarkId != null) {
+        Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+          .findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+        if (maybeBenchmarkProgress.isEmpty()) {
+          BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+          benchmarkRepository.save(benchmarkProgress);
+          emailService.sendEmail(updatedAccount.getEmail(), "New Benchmark Progress",
+            "You have reached a new benchmark progress by receiving reviews");
+        }
+      }
+    }
+  }
 
 	/**
 	 * Returns review from a publication ID.
@@ -352,6 +376,7 @@ public class PublicationService {
 
 	}
 
+  //TODO: improve email msg
 	private void addLikeOnOwnerInfoAndRegisteBenchmark(String ownerId) {
 		accountRepository.incrementNumberTotalLikes(ownerId);
 		Account updatedAccount = accountRepository.findById(ownerId)
@@ -374,8 +399,7 @@ public class PublicationService {
 				}
 			}
 		}
-
-	}// en el repository solo se agregan, no se quitan. si
+	}
 
 	/**
 	 * Removes a like from a publication.
