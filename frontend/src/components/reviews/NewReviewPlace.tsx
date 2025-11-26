@@ -21,7 +21,7 @@ export function renderTextWithMentions(
 ) {
   // Regex mejorado: captura @nombre o @nombre apellido (hasta 2 palabras después del @)
   // Permite letras, números, guiones y espacios entre palabras
-  const mentionRegex = /@([\w\-]+(?:\s+[\w\-]+)?)/g;
+  const mentionRegex = /@([a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\-]+(?:\s+[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\-]+)?)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
@@ -342,7 +342,7 @@ export default function NewReviewPlace({
             
             {/* Modal de sugerencias de menciones */}
             <Dialog
-              open={showMentions && filteredUsers.length > 0}
+              open={showMentions}
               onClose={() => {
                 setShowMentions(false);
                 setMentionSearch("");

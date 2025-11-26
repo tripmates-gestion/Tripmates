@@ -492,7 +492,7 @@ make_request "/auth/register" '{
 
 make_request "/auth/register" '{
     "name": "Hotel Playa Dorada",
-    "email": "reservas@playadorada.com",
+    "email": "anibalfu2005@gmail.com",
     "password": "business123",
     "role": "BUSINESS",
     "businessType": "HOTEL"
@@ -527,7 +527,7 @@ make_request "/auth/register" '{
 # 2. Gastón Acurio - Peruvian Cuisine Restaurant
 make_request "/auth/register" '{
     "name": "Sabores Peruanos",
-    "email": "gaston@saboresperuanos.com",
+    "email": "afu@fi.uba.ar",
     "password": "business123",
     "role": "BUSINESS",
     "businessType": "RESTAURANT"
@@ -586,13 +586,13 @@ login_user "aizen@example.com" "password123" "USER7_TOKEN"
 
 # Original business accounts
 login_user "info@labuenamesa.com" "business123" "RESTAURANT_TOKEN"
-login_user "reservas@playadorada.com" "business123" "HOTEL_TOKEN"
+login_user "anibalfu2005@gmail.com" "business123" "HOTEL_TOKEN"
 login_user "contacto@cafedelcentro.com" "business123" "CAFE_TOKEN"
 login_user "info@hostelmontana.com" "business123" "HOSTEL_TOKEN"
 
 # New business accounts
 login_user "isabel@brisamarina.com" "business123" "BRISAMARINA_TOKEN"
-login_user "gaston@saboresperuanos.com" "business123" "SABORESPERU_TOKEN"
+login_user "afu@fi.uba.ar" "business123" "SABORESPERU_TOKEN"
 login_user "diego@elencuentrohostel.com" "business123" "ELENCUENTRO_TOKEN"
 
 # 3. Update profile pictures
@@ -779,7 +779,7 @@ create_publication() {
                     title="Escape a la Playa - Oferta Especial"
                     description="Disfruta de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Playa Dorada."
                     phone="+54 223 123-4567"
-                    email="reservas@playadorada.com"
+                    email="anibalfu2005@gmail.com"
                     location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                     tags='["hotel", "playa", "vacaciones", "todo incluido"]'
                     image_path="sample_images/publications/hotel/playa1.jpeg"
@@ -788,7 +788,7 @@ create_publication() {
                     title="Paquete Romántico"
                     description="Escapada romántica con cena gourmet y masajes para dos en Hotel Playa Dorada."
                     phone="+54 223 123-4567"
-                    email="reservas@playadorada.com"
+                    email="anibalfu2005@gmail.com"
                     location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                     opening_days='["FRIDAY","SATURDAY"]'
                     opening_time="14:00"
@@ -800,7 +800,7 @@ create_publication() {
                     title="Paquete Familiar"
                     description="Diversión para toda la familia con actividades para niños y adultos en Hotel Playa Dorada."
                     phone="+54 223 123-4567"
-                    email="reservas@playadorada.com"
+                    email="anibalfu2005@gmail.com"
                     location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
                     opening_days='["SATURDAY","SUNDAY"]'
                     opening_time="09:00"
@@ -1731,11 +1731,11 @@ echo "- User 7: aizen@example.com / password123"
 
 echo -e "\n=== Business Accounts ==="
 echo "- La Buena Mesa (Restaurante): info@labuenamesa.com / business123"
-echo "- Playa Dorada (Hotel): reservas@playadorada.com / business123"
+echo "- Playa Dorada (Hotel): anibalfu2005@gmail.com / business123"
 echo "- Café del Centro: contacto@cafedelcentro.com / business123"
 echo "- Hostal Montaña: info@hostelmontana.com / business123"
 echo "- Brisa Marina: isabel@brisamarina.com / business123"
-echo "- Sabores Peruanos: gaston@saboresperuanos.com / business123"
+echo "- Sabores Peruanos: afu@fi.uba.ar / business123"
 echo "- El Encuentro Hostel: diego@elencuentrohostel.com / business123"
 
 echo -e "\nNote: All users have the password 'password123' for testing purposes."
