@@ -6,6 +6,7 @@ import { useBusinessProfile } from '../../../../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
 import { dataURLtoFile } from '../../../GeneralHelpers';
 import { updateBusinessUser } from '../../../../services/userService';
+import { DEFAULT_LOCATION, type LocationDTO } from '../../../../types/Location';
 
 import { type RestaurantForm } from '../common/types';
 import { formatScheduleForInput, scheduleFromInput } from '../common/schedule';
@@ -24,10 +25,16 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
 
   const initialExisting = business.profileImageUrls?.length ? business.profileImageUrls : (user as any)?.profileImageUrls ?? []
 
+  const buildLocationPoint = (address?: string): LocationDTO => ({
+    ...DEFAULT_LOCATION,
+    address: address ?? '',
+  });
+
   const initial: RestaurantForm = {
     name: business.name ?? '',
     description: business.description ?? '',
     location: business.location ?? '',
+    locationPoint: buildLocationPoint(business.location),
     phoneNumber: business.phoneNumber ?? '',
     publicEmail: business.publicEmail ?? '',
     avatarUrl: business.avatarURL ?? '',
@@ -49,7 +56,7 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
 
   const setField = (k: keyof RestaurantForm, v: any) => {
     setForm(prev => ({ ...prev, [k]: v }))
-    setErrors(prev => ({ ...prev, [k]: undefined }))
+    setErrors(prev => (k in prev ? { ...prev, [k]: undefined } : prev))
   }
 
 
@@ -65,7 +72,7 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
     const preDto = {
       name: form.name.trim(),
       description: form.description,
-      location: form.location.trim(),
+      location: form.locationPoint.address.trim(),
       phoneNumber: form.phoneNumber.trim(),
       publicEmail: form.publicEmail.trim() || '',
       openingDays: form.openingDays,
@@ -89,6 +96,8 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
         name: preDto.name,
         description: preDto.description,
         location: preDto.location,
+        latitude: form.locationPoint.latitude,
+        longitude: form.locationPoint.longitude,
         phoneNumber: preDto.phoneNumber,
         publicEmail: form.publicEmail.trim() || undefined,
         openingDays: form.openingDays,
@@ -136,10 +145,13 @@ export default function RestaurantEditDialog({ open, onClose }: Props) {
         <DialogContent dividers>
           <Stack spacing={3} sx={{ mt:1 }}>
             <BusinessCommonFields
-              name={form.name} description={form.description} location={form.location}
+              name={form.name}
+              description={form.description}
+              location={form.locationPoint}
               phoneNumber={form.phoneNumber} publicEmail={form.publicEmail}
               onChange={(k,v)=> setField(k as keyof RestaurantForm, v)}
-              avatarUrl={form.avatarUrl} 
+              onLocationChange={(loc) => setField('locationPoint', loc)}
+              avatarUrl={form.avatarUrl}
               onAvatarSelected={(b64)=> setForm(prev=>({...prev, avatar:b64, avatarUrl:b64}))}
               disabled={saving}
               errors={{

@@ -15,6 +15,7 @@ import GalleryManager from '../common/GalleryManager';
 import HotelFields from './HotelFields';
 import { type HotelType } from '../../../../types/Hotel';
 import { validateHotel, type HotelErrors } from '../../../../hooks/useUpdateBusinessUserValidation';
+import { DEFAULT_LOCATION, type LocationDTO } from '../../../../types/Location';
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -22,6 +23,7 @@ type HotelForm = {
   name: string;
   description: string;
   location: string;
+  locationPoint: LocationDTO;
   phoneNumber: string;
   publicEmail: string;
   hotelType?: HotelType;
@@ -41,10 +43,16 @@ export default function HotelEditDialog({ open, onClose }: Props) {
       ? business?.profileImageUrls
       : [];
 
+  const buildLocationPoint = (address?: string): LocationDTO => ({
+    ...DEFAULT_LOCATION,
+    address: address ?? '',
+  });
+
   const initial: HotelForm = {
     name: business?.name ?? '',
     description: business?.description ?? '',
     location: business?.location ?? '',
+    locationPoint: buildLocationPoint(business?.location),
     phoneNumber: business?.phoneNumber ?? '',
     publicEmail: business?.publicEmail ?? '',
     hotelType: (business as any).hotelType as HotelType | undefined,
@@ -74,7 +82,7 @@ export default function HotelEditDialog({ open, onClose }: Props) {
 
   const setField = <K extends keyof HotelForm>(k: K, v: HotelForm[K]) => {
     setForm(p => ({ ...p, [k]: v }))
-    setErrors(e => ({ ...e, [k]: undefined }))
+    setErrors(e => (k in e ? { ...e, [k]: undefined } : e))
   }
 
   const onSave = async () => {
@@ -82,7 +90,7 @@ export default function HotelEditDialog({ open, onClose }: Props) {
     const preDto = {
       name: form.name.trim(),
       description: form.description,
-      location: form.location.trim(),
+      location: form.locationPoint.address.trim(),
       phoneNumber: form.phoneNumber.trim(),
       publicEmail: form.publicEmail.trim(),
       hotelType: form.hotelType,
@@ -102,6 +110,8 @@ export default function HotelEditDialog({ open, onClose }: Props) {
         name: preDto.name,
         description: preDto.description,
         location: preDto.location,
+        latitude: form.locationPoint.latitude,
+        longitude: form.locationPoint.longitude,
         phoneNumber: preDto.phoneNumber,
         publicEmail: preDto.publicEmail || undefined,
         hotelType: preDto.hotelType || undefined,
@@ -151,12 +161,13 @@ export default function HotelEditDialog({ open, onClose }: Props) {
           <BusinessCommonFields
             name={form.name}
             description={form.description}
-            location={form.location}
+            location={form.locationPoint}
             phoneNumber={form.phoneNumber}
             publicEmail={form.publicEmail}
             avatarUrl={form.avatarUrl}
             onAvatarSelected={(b64)=> setForm(prev=>({...prev, avatar:b64, avatarUrl:b64}))}
             onChange={(k, v) => setField(k as keyof HotelForm, v as any)}
+            onLocationChange={(loc) => setField('locationPoint', loc)}
             disabled={saving}
             errors={{
               name: errors.name,

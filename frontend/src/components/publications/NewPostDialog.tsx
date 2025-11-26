@@ -31,6 +31,8 @@ import type {
 import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
 import { parseHours } from '../GeneralHelpers'
 import { useSnackbar } from 'notistack';
+import BusinessLocationPicker from '../BusinessLocationPicker';
+import { DEFAULT_LOCATION, type LocationDTO } from '../../types/Location';
 
 // ---------------------- Props ----------------------
 type NewPostDialogProps = {
@@ -88,6 +90,9 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   const errors = useMemo(() => validate(form), [form, validate])
   const mountedRef = useRef(false)
 
+  const resetForm = () =>
+    setForm({ ...initialFormState, locationPoint: { ...DEFAULT_LOCATION } })
+
   // Track mounting state para prevenir memory leaks
   useEffect(() => {
     mountedRef.current = true
@@ -117,7 +122,7 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
   }
 
   const handleClose = () => {
-    setForm(initialFormState)
+    resetForm()
     setTouched({})
     onClose()
   }
@@ -149,6 +154,8 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         phoneNumber: form.contact.trim(),
         email: '', // Agregar campo si lo necesitas
         location: form.location.trim(),
+        latitude: form.locationPoint.latitude,
+        longitude: form.locationPoint.longitude,
         openingDays: form.openingDays.length > 0 ? form.openingDays : DEFAULT_OPENING_DAYS,
         attentionSchedule: parseHours(form.hours),
         exceptionalClosingDays: [],
@@ -178,6 +185,11 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
         hours: `${response.attentionSchedule.openingTime}–${response.attentionSchedule.closingTime}`,
         contact: response.phoneNumber,
         location: response.location,
+        locationPoint: {
+          address: response.location,
+          latitude: response.latitude ?? form.locationPoint.latitude,
+          longitude: response.longitude ?? form.locationPoint.longitude,
+        } as LocationDTO,
         photos: response.imageUrls ?? [],
         createdAt: response.createdAt,
         tags: response.tags,
@@ -311,17 +323,25 @@ export function NewPostDialog({ open, onClose, onCreated }: NewPostDialogProps) 
                 />
               </Grid>
             </Grid>
-                
+
             {/* Ubicación (opcional) */}
-            <TextField
-              label="Ubicación (opcional)"
-              placeholder="Ciudad, provincia / Dirección"
-              value={form.location}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
-              onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
-              error={hasError('location')}
-              helperText={helper('location')}
+            <BusinessLocationPicker
+              initialLocation={form.locationPoint}
+              onLocationChange={(loc) => {
+                setForm((prev) => ({
+                  ...prev,
+                  location: loc.address,
+                  locationPoint: loc,
+                }))
+              }}
+              onSave={() => undefined}
+              showSaveButton={false}
             />
+            {helper('location') && (
+              <Typography variant="caption" color={hasError('location') ? 'error' : 'text.secondary'}>
+                {helper('location')}
+              </Typography>
+            )}
 
               </Stack>
             <Divider />

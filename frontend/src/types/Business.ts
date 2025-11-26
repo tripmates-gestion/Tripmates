@@ -1,4 +1,5 @@
 import type { AccountType } from "./AccountTypes"
+import { DEFAULT_LOCATION, type LocationDTO } from "./Location"
 
 // ---------------------- Tipos locales ----------------------
 export type BusinessType = 'alojamiento' | 'servicio'
@@ -11,6 +12,7 @@ export type BusinessPost = {
   hours: string
   contact: string
   location: string
+  locationPoint?: LocationDTO
   photos: string[]
   createdAt: string
   rating?: number // opcional para usar con PlaceCard
@@ -45,6 +47,8 @@ export type BusinessPublicationRequestDTO = {
   phoneNumber: string
   email: string
   location: string
+  latitude?: number
+  longitude?: number
   openingDays: DayOfWeek[]
   attentionSchedule: AttentionSchedule
   exceptionalClosingDays?: string[]
@@ -68,6 +72,8 @@ export type BusinessPublicationResponseDTO = {
   ownerAvatarUrl: string
   createdAt: string
   tags: string[]
+  latitude?: number
+  longitude?: number
 }
 
 {/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
@@ -93,6 +99,7 @@ export type FormState = {
   hours: string;          // opcional
   contact: string;        // opcional
   location: string;       // opcional
+  locationPoint: LocationDTO;
   photos: string[];       // base64 previews
   tags: string[];         // << nuevo
   openingDays: DayOfWeek[]; // << nuevo
@@ -105,6 +112,7 @@ export const initialFormState: FormState = {
   hours: '',
   contact: '',
   location: '',
+  locationPoint: { ...DEFAULT_LOCATION },
   photos: [],
   tags: [],
   openingDays: [], // si queda vacío, en el submit usás DEFAULT_OPENING_DAYS

@@ -3,9 +3,7 @@ import type { ChangeEvent } from "react";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import type { LatLngExpression, LeafletMouseEvent } from "leaflet";
 import { geocodeAddress } from "../services/geoApi";
-import type { LocationDTO } from "../types/Location";
-
-const DEFAULT_POSITION: LatLngExpression = [-34.6037, -58.3816];
+import { DEFAULT_LOCATION, type LocationDTO } from "../types/Location";
 
 function RecenterOnLocation({ position }: { position: LatLngExpression }) {
   const map = useMap();
@@ -21,6 +19,7 @@ interface BusinessLocationPickerProps {
   initialLocation?: LocationDTO;
   onLocationChange: (location: LocationDTO) => void;
   onSave: (location: LocationDTO) => Promise<void> | void;
+  showSaveButton?: boolean;
 }
 
 export default function BusinessLocationPicker({
@@ -28,12 +27,8 @@ export default function BusinessLocationPicker({
   onLocationChange,
   onSave,
 }: BusinessLocationPickerProps) {
-  const [location, setLocation] = useState<LocationDTO>(() =>
-    initialLocation ?? {
-      address: "",
-      latitude: Array.isArray(DEFAULT_POSITION) ? DEFAULT_POSITION[0] : 0,
-      longitude: Array.isArray(DEFAULT_POSITION) ? DEFAULT_POSITION[1] : 0,
-    }
+  const [location, setLocation] = useState<LocationDTO>(
+    () => initialLocation ?? { ...DEFAULT_LOCATION }
   );
   const [error, setError] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
@@ -45,8 +40,7 @@ export default function BusinessLocationPicker({
 
   useEffect(() => {
     onLocationChange(location);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location, onLocationChange]);
 
   const handleMarkerDragEnd = (event: LeafletMouseEvent) => {
     const { lat, lng } = event.latlng;
@@ -112,9 +106,11 @@ export default function BusinessLocationPicker({
         </MapContainer>
       </div>
 
-      <button onClick={handleSaveClick} disabled={isSaving}>
-        {isSaving ? "Guardando..." : "Guardar ubicación"}
-      </button>
+      {showSaveButton !== false && (
+        <button onClick={handleSaveClick} disabled={isSaving}>
+          {isSaving ? "Guardando..." : "Guardar ubicación"}
+        </button>
+      )}
     </div>
   );
 }

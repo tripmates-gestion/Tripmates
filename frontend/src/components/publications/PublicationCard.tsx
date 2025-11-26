@@ -13,7 +13,8 @@ import {
   Avatar,
   Tooltip,
   Alert,
-  Snackbar
+  Snackbar,
+  Button
 } from "@mui/material";
 import { 
   MoreVert, 
@@ -317,6 +318,17 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
             Dueño: {publication.ownerUsername}
           </Typography>
         </Stack>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
+          <Button
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView(publication);
+            }}
+          >
+            Ver publicación
+          </Button>
+        </Box>
         {/* Like & Dislike abajo a la derecha */}
         <Box
           sx={{

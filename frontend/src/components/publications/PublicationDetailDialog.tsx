@@ -9,6 +9,9 @@ import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/ReviewPlaceholder";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
+import BusinessLocationMap from "../BusinessLocationMap";
+import type { LocationDTO } from "../../types/Location";
+import { geocodeAddress } from "../../services/geoApi";
 
 type Props = {
   open: boolean;
@@ -58,6 +61,8 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
   const { user } = useAuth();
+  const [resolvedLocation, setResolvedLocation] = useState<LocationDTO | null>(null);
+  const [resolvingLocation, setResolvingLocation] = useState(false);
 
   // Derivados seguros aunque publication sea null
   const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
@@ -84,6 +89,52 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
 
   const now = useMemo(() => new Date(), []);
   const openNow = useMemo(() => publication ? isOpenNow(publication, now) : false, [publication, now]);
+
+  useEffect(() => {
+    if (!publication) {
+      setResolvedLocation(null);
+      return;
+    }
+
+    if (typeof publication.latitude === "number" && typeof publication.longitude === "number") {
+      setResolvedLocation({
+        address: publication.location,
+        latitude: publication.latitude,
+        longitude: publication.longitude,
+      });
+      return;
+    }
+
+    if (!publication.location) {
+      setResolvedLocation(null);
+      return;
+    }
+
+    let cancelled = false;
+    setResolvingLocation(true);
+    geocodeAddress(publication.location)
+      .then((coords) => {
+        if (cancelled) return;
+        if (coords) {
+          setResolvedLocation({
+            address: publication.location,
+            latitude: coords.lat,
+            longitude: coords.lng,
+          });
+        } else {
+          setResolvedLocation(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setResolvingLocation(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [publication?.id, publication?.location, publication?.latitude, publication?.longitude]);
 
   const handleTouchStart = (e: React.TouchEvent) => { isDragging.current = true; touchStartX.current = e.touches[0].clientX; touchDeltaX.current = 0; };
   const handleTouchMove = (e: React.TouchEvent) => { if (!isDragging.current) return; touchDeltaX.current = e.touches[0].clientX - touchStartX.current; };
@@ -298,7 +349,22 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
             )}
           </Stack>
         </Stack>
-        
+
+        {publication.location && (
+          <Stack spacing={1.25} sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" fontWeight={700}>Mapa</Typography>
+            {resolvedLocation ? (
+              <BusinessLocationMap location={resolvedLocation} />
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                {resolvingLocation
+                  ? "Buscando la ubicación en el mapa..."
+                  : "No pudimos mostrar el mapa para esta dirección."}
+              </Typography>
+            )}
+          </Stack>
+        )}
+
         <Divider sx={{ my: 2 }} />
         {letReview && <NewReviewPlace publicationId={publication.id} currentUserName={user?.email} userId={user?.id} />}
         <Divider sx={{ my: 2 }} />

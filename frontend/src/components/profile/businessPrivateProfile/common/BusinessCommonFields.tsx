@@ -1,5 +1,7 @@
-import { Stack, TextField } from '@mui/material';
+import { Stack, TextField, Typography } from '@mui/material';
 import ImageUploader from '../../../ui/ImageUploader';
+import BusinessLocationPicker from '../../../BusinessLocationPicker';
+import type { LocationDTO } from '../../../../types/Location';
 
 export type BusinessCommonErrors = Partial<{
   name: string
@@ -10,15 +12,27 @@ export type BusinessCommonErrors = Partial<{
 }>
 
 export default function BusinessCommonFields({
-  name, description, location, phoneNumber, publicEmail,
-  onChange, avatarUrl, onAvatarSelected, disabled, errors,
+  name,
+  description,
+  location,
+  phoneNumber,
+  publicEmail,
+  onChange,
+  onLocationChange,
+  onLocationSave,
+  avatarUrl,
+  onAvatarSelected,
+  disabled,
+  errors,
 }: {
   name: string
   description: string
-  location: string
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
   onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string)=>void
+  onLocationChange: (location: LocationDTO) => void
+  onLocationSave?: (location: LocationDTO) => Promise<void> | void
   avatarUrl?: string
   onAvatarSelected: (base64:string)=>void
   disabled?: boolean
@@ -46,15 +60,25 @@ export default function BusinessCommonFields({
         error={Boolean(errors?.description)}
         helperText={errors?.description || 'Breve descripción del negocio'}
       />
-      <TextField
-        label="Ubicación"
-        fullWidth
-        value={location}
-        onChange={e=>onChange('location', e.target.value)}
-        disabled={disabled}
-        error={Boolean(errors?.location)}
-        helperText={errors?.location || 'Ej: Buenos Aires, Palermo'}
-      />
+      <Stack spacing={1.5}>
+        <Typography variant="subtitle2" fontWeight={700}>
+          Ubicación
+        </Typography>
+        <BusinessLocationPicker
+          initialLocation={location}
+          onLocationChange={(loc) => {
+            onLocationChange(loc);
+            onChange("location", loc.address);
+          }}
+          onSave={onLocationSave ?? (() => undefined)}
+          showSaveButton={Boolean(onLocationSave)}
+        />
+        {errors?.location && (
+          <Typography variant="caption" color="error">
+            {errors.location}
+          </Typography>
+        )}
+      </Stack>
       <TextField
         label="Teléfono"
         fullWidth
