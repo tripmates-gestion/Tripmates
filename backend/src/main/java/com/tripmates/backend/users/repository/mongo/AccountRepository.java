@@ -54,8 +54,7 @@ public interface AccountRepository extends MongoRepository<Account, String>, Acc
 	@Update("{ '$set' : { 'historicMaxNumberTotalLikes' : ?1 } }")
 	void updateHistoricMaxNumberTotalLikes(String userId, Integer newHistoricMaxNumberTotalLikes);
 
-
-  	/**
+	/**
 	 * Increment the number of total reviews of an account.
 	 * @param userId user's ID.
 	 */
@@ -71,7 +70,7 @@ public interface AccountRepository extends MongoRepository<Account, String>, Acc
 	@Update("{ '$inc' : { 'numberTotalReviews' : -1 } }")
 	void decrementNumberTotalReviews(String userId);
 
-  @Query("{ '_id' : ?0 }")
+	@Query("{ '_id' : ?0 }")
 	@Update("{ '$set' : { 'historicMaxNumberTotalReviews' : ?1 } }")
 	void updateHistoricMaxNumberTotalReviews(String userId, Integer newHistoricMaxNumberTotalReviews);
 

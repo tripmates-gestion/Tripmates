@@ -163,7 +163,10 @@ public class Account implements UserDetails {
 	 */
 	private Integer historicMaxNumberTotalReviews = 0;
 
-
+	/**
+	 * Account's historic business accounts search.
+	 */
+	private List<Viewed> viewedBusinessList = new ArrayList<>(20);
 
 	@Override
 	public String getPassword() {

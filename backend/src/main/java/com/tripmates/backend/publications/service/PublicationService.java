@@ -245,41 +245,40 @@ public class PublicationService {
 		publicationRepository.save(publication);
 		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
 				review.getRating());
-        registerReviewBenchmarkOnOwner(publication.getOwnerId());
+		registerReviewBenchmarkOnOwner(publication.getOwnerId());
 		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
 
-  /**
-   * Registers review benchmark progress on publication owner. Also send a email if a new benchmark is reached.
-   * @param ownerId publication owner's ID.
-  */
-  private void registerReviewBenchmarkOnOwner(String ownerId) {
-    accountRepository.incrementNumberTotalReviews(ownerId);
-    Account updatedAccount = accountRepository.findById(ownerId)
+	/**
+	 * Registers review benchmark progress on publication owner. Also send a email if a
+	 * new benchmark is reached.
+	 * @param ownerId publication owner's ID.
+	 */
+	private void registerReviewBenchmarkOnOwner(String ownerId) {
+		accountRepository.incrementNumberTotalReviews(ownerId);
+		Account updatedAccount = accountRepository.findById(ownerId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    Integer numberTotalReviews = updatedAccount.getNumberTotalReviews() != null ? updatedAccount.getNumberTotalReviews()
-				: 0;
+		Integer numberTotalReviews = updatedAccount.getNumberTotalReviews() != null
+				? updatedAccount.getNumberTotalReviews() : 0;
 		Integer historicMax = updatedAccount.getHistoricMaxNumberTotalReviews() != null
 				? updatedAccount.getHistoricMaxNumberTotalReviews() : 0;
-    if (numberTotalReviews > historicMax) {
-      accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
-      BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
-      if (benchmarkId != null) {
-        Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
-          .findByUserIdAndBenchmarkId(ownerId, benchmarkId);
-        if (maybeBenchmarkProgress.isEmpty()) {
-          BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
-          benchmarkRepository.save(benchmarkProgress);
-          emailService.sendHtmlAchievementEmail(
-              updatedAccount.getEmail(),
-              "¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
-              "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
-              updatedAccount.getUsername()
-          );
-        }
-      }
-    }
-  }
+		if (numberTotalReviews > historicMax) {
+			accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
+			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
+			if (benchmarkId != null) {
+				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+				if (maybeBenchmarkProgress.isEmpty()) {
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+					benchmarkRepository.save(benchmarkProgress);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
+				}
+			}
+		}
+	}
 
 	/**
 	 * Returns review from a publication ID.
@@ -401,12 +400,10 @@ public class PublicationService {
 				if (maybeBenchmarkProgress.isEmpty()) {
 					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
 					benchmarkRepository.save(benchmarkProgress);
-					emailService.sendHtmlAchievementEmail(
-          			    updatedAccount.getEmail(),
-          			    "¡Nuevo progreso de benchmark alcanzado!",
-          			    "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
-          			    updatedAccount.getUsername()
-          			);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo progreso de benchmark alcanzado!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
 				}
 			}
 		}
