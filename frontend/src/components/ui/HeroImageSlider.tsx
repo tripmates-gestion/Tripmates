@@ -119,7 +119,7 @@ export default function HeroImageSlider({
           width: `${total * 100}%`,
           height: '100%',
           transform: `translateX(-${(index * 100) / total}%)`,
-          transition: isTransitioning ? 'transform 0.7s ease-in-out' : 'none',
+          transition: isTransitioning ? 'transform 0.5s ease-in-out' : 'none',
         }}
       >
         {extended.map((src, i) => (
