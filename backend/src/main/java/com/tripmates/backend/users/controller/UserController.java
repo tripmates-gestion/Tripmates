@@ -491,14 +491,15 @@ public class UserController {
 	}
 
 	@PostMapping("/view/business/{businessId}")
-    @Operation(summary = "Adds business account to users recently viewed")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Business added sucessfuly",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = void.class))),
-            @ApiResponse(responseCode = "404", description = "User or business account not found",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class))) })
+	@Operation(summary = "Adds business account to users recently viewed")
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "Business added sucessfuly",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User or business account not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
 	public ResponseEntity<?> addViewedBusiness(@AuthenticationPrincipal UserDetails userDetails,
 			@PathVariable("businessId") String businessId) {
 		userService.addViewedBusiness(userDetails.getUsername(), businessId);
@@ -512,7 +513,7 @@ public class UserController {
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ViewedBusinessResponseDTO.class))),
 			@ApiResponse(responseCode = "204", description = "User has no recently viewed business accounts",
-					content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))) ,
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
 			@ApiResponse(responseCode = "404", description = "User not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
