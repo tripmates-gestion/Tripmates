@@ -163,8 +163,6 @@ public class Account implements UserDetails {
 	 */
 	private Integer historicMaxNumberTotalReviews = 0;
 
-
-
 	@Override
 	public String getPassword() {
 		return this.password;

@@ -585,7 +585,7 @@ login_user "astrid@example.com" "password123" "USER6_TOKEN"
 login_user "aizen@example.com" "password123" "USER7_TOKEN"
 
 # Original business accounts
-login_user "info@labuenamesa.com" "business123" "RESTAURANT_TOKEN"
+login_user "wengxumarcostomas@gmail.com" "business123" "RESTAURANT_TOKEN"
 login_user "reservas@playadorada.com" "business123" "HOTEL_TOKEN"
 login_user "contacto@cafedelcentro.com" "business123" "CAFE_TOKEN"
 login_user "info@hostelmontana.com" "business123" "HOSTEL_TOKEN"
