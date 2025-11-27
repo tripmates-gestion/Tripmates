@@ -1,51 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import type { LocationDTO } from '../../types/Location'
+import maplibregl, { Map as MapLibreMap, Marker } from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
 
-declare global {
-  interface Window {
-    L?: any
-  }
+const MAPTILER_API_KEY = 'UHjZSSUL8xvlIQpi6qYm'
+const MAPTILER_STYLE_ID = 'streets-v2'
+const MAPTILER_STYLE_URL = `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/style.json?key=${MAPTILER_API_KEY}`
+
+type Props = {
+  location: LocationDTO
+  onChange: (value: LocationDTO) => void
+  disabled?: boolean
+  height?: number
+  interactive?: boolean
 }
 
-const LEAFLET_SCRIPT = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-const LEAFLET_STYLES = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-
-// Definí esta env var en tu .env: VITE_MAPTILER_API_KEY=tu_api_key
-const MAPTILER_API_KEY = "UHjZSSUL8xvlIQpi6qYm"
-const MAPTILER_STYLE_ID = 'streets-v2' // podés cambiarlo por satellite, outdoor, etc.
-
-// URL base de tiles de MapTiler
-const MAPTILER_TILE_URL = MAPTILER_API_KEY
-  ? `https://api.maptiler.com/maps/${MAPTILER_STYLE_ID}/{z}/{x}/{y}.png?key=${MAPTILER_API_KEY}`
-  : '' // si no hay key, luego mostramos error
-
-const MAPTILER_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | ' +
-  '<a href="https://www.maptiler.com/copyright/">MapTiler</a>'
-
-let leafletLoader: Promise<LeafletLib> | null = null
-
-type LeafletMap = {
-  remove: () => void
-  setView: (coords: [number, number], zoom?: number) => void
-  on: (event: string, handler: (event: LeafletClickEvent) => void) => void
-}
-
-type LeafletMarker = {
-  setLatLng: (coords: [number, number]) => void
-  addTo: (map: LeafletMap) => LeafletMarker
-}
-
-type LeafletLib = {
-  map: (container: HTMLElement, options: Record<string, unknown>) => LeafletMap
-  tileLayer: (url: string, options: Record<string, unknown>) => {
-    addTo: (map: LeafletMap) => void
-  }
-  marker: (coords: [number, number]) => LeafletMarker
-}
-
-type LeafletClickEvent = { latlng: { lat: number; lng: number } }
+const DEFAULT_CENTER: [number, number] = [-34.6037, -58.3816] // [lat, lng]
 
 const hasValidCoords = (loc: LocationDTO) => {
   return (
@@ -55,77 +26,41 @@ const hasValidCoords = (loc: LocationDTO) => {
   )
 }
 
-function loadLeaflet(): Promise<LeafletLib> {
-  if (window.L) return Promise.resolve(window.L as LeafletLib)
-  if (leafletLoader) return leafletLoader
-
-  leafletLoader = new Promise((resolve, reject) => {
-    const existing = document.querySelector(`script[src="${LEAFLET_SCRIPT}"]`)
-    if (existing) {
-      existing.addEventListener('load', () => resolve(window.L as LeafletLib))
-      existing.addEventListener('error', reject)
-      return
-    }
-
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = LEAFLET_STYLES
-    document.head.appendChild(link)
-
-    const script = document.createElement('script')
-    script.src = LEAFLET_SCRIPT
-    script.async = true
-    script.onload = () => resolve(window.L as LeafletLib)
-    script.onerror = reject
-    document.body.appendChild(script)
-  })
-
-  return leafletLoader
-}
-
-type Props = {
-  location: LocationDTO
-  onChange: (value: LocationDTO) => void
-  disabled?: boolean
-  height?: number
-  /**
-   * When false, the map is only used to visualize the current location and
-   * clicks will not move the marker nor trigger onChange.
-   */
-  interactive?: boolean
-}
-
-const DEFAULT_CENTER: [number, number] = [-34.6037, -58.3816]
-
 export function OpenStreetMapPicker({
   location,
   onChange,
   disabled = false,
-  height = 260,
+  height = 360,
   interactive = true,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const mapRef = useRef<LeafletMap | null>(null)
-  const markerRef = useRef<LeafletMarker | null>(null)
-  const leafletRef = useRef<LeafletLib | null>(null)
+  const mapRef = useRef<MapLibreMap | null>(null)
+  const markerRef = useRef<Marker | null>(null)
   const locationRef = useRef<LocationDTO>(location)
   const [error, setError] = useState<string | null>(null)
 
-  const updateMarker = useCallback((loc: LocationDTO, zoom = 14) => {
-    if (!mapRef.current || !leafletRef.current) return
+  const updateMarker = useCallback(
+    (loc: LocationDTO, zoom = 16) => {
+      if (!mapRef.current) return
 
-    if (hasValidCoords(loc)) {
-      const coords: [number, number] = [loc.latitude, loc.longitude]
-      mapRef.current.setView(coords, zoom)
-      if (!markerRef.current) {
-        markerRef.current = leafletRef.current.marker(coords).addTo(mapRef.current)
+      if (hasValidCoords(loc)) {
+        const lngLat: [number, number] = [loc.longitude, loc.latitude]
+        mapRef.current.setCenter(lngLat)
+        mapRef.current.setZoom(zoom)
+
+        if (!markerRef.current) {
+          markerRef.current = new maplibregl.Marker().setLngLat(lngLat).addTo(mapRef.current)
+        } else {
+          markerRef.current.setLngLat(lngLat)
+        }
       } else {
-        markerRef.current.setLatLng(coords)
+        const lngLat: [number, number] = [DEFAULT_CENTER[1], DEFAULT_CENTER[0]]
+        mapRef.current.setCenter(lngLat)
+        mapRef.current.setZoom(12)
       }
-    } else {
-      mapRef.current.setView(DEFAULT_CENTER, 12)
-    }
-  }, [])
+    },
+    []
+  )
 
   useEffect(() => {
     locationRef.current = location
@@ -135,46 +70,47 @@ export function OpenStreetMapPicker({
     let cancelled = false
 
     if (!MAPTILER_API_KEY) {
-      setError('Falta la API key de MapTiler (VITE_MAPTILER_API_KEY)')
+      setError('Falta la API key de MapTiler para cargar el mapa')
       return
     }
 
-    loadLeaflet()
-      .then((L) => {
-        if (cancelled || !containerRef.current || mapRef.current) return
+    if (mapRef.current || !containerRef.current) return
 
-        leafletRef.current = L
-        mapRef.current = L.map(containerRef.current, {
-          center: DEFAULT_CENTER,
-          zoom: 12,
-          zoomControl: true,
+    try {
+      mapRef.current = new maplibregl.Map({
+        container: containerRef.current,
+        style: MAPTILER_STYLE_URL,
+        center: [DEFAULT_CENTER[1], DEFAULT_CENTER[0]], // [lng, lat]
+        zoom: 14,
+      })
+
+      // Controles de zoom
+      mapRef.current.addControl(new maplibregl.NavigationControl(), 'top-right')
+
+      // Click para mover marcador
+      if (interactive) {
+        mapRef.current.on('click', (e) => {
+          if (disabled) return
+          const { lng, lat } = e.lngLat
+
+          if (!markerRef.current && mapRef.current) {
+            markerRef.current = new maplibregl.Marker().setLngLat([lng, lat]).addTo(mapRef.current)
+          } else if (markerRef.current) {
+            markerRef.current.setLngLat([lng, lat])
+          }
+
+          onChange({ ...locationRef.current, latitude: lat, longitude: lng })
         })
+      }
 
-        // 🔹 Acá usamos MapTiler en lugar de los tiles OSM default
-        L.tileLayer(MAPTILER_TILE_URL, {
-          attribution: MAPTILER_ATTRIBUTION,
-          maxZoom: 19,
-        }).addTo(mapRef.current)
-
-        if (interactive) {
-          mapRef.current.on('click', (e: LeafletClickEvent) => {
-            if (disabled) return
-            const { lat, lng } = e.latlng
-            if (!markerRef.current) {
-              markerRef.current = L.marker([lat, lng]).addTo(mapRef.current!)
-            } else {
-              markerRef.current.setLatLng([lat, lng])
-            }
-            onChange({ ...locationRef.current, latitude: lat, longitude: lng })
-          })
-        }
-
+      mapRef.current.on('load', () => {
+        if (cancelled) return
         updateMarker(locationRef.current)
       })
-      .catch(() => {
-        if (cancelled) return
-        setError('No se pudo cargar el mapa')
-      })
+    } catch (err) {
+      console.error(err)
+      if (!cancelled) setError('No se pudo cargar el mapa')
+    }
 
     return () => {
       cancelled = true
