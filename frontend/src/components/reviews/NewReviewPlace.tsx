@@ -22,21 +22,20 @@ export function renderTextWithMentions(
   text: string,
   onMentionClick?: (mention: { name: string }) => void
 ) {
-  // Regex mejorado: captura @nombre o @nombre apellido (hasta 5 palabras después del @)
-  // Permite letras, números, guiones y espacios entre palabras
   const mentionRegex =
-    /@([a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\-]+(?:\s+[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\-]+){0,5})/g;
+    /@([A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9\-]*(?:\s+[A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9\-]*)*)/g;
+
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = mentionRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       parts.push(text.substring(lastIndex, match.index));
     }
 
-    const mentionName = match[1]; // sin el @
-    const fullMention = match[0]; // con el @
+    const mentionName = match[1];   // sin el @
+    const fullMention = match[0];   // con el @
 
     parts.push(
       <Box
@@ -47,12 +46,10 @@ export function renderTextWithMentions(
           onMentionClick?.({ name: mentionName });
         }}
         sx={{
-          color: "#2196F3",
+          color: '#2196F3',
           fontWeight: 700,
-          cursor: "pointer",
-          "&:hover": {
-            textDecoration: "underline",
-          },
+          cursor: 'pointer',
+          '&:hover': { textDecoration: 'underline' },
         }}
       >
         {fullMention}
@@ -68,6 +65,7 @@ export function renderTextWithMentions(
 
   return parts.length > 0 ? parts : text;
 }
+
 
 type Props = {
   currentUserName?: string;
