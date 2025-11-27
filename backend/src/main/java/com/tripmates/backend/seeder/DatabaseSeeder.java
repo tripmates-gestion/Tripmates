@@ -1,5 +1,6 @@
 package com.tripmates.backend.seeder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.auth.dto.AuthLoginRequestDTO;
 import com.tripmates.backend.auth.dto.AuthLoginResponseDTO;
 import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
@@ -13,6 +14,7 @@ import com.tripmates.backend.publications.dto.ReviewCreationRequestDTO;
 import com.tripmates.backend.publications.service.PublicationService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,9 +27,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.tripmates.backend.seeder.UserCredentialsWrapper;
 
 @Component
 @Profile("dev")
@@ -70,92 +74,79 @@ public class DatabaseSeeder implements CommandLineRunner {
 			updateUserAvatars();
 			updateBusinessImages();
 			System.out.println("=== DatabaseSeeder finalizado OK ===");
-		}
-		catch (Exception e) {
-			System.err.println("[DatabaseSeeder] Error durante el seeding: " + e.getMessage());
+		} catch (Exception e) {
+			System.err.println("Error al ejecutar el seeder: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
-	private void registerAllUsers() {
-		System.out.println("--- Registrando usuarios regulares ---");
+    private void registerAllUsers() {
+        System.out.println("--- Registrando usuarios desde JSON ---");
+        
+        try {
+            // Cargar el archivo JSON
+            ObjectMapper objectMapper = new ObjectMapper();
+            ClassPathResource resource = new ClassPathResource("config/data/user-credentials.json");
+            
+            // Leer el JSON
+            UserCredentialsWrapper wrapper = objectMapper.readValue(resource.getInputStream(), UserCredentialsWrapper.class);
+            
+            // Registrar cada usuario
+            for (UserCredentials user : wrapper.getUsers()) {
+                registerUser(
+                    user.getName(),
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getRole(),
+                    user.getBusinessType()
+                );
+            }
+            
+            System.out.println("--- Usuarios registrados exitosamente ---");
+        } catch (IOException e) {
+            System.err.println("Error al leer el archivo de credenciales: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("No se pudo cargar el archivo de credenciales de usuarios", e);
+        }
+    }
 
-		// Los mismos del script load_samples.sh
-		registerUser("Camila", "camila@example.com", "password123", Role.USER, null);
-		registerUser("Luisito Villar", "luisito@example.com", "password123", Role.USER, null);
-		registerUser("Julián Álvarez", "julian@example.com", "password123", Role.USER, null);
-		registerUser("José Luis García", "joseluis@example.com", "password123", Role.USER, null);
-		registerUser("Ricardo Mendoza", "ricardo@example.com", "password123", Role.USER, null);
-		registerUser("Astrid Cornejo", "astrid@example.com", "password123", Role.USER, null);
-		registerUser("Aizen Martínez", "aizen@example.com", "password123", Role.USER, null);
-		registerUser("Lucía Test", "lucia@example.com", "password123", Role.USER, null);
-		registerUser("Pedro Test", "pedro@example.com", "password123", Role.USER, null);
+    private void registerUser(String name, String email, String password, Role role, BusinessType businessType) {
+        try {
+            var dto = new AuthRegisterRequestDTO(name, email, password, role, businessType);
+            authService.register(dto);
+            System.out.println("[REGISTER] OK -> " + email + " (" + role
+                    + (businessType != null ? ", " + businessType : "") + ")");
+        } catch (Exception e) {
+            // Si ya existe, lo informamos y seguimos (igual que el script, que no falla
+            // fuerte)
+            System.err.println("[REGISTER] Error para " + email + ": " + e.getMessage());
+        }
+    }
 
-		System.out.println("--- Registrando cuentas de negocio ---");
+    private void loginAllUsers() {
+        System.out.println("--- Logueando usuarios para obtener tokens ---");
+        try {
+            // Load user credentials from JSON file
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserCredentialsWrapper wrapper = objectMapper.readValue(
+                getClass().getClassLoader().getResourceAsStream("config/data/user-credentials.json"),
+                UserCredentialsWrapper.class
+            );
 
-		// Original businesses
-		registerUser("Restaurante La Buena Mesa", "info@labuenamesa.com", "business123", Role.BUSINESS,
-				BusinessType.RESTAURANT);
-		registerUser("Hotel Playa Dorada", "reservas@playadorada.com", "business123", Role.BUSINESS,
-				BusinessType.HOTEL);
-		registerUser("Café del Centro", "contacto@cafedelcentro.com", "business123", Role.BUSINESS,
-				BusinessType.RESTAURANT);
-		registerUser("Hostel Montaña Mágica", "info@hostelmontana.com", "business123", Role.BUSINESS,
-				BusinessType.HOTEL);
-
-		// New business accounts
-		registerUser("Brisa Marina", "isabel@brisamarina.com", "business123", Role.BUSINESS, BusinessType.RESTAURANT);
-		registerUser("Sabores Peruanos", "gaston@saboresperuanos.com", "business123", Role.BUSINESS,
-				BusinessType.RESTAURANT);
-		registerUser("El Encuentro Hostel", "diego@elencuentrohostel.com", "business123", Role.BUSINESS,
-				BusinessType.HOTEL);
-	}
-
-	private void registerUser(String name, String email, String password, Role role, BusinessType businessType) {
-		try {
-			var dto = new AuthRegisterRequestDTO(name, email, password, role, businessType);
-			authService.register(dto);
-			System.out.println("[REGISTER] OK -> " + email + " (" + role
-					+ (businessType != null ? ", " + businessType : "") + ")");
-		}
-		catch (Exception e) {
-			// Si ya existe, lo informamos y seguimos (igual que el script, que no falla
-			// fuerte)
-			System.err.println("[REGISTER] Error para " + email + ": " + e.getMessage());
-		}
-	}
-
-	private void loginAllUsers() {
-		System.out.println("--- Logueando usuarios para obtener tokens ---");
-
-		loginAndStoreToken("camila@example.com", "password123");
-		loginAndStoreToken("luisito@example.com", "password123");
-		loginAndStoreToken("julian@example.com", "password123");
-		loginAndStoreToken("joseluis@example.com", "password123");
-		loginAndStoreToken("ricardo@example.com", "password123");
-		loginAndStoreToken("astrid@example.com", "password123");
-		loginAndStoreToken("aizen@example.com", "password123");
-
-		loginAndStoreToken("wengxumarcostomas@gmail.com", "business123");
-		loginAndStoreToken("reservas@playadorada.com", "business123");
-		loginAndStoreToken("contacto@cafedelcentro.com", "business123");
-		loginAndStoreToken("info@hostelmontana.com", "business123");
-
-		loginAndStoreToken("isabel@brisamarina.com", "business123");
-		loginAndStoreToken("gaston@saboresperuanos.com", "business123");
-		loginAndStoreToken("diego@elencuentrohostel.com", "business123");
-	}
-
-	private void loginAndStoreToken(String email, String password) {
-		try {
-			var loginRequest = new AuthLoginRequestDTO(email, password);
-			AuthLoginResponseDTO response = authService.login(loginRequest);
-			tokens.put(email, response.accessToken());
-			System.out.println("[LOGIN] OK -> " + email);
-		}
-		catch (Exception e) {
-			System.err.println("[LOGIN] Error para " + email + ": " + e.getMessage());
-		}
+            // Login each user and store their token
+            for (UserCredentials user : wrapper.getUsers()) {
+                try {
+                    AuthLoginRequestDTO loginRequest = new AuthLoginRequestDTO(user.getEmail(), user.getPassword());
+                    AuthLoginResponseDTO response = authService.login(loginRequest);
+                    tokens.put(user.getEmail(), response.accessToken());
+                    System.out.println("[LOGIN] OK -> " + user.getEmail());
+                } catch (Exception e) {
+                    System.err.println("[LOGIN] Error para " + user.getEmail() + ": " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading user credentials: " + e.getMessage());
+        }
 	}
 
 	private void seedPublications() {
