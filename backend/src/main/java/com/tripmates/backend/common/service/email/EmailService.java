@@ -96,7 +96,7 @@ public class EmailService {
 
 
 			//cambiar esto
-            String achievementUrl = frontendRedirectionBaseUrl + "/achievements/" + achievementName.replaceAll(" ", "-").toLowerCase();
+            String achievementUrl = frontendRedirectionBaseUrl + "/profile";
 
             Map<String, String> substitutionMap = new HashMap<>();
             substitutionMap.put("toUsername", toUsername);
