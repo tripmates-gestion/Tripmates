@@ -182,7 +182,6 @@ public class BusinessRecommendationTest {
 	@Test
 	@WithMockUser(username = "franInfanti@gmail.com.ar", roles = { "USER" })
 	public void testAccountWithReviewsHasBusinessRecommendations() throws Exception {
-		// Arrange
 		Account fran = new Account();
 		fran.setName("Fran Infanti");
 		fran.setEmail("franInfanti@gmail.com.ar");

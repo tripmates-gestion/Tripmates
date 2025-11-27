@@ -1,5 +1,6 @@
 package com.tripmates.backend.users.controller;
 
+import com.tripmates.backend.users.dto.account.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,7 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
@@ -22,10 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springdoc.core.annotations.ParameterObject;
 
 import com.tripmates.backend.users.dto.*;
-import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
-import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
-import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
-import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
 import com.tripmates.backend.users.dto.followers.FollowersListResponseDTO;
 import com.tripmates.backend.users.dto.followers.FollowingsListResponseDTO;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
@@ -112,7 +112,7 @@ public class UserController {
 		if (accountResumeResponseDTOPage.getTotalElements() == 0)
 			return ResponseEntity.noContent().build();
 
-		return ResponseEntity.ok().body(accountResumeResponseDTOPage);
+		return ResponseEntity.ok(accountResumeResponseDTOPage);
 	}
 
 	@GetMapping(value = "/search/user", consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -488,6 +488,42 @@ public class UserController {
 			return ResponseEntity.noContent().build();
 
 		return ResponseEntity.ok(publicationResumeResponseDTOList);
+	}
+
+	@PostMapping("/view/business/{businessId}")
+	@Operation(summary = "Adds business account to users recently viewed")
+	@ApiResponses(
+			value = {
+					@ApiResponse(responseCode = "204", description = "Business added sucessfuly",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = void.class))),
+					@ApiResponse(responseCode = "404", description = "User or business account not found",
+							content = @Content(mediaType = "application/json",
+									schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> addViewedBusiness(@AuthenticationPrincipal UserDetails userDetails,
+			@PathVariable("businessId") String businessId) {
+		userService.addViewedBusiness(userDetails.getUsername(), businessId);
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping("/history/view/business/{userId}")
+	@Operation(summary = "Returns user's recently viewed business accounts")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Recently viewed business accounts obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ViewedBusinessResponseDTO.class))),
+			@ApiResponse(responseCode = "204", description = "User has no recently viewed business accounts",
+					content = @Content(mediaType = "application/json", schema = @Schema(implementation = void.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getHistoryBusiness(@PathVariable("userId") String userId) {
+		List<ViewedBusinessResponseDTO> accountResumeResponseDTOList = userService.getHistoryBusiness(userId);
+
+		if (accountResumeResponseDTOList.isEmpty())
+			return ResponseEntity.noContent().build();
+
+		return ResponseEntity.ok(accountResumeResponseDTOList);
 	}
 
 }
