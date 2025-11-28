@@ -38,19 +38,12 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 @Import({ TestCloudinaryConfig.class })
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BusinessRecommendationTest {
-
-	private Location createLocation(String address, Double latitude, Double longitude) {
-		return new Location(address, latitude, longitude);
-	}
-
-	@LocalServerPort
-	private int port;
 
 	@Autowired
 	private MongoTemplate mongoTemplate;
@@ -83,6 +76,10 @@ public class BusinessRecommendationTest {
 	void afterAll() {
 		mongoTemplate.getDb().drop();
 		neo4jClient.query("MATCH (n) DETACH DELETE n").run();
+	}
+
+	private Location createLocation(String address, Double latitude, Double longitude) {
+		return new Location(address, latitude, longitude);
 	}
 
 	@Test
