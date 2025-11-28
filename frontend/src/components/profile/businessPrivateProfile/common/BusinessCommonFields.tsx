@@ -6,6 +6,7 @@ import type { LocationDTO } from '../../../../types/Location'
 import { useGeocodeAddress } from '../../../../hooks/useGeocodeAddress'
 import { useReverseGeocode } from '../../../../hooks/useReverseGeocode'
 import { useCallback, useEffect, useState } from 'react'
+import { InputAdornment, IconButton } from "@mui/material";
 
 export type BusinessCommonErrors = Partial<{
   name: string
@@ -106,24 +107,20 @@ export default function BusinessCommonFields({
             if (geoError) setGeoError(null)
             if (reverseError) setReverseError(null)
           }}
-          disabled={disabled}
-          error={Boolean(errors?.location?.address) || Boolean(geoError) || Boolean(reverseError)}
-          helperText={errors?.location?.address || geoError || reverseError || 'Ej: Av. Paseo Colón 850, Buenos Aires, Argentina'}
-        />
-        <Button
-          variant="outlined"
-          startIcon={<Search />}
-          onClick={handleSearchInMap}
-          disabled={disabled || geocoding || reverseLoading}
-          sx={{
-            whiteSpace: 'nowrap',
-            height: { sm: 56 },
-            alignSelf: { xs: 'stretch', sm: 'flex-start' },
-            width: { xs: '100%', sm: 'auto' },
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  onClick={handleSearchInMap}
+                  disabled={disabled || geocoding}
+                >
+                  <Search />
+                </IconButton>
+              </InputAdornment>
+            ),
           }}
-        >
-          {geocoding ? 'Buscando...' : 'Buscar en mapa'}
-        </Button>
+        />
       </Stack>
 
       <OpenStreetMapPicker location={location} onChange={handleMapChange} disabled={disabled} />
