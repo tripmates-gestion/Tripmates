@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.DayOfWeek;
 import java.util.List;
+import com.tripmates.backend.common.types.Location;
 
 @Schema(description = "Account's resume profile response DTO")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,7 +17,7 @@ public record AccountResumeResponseDTO(@Schema(description = "Account's ID") Str
 		@Schema(description = "Business account's description") String description,
 		/* For business's accounts */
 		@Schema(description = "Business account's business type") BusinessType businessType,
-		@Schema(description = "Business account's location") String location,
+		@Schema(description = "Business account's location") Location location,
 		@Schema(description = "Business account's phone number") String phoneNumber,
 		@Schema(description = "Business account's public email") String publicEmail,
 		@Schema(description = "Business account's profile image URLs") List<String> profileImageUrls,
@@ -56,7 +57,7 @@ public record AccountResumeResponseDTO(@Schema(description = "Account's ID") Str
 		}
 
 		BusinessType businessType = account.getBusinessType();
-		String location = account.getLocation();
+		Location location = account.getLocation();
 		String phoneNumber = account.getPhoneNumber();
 		String publicEmail = account.getPublicEmail();
 		List<String> imageURLsList = account.getProfileImageUrls();

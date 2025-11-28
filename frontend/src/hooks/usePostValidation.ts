@@ -3,11 +3,14 @@ import {
   isValidEmail,
   isValidPhone,
   isValidSchedule,
-  isValidLocation,
+  validateLocation,
+  type LocationFieldError,
 } from '../components/publications/utils/validators'
 import type { FormState } from '../types/Business'
 
-type ValidationErrors = Partial<Record<keyof FormState, string>>
+type ValidationErrors = Partial<Record<Exclude<keyof FormState, 'location'>, string>> & {
+  location?: LocationFieldError
+}
 
 /**
  * Hook para validar formularios de publicación de negocios
@@ -55,9 +58,8 @@ export function usePostValidation() {
     //   errors.location = 'La ubicación es obligatoria'
     // } else 
     
-    if (!isValidLocation(form.location)) {
-      errors.location = 'Ingresá una ubicación válida (ciudad, provincia o dirección)'
-    }
+    const locationErrors = validateLocation(form.location, { required: true })
+    if (locationErrors) errors.location = locationErrors
 
     return errors
   }, [])

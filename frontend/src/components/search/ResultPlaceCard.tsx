@@ -114,7 +114,7 @@ export default function PlaceCard({ businessAccountData }: Props) {
         )}
 
         <Stack direction="row" spacing={1} alignItems="center" mt={1.25}>
-          <Typography variant="caption" color="text.secondary">📍 {businessAccountData.location || "Ubicación no disponible"}</Typography>
+          <Typography variant="caption" color="text.secondary">📍 {typeof businessAccountData.location === 'string' ? businessAccountData.location : businessAccountData.location?.address || "Ubicación no disponible"}</Typography>
         </Stack>
 
         {businessAccountData.openingDays?.length ? (

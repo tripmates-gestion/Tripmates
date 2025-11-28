@@ -115,7 +115,7 @@ export default function BusinessProfile() {
                   {!!business.location && (
                     <Stack direction="row" spacing={0.5} alignItems="center">
                       <Room fontSize="small" />
-                      <Typography variant="caption">{business.location}</Typography>
+                      <Typography variant="caption">{business.location.address}</Typography>
                     </Stack>
                   )}
                   {!!business.phoneNumber && (

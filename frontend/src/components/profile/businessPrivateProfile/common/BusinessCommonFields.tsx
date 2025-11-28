@@ -1,10 +1,12 @@
-import { Stack, TextField } from '@mui/material';
+import { Stack, TextField, Typography } from '@mui/material';
 import ImageUploader from '../../../ui/ImageUploader';
+import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker';
+import type { LocationDTO } from '../../../../types/Location';
 
 export type BusinessCommonErrors = Partial<{
   name: string
   description: string
-  location: string
+  location: Partial<Record<keyof LocationDTO, string>>
   phoneNumber: string
   publicEmail: string
 }>
@@ -15,10 +17,10 @@ export default function BusinessCommonFields({
 }: {
   name: string
   description: string
-  location: string
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
-  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string)=>void
+  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string | LocationDTO)=>void
   avatarUrl?: string
   onAvatarSelected: (base64:string)=>void
   disabled?: boolean
@@ -49,12 +51,21 @@ export default function BusinessCommonFields({
       <TextField
         label="Ubicación"
         fullWidth
-        value={location}
-        onChange={e=>onChange('location', e.target.value)}
+        value={location?.address || ''}
+        onChange={e => onChange('location', {
+          ...(location || { latitude: 0, longitude: 0 }),
+          address: e.target.value
+        })}
         disabled={disabled}
-        error={Boolean(errors?.location)}
-        helperText={errors?.location || 'Ej: Buenos Aires, Palermo'}
+        error={Boolean(errors?.location?.address)}
+        helperText={errors?.location?.address || 'Ej: Buenos Aires, Palermo'}
       />
+      <OpenStreetMapPicker location={location} onChange={(value)=>onChange('location', value)} disabled={disabled} />
+      <Typography variant="body2" color="text.secondary">
+        {Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && !(location.latitude === 0 && location.longitude === 0)
+          ? `Coordenadas seleccionadas: ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
+          : 'Hacé clic en el mapa para fijar la ubicación exacta'}
+      </Typography>
       <TextField
         label="Teléfono"
         fullWidth
