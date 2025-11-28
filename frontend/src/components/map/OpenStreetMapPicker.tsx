@@ -49,6 +49,12 @@ export function OpenStreetMapPicker({
     disabledRef.current = disabled
   }, [disabled])
 
+  const updateLocationFromMap = useCallback((lat: number, lng: number) => {
+    const nextLocation = { ...locationRef.current, latitude: lat, longitude: lng }
+    locationRef.current = nextLocation
+    onChangeRef.current(nextLocation)
+  }, [])
+
   const updateMarker = useCallback(
     (loc: LocationDTO, zoom = 16) => {
       if (!mapRef.current) return
@@ -59,7 +65,15 @@ export function OpenStreetMapPicker({
         mapRef.current.setZoom(zoom)
 
         if (!markerRef.current) {
-          markerRef.current = new maplibregl.Marker().setLngLat(lngLat).addTo(mapRef.current)
+          markerRef.current = new maplibregl.Marker({ draggable: interactive }).setLngLat(lngLat).addTo(mapRef.current)
+
+          if (interactive) {
+            markerRef.current.on('dragend', () => {
+              if (disabledRef.current || !markerRef.current) return
+              const { lat, lng } = markerRef.current.getLngLat()
+              updateLocationFromMap(lat, lng)
+            })
+          }
         } else {
           markerRef.current.setLngLat(lngLat)
         }
@@ -69,7 +83,7 @@ export function OpenStreetMapPicker({
         mapRef.current.setZoom(12)
       }
     },
-    []
+    [interactive, updateLocationFromMap]
   )
 
   useEffect(() => {
@@ -105,7 +119,7 @@ export function OpenStreetMapPicker({
             markerRef.current.setLngLat([lng, lat])
           }
 
-          onChangeRef.current({ ...locationRef.current, latitude: lat, longitude: lng })
+          updateLocationFromMap(lat, lng)
         })
       }
 
@@ -126,16 +140,15 @@ export function OpenStreetMapPicker({
       }
       markerRef.current = null
     }
-  }, [interactive, updateMarker])
+  }, [interactive, updateLocationFromMap, updateMarker])
 
   useEffect(() => {
     const prev = locationRef.current
-    const hasChanged =
+    const hasCoordsChanged =
       prev.latitude !== location.latitude ||
-      prev.longitude !== location.longitude ||
-      prev.address !== location.address
+      prev.longitude !== location.longitude
 
-    if (hasChanged) {
+    if (hasCoordsChanged) {
       locationRef.current = location
       updateMarker(location)
     }
