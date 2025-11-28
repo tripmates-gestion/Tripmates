@@ -334,7 +334,6 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             )}
 
             {/* Días de apertura (opcional: si no elige, usás tu default en el DTO) */}
-
             <FormControl component="fieldset">
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
                 Días disponibles (opcional)
@@ -363,7 +362,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             </FormControl>
 
             {/* Horario y Contacto (ambos opcionales) */}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} alignItems="flex-end">
               <Grid item xs={12} md={6}>
                 <BusinessTimeRangeField
                   label="Horario de atención (opcional)"
@@ -374,22 +373,32 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
                   }}
                   error={hasError('hours')}
                   helperText={helper('hours') || 'Ej: 09:00–18:00'}
-                  disabled={submitting}
-                />
+                  disabled={submitting}                
+                  />
               </Grid>
+            </Grid>
 
-              <Grid item xs={12} md={6}>
+
+
+            {/* Contacto */}
+            <Grid item xs={12} md={6}>
                 <TextField
+                  fullWidth
                   label="Información de contacto (opcional)"
                   placeholder="Teléfono o email"
                   value={form.contact}
-                  onChange={(e) => setForm((prev) => ({ ...prev, contact: e.target.value }))}
-                  onBlur={() => setTouched((prev) => ({ ...prev, contact: true }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, contact: e.target.value }))
+                  }
+                  onBlur={() =>
+                    setTouched((prev) => ({ ...prev, contact: true }))
+                  }
                   error={hasError('contact')}
                   helperText={helper('contact')}
                 />
-              </Grid>
             </Grid>
+
+
                 
             {/* Ubicación */}
             <TextField

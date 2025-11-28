@@ -1,5 +1,5 @@
 import { Search } from '@mui/icons-material'
-import { Button, Stack, TextField, Typography } from '@mui/material'
+import { Stack, TextField, Typography } from '@mui/material'
 import ImageUploader from '../../../ui/ImageUploader'
 import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker'
 import type { LocationDTO } from '../../../../types/Location'
@@ -32,7 +32,7 @@ export default function BusinessCommonFields({
   errors?: BusinessCommonErrors
 }) {
   const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
-  const { reverseGeocode, loading: reverseLoading, error: reverseError, setError: setReverseError } = useReverseGeocode()
+  const { reverseGeocode, error: reverseError, setError: setReverseError } = useReverseGeocode()
 
   const [addressInput, setAddressInput] = useState(location?.address || '')
 
