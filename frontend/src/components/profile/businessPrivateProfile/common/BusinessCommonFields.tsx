@@ -1,7 +1,9 @@
-import { Stack, TextField, Typography } from '@mui/material';
-import ImageUploader from '../../../ui/ImageUploader';
-import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker';
-import type { LocationDTO } from '../../../../types/Location';
+import { Search } from '@mui/icons-material'
+import { Button, Stack, TextField, Typography } from '@mui/material'
+import ImageUploader from '../../../ui/ImageUploader'
+import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker'
+import type { LocationDTO } from '../../../../types/Location'
+import { useGeocodeAddress } from '../../../../hooks/useGeocodeAddress'
 
 export type BusinessCommonErrors = Partial<{
   name: string
@@ -26,6 +28,15 @@ export default function BusinessCommonFields({
   disabled?: boolean
   errors?: BusinessCommonErrors
 }) {
+  const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
+
+  const handleSearchInMap = async () => {
+    const result = await geocodeAddress(location?.address || '')
+    if (result) {
+      onChange('location', { ...(location || { address: '' }), ...result })
+    }
+  }
+
   return (
     <Stack spacing={3}>
       <TextField
@@ -48,18 +59,32 @@ export default function BusinessCommonFields({
         error={Boolean(errors?.description)}
         helperText={errors?.description || 'Breve descripción del negocio'}
       />
-      <TextField
-        label="Ubicación"
-        fullWidth
-        value={location?.address || ''}
-        onChange={e => onChange('location', {
-          ...(location || { latitude: 0, longitude: 0 }),
-          address: e.target.value
-        })}
-        disabled={disabled}
-        error={Boolean(errors?.location?.address)}
-        helperText={errors?.location?.address || 'Ej: Buenos Aires, Palermo'}
-      />
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="flex-start">
+        <TextField
+          label="Ubicación"
+          fullWidth
+          value={location?.address || ''}
+          onChange={e => {
+            onChange('location', {
+              ...(location || { latitude: 0, longitude: 0 }),
+              address: e.target.value
+            })
+            if (geoError) setGeoError(null)
+          }}
+          disabled={disabled}
+          error={Boolean(errors?.location?.address) || Boolean(geoError)}
+          helperText={errors?.location?.address || geoError || 'Ej: Buenos Aires, Palermo'}
+        />
+        <Button
+          variant="outlined"
+          startIcon={<Search />}
+          onClick={handleSearchInMap}
+          disabled={disabled || geocoding}
+          sx={{ whiteSpace: 'nowrap' }}
+        >
+          {geocoding ? 'Buscando...' : 'Buscar en mapa'}
+        </Button>
+      </Stack>
       <OpenStreetMapPicker location={location} onChange={(value)=>onChange('location', value)} disabled={disabled} />
       <Typography variant="body2" color="text.secondary">
         {Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && !(location.latitude === 0 && location.longitude === 0)
