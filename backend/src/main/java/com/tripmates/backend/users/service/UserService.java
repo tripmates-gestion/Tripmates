@@ -759,8 +759,8 @@ public class UserService {
 	 * @param userId user's ID.
 	 * @return list of {@link ViewedBusinessResponseDTO}.
 	 */
-	public List<ViewedBusinessResponseDTO> getHistoryBusiness(String userId) {
-		Account account = accountRepository.findById(userId)
+	public List<ViewedBusinessResponseDTO> getHistoryBusiness(String email) {
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		List<ViewedBusinessResponseDTO> viewedBusinessResponseDTOList = new ArrayList<>();
