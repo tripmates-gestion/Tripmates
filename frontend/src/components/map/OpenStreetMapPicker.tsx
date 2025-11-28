@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { Box, Typography } from '@mui/material'
 import type { LocationDTO } from '../../types/Location'
 import maplibregl, { Map as MapLibreMap, Marker } from 'maplibre-gl'
@@ -37,7 +37,17 @@ export function OpenStreetMapPicker({
   const mapRef = useRef<MapLibreMap | null>(null)
   const markerRef = useRef<Marker | null>(null)
   const locationRef = useRef<LocationDTO>(location)
+  const onChangeRef = useRef(onChange)
+  const disabledRef = useRef(disabled)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    disabledRef.current = disabled
+  }, [disabled])
 
   const updateMarker = useCallback(
     (loc: LocationDTO, zoom = 16) => {
@@ -63,10 +73,6 @@ export function OpenStreetMapPicker({
   )
 
   useEffect(() => {
-    locationRef.current = location
-  }, [location])
-
-  useEffect(() => {
     let cancelled = false
 
     if (!MAPTILER_API_KEY) {
@@ -90,7 +96,7 @@ export function OpenStreetMapPicker({
       // Click para mover marcador
       if (interactive) {
         mapRef.current.on('click', (e) => {
-          if (disabled) return
+          if (disabledRef.current) return
           const { lng, lat } = e.lngLat
 
           if (!markerRef.current && mapRef.current) {
@@ -99,7 +105,7 @@ export function OpenStreetMapPicker({
             markerRef.current.setLngLat([lng, lat])
           }
 
-          onChange({ ...locationRef.current, latitude: lat, longitude: lng })
+          onChangeRef.current({ ...locationRef.current, latitude: lat, longitude: lng })
         })
       }
 
@@ -120,10 +126,19 @@ export function OpenStreetMapPicker({
       }
       markerRef.current = null
     }
-  }, [disabled, interactive, onChange, updateMarker])
+  }, [interactive, updateMarker])
 
   useEffect(() => {
-    updateMarker(location)
+    const prev = locationRef.current
+    const hasChanged =
+      prev.latitude !== location.latitude ||
+      prev.longitude !== location.longitude ||
+      prev.address !== location.address
+
+    if (hasChanged) {
+      locationRef.current = location
+      updateMarker(location)
+    }
   }, [location, updateMarker])
 
   return (
@@ -157,4 +172,4 @@ export function OpenStreetMapPicker({
   )
 }
 
-export default OpenStreetMapPicker
+export default memo(OpenStreetMapPicker)
