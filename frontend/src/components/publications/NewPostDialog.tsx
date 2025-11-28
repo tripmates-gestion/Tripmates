@@ -18,6 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
+import { Search } from '@mui/icons-material'
 import ImageUploader from '../ui/ImageUploader'
 import OpenStreetMapPicker from '../map/OpenStreetMapPicker'
 import { useAuth } from '../../hooks/useAuth'
@@ -36,6 +37,7 @@ import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
 import { parseHours } from '../GeneralHelpers'
 import { useSnackbar } from 'notistack';
 import { isValidLocation } from './utils/validators'
+import { useGeocodeAddress } from '../../hooks/useGeocodeAddress'
 
 // ---------------------- Props ----------------------
 type NewPostDialogProps = {
@@ -89,6 +91,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const { enqueueSnackbar } = useSnackbar();
+  const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
   
   // Estado para rastrear imágenes a eliminar (índices)
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([])
@@ -148,6 +151,14 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
 
   const addPhoto = (base64: string) => {
     setForm((prev) => ({ ...prev, photos: [...prev.photos, base64] }))
+  }
+
+  const handleSearchInMap = async () => {
+    const result = await geocodeAddress(form.location.address)
+    if (result) {
+      setForm((prev) => ({ ...prev, location: { ...prev.location, ...result } }))
+      setTouched((prev) => ({ ...prev, location: true }))
+    }
   }
 
   const removePhotoAt = (index: number) => {
@@ -376,15 +387,29 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             </Grid>
                 
             {/* Ubicación */}
-            <TextField
-              label="Ubicación"
-              placeholder="Ciudad, provincia / Dirección"
-              value={form.location.address}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: { ...prev.location, address: e.target.value } }))}
-              onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
-              error={hasError('location')}
-              helperText={helper('location') || 'Ej: Buenos Aires, Palermo'}
-            />
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems="flex-start">
+              <TextField
+                label="Ubicación"
+                placeholder="Ciudad, provincia / Dirección"
+                value={form.location.address}
+                onChange={(e) => {
+                  setForm((prev) => ({ ...prev, location: { ...prev.location, address: e.target.value } }))
+                  if (geoError) setGeoError(null)
+                }}
+                onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
+                error={hasError('location') || Boolean(geoError)}
+                helperText={helper('location') || geoError || 'Ej: Buenos Aires, Palermo'}
+              />
+              <Button
+                variant="outlined"
+                startIcon={<Search />}
+                onClick={handleSearchInMap}
+                disabled={submitting || geocoding}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {geocoding ? 'Buscando...' : 'Buscar en mapa'}
+              </Button>
+            </Stack>
             <OpenStreetMapPicker
               location={form.location}
               onChange={(value) => {
