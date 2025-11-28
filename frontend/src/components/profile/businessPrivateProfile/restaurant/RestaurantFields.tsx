@@ -1,6 +1,6 @@
 import { Stack, TextField, MenuItem, FormControl, FormHelperText } from '@mui/material'
 import DaysSelector from '../common/DaysSelector'
-import ScheduleInput from '../common/ScheduleInput'
+import BusinessTimeRangeField from '../common/BusinessTimeRangeField'
 import { PRICE_OPTIONS, RESTAURANT_TYPE_OPTIONS } from '../common/types'
 import { type RestaurantType } from '../../../../types/Restaurant';
 
@@ -32,10 +32,14 @@ export default function RestaurantFields({
 }) {
   return (
     <Stack spacing={3}>
-      <FormControl error={Boolean(errors?.openingHours)}>
-        <ScheduleInput value={openingHours} onChange={setOpeningHours} disabled={disabled}/>
-        <FormHelperText>{errors?.openingHours || 'Ej: 09:00–18:00'}</FormHelperText>
-      </FormControl>
+      <BusinessTimeRangeField
+        label="Horario"
+        value={openingHours}
+        onChange={setOpeningHours}
+        helperText={errors?.openingHours || 'Ej: 09:00–18:00'}
+        error={Boolean(errors?.openingHours)}
+        disabled={disabled}
+      />
 
       <FormControl error={Boolean(errors?.openingDays)}>
         <DaysSelector value={openingDays} onChange={setOpeningDays} disabled={disabled}/>
