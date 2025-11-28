@@ -4,7 +4,8 @@ import ImageUploader from '../../../ui/ImageUploader'
 import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker'
 import type { LocationDTO } from '../../../../types/Location'
 import { useGeocodeAddress } from '../../../../hooks/useGeocodeAddress'
-import { useEffect, useState } from 'react'
+import { useReverseGeocode } from '../../../../hooks/useReverseGeocode'
+import { useCallback, useEffect, useState } from 'react'
 
 export type BusinessCommonErrors = Partial<{
   name: string
@@ -30,6 +31,7 @@ export default function BusinessCommonFields({
   errors?: BusinessCommonErrors
 }) {
   const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
+  const { reverseGeocode, loading: reverseLoading, error: reverseError, setError: setReverseError } = useReverseGeocode()
 
   const [addressInput, setAddressInput] = useState(location?.address || '')
 
@@ -48,6 +50,29 @@ export default function BusinessCommonFields({
       })
     }
   }
+
+  const handleMapChange = useCallback(async (value: LocationDTO) => {
+    const updatedLocation = {
+      ...(location || {}),
+      latitude: value.latitude,
+      longitude: value.longitude,
+    }
+
+    onChange('location', updatedLocation)
+
+    if (geoError) setGeoError(null)
+    if (reverseError) setReverseError(null)
+
+    const suggestedAddress = await reverseGeocode(value.latitude, value.longitude)
+
+    if (suggestedAddress) {
+      setAddressInput(suggestedAddress)
+      onChange('location', {
+        ...updatedLocation,
+        address: suggestedAddress,
+      })
+    }
+  }, [geoError, location, onChange, reverseError, reverseGeocode, setGeoError, setReverseError])
 
   return (
     <Stack spacing={3}>
@@ -79,16 +104,17 @@ export default function BusinessCommonFields({
           onChange={e => {
             setAddressInput(e.target.value)
             if (geoError) setGeoError(null)
+            if (reverseError) setReverseError(null)
           }}
           disabled={disabled}
-          error={Boolean(errors?.location?.address) || Boolean(geoError)}
-          helperText={errors?.location?.address || geoError || 'Ej: Av. Paseo Colón 850, Buenos Aires, Argentina'}
+          error={Boolean(errors?.location?.address) || Boolean(geoError) || Boolean(reverseError)}
+          helperText={errors?.location?.address || geoError || reverseError || 'Ej: Av. Paseo Colón 850, Buenos Aires, Argentina'}
         />
         <Button
           variant="outlined"
           startIcon={<Search />}
           onClick={handleSearchInMap}
-          disabled={disabled || geocoding}
+          disabled={disabled || geocoding || reverseLoading}
           sx={{
             whiteSpace: 'nowrap',
             height: { sm: 56 },
@@ -100,7 +126,7 @@ export default function BusinessCommonFields({
         </Button>
       </Stack>
 
-      <OpenStreetMapPicker location={location} onChange={(value)=>onChange('location', value)} disabled={disabled} />
+      <OpenStreetMapPicker location={location} onChange={handleMapChange} disabled={disabled} />
       <Typography variant="body2" color="text.secondary">
         {Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && !(location.latitude === 0 && location.longitude === 0)
           ? `Coordenadas seleccionadas: ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
