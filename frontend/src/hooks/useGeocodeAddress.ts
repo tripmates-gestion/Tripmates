@@ -22,6 +22,8 @@ export function useGeocodeAddress() {
 
     try {
       const url = `${NOMINATIM_ENDPOINT}?format=json&limit=1&q=${encodeURIComponent(address)}`
+
+      console.log('Geocoding URL:', url)
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Tripmates/1.0 (Universidad)'
