@@ -506,7 +506,7 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@GetMapping("/history/view/business/{userId}")
+	@GetMapping("/history/view/business")
 	@Operation(summary = "Returns user's recently viewed business accounts")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Recently viewed business accounts obtained successfully",
@@ -517,13 +517,43 @@ public class UserController {
 			@ApiResponse(responseCode = "404", description = "User not found",
 					content = @Content(mediaType = "application/json",
 							schema = @Schema(implementation = ErrorDTO.class))) })
-	public ResponseEntity<?> getHistoryBusiness(@PathVariable("userId") String userId) {
-		List<ViewedBusinessResponseDTO> accountResumeResponseDTOList = userService.getHistoryBusiness(userId);
+	public ResponseEntity<?> getHistoryBusiness(@AuthenticationPrincipal UserDetails userDetails) {
+		List<ViewedBusinessResponseDTO> accountResumeResponseDTOList = userService
+			.getHistoryBusiness(userDetails.getUsername());
 
 		if (accountResumeResponseDTOList.isEmpty())
 			return ResponseEntity.noContent().build();
 
 		return ResponseEntity.ok(accountResumeResponseDTOList);
+	}
+
+	@GetMapping("/{email}/media")
+	@Operation(summary = "Obtains all social media links from the account")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Social media links from the account obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = SocialMediaUpdateResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getSocialMedia(@PathVariable("email") String email) {
+		return ResponseEntity.ok(userService.getSocialMedia(email));
+	}
+
+	@PostMapping("/me/media")
+	@Operation(summary = "Updates all social media links from the account")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Social media links from the account updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = SocialMediaUpdateResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> postSocialMedia(@AuthenticationPrincipal UserDetails userDetails,
+			@RequestBody SocialMediaUpdateRequestDTO socialMediaUpdateRequestDTO) {
+		userService.addSocialMedia(userDetails.getUsername(), socialMediaUpdateRequestDTO);
+		return ResponseEntity.noContent().build();
 	}
 
 }

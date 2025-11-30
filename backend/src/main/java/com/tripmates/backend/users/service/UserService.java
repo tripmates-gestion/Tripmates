@@ -756,11 +756,11 @@ public class UserService {
 	/**
 	 * Given a user's ID, returns the recently viewed business accounts. (Only allowed in
 	 * user's accounts).
-	 * @param userId user's ID.
+	 * @param email user's email.
 	 * @return list of {@link ViewedBusinessResponseDTO}.
 	 */
-	public List<ViewedBusinessResponseDTO> getHistoryBusiness(String userId) {
-		Account account = accountRepository.findById(userId)
+	public List<ViewedBusinessResponseDTO> getHistoryBusiness(String email) {
+		Account account = accountRepository.findByEmail(email)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 		List<ViewedBusinessResponseDTO> viewedBusinessResponseDTOList = new ArrayList<>();
@@ -773,6 +773,46 @@ public class UserService {
 		}
 
 		return viewedBusinessResponseDTOList;
+	}
+
+	/**
+	 * Updates social media links in the user or business account.
+	 * @param email account's email.
+	 * @param socialMediaUpdateRequestDTO social media links.
+	 */
+	public void addSocialMedia(String email, SocialMediaUpdateRequestDTO socialMediaUpdateRequestDTO) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		Map<SocialMedia, String> socialMediaURLs = account.getSocialMediaURLs();
+
+		if (socialMediaUpdateRequestDTO.instagramURL() != null)
+			socialMediaURLs.put(SocialMedia.INSTAGRAM, socialMediaUpdateRequestDTO.instagramURL());
+
+		if (socialMediaUpdateRequestDTO.facebookURL() != null)
+			socialMediaURLs.put(SocialMedia.FACEBOOK, socialMediaUpdateRequestDTO.facebookURL());
+
+		if (socialMediaUpdateRequestDTO.xURL() != null)
+			socialMediaURLs.put(SocialMedia.X, socialMediaUpdateRequestDTO.xURL());
+
+		account.setSocialMediaURLs(socialMediaURLs);
+		accountRepository.save(account);
+	}
+
+	/**
+	 * Returns all social media links from the account.
+	 * @param email account's email.
+	 * @return {@link SocialMediaUpdateResponseDTO}.
+	 */
+	public SocialMediaUpdateResponseDTO getSocialMedia(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		Map<SocialMedia, String> socialMediaURLs = account.getSocialMediaURLs();
+
+		return new SocialMediaUpdateResponseDTO(socialMediaURLs.getOrDefault(SocialMedia.INSTAGRAM, null),
+				socialMediaURLs.getOrDefault(SocialMedia.X, null),
+				socialMediaURLs.getOrDefault(SocialMedia.FACEBOOK, null));
 	}
 
 }

@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -77,7 +78,9 @@ public class UserHistoryBusinessTest {
 
 		accountRepository.save(fran);
 
-		mockMvc.perform(get("/users/history/view/business/" + fran.getId()).contentType(MediaType.APPLICATION_JSON))
+		mockMvc
+			.perform(get("/users/history/view/business").contentType(MediaType.APPLICATION_JSON)
+				.with(user("franInfanti@gmail.com.ar")))
 			.andExpect(status().isNoContent());
 	}
 
@@ -103,7 +106,8 @@ public class UserHistoryBusinessTest {
 			.andExpect(status().isNoContent());
 
 		String body = mockMvc
-			.perform(get("/users/history/view/business/" + fran.getId()).contentType(MediaType.APPLICATION_JSON))
+			.perform(get("/users/history/view/business").contentType(MediaType.APPLICATION_JSON)
+				.with(user("franInfanti@gmail.com.ar")))
 			.andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
@@ -151,7 +155,8 @@ public class UserHistoryBusinessTest {
 			.andExpect(status().isNoContent());
 
 		String body = mockMvc
-			.perform(get("/users/history/view/business/" + fran.getId()).contentType(MediaType.APPLICATION_JSON))
+			.perform(get("/users/history/view/business").contentType(MediaType.APPLICATION_JSON)
+				.with(user("franInfanti@gmail.com.ar")))
 			.andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
