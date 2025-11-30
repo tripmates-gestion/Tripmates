@@ -527,4 +527,33 @@ public class UserController {
 		return ResponseEntity.ok(accountResumeResponseDTOList);
 	}
 
+	@GetMapping("/{email}/media")
+	@Operation(summary = "Obtains all social media links from the account")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200",
+					description = "Social media links from the account obtained successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = SocialMediaUpdateResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> getSocialMedia(@PathVariable("email") String email) {
+		return ResponseEntity.ok(userService.getSocialMedia(email));
+	}
+
+	@PostMapping("/me/media")
+	@Operation(summary = "Updates all social media links from the account")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Social media links from the account updated successfully",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = SocialMediaUpdateResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "User not found",
+					content = @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class))) })
+	public ResponseEntity<?> postSocialMedia(@AuthenticationPrincipal UserDetails userDetails,
+			@RequestBody SocialMediaUpdateRequestDTO socialMediaUpdateRequestDTO) {
+		userService.addSocialMedia(userDetails.getUsername(), socialMediaUpdateRequestDTO);
+		return ResponseEntity.noContent().build();
+	}
+
 }
