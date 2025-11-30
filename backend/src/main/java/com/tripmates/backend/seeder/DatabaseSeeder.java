@@ -18,6 +18,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,12 +28,9 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import com.tripmates.backend.seeder.UserCredentialsWrapper;
+import java.util.*;
+
+import lombok.Getter;
 
 @Component
 @Profile("dev")
@@ -44,6 +43,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private final PublicationService publicationService;
 
 	// email -> accessToken
+	@Getter
 	private final Map<String, String> tokens = new HashMap<>();
 
 	// IDs de publicaciones creadas, para reviews y likes
@@ -366,7 +366,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 	private void addRoomPack(String businessEmail, RoomPack roomPack, List<String> imagePaths) {
 		try {
-			List<MultipartFile> files = imagePaths.stream().map(this::loadImage).filter(f -> f != null).toList();
+			List<MultipartFile> files = imagePaths.stream().map(this::loadImage).filter(Objects::nonNull).toList();
 			userService.addRoomPack(businessEmail, roomPack, files.isEmpty() ? null : files);
 			System.out.println("[ROOMPACK] Creado room pack para " + businessEmail + " - " + roomPack.description());
 		}
@@ -552,7 +552,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 	private void updateBusinessImagesForEmail(String email, String avatarPath, List<String> imagePaths) {
 		MultipartFile avatar = loadImage(avatarPath);
-		List<MultipartFile> files = imagePaths.stream().map(this::loadImage).filter(f -> f != null).toList();
+		List<MultipartFile> files = imagePaths.stream().map(this::loadImage).filter(Objects::nonNull).toList();
 
 		if (avatar == null && files.isEmpty()) {
 			System.err.println("[BUSINESS IMAGES] No se encontraron imágenes para " + email);
@@ -607,7 +607,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 						default -> 2.0;
 					};
 
-					ReviewCreationRequestDTO dto = new ReviewCreationRequestDTO(title, content, rating);
+					ReviewCreationRequestDTO dto = new ReviewCreationRequestDTO(title, content, rating,
+							new ArrayList<>());
 					publicationService.createReview(dto, null, pubId, email);
 					System.out.println("[REVIEW] " + email + " reseñó publicación " + pubId + " (" + title + ")");
 				}
@@ -743,22 +744,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 		}
 	}
 
-	private static class SimpleMultipartFile implements MultipartFile {
-
-		private final String name;
-
-		private final String originalFilename;
-
-		private final String contentType;
-
-		private final byte[] content;
-
-		SimpleMultipartFile(String name, String originalFilename, String contentType, byte[] content) {
-			this.name = name;
-			this.originalFilename = originalFilename;
-			this.contentType = contentType;
-			this.content = content;
-		}
+	private record SimpleMultipartFile(String name, String originalFilename, String contentType,
+			byte[] content) implements MultipartFile {
 
 		@Override
 		public String getName() {
@@ -792,18 +779,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 		@Override
 		public InputStream getInputStream() {
-			return new java.io.ByteArrayInputStream(content);
+			return new ByteArrayInputStream(content);
 		}
 
 		@Override
-		public void transferTo(java.io.File dest) throws IOException, IllegalStateException {
+		public void transferTo(File dest) throws IOException, IllegalStateException {
 			Files.write(dest.toPath(), content);
 		}
 
-	}
-
-	public Map<String, String> getTokens() {
-		return tokens;
 	}
 
 }
