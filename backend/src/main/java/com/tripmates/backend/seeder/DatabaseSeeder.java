@@ -28,6 +28,13 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import com.tripmates.backend.seeder.UserCredentialsWrapper;
 import java.util.*;
 
 import lombok.Getter;
@@ -572,39 +579,56 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		// Negocio que debe quedar sin reviews: Sabores Peruanos
 		String noReviewBusiness = "gaston@saboresperuanos.com";
 		List<String> noReviewPubs = businessPublicationIds.get(noReviewBusiness);
 
-		String[] reviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
-				"joseluis@example.com" };
+		String[] allReviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
+			"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
+			"lucia@example.com", "pedro@example.com" };
 
-		int maxPubs = Math.min(5, publicationIds.size());
-		for (int i = 0; i < maxPubs; i++) {
-			String pubId = publicationIds.get(i);
-			// Saltar publicaciones del negocio Sabores Peruanos para que tenga 0 reviews
-			if (noReviewPubs != null && noReviewPubs.contains(pubId))
-				continue;
-			for (int j = 0; j < reviewers.length; j++) {
-				String email = reviewers[j];
+		Random random = new Random();
+		
+		List<String> eligiblePublications = publicationIds.stream()
+			.filter(pubId -> noReviewPubs == null || !noReviewPubs.contains(pubId))
+			.toList();
+
+		int maxPubs = Math.min(5, eligiblePublications.size());
+		List<String> selectedPublications = new ArrayList<>();
+		
+		List<String> shuffled = new ArrayList<>(eligiblePublications);
+		java.util.Collections.shuffle(shuffled, random);
+		selectedPublications = shuffled.subList(0, maxPubs);
+
+		for (String pubId : selectedPublications) {
+			List<String> shuffledReviewers = new ArrayList<>(Arrays.asList(allReviewers));
+			java.util.Collections.shuffle(shuffledReviewers, random);
+			
+			int numReviewsForThisPub = random.nextInt(2) + 1;
+			
+			for (int i = 0; i < numReviewsForThisPub && i < shuffledReviewers.size(); i++) {
+				String email = shuffledReviewers.get(i);
 				try {
-					String title = switch (j) {
+					int reviewType = random.nextInt(5);
+					String title = switch (reviewType) {
 						case 0 -> "Excelente experiencia";
 						case 1 -> "Muy recomendable";
 						case 2 -> "Buena opción";
+						case 3 -> "Podría mejorar";
 						default -> "Podría mejorar";
 					};
-					String content = switch (j) {
+					String content = switch (reviewType) {
 						case 0 -> "¡Todo estuvo increíble, volvería sin dudarlo!";
 						case 1 -> "Muy buena relación calidad-precio y atención.";
 						case 2 -> "La experiencia fue buena en general, algunos detalles a mejorar.";
+						case 3 -> "Podría mejorar";
 						default -> "No estuvo mal, pero esperaba un poco más en algunos aspectos.";
 					};
-					double rating = switch (j) {
+					double rating = switch (reviewType) {
 						case 0 -> 5.0;
 						case 1 -> 4.0;
 						case 2 -> 3.0;
-						default -> 2.0;
+						case 3 -> 2.0;
+						default -> 1.0;
 					};
 
 					ReviewCreationRequestDTO dto = new ReviewCreationRequestDTO(title, content, rating,
@@ -627,46 +651,17 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		// Usuarios que van a likear
 		String[] likers = { "camila@example.com", "luisito@example.com", "julian@example.com", "joseluis@example.com",
 				"ricardo@example.com", "astrid@example.com", "aizen@example.com", "lucia@example.com",
 				"pedro@example.com" };
 
-		// Negocio objetivo: La Buena Mesa debe sumar 9 likes entre todas sus
-		// publicaciones
-		String targetBusiness = "info@labuenamesa.com";
-		List<String> targetPubs = businessPublicationIds.get(targetBusiness);
-		if (targetPubs != null && !targetPubs.isEmpty()) {
-			int remaining = 9;
-			outer: for (String pubId : targetPubs) {
-				for (int i = 0; i < likers.length && remaining > 0; i++) {
-					String email = likers[i];
-					try {
-						publicationService.addLike(pubId, email);
-						remaining--;
-						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId
-								+ " (negocio objetivo, total 9)");
-					}
-					catch (Exception e) {
-						System.err.println("[LIKE] Error creando like de " + email + " para pub " + pubId
-								+ " (negocio objetivo): " + e.getMessage());
-					}
-					if (remaining <= 0)
-						break outer;
-				}
-			}
-			System.out
-				.println("[LIKES] Total de likes asignados al negocio " + targetBusiness + ": " + (9 - remaining));
-		}
-		else {
-			System.out.println("[LIKES] No se encontraron publicaciones para el negocio objetivo " + targetBusiness);
-		}
-
-		// Para el resto de publicaciones (otros negocios), asignar algunos likes básicos
+		String noLikesBusiness = "gaston@saboresperuanos.com";
+		List<String> noLikesPubs = businessPublicationIds.get(noLikesBusiness);
+		
 		for (String pubId : publicationIds) {
-			// Saltar publicaciones del negocio objetivo
-			if (targetPubs != null && targetPubs.contains(pubId))
+			if (noLikesPubs != null && noLikesPubs.contains(pubId))
 				continue;
+				
 			for (int i = 0; i < 3 && i < likers.length; i++) {
 				String email = likers[i];
 				try {
@@ -689,18 +684,16 @@ public class DatabaseSeeder implements CommandLineRunner {
 			String julianId = getUserId("julian@example.com");
 			String joseluisId = getUserId("joseluis@example.com");
 
-			// Camila sigue a Luisito y Julián
 			follow("camila@example.com", luisitoId, "Camila -> Luisito");
 			follow("camila@example.com", julianId, "Camila -> Julián");
 
-			// Luisito sigue a Camila
 			follow("luisito@example.com", camilaId, "Luisito -> Camila");
+			follow("luisito@example.com", joseluisId, "Luisito -> José Luis");
 
-			// Julián sigue a Camila y Luisito
 			follow("julian@example.com", camilaId, "Julián -> Camila");
 			follow("julian@example.com", luisitoId, "Julián -> Luisito");
+			follow("julian@example.com", joseluisId, "Julián -> José Luis");
 
-			// José Luis sigue a Camila y Julián
 			follow("joseluis@example.com", camilaId, "José Luis -> Camila");
 			follow("joseluis@example.com", julianId, "José Luis -> Julián");
 		}
