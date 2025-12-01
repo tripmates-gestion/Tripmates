@@ -583,18 +583,18 @@ public class DatabaseSeeder implements CommandLineRunner {
 		List<String> noReviewPubs = businessPublicationIds.get(noReviewBusiness);
 
 		String[] allReviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
-			"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
-			"lucia@example.com", "pedro@example.com" };
+				"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
+				"lucia@example.com", "pedro@example.com" };
 
 		Random random = new Random();
-		
+
 		List<String> eligiblePublications = publicationIds.stream()
 			.filter(pubId -> noReviewPubs == null || !noReviewPubs.contains(pubId))
 			.toList();
 
 		int maxPubs = Math.min(5, eligiblePublications.size());
 		List<String> selectedPublications = new ArrayList<>();
-		
+
 		List<String> shuffled = new ArrayList<>(eligiblePublications);
 		java.util.Collections.shuffle(shuffled, random);
 		selectedPublications = shuffled.subList(0, maxPubs);
@@ -602,9 +602,9 @@ public class DatabaseSeeder implements CommandLineRunner {
 		for (String pubId : selectedPublications) {
 			List<String> shuffledReviewers = new ArrayList<>(Arrays.asList(allReviewers));
 			java.util.Collections.shuffle(shuffledReviewers, random);
-			
+
 			int numReviewsForThisPub = random.nextInt(2) + 1;
-			
+
 			for (int i = 0; i < numReviewsForThisPub && i < shuffledReviewers.size(); i++) {
 				String email = shuffledReviewers.get(i);
 				try {
@@ -645,28 +645,56 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void seedLikes() {
-		System.out.println("--- Creando likes en publicaciones ---");
 		if (publicationIds.isEmpty()) {
 			System.out.println("[LIKES] No hay publicaciones para likear");
 			return;
 		}
 
-		String[] likers = { "camila@example.com", "luisito@example.com", "julian@example.com", "joseluis@example.com",
+		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com",
 				"ricardo@example.com", "astrid@example.com", "aizen@example.com", "lucia@example.com",
 				"pedro@example.com" };
 
+		String buenaMesaBusiness = "info@labuenamesa.com";
+		List<String> buenaMesaPubs = businessPublicationIds.get(buenaMesaBusiness);
+		
 		String noLikesBusiness = "gaston@saboresperuanos.com";
 		List<String> noLikesPubs = businessPublicationIds.get(noLikesBusiness);
-		
+
+		Random random = new Random();
+
 		for (String pubId : publicationIds) {
 			if (noLikesPubs != null && noLikesPubs.contains(pubId))
 				continue;
-				
-			for (int i = 0; i < 3 && i < likers.length; i++) {
-				String email = likers[i];
+
+			if (buenaMesaPubs != null && buenaMesaPubs.contains(pubId)) {
+				for (int i = 0; i < 3 && i < likers.length; i++) {
+					String email = likers[i];
+					try {
+						publicationService.addLike(pubId, email);
+						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (La Buena Mesa)");
+					}
+					catch (Exception e) {
+						System.err.println(
+								"[LIKE] Error creando like de " + email + " para pub " + pubId + ": " + e.getMessage());
+					}
+				}
+				continue;
+			}
+
+			int likesForThisPub = random.nextInt(4);
+			
+			if (likesForThisPub == 0) {
+				continue;
+			}
+
+			List<String> shuffledLikers = new ArrayList<>(Arrays.asList(likers));
+			java.util.Collections.shuffle(shuffledLikers, random);
+
+			for (int i = 0; i < likesForThisPub && i < shuffledLikers.size(); i++) {
+				String email = shuffledLikers.get(i);
 				try {
 					publicationService.addLike(pubId, email);
-					System.out.println("[LIKE] " + email + " dio like a publicación " + pubId);
+					System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (aleatorio)");
 				}
 				catch (Exception e) {
 					System.err.println(
@@ -677,7 +705,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void seedFollows() {
-		System.out.println("--- Creando relaciones de seguidos entre usuarios ---");
 		try {
 			String camilaId = getUserId("camila@example.com");
 			String luisitoId = getUserId("luisito@example.com");
