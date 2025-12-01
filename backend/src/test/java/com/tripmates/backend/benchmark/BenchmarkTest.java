@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.common.types.BenchmarkId;
 import com.tripmates.backend.common.types.BusinessType;
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.mock.web.MockMultipartFile;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -88,7 +90,23 @@ public class BenchmarkTest {
 			.andExpect(status().isNoContent())
 			.andDo(print());
 	}
+	private ReviewResponseDTO createReview(String publicationId, String userAccountTestingJwt, String reviewJson)
+        throws Exception {
+		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+				reviewJson.getBytes(StandardCharsets.UTF_8));
 
+		String body = mockMvc
+			.perform(multipart("/publications/" + publicationId + "/review").file(dataPart).with(request -> {
+				request.setMethod("POST");
+				return request;
+			}).header("Authorization", "Bearer " + userAccountTestingJwt))
+			.andExpect(status().isCreated())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		return objectMapper.readValue(body, ReviewResponseDTO.class);
+	}
 	private PublicationResumeResponseDTO createPublication(String jwt) throws Exception {
 		String requestJson = """
 				{
@@ -255,5 +273,43 @@ public class BenchmarkTest {
 		assertEquals(1, benchmarks.size(), "Should have 1 benchmark");
 		assertEquals(BenchmarkId.tenLikes, benchmarks.get(0).id());
 	}
-
+	@Test
+	void getReviewRatingsAvg_WithTwoReviews_ShouldReturnCorrectAverage() throws Exception {
+		String businessJwt = testHelper.getBusinessTestingJwt("contact@hostel.com", BusinessType.HOTEL);
+		PublicationResumeResponseDTO publication = createPublication(businessJwt);
+		
+		String user1Jwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+		String user2Jwt = testHelper.getUserTestingJwt("lewis.hamilton44@gmail.com.gb");
+		
+		String review1Json = """
+			{
+				"title": "Great place!",
+				"content": "Had a wonderful time here.",
+				"rating": 4.0
+			}
+			""";
+		
+		String review2Json = """
+			{
+				"title": "Excellent!",
+				"content": "Best experience ever!",
+				"rating": 5.0
+			}
+			""";
+		
+		createReview(publication.id(), user1Jwt, review1Json);
+		createReview(publication.id(), user2Jwt, review2Json);
+		
+		String response = mockMvc.perform(get("/metrics/reviews/rating-avg")
+				.header("Authorization", "Bearer " + businessJwt))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+		
+		double expectedAverage = 4.5;
+		double actualAverage = Double.parseDouble(response);
+		
+		assertEquals(expectedAverage, actualAverage, 0.01, "Calculated average is not correct");
+	}
 }
