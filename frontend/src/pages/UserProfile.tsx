@@ -91,7 +91,6 @@ export default function UserProfile() {
     { key: 'planes', label: 'Planes' },
     { key: 'experiencias', label: 'Experiencias' },
     { key: 'liked', label: 'Liked' },
-    { key: 'historial', label: 'Historial' }
   ];
   const currentTabKey = tabs[tab]?.key;
 
@@ -271,8 +270,6 @@ export default function UserProfile() {
             {currentTabKey === 'liked' && currentUser?.id && accessToken && (
               <LikedPublicationsTab userId={currentUser.id} accessToken={accessToken} />
             )}
-            {/* TODO: Agregar TAB de  historial*/}
-            {currentTabKey === 'historial' && <EmptyState title="Historial" />}
           </Box>
         </Card>
       </Box>
@@ -322,18 +319,5 @@ export default function UserProfile() {
         onItemClick={handleConnectionClick}
       />
     </Box>
-  );
-}
-
-function EmptyState({ title }: { title: string }) {
-  return (
-    <Stack alignItems="center" spacing={1.5} sx={{ py: 6 }}>
-      <Typography variant="h6" fontWeight={800}>
-        {title}
-      </Typography>
-      <Typography variant="body1" color="text.secondary">
-        No hay contenido por ahora.
-      </Typography>
-    </Stack>
   );
 }
