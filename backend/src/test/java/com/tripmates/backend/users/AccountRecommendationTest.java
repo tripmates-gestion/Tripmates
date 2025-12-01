@@ -29,6 +29,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -247,10 +248,12 @@ public class AccountRecommendationTest {
 		publicationNodeRepository.save(PublicationNode.fromPublication(publication));
 
 		Review franReview = new Review(publication.getId(), "Excelente lugar",
-				"Muy buen lugar, salen lindos amarillos. Lastima las habitaciones", 4.5, List.of(), fran.getId());
+				"Muy buen lugar, salen lindos amarillos. Lastima las habitaciones", 4.5, List.of(), fran.getId(),
+				new ArrayList<>());
 
 		Review pabloReview = new Review(publication.getId(), "Excelente lugar",
-				"Muy buen lugar, salen lindas taruchas y algún doradito", 5.0, List.of(), pablo.getId());
+				"Muy buen lugar, salen lindas taruchas y algún doradito", 5.0, List.of(), pablo.getId(),
+				new ArrayList<>());
 
 		publication.addReview(franReview);
 		publication.addReview(pabloReview);

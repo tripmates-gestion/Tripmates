@@ -26,14 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 import org.springframework.mock.web.MockMultipartFile;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,8 +38,6 @@ import com.tripmates.backend.TestHelper;
 import com.tripmates.backend.benchmarks.dto.BenchmarkItemDTO;
 import com.tripmates.backend.benchmarks.dto.ChangeBenchmarkVisibilityRequestDTO;
 import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
-import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import com.tripmates.backend.common.service.email.EmailService;
@@ -74,8 +67,6 @@ public class BenchmarkTest {
 	@Autowired
 	private AccountRepository accountRepository;
 
-	@Autowired
-	private BenchmarkRepository benchmarkRepository;
 
 	@MockBean
 	private EmailService emailService;

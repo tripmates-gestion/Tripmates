@@ -56,7 +56,7 @@ public class ReviewBuilder {
 
 	public Review build() {
 		return new Review(publicationId, reviewCreationRequestDTO.title(), reviewCreationRequestDTO.content(),
-				reviewCreationRequestDTO.rating(), imageUrls, owner.getId());
+				reviewCreationRequestDTO.rating(), imageUrls, owner.getId(), reviewCreationRequestDTO.mentions());
 	}
 
 }

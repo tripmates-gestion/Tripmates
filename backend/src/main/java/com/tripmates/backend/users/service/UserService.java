@@ -9,10 +9,7 @@ import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import com.tripmates.backend.publications.repository.neo4j.PublicationNodeRepository;
-import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
-import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
-import com.tripmates.backend.users.dto.account.BusinessSearchRequestDTO;
-import com.tripmates.backend.users.dto.account.UserSearchRequestDTO;
+import com.tripmates.backend.users.dto.account.*;
 import com.tripmates.backend.users.dto.plan.PlanCreationRequestDTO;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.entity.neo4j.AccountNode;
@@ -26,7 +23,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -720,7 +716,7 @@ public class UserService {
 			.stream()
 			.map(publication -> {
 				Account owner = accountRepository.findById(publication.getOwnerId())
-					.orElseThrow(() -> new NotFoundException("Account not found with id: " + publication.getOwnerId()));
+					.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
 
 				return new PublicationResumeResponseDTO(publication.getId(), publication.getTitle(),
 						publication.getDescription(), publication.getOpeningDays(), publication.getAttentionSchedule(),
@@ -731,6 +727,92 @@ public class UserService {
 			.collect(Collectors.toList());
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	/**
+	 * Given a user's email and a business account ID, it adds the business account ID to
+	 * its recently viewed business accounts.
+	 * @param email user's email.
+	 * @param businessId business's account ID.
+	 */
+	public void addViewedBusiness(String email, String businessId) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		accountRepository.findById(businessId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		List<Viewed> viewedBusinessList = account.getViewedBusinessList();
+		viewedBusinessList.addFirst(new Viewed(businessId, new Date()));
+
+		if (viewedBusinessList.size() > 20)
+			viewedBusinessList.removeLast();
+
+		account.setViewedBusinessList(viewedBusinessList);
+
+		accountRepository.save(account);
+	}
+
+	/**
+	 * Given a user's ID, returns the recently viewed business accounts. (Only allowed in
+	 * user's accounts).
+	 * @param email user's email.
+	 * @return list of {@link ViewedBusinessResponseDTO}.
+	 */
+	public List<ViewedBusinessResponseDTO> getHistoryBusiness(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		List<ViewedBusinessResponseDTO> viewedBusinessResponseDTOList = new ArrayList<>();
+
+		for (Viewed viewed : account.getViewedBusinessList()) {
+			accountRepository.findById(viewed.getBusinessId()).ifPresent((business) -> {
+				viewedBusinessResponseDTOList.add(new ViewedBusinessResponseDTO(
+						AccountResumeResponseDTO.fromAccount(business), viewed.getDate()));
+			});
+		}
+
+		return viewedBusinessResponseDTOList;
+	}
+
+	/**
+	 * Updates social media links in the user or business account.
+	 * @param email account's email.
+	 * @param socialMediaUpdateRequestDTO social media links.
+	 */
+	public void addSocialMedia(String email, SocialMediaUpdateRequestDTO socialMediaUpdateRequestDTO) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		Map<SocialMedia, String> socialMediaURLs = account.getSocialMediaURLs();
+
+		if (socialMediaUpdateRequestDTO.instagramURL() != null)
+			socialMediaURLs.put(SocialMedia.INSTAGRAM, socialMediaUpdateRequestDTO.instagramURL());
+
+		if (socialMediaUpdateRequestDTO.facebookURL() != null)
+			socialMediaURLs.put(SocialMedia.FACEBOOK, socialMediaUpdateRequestDTO.facebookURL());
+
+		if (socialMediaUpdateRequestDTO.xURL() != null)
+			socialMediaURLs.put(SocialMedia.X, socialMediaUpdateRequestDTO.xURL());
+
+		account.setSocialMediaURLs(socialMediaURLs);
+		accountRepository.save(account);
+	}
+
+	/**
+	 * Returns all social media links from the account.
+	 * @param email account's email.
+	 * @return {@link SocialMediaUpdateResponseDTO}.
+	 */
+	public SocialMediaUpdateResponseDTO getSocialMedia(String email) {
+		Account account = accountRepository.findByEmail(email)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+
+		Map<SocialMedia, String> socialMediaURLs = account.getSocialMediaURLs();
+
+		return new SocialMediaUpdateResponseDTO(socialMediaURLs.getOrDefault(SocialMedia.INSTAGRAM, null),
+				socialMediaURLs.getOrDefault(SocialMedia.X, null),
+				socialMediaURLs.getOrDefault(SocialMedia.FACEBOOK, null));
 	}
 
 }
