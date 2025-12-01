@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -402,6 +403,14 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		}
 
 		return null;
+	}
+
+	@Override
+	public List<Account> findTopNBusinessAccountsByTotalLikes(int n) {
+		Query query = new Query(Criteria.where("role").is(Role.BUSINESS));
+		query.with(Sort.by(Sort.Direction.DESC, "numberTotalLikes"));
+		query.limit(n);
+		return mongoTemplate.find(query, Account.class);
 	}
 
 	private static class PublicationIdsProjection {
