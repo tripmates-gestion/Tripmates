@@ -133,12 +133,34 @@ export default function NewReviewPlace({
   // Sincronizar displayText cuando cambia text (convertir emails a nombres)
   React.useEffect(() => {
     let result = text;
+    let cursorOffset = 0; // Diferencia acumulada en la longitud
+    
     suggestedUsers.forEach(user => {
       const emailRegex = new RegExp(`@${user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
-      result = result.replace(emailRegex, `@${user.name}`);
+      const emailLength = user.email.length + 1; // +1 por el @
+      const nameLength = user.name.length + 1; // +1 por el @
+      
+      result = result.replace(emailRegex, (match, offset) => {
+        // Si el cursor está después de este reemplazo, ajustar el offset
+        if (offset < cursorPosition) {
+          cursorOffset += (nameLength - emailLength);
+        }
+        return `@${user.name}`;
+      });
     });
+    
     setDisplayText(result);
-  }, [text, suggestedUsers]);
+    
+    // Actualizar la posición del cursor si cambió
+    if (cursorOffset !== 0 && textFieldRef.current) {
+      const newCursorPos = cursorPosition + cursorOffset;
+      setTimeout(() => {
+        if (textFieldRef.current) {
+          textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        }
+      }, 0);
+    }
+  }, [text, suggestedUsers, cursorPosition]);
 
   React.useEffect(() => {
     if (user) {
