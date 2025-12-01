@@ -3,6 +3,7 @@ package com.tripmates.backend.publications.dto;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.users.entity.mongo.Account;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
@@ -14,8 +15,8 @@ public record ReviewResponseDTO(@Schema(description = "Review's ID") String revi
 		@Schema(description = "Review's images URLs") List<String> imageUrls,
 		@Schema(description = "User's ID which made the review") String reviewerId,
 		@Schema(description = "User's username which made the review") String reviewerUsername,
-		@Schema(description = "User's avatar image URL which made the review") String reviewerAvatarUrl) {
-
+		@Schema(description = "User's avatar image URL which made the review") String reviewerAvatarUrl,
+		@Schema(description = "Review's mentions") List<String> mentions) {
 	/**
 	 * Returns a resume for the review.
 	 * @param review review made.
@@ -27,6 +28,6 @@ public record ReviewResponseDTO(@Schema(description = "Review's ID") String revi
 		return new ReviewResponseDTO(review.getReviewId(),
 				PublicationResumeResponseDTO.fromPublication(publicationReviewed), review.getTitle(),
 				review.getContent(), review.getRating(), review.getImageUrls(), reviewer.getId(),
-				reviewer.getUsername(), reviewer.getAvatarURL());
+				reviewer.getUsername(), reviewer.getAvatarURL(), review.getMentions());
 	}
 }

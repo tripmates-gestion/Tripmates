@@ -71,17 +71,17 @@ public class BenchmarkTest {
 	@Autowired
 	private AccountRepository accountRepository;
 
-  @Autowired
+	@Autowired
 	private BenchmarkRepository benchmarkRepository;
 
 	@MockBean
 	private EmailService emailService;
 
-  ObjectMapper objectMapper;
+	ObjectMapper objectMapper;
 
 	@BeforeAll
 	void setUp() {
-    objectMapper = new ObjectMapper();
+		objectMapper = new ObjectMapper();
 		testHelper = new TestHelper(port, restTemplate);
 	}
 

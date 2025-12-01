@@ -13,13 +13,17 @@ import {
   DialogTitle,
   Divider,
   FormControl,
+  IconButton,
+  InputAdornment,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
 import Grid from '@mui/material/Grid'
+import { Search } from '@mui/icons-material'
 import ImageUploader from '../ui/ImageUploader'
 import OpenStreetMapPicker from '../map/OpenStreetMapPicker'
+import BusinessTimeRangeField from '../profile/businessPrivateProfile/common/BusinessTimeRangeField'
 import { useAuth } from '../../hooks/useAuth'
 import { usePostValidation } from '../../hooks/usePostValidation'
 import { createBusinessPublication, updateBusinessPublication } from '../../services/businessPublications'
@@ -36,6 +40,7 @@ import { initialFormState, DEFAULT_OPENING_DAYS } from '../../types/Business'
 import { parseHours } from '../GeneralHelpers'
 import { useSnackbar } from 'notistack';
 import { isValidLocation } from './utils/validators'
+import { useGeocodeAddress } from '../../hooks/useGeocodeAddress'
 
 // ---------------------- Props ----------------------
 type NewPostDialogProps = {
@@ -89,6 +94,7 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
   const [submitting, setSubmitting] = useState(false)
   const [touched, setTouched] = useState<Record<string, boolean>>({})
   const { enqueueSnackbar } = useSnackbar();
+  const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
   
   // Estado para rastrear imágenes a eliminar (índices)
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([])
@@ -148,6 +154,14 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
 
   const addPhoto = (base64: string) => {
     setForm((prev) => ({ ...prev, photos: [...prev.photos, base64] }))
+  }
+
+  const handleSearchInMap = async () => {
+    const result = await geocodeAddress(form.location.address)
+    if (result) {
+      setForm((prev) => ({ ...prev, location: { ...prev.location, ...result } }))
+      setTouched((prev) => ({ ...prev, location: true }))
+    }
   }
 
   const removePhotoAt = (index: number) => {
@@ -320,7 +334,6 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             )}
 
             {/* Días de apertura (opcional: si no elige, usás tu default en el DTO) */}
-
             <FormControl component="fieldset">
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 1 }}>
                 Días disponibles (opcional)
@@ -349,41 +362,74 @@ export function NewPostDialog({ open, onClose, onCreated, publicationToEdit }: N
             </FormControl>
 
             {/* Horario y Contacto (ambos opcionales) */}
-            <Grid container spacing={2}>
+            <Grid container spacing={2} alignItems="flex-end">
               <Grid item xs={12} md={6}>
-                <TextField
+                <BusinessTimeRangeField
                   label="Horario de atención (opcional)"
-                  placeholder="Ej: 09:00–18:00"
                   value={form.hours}
-                  onChange={(e) => setForm((prev) => ({ ...prev, hours: e.target.value }))}
-                  onBlur={() => setTouched((prev) => ({ ...prev, hours: true }))}
+                  onChange={(newValue) => {
+                    setForm((prev) => ({ ...prev, hours: newValue }))
+                    setTouched((prev) => ({ ...prev, hours: true }))
+                  }}
                   error={hasError('hours')}
-                  helperText={helper('hours')}
-                />
+                  helperText={helper('hours') || 'Ej: 09:00–18:00'}
+                  disabled={submitting}                
+                  />
               </Grid>
+            </Grid>
 
-              <Grid item xs={12} md={6}>
+
+
+            {/* Contacto */}
+            <Grid item xs={12} md={6}>
                 <TextField
+                  fullWidth
                   label="Información de contacto (opcional)"
                   placeholder="Teléfono o email"
                   value={form.contact}
-                  onChange={(e) => setForm((prev) => ({ ...prev, contact: e.target.value }))}
-                  onBlur={() => setTouched((prev) => ({ ...prev, contact: true }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, contact: e.target.value }))
+                  }
+                  onBlur={() =>
+                    setTouched((prev) => ({ ...prev, contact: true }))
+                  }
                   error={hasError('contact')}
                   helperText={helper('contact')}
                 />
-              </Grid>
             </Grid>
+
+
                 
             {/* Ubicación */}
             <TextField
+              fullWidth
               label="Ubicación"
               placeholder="Ciudad, provincia / Dirección"
               value={form.location.address}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: { ...prev.location, address: e.target.value } }))}
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, location: { ...prev.location, address: e.target.value } }))
+                if (geoError) setGeoError(null)
+              }}
               onBlur={() => setTouched((prev) => ({ ...prev, location: true }))}
-              error={hasError('location')}
-              helperText={helper('location') || 'Ej: Buenos Aires, Palermo'}
+              error={hasError('location') || Boolean(geoError)}
+              helperText={helper('location') || geoError || 'Ej: Av. Cabildo 2345, CABA'}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      edge="end"
+                      aria-label="Buscar en mapa"
+                      onClick={() => {
+                        setTouched((prev) => ({ ...prev, location: true }))
+                        handleSearchInMap()
+                      }}
+                      disabled={submitting || geocoding}
+                    >
+                      <Search />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <OpenStreetMapPicker
               location={form.location}
