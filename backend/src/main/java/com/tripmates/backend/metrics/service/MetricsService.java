@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.tripmates.backend.metrics.entity.mongo.ProfileView;
 import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
+import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 import java.util.List;
 import java.util.Optional;
@@ -89,5 +90,9 @@ public class MetricsService {
 		Account account = validateBusinessAccount(email);
 		return publicationRepository.countLikesFromAccountId(account.getId());
 	}
+  
+  public List<PublicationResumeResponseDTO> getMostLikedsPublications(Integer n) {
+    return publicationRepository.findNMostLikedsPublications(n).stream().map(PublicationResumeResponseDTO::fromPublication).toList();
+  }
 
 }
