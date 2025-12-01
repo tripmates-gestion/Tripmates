@@ -7,14 +7,12 @@ import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 import { useBusinessProfile } from '../hooks/useBusinessProfile';
 import { BUSINESS_TYPES } from '../constants/Rol';
-import type { BusinessCommon } from '../types/PrivateUserProfiles';
+import type { BusinessCommon, BusinessUser, CommonUser } from '../types/PrivateUserProfiles';
 
 import PublicationGrid from '../components/publications/PublicationGrid';
 import type { BusinessPublicationResponseDTO } from '../types/Business';
 import { enqueueSnackbar } from 'notistack';
 import { deleteBusinessPublication, getBusinessPublications } from '../services/businessPublications';
-import HotelEditDialog from '../components/profile/businessPrivateProfile/hotel/HotelEditDialog';
-import RestaurantEditDialog from '../components/profile/businessPrivateProfile/restaurant/RestaurantEditDialog';
 import BusinessPresentationTab from '../components/profile/businessPrivateProfile/common/BusinessPresentationTab';
 import BusinessBenchmarks from '../components/profile/businessPrivateProfile/common/BusinessBenchmarks';
 import { NewPostDialog } from '../components/publications/NewPostDialog';
@@ -23,6 +21,8 @@ import RestaurantMenuTab from '../components/profile/businessPublicProfile/resta
 import HotelRoomsTab from '../components/profile/businessPublicProfile/hotel/HotelRoomsTab';
 import { BusinessMetricsButton } from '../components/metrics/BottonMetrics';
 import { ShareProfileButton } from '../components/profile/ShareProfileButton';
+import ProfileEditDialog from '../components/profile/ProfileEditDialog';
+import { getUserSocialMedia, type SocialMediaLinks } from '../services/socialMedia';
 
 
 const BASE_TABS = [
@@ -45,6 +45,7 @@ export default function BusinessProfile() {
   const { business, loading, refreshProfile } = useBusinessProfile();
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
+  const [socialLinks, setSocialLinks] = React.useState<SocialMediaLinks | null>(null);
 
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
@@ -54,6 +55,36 @@ export default function BusinessProfile() {
         : BASE_TABS;
 
   const currentTabKey = tabs[tab]?.key;
+
+  React.useEffect(() => {
+    if (!business?.email) return;
+    let mounted = true;
+    const fetchSocial = async () => {
+      try {
+        const data = await getUserSocialMedia(business.email, accessToken);
+        if (mounted) {
+          setSocialLinks(data ?? {});
+        }
+      } catch {
+        if (mounted) {
+          setSocialLinks({});
+        }
+      }
+    };
+
+    void fetchSocial();
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, business?.email]);
+
+  const handleProfileUpdated = React.useCallback(
+    (_profile: CommonUser | BusinessUser, social: SocialMediaLinks) => {
+      setSocialLinks(social);
+      void refreshProfile();
+    },
+    [refreshProfile]
+  );
 
   if (loading) return <Box sx={{ p: 3 }}>Cargando perfil…</Box>;
   if (!user || user.role !== 'BUSINESS')
@@ -165,7 +196,7 @@ export default function BusinessProfile() {
 
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'mi-presentacion' && (
-              <BusinessPresentationTab business={business} />
+              <BusinessPresentationTab business={business} socialMedia={socialLinks} />
             )}
 
             {currentTabKey === 'publicaciones' && (
@@ -215,13 +246,13 @@ export default function BusinessProfile() {
         </Card>
       </Box>
 
-      <RestaurantEditDialog
-        open={editOpen && business.businessType === BUSINESS_TYPES.restaurant}
+      <ProfileEditDialog
+        open={editOpen}
         onClose={() => setEditOpen(false)}
-      />
-      <HotelEditDialog
-        open={editOpen && business.businessType === BUSINESS_TYPES.hotel}
-        onClose={() => setEditOpen(false)}
+        profileType="business"
+        initialProfileData={business}
+        initialSocialMedia={socialLinks ?? {}}
+        onProfileUpdated={handleProfileUpdated}
       />
     </Box>
   );

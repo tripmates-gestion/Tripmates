@@ -57,4 +57,8 @@ export const ENDPOINTS = {
 
     BUSINESS_BENCHMARKS: '/benchmarks/mine',
     GET_PUBLIC_BENCHMARKS: '/benchmarks/user/',
+
+    // social media
+    USER_MEDIA: (email: string) => `/users/${email}/media`,
+    MY_MEDIA: '/users/me/media',
 };
