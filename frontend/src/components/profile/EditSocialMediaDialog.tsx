@@ -78,7 +78,7 @@ export default function EditSocialMediaDialog({
     };
 
     if (!isValidUrl(normalized.instagramURL) || !isValidUrl(normalized.xURL) || !isValidUrl(normalized.facebookURL)) {
-        setError("Cada link debe empezar con http:// o https://");
+        setError("A ocurrido un error, intente de nuevo mas tarde.");
         return;
       }
   
@@ -110,7 +110,7 @@ export default function EditSocialMediaDialog({
               value={values.instagramURL ?? ""}
               onChange={handleChange("instagramURL")}
               fullWidth
-              helperText={`Guardaremos tu perfil como ${BASE_URLS.instagramURL}usuario`}
+              //helperText={`Guardaremos tu perfil como ${BASE_URLS.instagramURL}usuario`}
             />
   
             <TextField
@@ -119,7 +119,7 @@ export default function EditSocialMediaDialog({
               value={values.xURL ?? ""}
               onChange={handleChange("xURL")}
               fullWidth
-              helperText={`Guardaremos tu perfil como ${BASE_URLS.xURL}usuario`}
+              //={`Guardaremos tu perfil como ${BASE_URLS.xURL}usuario`}
             />
   
             <TextField
@@ -128,7 +128,7 @@ export default function EditSocialMediaDialog({
               value={values.facebookURL ?? ""}
               onChange={handleChange("facebookURL")}
               fullWidth
-              helperText={`Guardaremos tu perfil como ${BASE_URLS.facebookURL}usuario`}
+              //={`Guardaremos tu perfil como ${BASE_URLS.facebookURL}usuario`}
             />
   
             {error && (
