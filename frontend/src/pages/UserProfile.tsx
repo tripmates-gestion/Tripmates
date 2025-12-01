@@ -267,7 +267,7 @@ export default function UserProfile() {
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'planes' && <UserPlansTab />}
             {currentTabKey === 'experiencias' && <UserReviewsTab />}
-            {/* TODO: AGREGAR TAB DE LIKED */}
+            {/* TODO: AGREGAR TAB DE LIKED => HECHO AL FINAL */}
             {currentTabKey === 'liked' && currentUser?.id && accessToken && (
               <LikedPublicationsTab userId={currentUser.id} accessToken={accessToken} />
             )}
