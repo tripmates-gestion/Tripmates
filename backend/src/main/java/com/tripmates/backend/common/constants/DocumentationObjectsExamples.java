@@ -5,25 +5,44 @@ public class DocumentationObjectsExamples {
 	/**
 	 * Example JSON for business publication creation
 	 */
-	public static final String BUSINESS_PUBLICATION_EXAMPLE = "{\n" + "  \"title\": \"Mountain lodge\",\n"
-			+ "  \"description\": \"Beautiful place with amazing views and full amenities.\",\n"
-			+ "  \"phoneNumber\": \"+541112345678\",\n" + "  \"email\": \"contact@hostel.com\",\n"
-			+ "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n"
-			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\"],\n"
-			+ "  \"attentionSchedule\": {\n" + "    \"openingTime\": \"09:00\",\n" + "    \"closingTime\": \"18:00\"\n"
-			+ "  },\n" + "  \"exceptionalClosingDays\": [\"2025-12-25\", \"2025-01-01\"],\n"
-			+ "  \"tags\": [\"hostel\", \"mountain\", \"nature\"]\n" + "}";
+	public static final String BUSINESS_PUBLICATION_EXAMPLE = """
+			{
+			  "title": "Mountain lodge",
+			  "description": "Beautiful place with amazing views and full amenities.",
+			  "phoneNumber": "+541112345678",
+			  "email": "contact@hostel.com",
+			  "address": "Ruta 234, San Carlos de Bariloche",
+			  "latitude": -41.1335,
+			  "longitude": -71.3103,
+			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+			  "attentionSchedule": {
+			    "openingTime": "09:00",
+			    "closingTime": "18:00"
+			  },
+			  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+			  "tags": ["hostel", "mountain", "nature"]
+			}""";
 
 	/**
 	 * Example JSON for business publication update
 	 */
-	public static final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = "{\n" + "  \"title\": \"New title\",\n"
-			+ "  \"description\": \"Updated description\",\n" + "  \"phoneNumber\": \"+541112345678\",\n"
-			+ "  \"email\": \"contact@hostel.com\",\n"
-			+ "  \"address\": \"Ruta 234, San Carlos de Bariloche\",\n  \"latitude\": -41.1335,\n  \"longitude\": -71.3103,\n"
-			+ "  \"openingDays\": [\"MONDAY\", \"TUESDAY\"],\n" + "  \"attentionSchedule\": {\n"
-			+ "    \"openingTime\": \"09:00\",\n" + "    \"closingTime\": \"18:00\"\n" + "  },\n"
-			+ "  \"exceptionalClosingDays\": [\"2025-12-25\"],\n" + "  \"deletePhotoIndexes\": [0, 2]\n" + "}";
+	public static final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = """
+			{
+			  "title": "New title",
+			  "description": "Updated description",
+			  "phoneNumber": "+541112345678",
+			  "email": "contact@hostel.com",
+			  "address": "Ruta 234, San Carlos de Bariloche",
+			  "latitude": -41.1335,
+			  "longitude": -71.3103,
+			  "openingDays": ["MONDAY", "TUESDAY"],
+			  "attentionSchedule": {
+			    "openingTime": "09:00",
+			    "closingTime": "18:00"
+			  },
+			  "exceptionalClosingDays": ["2025-12-25"],
+			  "deletePhotoIndexes": [0, 2]
+			}""";
 
 	static public final String BUSINESS_PUBLICATION_SEARCH_EXAMPLE = """
 			Filters are received as query params via model attributes.
@@ -42,6 +61,7 @@ public class DocumentationObjectsExamples {
 			- `data`: (required) JSON with the review details.
 			- `files`: (optional) Image files to include with the review (JPG, PNG, etc.).
 			- `publicationId`: (path variable) ID of the publication being reviewed.
+			- `mentions`: (optional) User email mentions.
 
 			### Required Fields
 			- `title`: Title of the review (non-blank string)
@@ -52,8 +72,9 @@ public class DocumentationObjectsExamples {
 			```json
 			{
 			  "title": "Amazing experience!",
-			  "content": "Had a wonderful time at this place. The staff was very friendly and the food was delicious.",
-			  "rating": 4.5
+			  "content": "Had a wonderful time at this place with @elton.john@gmail.com. The staff was very friendly and the food was delicious.",
+			  "rating": 4.5,
+			  "mentions": ["elton.john@gmail.com"]
 			}
 			```
 
@@ -182,6 +203,7 @@ public class DocumentationObjectsExamples {
 			}
 			```
 			""";
+
 	static public final String USER_PLAN_CREATION = """
 			Creates a new user plan. Some fields are optional, some are not (more to arrive soon).
 			### Request Structure

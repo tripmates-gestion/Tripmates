@@ -34,9 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
+import java.util.*;
 
 @Component
 @Transactional
@@ -229,6 +227,9 @@ public class PublicationService {
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
+		if (!checkUserAccountMentions(reviewCreationRequestDTO.mentions()))
+			throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
+
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
 
@@ -243,43 +244,47 @@ public class PublicationService {
 		publication.addReview(review);
 
 		publicationRepository.save(publication);
+
 		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
 				review.getRating());
-        registerReviewBenchmarkOnOwner(publication.getOwnerId());
+
+		registerReviewBenchmarkOnOwner(publication.getOwnerId());
+
+		sendNotificationEmail(publication, review, account);
+
 		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
 
-  /**
-   * Registers review benchmark progress on publication owner. Also send a email if a new benchmark is reached.
-   * @param ownerId publication owner's ID.
-  */
-  private void registerReviewBenchmarkOnOwner(String ownerId) {
-    accountRepository.incrementNumberTotalReviews(ownerId);
-    Account updatedAccount = accountRepository.findById(ownerId)
+	/**
+	 * Registers review benchmark progress on publication owner. Also send a email if a
+	 * new benchmark is reached.
+	 * @param ownerId publication owner's ID.
+	 */
+	private void registerReviewBenchmarkOnOwner(String ownerId) {
+		accountRepository.incrementNumberTotalReviews(ownerId);
+		Account updatedAccount = accountRepository.findById(ownerId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    Integer numberTotalReviews = updatedAccount.getNumberTotalReviews() != null ? updatedAccount.getNumberTotalReviews()
+		int numberTotalReviews = updatedAccount.getNumberTotalReviews() != null ? updatedAccount.getNumberTotalReviews()
 				: 0;
-		Integer historicMax = updatedAccount.getHistoricMaxNumberTotalReviews() != null
+		int historicMax = updatedAccount.getHistoricMaxNumberTotalReviews() != null
 				? updatedAccount.getHistoricMaxNumberTotalReviews() : 0;
-    if (numberTotalReviews > historicMax) {
-      accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
-      BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
-      if (benchmarkId != null) {
-        Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
-          .findByUserIdAndBenchmarkId(ownerId, benchmarkId);
-        if (maybeBenchmarkProgress.isEmpty()) {
-          BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
-          benchmarkRepository.save(benchmarkProgress);
-          emailService.sendHtmlAchievementEmail(
-              updatedAccount.getEmail(),
-              "¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
-              "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
-              updatedAccount.getUsername()
-          );
-        }
-      }
-    }
-  }
+		if (numberTotalReviews > historicMax) {
+			accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
+			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
+			if (benchmarkId != null) {
+				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+				if (maybeBenchmarkProgress.isEmpty()) {
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+					benchmarkRepository.save(benchmarkProgress);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
+				}
+			}
+		}
+	}
 
 	/**
 	 * Returns review from a publication ID.
@@ -388,9 +393,8 @@ public class PublicationService {
 		accountRepository.incrementNumberTotalLikes(ownerId);
 		Account updatedAccount = accountRepository.findById(ownerId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-		Integer numberTotalLikes = updatedAccount.getNumberTotalLikes() != null ? updatedAccount.getNumberTotalLikes()
-				: 0;
-		Integer historicMax = updatedAccount.getHistoricMaxNumberTotalLikes() != null
+		int numberTotalLikes = updatedAccount.getNumberTotalLikes() != null ? updatedAccount.getNumberTotalLikes() : 0;
+		int historicMax = updatedAccount.getHistoricMaxNumberTotalLikes() != null
 				? updatedAccount.getHistoricMaxNumberTotalLikes() : 0;
 		if (numberTotalLikes > historicMax) {
 			accountRepository.updateHistoricMaxNumberTotalLikes(ownerId, numberTotalLikes);
@@ -401,12 +405,10 @@ public class PublicationService {
 				if (maybeBenchmarkProgress.isEmpty()) {
 					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
 					benchmarkRepository.save(benchmarkProgress);
-					emailService.sendHtmlAchievementEmail(
-          			    updatedAccount.getEmail(),
-          			    "¡Nuevo progreso de benchmark alcanzado!",
-          			    "Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
-          			    updatedAccount.getUsername()
-          			);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo progreso de benchmark alcanzado!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
 				}
 			}
 		}
@@ -515,6 +517,55 @@ public class PublicationService {
 				.ifPresent(account -> accounts.add(AccountResumeResponseDTO.fromAccount(account)));
 
 		return accounts;
+	}
+
+	/**
+	 * Checks if the emails provided belong to a real user account.
+	 * @param userAccountEmailList user account emails.
+	 * @return true if all emails are valid, false otherwise.
+	 */
+	private boolean checkUserAccountMentions(List<String> userAccountEmailList) {
+		for (String email : userAccountEmailList) {
+			if (accountRepository.findByEmail(email).isEmpty())
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Sends a notification email to the user account that was mentioned.
+	 * @param publication publication where the review was made.
+	 * @param review review that was made.
+	 * @param reviewAccountOwner user account that made the review.
+	 */
+	private void sendNotificationEmail(Publication publication, Review review, Account reviewAccountOwner) {
+		for (String email : review.getMentions()) {
+			accountRepository.findByEmail(email).ifPresent(account -> {
+				Dictionary<String, String> vars = new Hashtable<>();
+				vars.put("toUsername", account.getName());
+				vars.put("ownerUsername", reviewAccountOwner.getName());
+				vars.put("publicationTitle", review.getTitle());
+				vars.put("reviewSnippet", snippet(review.getContent()));
+				vars.put("publicationId", publication.getId());
+
+				emailService.sendHtmlReviewMentionEmail(email, "¡Fuiste mencionado en una review!", vars);
+			});
+		}
+	}
+
+	private String snippet(String text) {
+		if (text == null)
+			return "";
+		if (text.length() <= 120)
+			return text;
+
+		String truncated = text.substring(0, 120);
+		int lastSpace = truncated.lastIndexOf(' ');
+		if (lastSpace > 0) {
+			truncated = truncated.substring(0, lastSpace);
+		}
+		return truncated + "...";
 	}
 
 }
