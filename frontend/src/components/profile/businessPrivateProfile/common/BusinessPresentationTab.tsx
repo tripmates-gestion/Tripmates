@@ -6,6 +6,7 @@ import { PriceBadge, OpeningDaysRow } from "../../businessPublicProfile/Utils";
 import { formatHours } from '../../../../pages/utils/Utils';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
 import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../../../../types/PrivateUserProfiles';
+import ProfileSocialMediaLinks from '../../ProfileSocialMediaLinks';
 
 function isRestaurant(
     b: BusinessUser
@@ -128,6 +129,8 @@ export default function BusinessPresentationTab({ business }: BusinessPresentati
                         <InfoRow label="Ubicación" value={business.location} icon="📍" />
                         <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />
                         <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />
+                        <ProfileSocialMediaLinks email={business.email} canEdit />
+
                     </Section>
                 </Grid>
             </Grid>

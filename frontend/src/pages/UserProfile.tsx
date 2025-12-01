@@ -36,6 +36,7 @@ import type {
 import { useConnectionsList } from '../hooks/useConnectionsList';
 import { ConnectionsListDialog } from '../components/social/ConnectionsListDialog';
 import { FollowButton } from '../components/social/FollowButton';
+import ProfileSocialMediaLinks from '../components/profile/ProfileSocialMediaLinks';
 
 const userRoleChipColor = 'info';
 
@@ -206,6 +207,12 @@ export default function UserProfile() {
                   >
                     {currentUser.description}
                   </Typography>
+                )}
+
+                {currentUser?.email && (
+                  <Box sx={{ mt: 1 }}>
+                    <ProfileSocialMediaLinks email={currentUser.email} canEdit />
+                  </Box>
                 )}
               </Box>
 

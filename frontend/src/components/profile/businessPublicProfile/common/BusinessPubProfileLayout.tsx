@@ -29,6 +29,8 @@ import { ACHIEVEMENTS_LIST } from "../../../../constants/BusinessAchievementsDat
 import { getPublicBusinessBenchmarks } from "../../../../services/benchmarks";
 import { useAuth } from "../../../../hooks/useAuth";
 import OpenStreetMapPicker from "../../../map/OpenStreetMapPicker";
+import ProfileSocialMediaLinks from "../../ProfileSocialMediaLinks";
+
 
 export interface BusinessPubProfileLayoutProps {
   business: BusinessPubAccountDataDTO;
@@ -236,6 +238,7 @@ export default function BusinessPubProfileLayout({
                   )}
                   {business.phoneNumber && <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />}
                   {business.publicEmail && <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />}
+                  <ProfileSocialMediaLinks email={business.email} />
                   {!business.location && !business.phoneNumber && !business.publicEmail && (
                     <InfoRow 
                       label="Comming soon" 
