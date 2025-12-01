@@ -10,6 +10,7 @@ import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import { useNavigate } from 'react-router-dom';
 import { registerProfileView } from '../../services/metricsService'
 import { useAuth } from "../../hooks/useAuth";
+import { useSnackbar } from 'notistack';
 
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default function PlaceCard({ businessAccountData }: Props) {
+  const { enqueueSnackbar } = useSnackbar();  
   const imgs = sanitizeImages(businessAccountData);
   const navigate = useNavigate();
   const open = React.useMemo(
@@ -26,25 +28,25 @@ export default function PlaceCard({ businessAccountData }: Props) {
   const { accessToken } = useAuth();
 
   const handleSeeDetails = () => {
-    // Navegar primero
-    if (businessAccountData.businessType === 'HOTEL') {
-      navigate(`/hotel/${businessAccountData.id}`, {
-        state: { account: businessAccountData },
+    if (!accessToken) {
+      enqueueSnackbar("Debés iniciar sesión para ver este negocio.", {
+        variant: "warning",
       });
-    } else {
-      navigate(`/restaurant/${businessAccountData.id}`, {
-        state: { account: businessAccountData },
-      });
+      return;
     }
-
-    // Registrar vista “fire and forget”
-    if (accessToken) {
-      registerProfileView(businessAccountData.email, accessToken).catch((err) => {
-        console.error('No se pudo registrar la vista de perfil', err);
-      });
-    }
-    
+  
+    const route =
+      businessAccountData.businessType === "HOTEL"
+        ? `/hotel/${businessAccountData.id}`
+        : `/restaurant/${businessAccountData.id}`;
+  
+    navigate(route, { state: { account: businessAccountData } });
+  
+    registerProfileView(businessAccountData.email, accessToken).catch((err) => {
+      console.error("No se pudo registrar la vista de perfil", err);
+    });
   };
+  
 
 
   return (
@@ -57,10 +59,10 @@ export default function PlaceCard({ businessAccountData }: Props) {
         transition: "0.25s",
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
         height: "100%",
-        width: "100%",           // ⬅️ NUEVO: ocupa todo el ancho disponible
+        width: "100%",      
         display: "flex",
         flexDirection: "column",
-        flex: 1,                 // ⬅️ NUEVO: garantiza que se estire dentro del Grid
+        flex: 1,           
       }}
     >
       <Box sx={{ position: "relative" }}>

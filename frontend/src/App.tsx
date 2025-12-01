@@ -33,7 +33,7 @@ export default function App({ mode, setMode }: AppProps) {
     <SnackbarProvider
     maxSnack={3}
     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-    autoHideDuration={2500}
+    autoHideDuration={1000}
     preventDuplicate
   >
     <Box>

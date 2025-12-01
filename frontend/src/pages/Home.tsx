@@ -293,7 +293,7 @@ function Footer() {
                 size="small"
                 color="inherit"
                 component="a"
-                href="https://www.instagram.com/aniball_fuu/?hl=es-la"
+                href="https://www.instagram.com/trip.mates0/?hl=es-la"
                 target="_blank"
                 rel="noopener noreferrer"
               >

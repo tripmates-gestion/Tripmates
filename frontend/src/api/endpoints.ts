@@ -64,5 +64,5 @@ export const ENDPOINTS = {
 
 
     // business
-    TOP_TRENDING_BUSINESSES: "/metrics/n-most-likeds-publications",
+    TOP_TRENDING_BUSINESSES: "/metrics/n-most-likeds-accounts",
 };
