@@ -1,7 +1,7 @@
-import { Box, Button, Container, Stack, Typography, Card, CardMedia, Link, Divider, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import type { Place } from '../components/ui/PlaceCard';
-import PlaceCard from '../components/ui/PlaceCard';
+
+import PlaceCard from '../components/search/ResultPlaceCard';
+
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
@@ -11,7 +11,10 @@ import { PAGES_ROUTE } from '../constants/Pages';
 import { useAuth } from '../hooks/useAuth';
 import BusinessRecommendationFeed from '../components/publicationsFeed/BusinessPublicationRecomendationFeed';
 import HeroImageSlider from '../components/ui/HeroImageSlider';
-
+import type { BusinessPubAccountDataDTO } from '../types/AccountData';
+import { Alert, Box, Button, Card, CircularProgress, Container, Divider, IconButton, Link, Stack, Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { getTopTrendingBusinesses } from '../services/topBusiness';
 
 
 
@@ -122,26 +125,62 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
 
 // --- Sección de destinos más populares ---
 function TopDestinations() {
+  const [topBusinesses, setTopBusinesses] = useState<BusinessPubAccountDataDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getTopTrendingBusinesses(3)
+      .then((data) => {
+        setTopBusinesses(data);
+        setError(null);
+      })
+      .catch((err: Error) => setError(err.message || 'No se pudieron cargar los lugares.'))
+      .finally(() => setIsLoading(false));
+  
+    console.log('TopDestinations mounted, fetching top businesses...');
+    console.log(topBusinesses);
+  }, []);
+
+  useEffect(() => {
+    console.log("[TopDestinations] estado topBusinesses cambió:", topBusinesses);
+  }, [topBusinesses]);
+
   return (
     <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: 'background.default' }}>
       <Container>
         <Typography variant="overline" color="primary">Populares en la comunidad</Typography>
         <Typography variant="h4" fontWeight={800}>Destinos que tus TripMates están mirando</Typography>
         <Typography variant="body1" color="text.secondary" mb={5}>
-          Lugares que aparecen con más frecuencia en los planes públicos y reseñas recientes.
+          Lugares mas gustados.
         </Typography>
 
-        <Grid container spacing={4}>
-          {MOCK.map((p) => (
-            <Grid key={p.id} xs={12} sm={6} md={4} item sx={{ mb: 3 }}>
-              <PlaceCard place={p} />
-            </Grid>
-          ))}
-        </Grid>
+        {isLoading ? (
+          <Stack alignItems="center" spacing={2} py={4}>
+            <CircularProgress size={32} />
+            <Typography variant="body2" color="text.secondary">Cargando lugares destacados...</Typography>
+          </Stack>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : topBusinesses.length ? (
+          <Grid container spacing={4}>
+            {topBusinesses.map((business) => (
+              <Grid key={business.id} xs={12} sm={6} md={4} item sx={{ mb: 3 }}>
+                <PlaceCard businessAccountData={business} />
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No hay lugares destacados para mostrar en este momento.
+          </Typography>
+        )}
       </Container>
     </Box>
   );
 }
+
+
 
 
 
@@ -315,34 +354,3 @@ function Footer() {
     </Box>
   );
 }
-
-// Otro mock que es igual que el que esta en Search.tsx
-const MOCK: Place[] = [
-  {
-    id: '4',
-    name: 'London',
-    city: 'London',
-    country: 'United Kingdom',
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.londoninfoguide.com/images/oxford-street-in-london-england-uk.webp'
-  },
-  {
-    id: '5',
-    name: 'Helsinki',
-    city: 'Helsinki',
-    country: 'Finland',
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://content.r9cdn.net/rimg/dimg/30/00/adff18cf-city-7232-16480d2ee82.jpg?crop=true&width=1020&height=498'
-  },
-  {
-    id: '6',
-    name: 'Santorini',
-    city: 'Santorini',
-    country: 'Greece',
-    rating: 4.7,
-    priceLabel: '$$$',
-    photoUrl: 'https://www.greekexclusiveproperties.com/wp-content/uploads/2019/10/Santorini-Declared-No1-Island-in-the-World-.jpg'
-  },
-];

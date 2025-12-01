@@ -1,4 +1,4 @@
-import type { LocationDTO } from '../../types/Location'
+import type { LocationDTO } from '../../../types/Location'
 
 // ---------------------- Validadores ----------------------
 
