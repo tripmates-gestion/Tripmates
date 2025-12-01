@@ -61,4 +61,8 @@ export const ENDPOINTS = {
     // social media
     USER_MEDIA: (email: string) => `/users/${email}/media`,
     MY_MEDIA: '/users/me/media',
+
+
+    // business
+    TOP_TRENDING_BUSINESSES: "/metrics/n-most-likeds-accounts",
 };

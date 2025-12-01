@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
+import org.springframework.data.domain.Sort;
 
 @Repository
 public class PublicationRepositoryCustomImpl implements PublicationRepositoryCustom {
@@ -119,6 +120,25 @@ public class PublicationRepositoryCustomImpl implements PublicationRepositoryCus
 
 		return 0;
 	}
+
+  @Override
+  public List<Publication> findNMostLikedsPublications(int n) {
+    Aggregation aggregation = Aggregation.newAggregation(
+      Aggregation.addFields()
+        .addField("likesCount")
+        .withValue(ArrayOperators.Size.lengthOfArray("likes"))
+        .build(),
+      Aggregation.sort(Sort.by(Sort.Direction.DESC, "likesCount")),
+      Aggregation.limit(n)
+    );
+
+    AggregationResults<Publication> results = mongoTemplate.aggregate(
+      aggregation, 
+      "publications", 
+      Publication.class
+    );
+    return results.getMappedResults();
+  }
 
 	@Data
 	@NoArgsConstructor

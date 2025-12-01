@@ -12,7 +12,6 @@ import { SearchBarHotel } from "../components/search/SearchBarHotel";
 import { SearchBarRestaurant } from "../components/search/SearchBarRestaurant";
 import PlaceGrid from "../components/search/ResultsPlaceGrid";
 import { BusinessRecommendationsSection } from "../components/recommendations/BusinessRecommendationsSection";
-import { MOCK_BUSINESS_SEARCH_RESULTS } from "../components/mocks/businessMocks";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
 // ---------------------------------------------------------
