@@ -33,6 +33,14 @@ export async function renderTextWithMentions(
     getUserByEmail(email, accessToken)
   ));
 
+  // Crear un mapa de email -> nombre para reemplazos rápidos
+  const emailToName = new Map<string, string>();
+  mentionedUsers.forEach(user => {
+    if (user && user.email && user.name) {
+      emailToName.set(user.email, user.name);
+    }
+  });
+
   const emailRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?:\.[a-zA-Z]+)?)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
@@ -40,7 +48,6 @@ export async function renderTextWithMentions(
 
   while ((match = emailRegex.exec(text)) !== null) {
     const email = match[1]; // El email sin el primer @
-    const fullMatch = match[0]; // @email completo
     
     // Agregar texto antes del match
     if (match.index > lastIndex) {
@@ -49,6 +56,8 @@ export async function renderTextWithMentions(
 
     // Solo renderizar como mención clickeable si el email está en mentionedMails
     if (mentionedMails.includes(email)) {
+      const userName = emailToName.get(email) || email; // Usar nombre o email como fallback
+      
       parts.push(
         <Box
           component="span"
@@ -64,15 +73,15 @@ export async function renderTextWithMentions(
             '&:hover': { textDecoration: 'underline' },
           }}
         >
-          {fullMatch}
+          @{userName}
         </Box>
       );
     } else {
       // Si no está en la lista, renderizar como texto normal
-      parts.push(fullMatch);
+      parts.push(match[0]); // Incluir el @ completo
     }
 
-    lastIndex = match.index + fullMatch.length;
+    lastIndex = match.index + match[0].length;
   }
 
   // Agregar el texto restante
