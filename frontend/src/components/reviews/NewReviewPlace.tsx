@@ -127,6 +127,18 @@ export default function NewReviewPlace({
   const [suggestedUsers, setSuggestedUsers] = React.useState<{ name: string; email: string }[]>([]);
   const [isPublishing, setIsPublishing] = React.useState(false);
 
+  // Estado para el texto mostrado (con nombres)
+  const [displayText, setDisplayText] = React.useState("");
+
+  // Sincronizar displayText cuando cambia text (convertir emails a nombres)
+  React.useEffect(() => {
+    let result = text;
+    suggestedUsers.forEach(user => {
+      const emailRegex = new RegExp(`@${user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+      result = result.replace(emailRegex, `@${user.name}`);
+    });
+    setDisplayText(result);
+  }, [text, suggestedUsers]);
 
   React.useEffect(() => {
     if (user) {
@@ -168,13 +180,20 @@ export default function NewReviewPlace({
 
   // Manejo de texto + detección de @
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newText = e.target.value;
-    const cursorPos = e.target.selectionStart ?? newText.length;
+    const newDisplayText = e.target.value;
+    const cursorPos = e.target.selectionStart ?? newDisplayText.length;
+
+    // Convertir nombres a emails en el texto interno
+    let newText = newDisplayText;
+    suggestedUsers.forEach(user => {
+      const nameRegex = new RegExp(`@${user.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+      newText = newText.replace(nameRegex, `@${user.email}`);
+    });
 
     setText(newText);
     setCursorPosition(cursorPos);
 
-    const textBeforeCursor = newText.substring(0, cursorPos);
+    const textBeforeCursor = newDisplayText.substring(0, cursorPos);
     const lastAtIndex = textBeforeCursor.lastIndexOf("@");
 
     if (lastAtIndex === -1) {
@@ -210,14 +229,15 @@ export default function NewReviewPlace({
     setShowMentions(true);
   };
 
-  const insertMention = (username: string) => {
+  const insertMention = (userName: string, userEmail: string) => {
     const textBeforeCursor = text.substring(0, cursorPosition);
     const textAfterCursor = text.substring(cursorPosition);
     const lastAtIndex = textBeforeCursor.lastIndexOf("@");
 
     if (lastAtIndex !== -1) {
+      // Insertar el EMAIL en el texto (no el nombre)
       const newText =
-        text.substring(0, lastAtIndex) + "@" + username + " " + textAfterCursor;
+        text.substring(0, lastAtIndex) + "@" + userEmail + " " + textAfterCursor;
 
       setText(newText);
       setShowMentions(false);
@@ -225,7 +245,7 @@ export default function NewReviewPlace({
 
       setTimeout(() => {
         if (textFieldRef.current) {
-          const newCursorPos = lastAtIndex + username.length + 2;
+          const newCursorPos = lastAtIndex + userEmail.length + 2;
           textFieldRef.current.focus();
           textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
           setCursorPosition(newCursorPos);
@@ -286,11 +306,12 @@ export default function NewReviewPlace({
     }
     setIsPublishing(true);
 
-    // Extraer emails mencionados del texto (ej: @a@b.c -> a@b.c, @viajero@a -> viajero@a)
+    // Extraer emails mencionados del texto (ya están como @email@domain)
     const emailRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?:\.[a-zA-Z]+)?)/g;
     const matchesArray = Array.from(text.matchAll(emailRegex));
     const mentionedUsers = Array.from(new Set(matchesArray.map(m => m[1])));
     console.log("Usuarios mencionados:", mentionedUsers);
+    
     const r: Review = {
       id: crypto.randomUUID(),
       avatarUrl: user?.avatarURL || "",
@@ -299,7 +320,7 @@ export default function NewReviewPlace({
       author: currentUserName,
       title: title.trim(),
       rating: rating ?? undefined,
-      text: text.trim(),
+      text: text.trim(), // El texto ya tiene los emails
       images,
       createdAt: new Date().toISOString(),
       publicationId,
@@ -393,7 +414,7 @@ export default function NewReviewPlace({
             <TextField
               inputRef={textFieldRef}
               label="Tu experiencia (usa @nombre para mencionar a alguien)"
-              value={text}
+              value={displayText}
               onChange={handleTextChange}
               error={hasTextError}
               helperText={
@@ -456,7 +477,7 @@ export default function NewReviewPlace({
                     {filteredUsers.map((user) => (
                       <ListItem key={user.name} disablePadding>
                         <ListItemButton
-                          onClick={() => insertMention(user.email)}
+                          onClick={() => insertMention(user.name, user.email)}
                           sx={{
                             borderRadius: 1,
                             "&:hover": {
