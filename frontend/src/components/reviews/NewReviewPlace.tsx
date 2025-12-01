@@ -12,53 +12,70 @@ import { useAuth } from "../../hooks/useAuth";
 import { mapReviewListDTOToReviews } from "../../services/mappers/reviewsMapper";
 import { ACCOUNT_TYPES } from "../../constants/Rol";
 import { ReviewGrid } from "./ReviewGrid";
-import { getUserFollowers } from "../../services/userService";
+import { getUserByEmail, getUserFollowers } from "../../services/userService";
 import ImageUploader from "../ui/ImageUploader";
 import CircularProgress from "@mui/material/CircularProgress";
 
+function getMentionedMails(text: string): string[] {
+  const emailRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?:\.[a-zA-Z]+)?)/g;
+  const matchesArray = Array.from(text.matchAll(emailRegex));
+  return Array.from(new Set(matchesArray.map(m => m[1])));
+}
 
 // Función para renderizar texto con mentions
-export function renderTextWithMentions(
+export async function renderTextWithMentions(
   text: string,
-  onMentionClick?: (mention: { name: string }) => void
+  accessToken: string,
+  onMentionClick?: (mention: { email: string }) => void
 ) {
-  const mentionRegex =
-    /@([A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9\-]*(?:\s+[A-ZÁÉÍÓÚÑÜ][A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9\-]*)*)/g;
+  const mentionedMails = getMentionedMails(text);
+  const mentionedUsers = await Promise.all(mentionedMails.map(email => 
+    getUserByEmail(email, accessToken)
+  ));
 
+  const emailRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?:\.[a-zA-Z]+)?)/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = mentionRegex.exec(text)) !== null) {
+  while ((match = emailRegex.exec(text)) !== null) {
+    const email = match[1]; // El email sin el primer @
+    const fullMatch = match[0]; // @email completo
+    
+    // Agregar texto antes del match
     if (match.index > lastIndex) {
       parts.push(text.substring(lastIndex, match.index));
     }
 
-    const mentionName = match[1];   // sin el @
-    const fullMention = match[0];   // con el @
+    // Solo renderizar como mención clickeable si el email está en mentionedMails
+    if (mentionedMails.includes(email)) {
+      parts.push(
+        <Box
+          component="span"
+          key={match.index}
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            onMentionClick?.({ email });
+          }}
+          sx={{
+            color: '#2196F3',
+            fontWeight: 700,
+            cursor: 'pointer',
+            '&:hover': { textDecoration: 'underline' },
+          }}
+        >
+          {fullMatch}
+        </Box>
+      );
+    } else {
+      // Si no está en la lista, renderizar como texto normal
+      parts.push(fullMatch);
+    }
 
-    parts.push(
-      <Box
-        component="span"
-        key={match.index}
-        onClick={(e: React.MouseEvent) => {
-          e.stopPropagation();
-          onMentionClick?.({ name: mentionName });
-        }}
-        sx={{
-          color: '#2196F3',
-          fontWeight: 700,
-          cursor: 'pointer',
-          '&:hover': { textDecoration: 'underline' },
-        }}
-      >
-        {fullMention}
-      </Box>
-    );
-
-    lastIndex = match.index + match[0].length;
+    lastIndex = match.index + fullMatch.length;
   }
 
+  // Agregar el texto restante
   if (lastIndex < text.length) {
     parts.push(text.substring(lastIndex));
   }
@@ -259,7 +276,12 @@ export default function NewReviewPlace({
       return;
     }
     setIsPublishing(true);
-  
+
+    // Extraer emails mencionados del texto (ej: @a@b.c -> a@b.c, @viajero@a -> viajero@a)
+    const emailRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?:\.[a-zA-Z]+)?)/g;
+    const matchesArray = Array.from(text.matchAll(emailRegex));
+    const mentionedUsers = Array.from(new Set(matchesArray.map(m => m[1])));
+    console.log("Usuarios mencionados:", mentionedUsers);
     const r: Review = {
       id: crypto.randomUUID(),
       avatarUrl: user?.avatarURL || "",
@@ -273,6 +295,7 @@ export default function NewReviewPlace({
       createdAt: new Date().toISOString(),
       publicationId,
       publicationTitle,
+      mentions: mentionedUsers,
     };
   
     try {
