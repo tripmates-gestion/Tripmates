@@ -3,14 +3,13 @@ import { Box, CircularProgress, IconButton, Stack, Tooltip, Typography } from "@
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import EditIcon from "@mui/icons-material/Edit";
 import { getUserSocialMedia, type SocialMediaLinks } from "../../services/socialMedia";
-import EditSocialMediaDialog from "./EditSocialMediaDialog";
 import { useAuth } from "../../hooks/useAuth";
 
 interface ProfileSocialMediaLinksProps {
-  email: string;
-  canEdit?: boolean;
+  email?: string;
+  links?: SocialMediaLinks | null;
+  loading?: boolean;
 }
 
 const SOCIAL_ITEMS: Array<{
@@ -23,14 +22,18 @@ const SOCIAL_ITEMS: Array<{
   { key: "facebookURL", label: "Facebook", icon: <FacebookIcon /> },
 ];
 
-export default function ProfileSocialMediaLinks({ email, canEdit = false }: ProfileSocialMediaLinksProps) {
-  const [links, setLinks] = React.useState<SocialMediaLinks | null>(null);
-  const [loading, setLoading] = React.useState(true);
+export default function ProfileSocialMediaLinks({ email, links: providedLinks, loading: loadingProp = false }: ProfileSocialMediaLinksProps) {
+  const [links, setLinks] = React.useState<SocialMediaLinks | null>(providedLinks ?? null);
+  const [loading, setLoading] = React.useState<boolean>(loadingProp || Boolean(!providedLinks && email));
   const [error, setError] = React.useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
   const { accessToken } = useAuth();
 
   React.useEffect(() => {
+    setLinks(providedLinks ?? null);
+  }, [providedLinks]);
+
+  React.useEffect(() => {
+    if (!email || providedLinks) return;
     let mounted = true;
     const fetchLinks = async () => {
       setLoading(true);
@@ -57,16 +60,12 @@ export default function ProfileSocialMediaLinks({ email, canEdit = false }: Prof
     return () => {
       mounted = false;
     };
-  }, [email]);
+  }, [accessToken, email, providedLinks]);
 
   const hasLinks = React.useMemo(() => {
     if (!links) return false;
     return Boolean(links.instagramURL || links.xURL || links.facebookURL);
   }, [links]);
-
-  const handleUpdated = (next: SocialMediaLinks) => {
-    setLinks(next);
-  };
 
   if (loading) {
     return (
@@ -79,7 +78,7 @@ export default function ProfileSocialMediaLinks({ email, canEdit = false }: Prof
     );
   }
 
-  if (error && !canEdit) {
+  if (error) {
     return (
       <Typography variant="body2" color="error">
         {error}
@@ -107,7 +106,7 @@ export default function ProfileSocialMediaLinks({ email, canEdit = false }: Prof
     );
   }).filter(Boolean) as React.ReactElement[];
 
-  const shouldRender = hasLinks || canEdit;
+  const shouldRender = hasLinks;
   if (!shouldRender) return null;
 
   const content = error ? (
@@ -126,24 +125,7 @@ export default function ProfileSocialMediaLinks({ email, canEdit = false }: Prof
     <Box>
       <Stack direction="row" spacing={1} alignItems="center">
         {content}
-
-        {canEdit && (
-          <Tooltip title="Editar redes sociales">
-            <IconButton size="small" onClick={() => setDialogOpen(true)}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        )}
       </Stack>
-
-      {canEdit && (
-        <EditSocialMediaDialog
-          open={dialogOpen}
-          onClose={() => setDialogOpen(false)}
-          initialValues={links ?? {}}
-          onUpdated={handleUpdated}
-        />
-      )}
     </Box>
   );
 }
