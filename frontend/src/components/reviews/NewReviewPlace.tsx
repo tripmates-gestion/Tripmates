@@ -98,14 +98,14 @@ export default function NewReviewPlace({
   const [cursorPosition, setCursorPosition] = React.useState(0);
   const textFieldRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const [suggestedUsers, setSuggestedUsers] = React.useState<string[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = React.useState<{ name: string; email: string }[]>([]);
   const [isPublishing, setIsPublishing] = React.useState(false);
 
 
   React.useEffect(() => {
     if (user) {
       getUserFollowers(user.id, accessToken)
-        .then((followers) => setSuggestedUsers(followers.map((f) => f.name)))
+        .then((followers) => setSuggestedUsers(followers.map((f) => ({name: f.name, email: f.email}))))
         .catch(() => setSuggestedUsers([]));
     } else {
       setSuggestedUsers([]);
@@ -209,7 +209,7 @@ export default function NewReviewPlace({
   };
 
   const filteredUsers = suggestedUsers
-    .filter((u) => u.toLowerCase().startsWith(mentionSearch.toLowerCase()))
+    .filter((u) => u.name.toLowerCase().startsWith(mentionSearch.toLowerCase()))
     .slice(0, 3);
 
   const handleOpen = () => {
@@ -421,10 +421,10 @@ export default function NewReviewPlace({
 
                 {filteredUsers.length > 0 ? (
                   <List sx={{ maxHeight: 300, overflow: "auto" }}>
-                    {filteredUsers.map((username) => (
-                      <ListItem key={username} disablePadding>
+                    {filteredUsers.map((user) => (
+                      <ListItem key={user.name} disablePadding>
                         <ListItemButton
-                          onClick={() => insertMention(username)}
+                          onClick={() => insertMention(user.email)}
                           sx={{
                             borderRadius: 1,
                             "&:hover": {
@@ -433,7 +433,7 @@ export default function NewReviewPlace({
                           }}
                         >
                           <ListItemText
-                            primary={`@${username}`}
+                            primary={`@${user.name}`}
                             primaryTypographyProps={{
                               sx: {
                                 color: "#2196F3",
