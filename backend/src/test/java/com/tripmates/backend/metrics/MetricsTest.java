@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
 import com.tripmates.backend.common.types.BusinessType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,114 +102,113 @@ public class MetricsTest {
 	}
 
 	@Test
-	void testGivenNoPublications_WhenGetMostLikedsPublications_ThenReturnEmptyList() throws Exception {
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications"))
+	void testGivenNoBusinessAccounts_WhenGetMostLikedAccounts_ThenReturnEmptyList() throws Exception {
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
-		assertEquals(0, publications.size(), "Should have 0 publications");
+		assertEquals(0, accounts.size(), "Should have 0 business accounts");
 	}
 
 	@Test
-	void testGivenOnePublication_WhenGetMostLikedsPublications_ThenReturnOnePublication() throws Exception {
+	void testGivenOneBusinessAccountWithLikes_WhenGetMostLikedAccounts_ThenReturnOneAccount() throws Exception {
 		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
 		PublicationResumeResponseDTO publication = createPublication(jwt, "Amazing Hotel");
 		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
 		likePublication(jwtLiker, publication.id());
 
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
-		assertEquals(1, publications.size(), "Should have 1 publication");
-		assertEquals(publication.id(), publications.get(0).id());
-		assertEquals("Amazing Hotel", publications.get(0).title());
+		assertEquals(1, accounts.size(), "Should have 1 business account");
+		assertEquals("business@example.com", accounts.get(0).email());
+		assertEquals(BusinessType.HOTEL, accounts.get(0).businessType());
 	}
 
 	@Test
-	void testGivenMultiplePublications_WhenGetMostLikedsPublications_ThenReturnTop3InOrder() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+	void testGivenMultipleBusinessAccounts_WhenGetMostLikedAccounts_ThenReturnTop3InOrder() throws Exception {
+		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
+		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
+		String jwt3 = testHelper.getBusinessTestingJwt("business3@example.com", BusinessType.HOTEL);
+		String jwt4 = testHelper.getBusinessTestingJwt("business4@example.com", BusinessType.RESTAURANT);
+		String jwt5 = testHelper.getBusinessTestingJwt("business5@example.com", BusinessType.HOTEL);
 
-		// Create 5 publications with different number of likes
-		PublicationResumeResponseDTO pub1 = createPublication(jwt, "Publication 1");
-		PublicationResumeResponseDTO pub2 = createPublication(jwt, "Publication 2");
-		PublicationResumeResponseDTO pub3 = createPublication(jwt, "Publication 3");
-		PublicationResumeResponseDTO pub4 = createPublication(jwt, "Publication 4");
-		PublicationResumeResponseDTO pub5 = createPublication(jwt, "Publication 5");
+		PublicationResumeResponseDTO pub1 = createPublication(jwt1, "Business 1 Publication");
+		PublicationResumeResponseDTO pub2 = createPublication(jwt2, "Business 2 Publication");
+		PublicationResumeResponseDTO pub3 = createPublication(jwt3, "Business 3 Publication");
+		PublicationResumeResponseDTO pub4 = createPublication(jwt4, "Business 4 Publication");
+		PublicationResumeResponseDTO pub5 = createPublication(jwt5, "Business 5 Publication");
 
-		// Generate all user JWTs at once (5 + 3 + 4 + 1 + 2 = 15 users)
 		List<String> allLikers = testHelper.getNUserTestingJwt(15);
 		int index = 0;
 
-		// Give them different amounts of likes
-		// pub1: 5 likes (most liked)
 		for (int i = 0; i < 5; i++) {
 			likePublication(allLikers.get(index++), pub1.id());
 		}
 
-		// pub2: 3 likes (3rd most liked)
 		for (int i = 0; i < 3; i++) {
 			likePublication(allLikers.get(index++), pub2.id());
 		}
 
-		// pub3: 4 likes (should be 2nd)
 		for (int i = 0; i < 4; i++) {
 			likePublication(allLikers.get(index++), pub3.id());
 		}
 
-		// pub4: 1 like
 		likePublication(allLikers.get(index++), pub4.id());
 
-		// pub5: 2 likes (4th most liked)
 		for (int i = 0; i < 2; i++) {
 			likePublication(allLikers.get(index++), pub5.id());
 		}
 
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
 
-		assertEquals(3, publications.size(), "Should return exactly 3 publications");
-		assertEquals(pub1.id(), publications.get(0).id(), "First should be publication with 5 likes");
-		assertEquals(pub3.id(), publications.get(1).id(), "Second should be publication with 4 likes");
-		assertEquals(pub2.id(), publications.get(2).id(), "Third should be publication with 3 likes");
+		assertEquals(3, accounts.size(), "Should return exactly 3 business accounts");
+		assertEquals("business1@example.com", accounts.get(0).email(), "First should be business with 5 likes");
+		assertEquals("business3@example.com", accounts.get(1).email(), "Second should be business with 4 likes");
+		assertEquals("business2@example.com", accounts.get(2).email(), "Third should be business with 3 likes");
 	}
 
 	@Test
-	void testGivenMultiplePublications_WhenGetMostLikedsPublicationsWithCustomN_ThenReturnTopN() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+	void testGivenMultipleBusinessAccounts_WhenGetMostLikedAccountsWithCustomN_ThenReturnTopN() throws Exception {
+		// Create 5 business accounts
+		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
+		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
+		String jwt3 = testHelper.getBusinessTestingJwt("business3@example.com", BusinessType.HOTEL);
+		String jwt4 = testHelper.getBusinessTestingJwt("business4@example.com", BusinessType.RESTAURANT);
+		String jwt5 = testHelper.getBusinessTestingJwt("business5@example.com", BusinessType.HOTEL);
 
-		// Create 5 publications
-		PublicationResumeResponseDTO pub1 = createPublication(jwt, "Publication 1");
-		PublicationResumeResponseDTO pub2 = createPublication(jwt, "Publication 2");
-		PublicationResumeResponseDTO pub3 = createPublication(jwt, "Publication 3");
-		PublicationResumeResponseDTO pub4 = createPublication(jwt, "Publication 4");
-		PublicationResumeResponseDTO pub5 = createPublication(jwt, "Publication 5");
+		// Create publications
+		PublicationResumeResponseDTO pub1 = createPublication(jwt1, "Publication 1");
+		PublicationResumeResponseDTO pub2 = createPublication(jwt2, "Publication 2");
+		PublicationResumeResponseDTO pub3 = createPublication(jwt3, "Publication 3");
+		PublicationResumeResponseDTO pub4 = createPublication(jwt4, "Publication 4");
+		PublicationResumeResponseDTO pub5 = createPublication(jwt5, "Publication 5");
 
-		// Generate all user JWTs at once (5 + 4 + 3 + 2 + 1 = 15 users)
 		List<String> allLikers = testHelper.getNUserTestingJwt(15);
 		int index = 0;
 
-		// Give them likes in descending order
 		for (int i = 0; i < 5; i++) {
 			likePublication(allLikers.get(index++), pub1.id());
 		}
@@ -226,59 +226,58 @@ public class MetricsTest {
 		}
 
 		// Request top 5
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications").param("n", "5"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts").param("n", "5"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
 
-		assertEquals(5, publications.size(), "Should return exactly 5 publications");
-		assertEquals(pub1.id(), publications.get(0).id());
-		assertEquals(pub2.id(), publications.get(1).id());
-		assertEquals(pub3.id(), publications.get(2).id());
-		assertEquals(pub4.id(), publications.get(3).id());
-		assertEquals(pub5.id(), publications.get(4).id());
+		assertEquals(5, accounts.size(), "Should return exactly 5 business accounts");
+		assertEquals("business1@example.com", accounts.get(0).email());
+		assertEquals("business2@example.com", accounts.get(1).email());
+		assertEquals("business3@example.com", accounts.get(2).email());
+		assertEquals("business4@example.com", accounts.get(3).email());
+		assertEquals("business5@example.com", accounts.get(4).email());
 	}
 
 	@Test
-	void testGivenPublicationsWithNoLikes_WhenGetMostLikedsPublications_ThenReturnPublicationsWithZeroLikes()
+	void testGivenBusinessAccountsWithNoLikes_WhenGetMostLikedAccounts_ThenReturnAccountsWithZeroLikes()
 			throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
+		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
 
-		// Create 2 publications without likes
-		PublicationResumeResponseDTO pub1 = createPublication(jwt, "Publication 1");
-		PublicationResumeResponseDTO pub2 = createPublication(jwt, "Publication 2");
+        createPublication(jwt1, "Publication 1");
+		createPublication(jwt2, "Publication 2");
 
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
 
-		assertEquals(2, publications.size(), "Should return 2 publications");
-		assertTrue(publications.stream().anyMatch(p -> p.id().equals(pub1.id())));
-		assertTrue(publications.stream().anyMatch(p -> p.id().equals(pub2.id())));
+		assertEquals(2, accounts.size(), "Should return 2 business accounts");
+		assertTrue(accounts.stream().anyMatch(a -> a.email().equals("business1@example.com")));
+		assertTrue(accounts.stream().anyMatch(a -> a.email().equals("business2@example.com")));
 	}
 
 	@Test
-	void testGivenFewerPublicationsThanN_WhenGetMostLikedsPublications_ThenReturnAllPublications() throws Exception {
-		String jwt = testHelper.getBusinessTestingJwt("business@example.com", BusinessType.HOTEL);
+	void testGivenFewerBusinessAccountsThanN_WhenGetMostLikedAccounts_ThenReturnAllAccounts() throws Exception {
+		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
+		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
 
-		// Create only 2 publications but request top 5
-		PublicationResumeResponseDTO pub1 = createPublication(jwt, "Publication 1");
-		PublicationResumeResponseDTO pub2 = createPublication(jwt, "Publication 2");
+		PublicationResumeResponseDTO pub1 = createPublication(jwt1, "Publication 1");
+		PublicationResumeResponseDTO pub2 = createPublication(jwt2, "Publication 2");
 
-		// Generate all user JWTs at once (3 + 1 = 4 users)
 		List<String> allLikers = testHelper.getNUserTestingJwt(4);
 		int index = 0;
 
@@ -287,24 +286,24 @@ public class MetricsTest {
 		}
 		likePublication(allLikers.get(index++), pub2.id());
 
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications").param("n", "5"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts").param("n", "5"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
 
-		assertEquals(2, publications.size(), "Should return only 2 publications (all available)");
-		assertEquals(pub1.id(), publications.get(0).id(), "Publication with more likes should be first");
-		assertEquals(pub2.id(), publications.get(1).id());
+		assertEquals(2, accounts.size(), "Should return only 2 business accounts (all available)");
+		assertEquals("business1@example.com", accounts.get(0).email(), "Business with more likes should be first");
+		assertEquals("business2@example.com", accounts.get(1).email());
 	}
 
 	@Test
-	void testGivenPublicationsFromDifferentBusinesses_WhenGetMostLikedsPublications_ThenReturnFromAllBusinesses()
+	void testGivenDifferentBusinessTypes_WhenGetMostLikedAccounts_ThenReturnAccountsFromAllTypes()
 			throws Exception {
 		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
 		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
@@ -319,20 +318,20 @@ public class MetricsTest {
 			likePublication(allLikers.get(i), pub1.id());
 		}
 
-		String response = mockMvc.perform(get("/metrics/n-most-likeds-publications"))
+		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
 			.andExpect(status().isOk())
 			.andDo(print())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		List<PublicationResumeResponseDTO> publications = objectMapper.readValue(response,
-				new TypeReference<List<PublicationResumeResponseDTO>>() {
+		List<AccountResumeResponseDTO> accounts = objectMapper.readValue(response,
+				new TypeReference<List<AccountResumeResponseDTO>>() {
 				});
 
-		assertEquals(2, publications.size(), "Should return publications from both businesses");
-		assertEquals(pub2.id(), publications.get(0).id(), "Restaurant publication should be first (more likes)");
-		assertEquals(pub1.id(), publications.get(1).id(), "Hotel publication should be second");
+		assertEquals(2, accounts.size(), "Should return business accounts from both types");
+		assertEquals("business2@example.com", accounts.get(0).email(), "Restaurant account should be first (more likes)");
+		assertEquals("business1@example.com", accounts.get(1).email(), "Hotel account should be second");
 	}
 
 }

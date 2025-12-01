@@ -115,10 +115,10 @@ public class MetricsController {
 		return ResponseEntity.noContent().build();
 	}
 
-  @GetMapping("/n-most-likeds-publications")
-  @Operation(summary = "Get n most likeds publications (by default n is 3)")
+  @GetMapping("/n-most-likeds-accounts")
+  @Operation(summary = "Get n most liked business accounts (by default n is 3)")
   @ApiResponses(value = {
-    @ApiResponse(responseCode = "200", description = "Most likeds publications retrieved successfully",
+    @ApiResponse(responseCode = "200", description = "Most liked business accounts retrieved successfully",
       content = { @Content(mediaType = "application/json",
         schema = @Schema(implementation = EventReport.class)) }),
     @ApiResponse(responseCode = "404", description = "User not found",
@@ -126,8 +126,8 @@ public class MetricsController {
         schema = @Schema(implementation = ErrorDTO.class)) }),
     @ApiResponse(responseCode = "401", description = "No autorizado. La cuenta no es negocio", content = {
       @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-  public ResponseEntity<?> getMostLikedsPublications(
+  public ResponseEntity<?> getMostLikedBusinessAccounts(
     @RequestParam(required = false, defaultValue = "3") Integer n) {
-    return ResponseEntity.ok(metricsService.getMostLikedsPublications(n));
+    return ResponseEntity.ok(metricsService.getMostLikedBusinessAccounts(n));
   }
 }
