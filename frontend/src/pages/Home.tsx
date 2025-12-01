@@ -109,7 +109,7 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
               'https://www.shutterstock.com/image-photo/three-diverse-young-women-taking-600nw-2608661485.jpg',
             ]}
             alt="Viajes con amigos"
-            interval={4000}
+            interval={2500}
             aspectRatio={4 / 3}
             rounded={4}
             fit="cover"
