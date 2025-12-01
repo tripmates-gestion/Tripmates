@@ -29,7 +29,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
@@ -37,7 +36,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -406,66 +404,39 @@ public class PublicationTest {
 	}
 
 	@Test
-	void getReviewRatingsAvg_WithTwoReviews_ShouldReturnCorrectAverage() throws Exception {
-	
-		String businessTestingJwt = testHelper.getBusinessTestingJwt("business@hostel.com", BusinessType.HOTEL);
-		
-		PublicationResumeResponseDTO publicationResumeResponseDTO = createPublication(businessTestingJwt);
-		
-		String user1Jwt = testHelper.getUserTestingJwt("user1@example.com");
-		String user2Jwt = testHelper.getUserTestingJwt("user2@example.com");
-		
-		MvcResult review1Result = mockMvc.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/review")
-				.header("Authorization", "Bearer " + user1Jwt)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-						"title": "Great place!",
-						"content": "Had a wonderful time here.",
-						"rating": 4.0,
-						"images": []
-					}
-					"""))
-			.andDo(result -> {
-				System.out.println("Respuesta de la primera reseña:");
-				System.out.println("Status: " + result.getResponse().getStatus());
-				System.out.println("Contenido: " + result.getResponse().getContentAsString());
-			})
-			.andExpect(status().isCreated())
-			.andReturn();
+	void testCanNotUnlikeANotLikedPublication() throws Exception {
+		String businessTestingJwt = testHelper.getBusinessTestingJwt("contact@hostel.com", BusinessType.HOTEL);
 
-		MvcResult review2Result = mockMvc.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/review")
-				.header("Authorization", "Bearer " + user2Jwt)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-						"title": "Excellent!",
-						"content": "Best experience ever!",
-						"rating": 5.0,
-						"images": []
-					}
-					"""))
-			.andDo(result -> {
-				System.out.println("Respuesta de la segunda reseña:");
-				System.out.println("Status: " + result.getResponse().getStatus());
-				System.out.println("Contenido: " + result.getResponse().getContentAsString());
-			})
-			.andExpect(status().isCreated())
-			.andReturn();
-				
-		MvcResult avgResult = mockMvc.perform(get("/metrics/reviews/rating-avg")
+		String franTestingJwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+		String lewisTestingJwt = testHelper.getUserTestingJwt("lewis.hamilton44@gmail.com.gb");
+
+		PublicationResumeResponseDTO publicationResumeResponseDTO = createPublication(businessTestingJwt);
+
+		mockMvc
+			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/like")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + lewisTestingJwt))
+			.andExpect(status().isNoContent());
+
+		mockMvc
+			.perform(post("/publications/" + publicationResumeResponseDTO.id() + "/unlike")
+				.accept(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer " + franTestingJwt))
+			.andExpect(status().isBadRequest());
+
+		String body = mockMvc
+			.perform(get("/publications/" + publicationResumeResponseDTO.id() + "/likes")
+				.accept(MediaType.APPLICATION_JSON)
 				.header("Authorization", "Bearer " + businessTestingJwt))
-			.andDo(result -> {
-				System.out.println("Respuesta del promedio:");
-				System.out.println("Status: " + result.getResponse().getStatus());
-				System.out.println("Contenido: " + result.getResponse().getContentAsString());
-			})
 			.andExpect(status().isOk())
-			.andReturn();
-		
-		String responseContent = avgResult.getResponse().getContentAsString();
-		double actualAverage = Double.parseDouble(responseContent);
-		assertEquals(4.5, actualAverage, 0.01, "El promedio calculado no es correcto");
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		List<AccountResumeResponseDTO> likes = objectMapper.readValue(body, LikesListDTO.class).likes();
+
+		Assertions.assertEquals(1, likes.size());
+		Assertions.assertEquals("lewis.hamilton44@gmail.com.gb", likes.getFirst().email());
 	}
 
 }
