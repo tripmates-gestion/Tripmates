@@ -56,4 +56,11 @@ public interface AccountRepositoryCustom {
 
 	Plan updateExistingPlan(Plan updatedPlan);
 
+	/**
+	 * Returns the top N business accounts with the most total likes.
+	 * @param n number of accounts to return.
+	 * @return list of {@link Account}.
+	 */
+	List<Account> findTopNBusinessAccountsByTotalLikes(int n);
+
 }
