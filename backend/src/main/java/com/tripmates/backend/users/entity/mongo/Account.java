@@ -5,15 +5,14 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.tripmates.backend.common.types.Location;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -66,8 +65,7 @@ public class Account implements UserDetails {
 	private String description;
 
 	/** Account's business location. Only allowed in BUSINESS account. */
-	@Field(targetType = FieldType.STRING)
-	private String location;
+	private Location location;
 
 	/** User's phone number. Only allowed in BUSINESS account. */
 	@Field(targetType = FieldType.STRING)
@@ -145,14 +143,34 @@ public class Account implements UserDetails {
 	private List<String> followers = new ArrayList<>();
 
 	/**
-	 * Account's total likes.
+	 * Account's total likes (for business benchmark).
 	 */
 	private Integer numberTotalLikes = 0;
 
 	/**
-	 * Account's historic max total likes.
+	 * Account's historic max total likes (for business benchmark).
 	 */
 	private Integer historicMaxNumberTotalLikes = 0;
+
+	/**
+	 * Account's total reviews (for business benchmark).
+	 */
+	private Integer numberTotalReviews = 0;
+
+	/**
+	 * Account's historic max total reviews (for business benchmark).
+	 */
+	private Integer historicMaxNumberTotalReviews = 0;
+
+	/**
+	 * Account's historic business accounts search.
+	 */
+	private List<Viewed> viewedBusinessList = new ArrayList<>(20);
+
+	/**
+	 * Account's social media links.
+	 */
+	private Map<SocialMedia, String> socialMediaURLs = new HashMap<>();
 
 	@Override
 	public String getPassword() {

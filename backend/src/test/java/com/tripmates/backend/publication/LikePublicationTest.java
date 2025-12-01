@@ -82,7 +82,7 @@ public class LikePublicationTest {
 		String jwt = testHelper.getUserTestingJwt("liker@example.com");
 
 		mockMvc.perform(post("/publications/non-existent-id/like").header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isNotFound());
+			.andExpect(status().isNotFound());
 	}
 
 	@Test
@@ -91,31 +91,35 @@ public class LikePublicationTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
 		String requestJson = """
-				{
-				  "title": "Beautiful place with amazing views and full amenities.",
-				  "description": "Beautiful place with amazing views and full amenities.",
-				  "phoneNumber": "+541112345678",
-				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
-				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-				  "attentionSchedule": {
-				      "openingTime": "09:00",
-				      "closingTime": "18:00"
-				  },
-				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-				  "tags": ["hostel", "mountain", "nature"]
-				}
-				""";
+						{
+						  "title": "Beautiful place with amazing views and full amenities.",
+						  "description": "Beautiful place with amazing views and full amenities.",
+						  "phoneNumber": "+541112345678",
+						  "email": "contact@hostel.com",
+						  "location": {
+				  "address": "San Carlos de Bariloche, Argentina",
+				  "latitude": -41.1335,
+				  "longitude": -71.3103
+				},
+						  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+						  "attentionSchedule": {
+						      "openingTime": "09:00",
+						      "closingTime": "18:00"
+						  },
+						  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+						  "tags": ["hostel", "mountain", "nature"]
+						}
+						""";
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
@@ -123,8 +127,8 @@ public class LikePublicationTest {
 		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
 
 		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
-				.andExpect(status().isNoContent())
-				.andDo(print());
+			.andExpect(status().isNoContent())
+			.andDo(print());
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(1, updatedOwner.getNumberTotalLikes(), "Owner's total likes should increase by 1");
@@ -142,31 +146,35 @@ public class LikePublicationTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
 		String publication1CreationRequestJson = """
-				{
-				  "title": "Beautiful place with amazing views and full amenities.",
-				  "description": "Beautiful place with amazing views and full amenities.",
-				  "phoneNumber": "+541112345678",
-				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
-				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-				  "attentionSchedule": {
-				      "openingTime": "09:00",
-				      "closingTime": "18:00"
-				  },
-				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-				  "tags": ["hostel", "mountain", "nature"]
-				}
-				""";
+						{
+						  "title": "Beautiful place with amazing views and full amenities.",
+						  "description": "Beautiful place with amazing views and full amenities.",
+						  "phoneNumber": "+541112345678",
+						  "email": "contact@hostel.com",
+						  "location": {
+				  "address": "San Carlos de Bariloche, Argentina",
+				  "latitude": -41.1335,
+				  "longitude": -71.3103
+				},
+						  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+						  "attentionSchedule": {
+						      "openingTime": "09:00",
+						      "closingTime": "18:00"
+						  },
+						  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+						  "tags": ["hostel", "mountain", "nature"]
+						}
+						""";
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publication1CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		String publication2CreationRequestJson = """
 				{
@@ -182,8 +190,8 @@ public class LikePublicationTest {
 		MockMultipartFile dataPart2 = new MockMultipartFile("data", "", "application/json",
 				publication2CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		mockMvc.perform(multipart("/publications/business").file(dataPart2).header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print());
+			.andExpect(status().isOk())
+			.andDo(print());
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(0, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 0");
@@ -195,43 +203,46 @@ public class LikePublicationTest {
 		String jwt = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
 		String publication1CreationRequestJson = """
-				{
-				  "title": "Beautiful place with amazing views and full amenities.",
-				  "description": "Beautiful place with amazing views and full amenities.",
-				  "phoneNumber": "+541112345678",
-				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
-				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-				  "attentionSchedule": {
-				      "openingTime": "09:00",
-				      "closingTime": "18:00"
-				  },
-				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-				  "tags": ["hostel", "mountain", "nature"]
-				}
-				""";
+						{
+						  "title": "Beautiful place with amazing views and full amenities.",
+						  "description": "Beautiful place with amazing views and full amenities.",
+						  "phoneNumber": "+541112345678",
+						  "email": "contact@hostel.com",
+						  "location": {
+				  "address": "San Carlos de Bariloche, Argentina",
+				  "latitude": -41.1335,
+				  "longitude": -71.3103
+				},
+						  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+						  "attentionSchedule": {
+						      "openingTime": "09:00",
+						      "closingTime": "18:00"
+						  },
+						  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+						  "tags": ["hostel", "mountain", "nature"]
+						}
+						""";
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publication1CreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 
 		String jwtLiker = testHelper.getUserTestingJwt("liker@example.com");
 		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
-				.andExpect(status().isNoContent())
-				.andDo(print());
+			.andExpect(status().isNoContent())
+			.andDo(print());
 		mockMvc
-				.perform(post("/publications/" + publicationId + "/unlike").header("Authorization",
-						"Bearer " + jwtLiker))
-				.andExpect(status().isNoContent())
-				.andDo(print());
+			.perform(post("/publications/" + publicationId + "/unlike").header("Authorization", "Bearer " + jwtLiker))
+			.andExpect(status().isNoContent())
+			.andDo(print());
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 		assertEquals(0, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 0");
@@ -248,43 +259,47 @@ public class LikePublicationTest {
 		String jwtBusiness = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
 		String publicationCreationRequestJson = """
-				{
-				  "title": "Beautiful place with amazing views and full amenities.",
-				  "description": "Beautiful place with amazing views and full amenities.",
-				  "phoneNumber": "+541112345678",
-				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
-				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-				  "attentionSchedule": {
-				      "openingTime": "09:00",
-				      "closingTime": "18:00"
-				  },
-				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-				  "tags": ["hostel", "mountain", "nature"]
-				}
-				""";
+						{
+						  "title": "Beautiful place with amazing views and full amenities.",
+						  "description": "Beautiful place with amazing views and full amenities.",
+						  "phoneNumber": "+541112345678",
+						  "email": "contact@hostel.com",
+						  "location": {
+				  "address": "San Carlos de Bariloche, Argentina",
+				  "latitude": -41.1335,
+				  "longitude": -71.3103
+				},
+						  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+						  "attentionSchedule": {
+						      "openingTime": "09:00",
+						      "closingTime": "18:00"
+						  },
+						  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+						  "tags": ["hostel", "mountain", "nature"]
+						}
+						""";
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publicationCreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(
-						multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwtBusiness))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.perform(
+					multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwtBusiness))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 
 		List<String> jwtLikers = testHelper.getNUserTestingJwt(9);
-		for(String jwtLiker:jwtLikers)
-		{
-			mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
+		for (String jwtLiker : jwtLikers) {
+			mockMvc
+				.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
 				.andExpect(status().isNoContent())
 				.andDo(print());
-			}
+		}
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 
@@ -295,61 +310,66 @@ public class LikePublicationTest {
 		BenchmarkProgress updatedBenchmark = benchmarks.get(0);
 		assertEquals(BenchmarkId.firstLike, updatedBenchmark.getBenchmarkId(), "Owner's benchmark should be firstLike");
 	}
-  @Test
+
+	@Test
 	void givenBusinessPublication_WhenAdd10likes_ThenTheGlobalNumberTotalLikesAndMaxNumberTotalLikesAre10Having2Benchmarks()
 			throws Exception {
 		String jwtBusiness = testHelper.getBusinessTestingJwt("test@example.com", BusinessType.HOTEL);
 
 		String publicationCreationRequestJson = """
-				{
-				  "title": "Beautiful place with amazing views and full amenities.",
-				  "description": "Beautiful place with amazing views and full amenities.",
-				  "phoneNumber": "+541112345678",
-				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
-				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-				  "attentionSchedule": {
-				      "openingTime": "09:00",
-				      "closingTime": "18:00"
-				  },
-				  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
-				  "tags": ["hostel", "mountain", "nature"]
-				}
-				""";
+						{
+						  "title": "Beautiful place with amazing views and full amenities.",
+						  "description": "Beautiful place with amazing views and full amenities.",
+						  "phoneNumber": "+541112345678",
+						  "email": "contact@hostel.com",
+						  "location": {
+				  "address": "San Carlos de Bariloche, Argentina",
+				  "latitude": -41.1335,
+				  "longitude": -71.3103
+				},
+						  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+						  "attentionSchedule": {
+						      "openingTime": "09:00",
+						      "closingTime": "18:00"
+						  },
+						  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
+						  "tags": ["hostel", "mountain", "nature"]
+						}
+						""";
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				publicationCreationRequestJson.getBytes(StandardCharsets.UTF_8));
 		String response = mockMvc
-				.perform(
-						multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwtBusiness))
-				.andExpect(status().isOk())
-				.andDo(print())
-				.andReturn()
-				.getResponse()
-				.getContentAsString();
+			.perform(
+					multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwtBusiness))
+			.andExpect(status().isOk())
+			.andDo(print())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		String ownerId = new ObjectMapper().readTree(response).get("ownerId").asText();
 		String publicationId = new ObjectMapper().readTree(response).get("id").asText();
 
 		List<String> jwtLikers = testHelper.getNUserTestingJwt(10);
-		for(String jwtLiker:jwtLikers)
-		{
-			mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
+		for (String jwtLiker : jwtLikers) {
+			mockMvc
+				.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwtLiker))
 				.andExpect(status().isNoContent())
 				.andDo(print());
-			}
+		}
 
 		Account updatedOwner = accountRepository.findById(ownerId).orElseThrow();
 
 		assertEquals(10, updatedOwner.getNumberTotalLikes(), "Owner's total likes should be 10");
-		assertEquals(10, updatedOwner.getHistoricMaxNumberTotalLikes(), "Owner's historic max total likes should be 10");
+		assertEquals(10, updatedOwner.getHistoricMaxNumberTotalLikes(),
+				"Owner's historic max total likes should be 10");
 		List<BenchmarkProgress> benchmarks = benchmarkRepository.findByUserId(ownerId);
 		assertEquals(2, benchmarks.size(), "Should have 2 benchmarks");
 		BenchmarkProgress updatedBenchmark = benchmarks.get(0);
 		assertEquals(BenchmarkId.firstLike, updatedBenchmark.getBenchmarkId(), "Owner's benchmark should be firstLike");
-    BenchmarkProgress updatedBenchmark2 = benchmarks.get(1);
+		BenchmarkProgress updatedBenchmark2 = benchmarks.get(1);
 		assertEquals(BenchmarkId.tenLikes, updatedBenchmark2.getBenchmarkId(), "Owner's benchmark should be tenLikes");
 	}
 
-  
 }

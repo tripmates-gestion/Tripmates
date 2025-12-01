@@ -6,6 +6,8 @@ import { PriceBadge, OpeningDaysRow } from "../../businessPublicProfile/Utils";
 import { formatHours } from '../../../../pages/utils/Utils';
 import { BUSINESS_TYPES } from '../../../../constants/Rol';
 import type { BusinessUser, BusinessCommon, RestaurantExtras } from '../../../../types/PrivateUserProfiles';
+import type { SocialMediaLinks } from '../../../../services/socialMedia';
+import ProfileSocialMediaLinks from '../../ProfileSocialMediaLinks';
 
 function isRestaurant(
     b: BusinessUser
@@ -26,9 +28,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 interface BusinessPresentationTabProps {
     business: BusinessUser;
+    socialMedia?: SocialMediaLinks | null;
 }
 
-export default function BusinessPresentationTab({ business }: BusinessPresentationTabProps) {
+export default function BusinessPresentationTab({ business, socialMedia }: BusinessPresentationTabProps) {
     return (
         <Stack spacing={3}>
             <Box sx={{ p: 2, maxWidth: 800, mx: 'auto', width: '100%', alignSelf: 'center' }}>
@@ -128,6 +131,8 @@ export default function BusinessPresentationTab({ business }: BusinessPresentati
                         <InfoRow label="Ubicación" value={business.location} icon="📍" />
                         <InfoRow label="Teléfono" value={business.phoneNumber} icon="📞" />
                         <InfoRow label="Correo de contacto" value={business.publicEmail} icon="✉️" />
+                        <ProfileSocialMediaLinks email={business.email} links={socialMedia} />
+
                     </Section>
                 </Grid>
             </Grid>

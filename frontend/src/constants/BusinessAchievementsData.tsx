@@ -4,6 +4,10 @@ import StarIcon from '@mui/icons-material/Star';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import ForumIcon from '@mui/icons-material/Forum';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
 
 export interface Achievement {
     id: string;
@@ -24,7 +28,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#CD7F32', // Bronze
     },
     {
-        id: '10Likes',
+        id: 'tenLikes',
         title: 'Ganando tracción',
         description: 'Acumulaste 10 likes en tus publicaciones.',
         target: 10,
@@ -32,7 +36,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#C0C0C0', // Silver
     },
     {
-        id: '50Likes',
+        id: 'fiftyLikes',
         title: 'Favorito local',
         description: 'Llegaste a los 50 likes. ¡A la gente le gusta lo que haces!',
         target: 50,
@@ -40,7 +44,7 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#FFD700', // Gold
     },
     {
-        id: '100Likes',
+        id: 'hundredLikes',
         title: 'Tendencia',
         description: '¡100 likes! Tu negocio está en boca de todos.',
         target: 100,
@@ -48,11 +52,43 @@ export const ACHIEVEMENTS_LIST: Achievement[] = [
         color: '#00BFFF', // Deep Sky Blue
     },
     {
-        id: '1000Likes',
+        id: 'thousandLikes',
         title: 'Leyenda',
         description: '1000 likes. Eres un referente en la comunidad.',
         target: 1000,
         icon: <WorkspacePremiumIcon fontSize="large" />,
         color: '#9932CC', // Dark Orchid
+    },
+    {
+        id: 'firstReview',
+        title: 'Primera Reseña',
+        description: '¡Tu primera reseña! Un cliente ha compartido su experiencia contigo.',
+        target: 1,
+        icon: <RateReviewIcon fontSize="large" />,
+        color: '#9932CC',
+    },
+    {
+        id: 'tenReviews',
+        title: 'Generando Conversación',
+        description: 'Ya tienes 10 reseñas. Tu negocio está dando de qué hablar.',
+        target: 10,
+        icon: <ForumIcon fontSize="large" />,
+        color: '#f5bbd9ff',
+    },
+    {
+        id: 'fiftyReviews',
+        title: 'Favorito Local',
+        description: '¡50 reseñas! Te estás convirtiendo en un referente de la comunidad.',
+        target: 50,
+        icon: <CampaignIcon fontSize="large" />,
+        color: '#FFD700', // Gold
+    },
+    {
+        id: 'hundredReviews',
+        title: 'En Llamas',
+        description: '¡100 reseñas! Tu negocio está on fire, ¡todos quieren opinar!',
+        target: 100,
+        icon: <WhatshotIcon fontSize="large" />,
+        color: '#FF5722',
     },
 ];

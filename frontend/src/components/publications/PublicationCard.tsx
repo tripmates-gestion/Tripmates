@@ -87,7 +87,6 @@ function initials(name?: string) {
 
 function getUserLiked(likes: Array<{id: string}>, userId?: string) {
   if (!userId) return false;
-  console.log(likes);
   return likes.some(l => l.id === userId);
 }
 
@@ -283,7 +282,11 @@ export default function PublicationCard({ publication, onView, onEdit, onDelete,
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mt={1.25}>
-          <Typography variant="caption" color="text.secondary">📍 {publication.location}</Typography>
+          <Typography variant="caption" color="text.secondary">
+          📍 {typeof publication.location === 'object' 
+            ? publication.location?.address 
+            : publication.location}
+          </Typography>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center" mt={1}>

@@ -13,13 +13,10 @@ import {
   Tab,
   Tabs,
   Typography,
-  Backdrop,
-  CircularProgress,
 } from '@mui/material';
-import Settings from '@mui/icons-material/Settings';
 import Edit from '@mui/icons-material/Edit';
 
-import EditProfileDialog from '../components/profile/userProfile/EditUserProfileDialog';
+import ProfileEditDialog from '../components/profile/ProfileEditDialog';
 import { useAuth } from '../hooks/useAuth';
 import { DEFAULT_STATS } from '../constants/DefaultStats';
 
@@ -28,7 +25,6 @@ import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
 import LikedPublicationsTab from '../components/profile/userProfile/LikedPublicationsTab';
 import { Stat } from '../components/profile/stats';
 
-import { updateUser } from '../services/userService';
 import type {
   CommonUser,
   CurrentUser,
@@ -36,6 +32,8 @@ import type {
 import { useConnectionsList } from '../hooks/useConnectionsList';
 import { ConnectionsListDialog } from '../components/social/ConnectionsListDialog';
 import { FollowButton } from '../components/social/FollowButton';
+import ProfileSocialMediaLinks from '../components/profile/ProfileSocialMediaLinks';
+import { getUserSocialMedia, type SocialMediaLinks } from '../services/socialMedia';
 
 const userRoleChipColor = 'info';
 
@@ -45,12 +43,34 @@ const DEFAULT_COVER_URL = 'https://image.shutterstock.com/image-vector/vector-gr
 export default function UserProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
   const [activeList, setActiveList] = React.useState<'followers' | 'followings' | null>(null);
+  const [socialLinks, setSocialLinks] = React.useState<SocialMediaLinks | null>(null);
 
   const { user, accessToken, refreshUser } = useAuth();
 
   const currentUser = user as CurrentUser | null;
+
+  React.useEffect(() => {
+    if (!currentUser?.email) return;
+    let mounted = true;
+    const fetchSocial = async () => {
+      try {
+        const data = await getUserSocialMedia(currentUser.email, accessToken);
+        if (mounted) {
+          setSocialLinks(data ?? {});
+        }
+      } catch {
+        if (mounted) {
+          setSocialLinks({});
+        }
+      }
+    };
+
+    void fetchSocial();
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, currentUser?.email]);
 
   const followersList = useConnectionsList('followers');
   const followingsList = useConnectionsList('followings');
@@ -75,28 +95,14 @@ export default function UserProfile() {
   ];
   const currentTabKey = tabs[tab]?.key;
 
-  // PATCH con CommonUser + avatar File
-  const handleSaveUserData = async (
-    changes: Partial<CommonUser>,
-    avatarFile: File | null
-  ) => {
-    if (!accessToken) {
-      console.error('No auth token available; skipping remote update');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      await updateUser(changes, avatarFile, accessToken);
-      await refreshUser();
-      console.log('Profile updated successfully');
-      setEditOpen(false); // cerramos el modal DESPUÉS de guardar
-    } catch (error) {
-      console.error('Error updating profile:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleProfileUpdated = React.useCallback(
+    (_profile: CommonUser, social: SocialMediaLinks) => {
+      setSocialLinks(social);
+      void refreshUser();
+      setEditOpen(false);
+    },
+    [refreshUser]
+  );
 
   const stats = React.useMemo(
     () => ({
@@ -136,11 +142,6 @@ export default function UserProfile() {
 
   return (
     <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-      {/* Overlay de carga, igual que en negocio */}
-      <Backdrop open={saving} sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }}>
-        <CircularProgress />
-      </Backdrop>
-
       {/* Banner */}
       <Box
         sx={{
@@ -207,13 +208,19 @@ export default function UserProfile() {
                     {currentUser.description}
                   </Typography>
                 )}
+
+                {currentUser?.email && (
+                  <Box sx={{ mt: 1 }}>
+                    <ProfileSocialMediaLinks email={currentUser.email} links={socialLinks} />
+                  </Box>
+                )}
               </Box>
 
               <ButtonGroup variant="outlined" size="small">
                 <Button
                   startIcon={<Edit />}
                   onClick={() => setEditOpen(true)}
-                  disabled={!currentUser || saving}
+                  disabled={!currentUser}
                 >
                   Editar perfil
                 </Button>
@@ -260,7 +267,7 @@ export default function UserProfile() {
           <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             {currentTabKey === 'planes' && <UserPlansTab />}
             {currentTabKey === 'experiencias' && <UserReviewsTab />}
-            {/* TODO: AGREGAR TAB DE LIKED */}
+            {/* TODO: AGREGAR TAB DE LIKED => HECHO AL FINAL */}
             {currentTabKey === 'liked' && currentUser?.id && accessToken && (
               <LikedPublicationsTab userId={currentUser.id} accessToken={accessToken} />
             )}
@@ -271,12 +278,13 @@ export default function UserProfile() {
       </Box>
 
       {currentUser && (
-        <EditProfileDialog
+        <ProfileEditDialog
           open={editOpen}
-          onClose={() => !saving && setEditOpen(false)}
-          user={currentUser}
-          onSave={handleSaveUserData}
-          saving={saving}
+          onClose={() => setEditOpen(false)}
+          profileType="traveler"
+          initialProfileData={currentUser}
+          initialSocialMedia={socialLinks ?? {}}
+          onProfileUpdated={handleProfileUpdated}
         />
       )}
 

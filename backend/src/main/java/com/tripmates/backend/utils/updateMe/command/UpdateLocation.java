@@ -4,12 +4,13 @@ import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.users.entity.mongo.Account;
+import com.tripmates.backend.common.types.Location;
 
 public class UpdateLocation implements AccountUpdateCommand {
 
-	private final String location;
+	private final Location location;
 
-	public UpdateLocation(String location) {
+	public UpdateLocation(Location location) {
 		this.location = location;
 	}
 

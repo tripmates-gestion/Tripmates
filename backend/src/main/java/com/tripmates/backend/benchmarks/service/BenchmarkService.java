@@ -31,16 +31,16 @@ public class BenchmarkService {
 	private String checkExistentBussinessAccountByEmail(String authUserEmail) {
 		Account authUser = accountRepository.findByEmail(authUserEmail)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    if (authUser.getRole() != Role.BUSINESS)
-      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+		if (authUser.getRole() != Role.BUSINESS)
+			throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
 		return authUser.getId();
 	}
 
-  private String checkExistentBussinessAccountById(String userId) {
+	private String checkExistentBussinessAccountById(String userId) {
 		Account authUser = accountRepository.findById(userId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
-    if (authUser.getRole() != Role.BUSINESS)
-      throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
+		if (authUser.getRole() != Role.BUSINESS)
+			throw new UnauthorizedException(ValidationErrorMessage.UNAUTHORIZED);
 		return authUser.getId();
 	}
 
@@ -49,7 +49,6 @@ public class BenchmarkService {
 		List<BenchmarkItemDTO> progress = getBenchmarks(authUserId);
 		return progress;
 	}
-
 
 	public List<BenchmarkItemDTO> getBenchmarks(String userId) {
 		List<BenchmarkItemDTO> progress = benchmarkRepository.findByUserId(userId)
@@ -60,39 +59,37 @@ public class BenchmarkService {
 		return progress;
 	}
 
-  public List<BenchmarkItemDTO> updateBenchmarkVisibility(List<BenchmarkItemDTO> updates, String authUserEmail) {
-    String authUserId = checkExistentBussinessAccountByEmail(authUserEmail);
-    Boolean benchmarkNotFound=false;
-    Boolean benchmarkCannotBeUpdated=false;
+	public List<BenchmarkItemDTO> updateBenchmarkVisibility(List<BenchmarkItemDTO> updates, String authUserEmail) {
+		String authUserId = checkExistentBussinessAccountByEmail(authUserEmail);
+		Boolean benchmarkNotFound = false;
+		Boolean benchmarkCannotBeUpdated = false;
 
-    for (BenchmarkItemDTO update : updates) {
-      if (benchmarkRepository.findByUserIdAndBenchmarkId(authUserId, update.id()).isEmpty()){
-        benchmarkNotFound=true;
-        continue;
-      }
-      if (benchmarkRepository.updateVisibility(authUserId, update.id(), update.visible()) == 0)
-        benchmarkCannotBeUpdated=true;
-    }
+		for (BenchmarkItemDTO update : updates) {
+			if (benchmarkRepository.findByUserIdAndBenchmarkId(authUserId, update.id()).isEmpty()) {
+				benchmarkNotFound = true;
+				continue;
+			}
+			if (benchmarkRepository.updateVisibility(authUserId, update.id(), update.visible()) == 0)
+				benchmarkCannotBeUpdated = true;
+		}
 
-    if (benchmarkNotFound)
-      throw new NotFoundException(ValidationErrorMessage.BENCHMARK_NOT_FOUND);
-    if (benchmarkCannotBeUpdated)
-      throw new NotFoundException(ValidationErrorMessage.BENCHMARK_CANNOT_BE_UPDATED);
+		if (benchmarkNotFound)
+			throw new NotFoundException(ValidationErrorMessage.BENCHMARK_NOT_FOUND);
+		if (benchmarkCannotBeUpdated)
+			throw new NotFoundException(ValidationErrorMessage.BENCHMARK_CANNOT_BE_UPDATED);
 
-    return updates;
-  }
+		return updates;
+	}
 
-  public List<BenchmarkItemDTO> getPublicBenchmarks(String userId) {
-    checkExistentBussinessAccountById(userId);
-    List<BenchmarkItemDTO> progress = benchmarkRepository.findByUserId(userId)
-      .stream()
-      .map(progressItem -> BenchmarkItemDTO.from(progressItem))
-      .filter(progressItem -> progressItem.visible())
-      .collect(Collectors.toList());
+	public List<BenchmarkItemDTO> getPublicBenchmarks(String userId) {
+		checkExistentBussinessAccountById(userId);
+		List<BenchmarkItemDTO> progress = benchmarkRepository.findByUserId(userId)
+			.stream()
+			.map(progressItem -> BenchmarkItemDTO.from(progressItem))
+			.filter(progressItem -> progressItem.visible())
+			.collect(Collectors.toList());
 
-    return progress;
-  }
-
-
+		return progress;
+	}
 
 }

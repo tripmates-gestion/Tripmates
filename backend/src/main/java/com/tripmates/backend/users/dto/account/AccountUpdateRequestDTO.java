@@ -18,7 +18,7 @@ import java.util.AbstractMap;
 @Schema(description = "User update request DTO")
 public record AccountUpdateRequestDTO(@Schema(description = "Account's name") String name,
 		@Schema(description = "Account's description or bio") String description,
-		@Schema(description = "Account's location") String location,
+		@Schema(description = "Account's location") Location location,
 		@Schema(description = "Account's phone number") String phoneNumber,
 		@Schema(description = "Account's public email") @Email(
 				message = ValidationErrorMessage.INVALID_EMAIL) String publicEmail,

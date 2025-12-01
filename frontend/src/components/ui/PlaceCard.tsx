@@ -49,7 +49,9 @@ export default function PlaceCard(props: Props) {
   const title = isPlace ? props.place!.name : props.post!.title;
   const subtitle = isPlace
     ? `${props.place!.city}, ${props.place!.country}`
-    : props.post!.location;
+    : typeof props.post!.location === 'string'
+    ? props.post!.location
+    : '';
 
   const chipLabel = isPlace ? props.place!.priceLabel : props.post!.type;
   const image = isPlace ? props.place!.photoUrl : (props.post!.photos[0] ?? '');
@@ -134,7 +136,7 @@ export default function PlaceCard(props: Props) {
                 <Row icon={<CallRoundedIcon fontSize="small" />} label="Contacto" value={contact} />
               )}
               {location && (
-                <Row icon={<RoomRoundedIcon fontSize="small" />} label="Ubicación" value={location} />
+                <Row icon={<RoomRoundedIcon fontSize="small" />} label="Ubicación" value={typeof location === 'string' ? location : location?.address ?? ''} />
               )}
 
               {/* Fecha de creación (si querés mostrarla) */}

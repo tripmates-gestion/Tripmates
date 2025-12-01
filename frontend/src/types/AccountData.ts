@@ -13,7 +13,11 @@ export type BusinessPubAccountDataDTO = {
     email: string;
     role: AccountType;
     description: string;
-    location: string;
+    location: {
+      address: string;
+      latitude: number;
+      longitude: number;
+    };
     phoneNumber: string;
     publicEmail: string;
     profileImageUrls: string[];

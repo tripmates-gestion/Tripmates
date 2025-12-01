@@ -1,7 +1,9 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { IconButton, Tooltip } from "@mui/material";
+import { useSnackbar } from "notistack";
 
 export function ShareProfileButton({ shareUrl }: { shareUrl: string }) {
+  const { enqueueSnackbar } = useSnackbar();
 
   return (  
 

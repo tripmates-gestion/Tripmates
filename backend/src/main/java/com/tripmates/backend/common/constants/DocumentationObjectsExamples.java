@@ -2,63 +2,47 @@ package com.tripmates.backend.common.constants;
 
 public class DocumentationObjectsExamples {
 
-	static public final String BUSINESS_PUBLICATION_EXAMPLE = """
-			Creates a new business publication with the provided data and optional images.
-
-			### Request Structure
-			- `data`: (required) JSON with the publication data.
-			- `files`: (optional) Image files for the publication (JPG, PNG, etc.).
-
-			### Required Fields
-			- `title`: Publication title (cannot be empty)
-			- `description`: Business publication description (cannot be empty)
-
-			### Optional Fields
-			- `phoneNumber`: Business contact number
-			- `email`: Business contact email (must be valid email format)
-			- `location`: Business physical location
-			- `openingDays`: List of business opening days (e.g., ["MONDAY", "TUESDAY"])
-			- `attentionSchedule`: Object containing `openingTime` and `closingTime` in HH:MM format
-			- `exceptionalClosingDays`: List of dates when business is closed (YYYY-MM-DD format)
-			- `tags`: List of tags to categorize the business
-
-			### Example Request
-			```json
+	/**
+	 * Example JSON for business publication creation
+	 */
+	public static final String BUSINESS_PUBLICATION_EXAMPLE = """
 			{
 			  "title": "Mountain lodge",
 			  "description": "Beautiful place with amazing views and full amenities.",
 			  "phoneNumber": "+541112345678",
 			  "email": "contact@hostel.com",
-			  "location": "San Carlos de Bariloche, Argentina",
+			  "address": "Ruta 234, San Carlos de Bariloche",
+			  "latitude": -41.1335,
+			  "longitude": -71.3103,
 			  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
-			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
+			  "attentionSchedule": {
+			    "openingTime": "09:00",
+			    "closingTime": "18:00"
+			  },
 			  "exceptionalClosingDays": ["2025-12-25", "2025-01-01"],
 			  "tags": ["hostel", "mountain", "nature"]
-			}
-			```""";
+			}""";
 
-	static public final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = """
-			Updates an existing publication with JSON data and optional images.
-
-			Multipart request structure:
-			- `data`: (required) JSON with the fields to update. You may include `deletePhotoIndexes` to remove specific photos by 0-based indexes.
-			- `files`: (optional) Images for the publication (JPG, PNG, etc.).
-
-			Example JSON for the `data` part:
-			```json
+	/**
+	 * Example JSON for business publication update
+	 */
+	public static final String BUSINESS_PUBLICATION_UPDATE_EXAMPLE = """
 			{
 			  "title": "New title",
 			  "description": "Updated description",
 			  "phoneNumber": "+541112345678",
 			  "email": "contact@hostel.com",
-			  "location": "123 Address, City",
+			  "address": "Ruta 234, San Carlos de Bariloche",
+			  "latitude": -41.1335,
+			  "longitude": -71.3103,
 			  "openingDays": ["MONDAY", "TUESDAY"],
-			  "attentionSchedule": { "openingTime": "09:00", "closingTime": "18:00" },
+			  "attentionSchedule": {
+			    "openingTime": "09:00",
+			    "closingTime": "18:00"
+			  },
 			  "exceptionalClosingDays": ["2025-12-25"],
 			  "deletePhotoIndexes": [0, 2]
-			}
-			```
-			""";
+			}""";
 
 	static public final String BUSINESS_PUBLICATION_SEARCH_EXAMPLE = """
 			Filters are received as query params via model attributes.
@@ -77,6 +61,7 @@ public class DocumentationObjectsExamples {
 			- `data`: (required) JSON with the review details.
 			- `files`: (optional) Image files to include with the review (JPG, PNG, etc.).
 			- `publicationId`: (path variable) ID of the publication being reviewed.
+			- `mentions`: (optional) User email mentions.
 
 			### Required Fields
 			- `title`: Title of the review (non-blank string)
@@ -87,8 +72,9 @@ public class DocumentationObjectsExamples {
 			```json
 			{
 			  "title": "Amazing experience!",
-			  "content": "Had a wonderful time at this place. The staff was very friendly and the food was delicious.",
-			  "rating": 4.5
+			  "content": "Had a wonderful time at this place with @elton.john@gmail.com. The staff was very friendly and the food was delicious.",
+			  "rating": 4.5,
+			  "mentions": ["elton.john@gmail.com"]
 			}
 			```
 
@@ -107,7 +93,7 @@ public class DocumentationObjectsExamples {
 			### Updatable Fields
 			- `name`: Business name
 			- `description`: Business description
-			- `restaurantType`: Type of restaurant (e.g., ITALIAN, MEXICAN, etc.)
+			- `restaurantType`: Type of restaurant (e.g., Italiano, Argentino, etc.)
 			- `location`: Business address
 			- `phoneNumber`: Contact number
 			- `publicEmail`: Public contact email
@@ -121,8 +107,12 @@ public class DocumentationObjectsExamples {
 			{
 			  "name": "Updated Restaurant Name",
 			  "description": "Updated description with new details about our services.",
-			  "restaurantType": "ITALIAN",
-			  "location": "456 New Street, City, Country",
+			  "restaurantType": "Italiano",
+			  "location": {
+					"address": "Ruta 234, San Carlos de Bariloche",
+					"latitude": -41.1335,
+					"longitude": -71.3103
+				},
 			  "phoneNumber": "+541119876543",
 			  "publicEmail": "new-email@restaurant.com",
 			  "averagePrice": "$$$",
@@ -213,6 +203,7 @@ public class DocumentationObjectsExamples {
 			}
 			```
 			""";
+
 	static public final String USER_PLAN_CREATION = """
 			Creates a new user plan. Some fields are optional, some are not (more to arrive soon).
 			### Request Structure
@@ -257,8 +248,8 @@ public class DocumentationObjectsExamples {
 			- `username`: Filters by user's username.
 			- `followers`: Filters by this minimum amount of followers.
 			- `following`: Filters by this minimum amount of followings.
-			- `location`: Filters by users that have made a review from a business publication that has
-			this specific location.
+			- `address`: Filters by users that have made a review from a business publication that has
+			this specific location address.
 
 			### Example Request
 			```json
@@ -266,7 +257,7 @@ public class DocumentationObjectsExamples {
 			    "username": "string",
 			    "followers": 0,
 			    "following": 0,
-			    "location": "string"
+			    "address": "string"
 			}
 			```
 
@@ -307,7 +298,11 @@ public class DocumentationObjectsExamples {
 			         {
 			              "username": "string",
 			              "businessType": "RESTAURANT",
-			              "location": "string",
+			              "location": {
+			                "address": "string",
+			                "latitude": 0,
+			                "longitude": 0
+			              },
 			              "averagePrice": "$",
 			              "restaurantType": "Cafe",
 			              "attentionSchedule": {
@@ -346,7 +341,11 @@ public class DocumentationObjectsExamples {
 			              "role": "BUSINESS",
 			              "description": "string",
 			              "businessType": "RESTAURANT",
-			              "location": "string",
+			              "location": {
+			                "address": "string",
+			                "latitude": 0,
+			                "longitude": 0
+			              },
 			              "phoneNumber": "string",
 			              "publicEmail": "string",
 			              "profileImageUrls": [

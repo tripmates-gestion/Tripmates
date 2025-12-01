@@ -24,7 +24,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -157,7 +160,7 @@ public class SearchAccountTest {
 		mcDonalds.setEmail("McDonalds@gmail.com.ar");
 		mcDonalds.setName("McDonald's");
 		mcDonalds.setPassword("123456789");
-		mcDonalds.setLocation("Buenos Aires, Martinez Unicenter");
+		mcDonalds.setLocation(new Location("Buenos Aires, Martinez Unicenter", 27.1234, 27.1234));
 		mcDonalds.setBusinessType(BusinessType.RESTAURANT);
 		mcDonalds.setRole(Role.BUSINESS);
 
@@ -165,7 +168,7 @@ public class SearchAccountTest {
 		burgerKing.setEmail("kansas@gmail.com.ar");
 		burgerKing.setName("Kansas");
 		burgerKing.setPassword("123456789");
-		burgerKing.setLocation("Buenos Aires, 3 De Febrero");
+		burgerKing.setLocation(new Location("Buenos Aires, 3 De Febrero", 27.1234, 27.1234));
 		burgerKing.setBusinessType(BusinessType.RESTAURANT);
 		burgerKing.setRole(Role.BUSINESS);
 
@@ -173,9 +176,11 @@ public class SearchAccountTest {
 
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", """
-						    {
-						      "location": "Buenos Aires, Martinez Unicenter"
-						    }
+						{
+						"location": {
+							"address": "Buenos Aires, Martinez Unicenter"
+						}
+						}
 						""", new ParameterizedTypeReference<>() {
 				});
 
@@ -194,7 +199,7 @@ public class SearchAccountTest {
 		wendys.setEmail("Wendys@gmail.com.us");
 		wendys.setName("Wendy's");
 		wendys.setPassword("123456789");
-		wendys.setLocation("England, London");
+		wendys.setLocation(new Location("England, London", 27.1234, 27.1234));
 		wendys.setBusinessType(BusinessType.RESTAURANT);
 		wendys.setRole(Role.BUSINESS);
 
@@ -202,7 +207,7 @@ public class SearchAccountTest {
 		hutch.setEmail("hutch@gmail.com.ar");
 		hutch.setName("Hutch");
 		hutch.setPassword("123456789");
-		hutch.setLocation("Ciudad Jardin, Lomas del Palomar");
+		hutch.setLocation(new Location("Ciudad Jardin, Lomas del Palomar", 27.1234, 27.1234));
 		hutch.setBusinessType(BusinessType.RESTAURANT);
 		hutch.setRole(Role.BUSINESS);
 
@@ -231,7 +236,8 @@ public class SearchAccountTest {
 		sheraton.setEmail("shearton@gmail.com");
 		sheraton.setName("Sheraton");
 		sheraton.setPassword("123456789");
-		sheraton.setLocation("Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires");
+		sheraton.setLocation(
+				new Location("Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires", 27.1234, 27.1234));
 		sheraton.setBusinessType(BusinessType.HOTEL);
 		sheraton.setAveragePrice(AveragePrice.$$$);
 		sheraton.setRole(Role.BUSINESS);
@@ -240,7 +246,7 @@ public class SearchAccountTest {
 		graff.setEmail("graff@gmail.com.ar");
 		graff.setName("Graff");
 		graff.setPassword("123456789");
-		graff.setLocation("Ciudad Jardin, Lomas del Palomar");
+		graff.setLocation(new Location("Ciudad Jardin, Lomas del Palomar", 27.1234, 27.1234));
 		graff.setBusinessType(BusinessType.RESTAURANT);
 		graff.setAveragePrice(AveragePrice.$);
 		graff.setRole(Role.BUSINESS);
@@ -270,7 +276,7 @@ public class SearchAccountTest {
 		ypfAtalaya.setEmail("ypfAtalaya@gmail.com.ar");
 		ypfAtalaya.setName("YPF Atalaya");
 		ypfAtalaya.setPassword("123456");
-		ypfAtalaya.setLocation("Ruta 9 Kilometro 84,5, Zárate Argentina");
+		ypfAtalaya.setLocation(new Location("Ruta 9 Kilometro 84,5, Zárate Argentina", 27.1234, 27.1234));
 		ypfAtalaya.setBusinessType(BusinessType.RESTAURANT);
 		ypfAtalaya.setRole(Role.BUSINESS);
 		ypfAtalaya.setAttentionSchedule(new AttentionSchedule(LocalTime.of(8, 0), LocalTime.of(18, 0)));
@@ -302,7 +308,7 @@ public class SearchAccountTest {
 		hiltonPilar.setEmail("hiltonPilar@gmail.com");
 		hiltonPilar.setName("Hilton Pilar");
 		hiltonPilar.setPassword("123456");
-		hiltonPilar.setLocation("Ruta 8, Km 60.5, Pilar B1633 Argentina");
+		hiltonPilar.setLocation(new Location("Ruta 8, Km 60.5, Pilar B1633 Argentina", 27.1234, 27.1234));
 		hiltonPilar.setBusinessType(BusinessType.HOTEL);
 		hiltonPilar.setRole(Role.BUSINESS);
 		hiltonPilar.setRoomPacks(List.of(new RoomPack(LocalDate.of(2025, 11, 1), LocalDate.of(2025, 11, 5), 2,
@@ -419,33 +425,40 @@ public class SearchAccountTest {
 		phillCollins.setName("Phill Collins");
 		phillCollins.setPassword("12345678");
 		phillCollins.setRole(Role.USER);
-		accountRepository.saveAll(List.of(eltonJohn, phillCollins));
 
+		eltonJohn = accountRepository.save(eltonJohn);
+		phillCollins = accountRepository.save(phillCollins);
 		Publication villaParanacito = new Publication();
 		villaParanacito.setTitle("Villa Paranacito");
 		villaParanacito.setDescription("Hostel en Villa Paranacito, a 100 metros del Río Uruguay");
-		villaParanacito.setLocation("Argentina, Entre Rios");
-		villaParanacito.setReviews(List.of(new Review(null, null, null, null, null, eltonJohn.getId())));
+		villaParanacito.setLocation(new Location("Argentina, Villa Paranacito", 27.1234, 27.1234));
+		villaParanacito.setReviews(List.of(new Review(null, null, null, null, null, eltonJohn.getId(), null)));
 
 		Publication sheratonPilar = new Publication();
 		sheratonPilar.setTitle("Sheraton Pilar Hotel & Convention Center");
-		sheratonPilar.setDescription(
-				"Desde Hilton Pilar pensamos constantemente en innovar y es por esa razón que ahora podrás ver todos nuestros espacios mediante este tour virtual. Facilitándote la elección del salón indicado para vos.");
-		sheratonPilar.setLocation("Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires");
-		sheratonPilar.setReviews(List.of(new Review(null, null, null, null, null, phillCollins.getId())));
+		sheratonPilar.setDescription("Desde Hilton Pilar pensamos constantemente en innovar...");
+		sheratonPilar.setLocation(new Location(
+				"Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires, Argentina", -34.4719, -58.9081));
+		sheratonPilar.setReviews(List.of(new Review(null, null, null, null, null, phillCollins.getId(), null)));
 
 		publicationRepository.saveAll(List.of(villaParanacito, sheratonPilar));
 
+		String searchAddress = "Panamericana";
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
-				baseUrl() + "/users/search/user?location=Entre Rios", new ParameterizedTypeReference<>() {
+				baseUrl() + "/users/search/user?address=" + URLEncoder.encode(searchAddress, StandardCharsets.UTF_8),
+				new ParameterizedTypeReference<>() {
 				});
 
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-
 		PageResponse<AccountResumeResponseDTO> page = response.getBody();
 		Assertions.assertNotNull(page);
 		Assertions.assertEquals(1, page.totalElements());
-		Assertions.assertEquals(List.of(AccountResumeResponseDTO.fromAccount(eltonJohn)), page.content());
+		List<String> expectedEmails = List.of(phillCollins.getEmail().toLowerCase());
+		List<String> actualEmails = page.content()
+			.stream()
+			.map(acc -> acc.email().toLowerCase())
+			.collect(Collectors.toList());
+		Assertions.assertEquals(expectedEmails, actualEmails);
 	}
 
 }

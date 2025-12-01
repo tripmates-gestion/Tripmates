@@ -20,22 +20,22 @@ public class BenchmarksController {
 	@Autowired
 	private BenchmarkService benchmarkService;
 
-	@GetMapping("/mine") // publicos y privados
+	@GetMapping("/mine")
 	public ResponseEntity<?> getBenchmarks(@AuthenticationPrincipal UserDetails userDetails) {
 
 		return ResponseEntity.ok().body(benchmarkService.getMyBenchmarks(userDetails.getUsername()));
 	}
 
-  @PatchMapping("/mine")
-  public ResponseEntity<?> updateBenchmarkVisibility( @AuthenticationPrincipal UserDetails userDetails, @RequestBody ChangeBenchmarkVisibilityRequestDTO updateRequest) {
-    return ResponseEntity.ok().body(benchmarkService.updateBenchmarkVisibility(updateRequest.updates(), userDetails.getUsername()));
-  }
-
+	@PatchMapping("/mine")
+	public ResponseEntity<?> updateBenchmarkVisibility(@AuthenticationPrincipal UserDetails userDetails,
+			@RequestBody ChangeBenchmarkVisibilityRequestDTO updateRequest) {
+		return ResponseEntity.ok()
+			.body(benchmarkService.updateBenchmarkVisibility(updateRequest.updates(), userDetails.getUsername()));
+	}
 
 	@GetMapping("/user/{userId}") // publicos public ResponseEntity<?>
-	public ResponseEntity<?>getAllBenchmarks(@PathVariable String userId) { 
-    return ResponseEntity.ok().body(benchmarkService.getPublicBenchmarks(userId));
+	public ResponseEntity<?> getAllBenchmarks(@PathVariable String userId) {
+		return ResponseEntity.ok().body(benchmarkService.getPublicBenchmarks(userId));
 	}
-	
 
 }

@@ -3,6 +3,7 @@ package com.tripmates.backend.publication;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tripmates.backend.TestHelper;
+import com.tripmates.backend.common.types.Location;
 import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.BusinessType;
@@ -61,7 +62,8 @@ public class PublicationTest {
 	private MockMvc mockMvc;
 
 	private TestHelper testHelper;
-  @MockBean
+
+	@MockBean
 	private EmailService emailService;
 
 	@BeforeAll
@@ -87,7 +89,11 @@ public class PublicationTest {
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+				   "address": "San Carlos de Bariloche, Argentina",
+				   "latitude": -41.1335,
+				   "longitude": -71.3103
+				 },
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -139,7 +145,7 @@ public class PublicationTest {
 		publication.setDescription("Beautiful place with amazing views and full amenities.");
 		publication.setPhoneNumber("+541112345678");
 		publication.setEmail("contact@hostel.com");
-		publication.setLocation("San Carlos de Bariloche, Argentina");
+		publication.setLocation(new Location("San Carlos de Bariloche, Argentina", -41.1335, -71.3103));
 		publication.setOpeningDays(List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
 				DayOfWeek.FRIDAY));
 		publication.setAttentionSchedule(new AttentionSchedule(LocalTime.of(9, 0), LocalTime.of(18, 0)));

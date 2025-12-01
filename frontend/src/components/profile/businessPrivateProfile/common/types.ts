@@ -1,12 +1,15 @@
 import type { RestaurantType } from '../../../../types/Restaurant';
 import type { HotelType, HotelService } from '../../../../types/Hotel';
+import type { LocationDTO } from '../../../../types/Location';
 
 export type TimeLike = string | { hour?: number; minute?: number | null } | null | undefined;
+
+export type Location = LocationDTO;
 
 export type BusinessCommonForm = {
   name: string;
   description: string;
-  location: string;
+  location: Location;
   phoneNumber: string;
   publicEmail: string;
   avatarUrl?: string;
