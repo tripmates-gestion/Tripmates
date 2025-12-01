@@ -11,6 +11,7 @@ import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.metrics.entity.mongo.ProfileView;
 import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
+import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
 import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
 
 import java.util.Date;
@@ -95,6 +96,10 @@ public class MetricsService {
 		Account account = validateBusinessAccount(email);
 		return publicationRepository.countLikesFromAccountId(account.getId());
 	}
+  
+  public List<PublicationResumeResponseDTO> getMostLikedsPublications(Integer n) {
+    return publicationRepository.findNMostLikedsPublications(n).stream().map(PublicationResumeResponseDTO::fromPublication).toList();
+  }
 
 	/**
 	 * Obtiene el promedio de calificaciones de todas las reseñas que tengan una calificación asignada.

@@ -631,7 +631,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 						default -> 1.0;
 					};
 
-					ReviewCreationRequestDTO dto = new ReviewCreationRequestDTO(title, content, rating);
+					ReviewCreationRequestDTO dto = new ReviewCreationRequestDTO(title, content, rating,
+							new ArrayList<>());
 					publicationService.createReview(dto, null, pubId, email);
 					System.out.println("[REVIEW] " + email + " reseñó publicación " + pubId + " (" + title + ")");
 				}

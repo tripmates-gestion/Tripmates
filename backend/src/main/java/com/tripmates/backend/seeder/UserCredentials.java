@@ -1,66 +1,22 @@
 package com.tripmates.backend.seeder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripmates.backend.common.types.BusinessType;
 import com.tripmates.backend.common.types.Role;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 public class UserCredentials {
-    private String name;
-    private String email;
-    private String password;
-    private Role role;
-    private BusinessType businessType;
 
-    // Getters y setters
-    public String getName() {
-        return name;
-    }
+	private String name;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private String email;
 
-    public String getEmail() {
-        return email;
-    }
+	private String password;
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	private Role role;
 
-    public String getPassword() {
-        return password;
-    }
+	private BusinessType businessType;
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public BusinessType getBusinessType() {
-        return businessType;
-    }
-
-    public void setBusinessType(BusinessType businessType) {
-        this.businessType = businessType;
-    }
-}
-
-class UserCredentialsWrapper {
-    private UserCredentials[] users;
-
-    public UserCredentials[] getUsers() {
-        return users;
-    }
-
-    public void setUsers(UserCredentials[] users) {
-        this.users = users;
-    }
 }

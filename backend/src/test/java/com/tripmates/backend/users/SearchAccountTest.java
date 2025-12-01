@@ -432,14 +432,14 @@ public class SearchAccountTest {
 		villaParanacito.setTitle("Villa Paranacito");
 		villaParanacito.setDescription("Hostel en Villa Paranacito, a 100 metros del Río Uruguay");
 		villaParanacito.setLocation(new Location("Argentina, Villa Paranacito", 27.1234, 27.1234));
-		villaParanacito.setReviews(List.of(new Review(null, null, null, null, null, eltonJohn.getId())));
+		villaParanacito.setReviews(List.of(new Review(null, null, null, null, null, eltonJohn.getId(), null)));
 
 		Publication sheratonPilar = new Publication();
 		sheratonPilar.setTitle("Sheraton Pilar Hotel & Convention Center");
 		sheratonPilar.setDescription("Desde Hilton Pilar pensamos constantemente en innovar...");
 		sheratonPilar.setLocation(new Location(
 				"Panamericana Km 49.5, B1629 Pilar, Provincia de Buenos Aires, Argentina", -34.4719, -58.9081));
-		sheratonPilar.setReviews(List.of(new Review(null, null, null, null, null, phillCollins.getId())));
+		sheratonPilar.setReviews(List.of(new Review(null, null, null, null, null, phillCollins.getId(), null)));
 
 		publicationRepository.saveAll(List.of(villaParanacito, sheratonPilar));
 

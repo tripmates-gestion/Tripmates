@@ -5,9 +5,8 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.Plan;
 import jakarta.validation.constraints.NotNull;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -162,6 +161,16 @@ public class Account implements UserDetails {
 	 * Account's historic max total reviews (for business benchmark).
 	 */
 	private Integer historicMaxNumberTotalReviews = 0;
+
+	/**
+	 * Account's historic business accounts search.
+	 */
+	private List<Viewed> viewedBusinessList = new ArrayList<>(20);
+
+	/**
+	 * Account's social media links.
+	 */
+	private Map<SocialMedia, String> socialMediaURLs = new HashMap<>();
 
 	@Override
 	public String getPassword() {
