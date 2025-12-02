@@ -19,6 +19,7 @@ import {
   CardContent,
   Tooltip,
   IconButton,
+  Rating,
 } from "@mui/material";
 import { ChevronRight, Map } from "@mui/icons-material";
 import BusinessPublicationsTab from "./BusinessPublicationsTab";
@@ -30,6 +31,7 @@ import { getPublicBusinessBenchmarks } from "../../../../services/benchmarks";
 import { useAuth } from "../../../../hooks/useAuth";
 import OpenStreetMapPicker from "../../../map/OpenStreetMapPicker";
 import ProfileSocialMediaLinks from "../../ProfileSocialMediaLinks";
+import { useBusinessRatingAverage } from "../../../../hooks/useBusinessRatingAverage";
 
 
 export interface BusinessPubProfileLayoutProps {
@@ -44,6 +46,7 @@ export default function BusinessPubProfileLayout({
   infoTabLabel = "Más información",
 }: BusinessPubProfileLayoutProps) {
   const { accessToken } = useAuth();
+  const { ratingAverage } = useBusinessRatingAverage(business.id);
   const [tab, setTab] = React.useState(0);
   const [visibleAchievements, setVisibleAchievements] = React.useState<string[]>([]);
   const [achievementPage, setAchievementPage] = React.useState(0);
@@ -113,6 +116,12 @@ export default function BusinessPubProfileLayout({
                   color="primary"
                   variant="outlined"
                 />
+              </Stack>
+              <Stack direction="row" alignItems="center" spacing={1} mt={0.5}>
+                <Rating value={ratingAverage ?? 0} precision={0.1} readOnly size="small" />
+                <Typography variant="body2" color="text.secondary">
+                  {ratingAverage !== null ? `${ratingAverage.toFixed(1)} / 5` : 'Sin calificaciones'}
+                </Typography>
               </Stack>
               {business.averagePrice && (
                 <Stack direction="row" alignItems="center" spacing={2}>
