@@ -85,8 +85,9 @@ export default function RegisterForm({
         e.preventDefault();
         onSubmit();
       }}
+      sx={{ width: '100%', mt: 1 }}
     >
-      <Stack spacing={2} sx={{ width: '100%', mt: 1 }}>
+      <Stack spacing={2}>
         {/* Tipo de cuenta */}
         <FormControl component="fieldset">
           <FormLabel component="legend">Tipo de cuenta</FormLabel>
@@ -236,8 +237,7 @@ export default function RegisterForm({
               >
                 Términos y condiciones
               </Typography>{' '}
-              de TripMates, un proyecto universitario y educativo de
-              demostración.
+              de TripMates.
             </Typography>
           }
         />
