@@ -81,4 +81,42 @@ public class AuthController {
 		return ResponseEntity.ok(authService.refresh(authRefreshRequestDTO));
 	}
 
+	@PostMapping("/request-password-reset")
+	@Operation(summary = "Request a password reset code")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Password reset code sent successfully",
+					content = { @Content() }),
+			@ApiResponse(responseCode = "400", description = "User not found", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> requestPasswordReset(
+			@RequestBody @Valid RequestPasswordResetDTO requestPasswordResetDTO) {
+		authService.requestPasswordReset(requestPasswordResetDTO);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/verify-reset-code")
+	@Operation(summary = "Verify a password reset code")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Code verified successfully", content = { @Content() }),
+			@ApiResponse(responseCode = "400", description = "Invalid or expired code", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> verifyResetCode(@RequestBody @Valid VerifyResetCodeDTO verifyResetCodeDTO) {
+		authService.verifyResetCode(verifyResetCodeDTO);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PostMapping("/reset-password")
+	@Operation(summary = "Reset password using verification code")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "204", description = "Password reset successfully", content = { @Content() }),
+			@ApiResponse(responseCode = "400", description = "Invalid or expired code",
+					content = { @Content(mediaType = "application/json",
+							schema = @Schema(implementation = ErrorDTO.class)) }),
+			@ApiResponse(responseCode = "404", description = "User not found", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
+	public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordDTO resetPasswordDTO) {
+		authService.resetPassword(resetPasswordDTO);
+		return ResponseEntity.noContent().build();
+	}
+
 }
