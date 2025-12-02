@@ -2,6 +2,10 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
+    REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
+    VERIFY_RESET_CODE: '/auth/verify-reset-code',
+    RESET_PASSWORD: '/auth/reset-password',
+
     USER_ME: '/users/me',
 
     MY_FOLLOWERS: '/users/me/followers',

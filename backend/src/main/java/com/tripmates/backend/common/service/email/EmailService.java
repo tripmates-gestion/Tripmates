@@ -178,4 +178,40 @@ public class EmailService {
 		}
 	}
 
+	public void sendHtmlPasswordResetEmail(String to, String subject, String resetCode) {
+		try {
+			ClassPathResource resource = new ClassPathResource("password_reset.html");
+			String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+			Map<String, String> substitutionMap = new HashMap<>();
+			substitutionMap.put("resetCode", resetCode);
+			substitutionMap.put("userEmail", to);
+
+			String htmlContent = htmlTemplate;
+			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+				String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+				htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+			}
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+			helper.setFrom(fromEmail);
+			helper.setTo(to);
+			helper.setSubject(subject);
+			helper.setText(htmlContent, true);
+
+			mailSender.send(message);
+
+		}
+		catch (IOException e) {
+			System.out.println(
+					"Error: No se pudo leer el archivo de plantilla HTML (password_reset.html). Asegúrate de que existe en src/main/resources. "
+							+ e.getMessage());
+		}
+		catch (MessagingException e) {
+			System.out.println("Error al enviar el email: " + e.getMessage());
+		}
+	}
+
 }
