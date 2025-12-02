@@ -133,34 +133,14 @@ export default function NewReviewPlace({
   // Sincronizar displayText cuando cambia text (convertir emails a nombres)
   React.useEffect(() => {
     let result = text;
-    let cursorOffset = 0; // Diferencia acumulada en la longitud
     
     suggestedUsers.forEach(user => {
       const emailRegex = new RegExp(`@${user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
-      const emailLength = user.email.length + 1; // +1 por el @
-      const nameLength = user.name.length + 1; // +1 por el @
-      
-      result = result.replace(emailRegex, (match, offset) => {
-        // Si el cursor está después de este reemplazo, ajustar el offset
-        if (offset < cursorPosition) {
-          cursorOffset += (nameLength - emailLength);
-        }
-        return `@${user.name}`;
-      });
+      result = result.replace(emailRegex, `@${user.name}`);
     });
     
     setDisplayText(result);
-    
-    // Actualizar la posición del cursor si cambió
-    if (cursorOffset !== 0 && textFieldRef.current) {
-      const newCursorPos = cursorPosition + cursorOffset;
-      setTimeout(() => {
-        if (textFieldRef.current) {
-          textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
-        }
-      }, 0);
-    }
-  }, [text, suggestedUsers, cursorPosition]);
+  }, [text, suggestedUsers]);
 
   React.useEffect(() => {
     if (user) {
@@ -267,7 +247,8 @@ export default function NewReviewPlace({
 
       setTimeout(() => {
         if (textFieldRef.current) {
-          const newCursorPos = lastAtIndex + userEmail.length + 2;
+          // El cursor debe estar después del NOMBRE (no del email) en el displayText
+          const newCursorPos = lastAtIndex + userName.length + 2; // +2 por @ y espacio
           textFieldRef.current.focus();
           textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
           setCursorPosition(newCursorPos);
