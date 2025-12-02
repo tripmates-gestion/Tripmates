@@ -4,13 +4,15 @@ import {
   IconButton, Stack, Chip, Avatar, Divider, Tooltip, ButtonBase
 } from "@mui/material";
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { BusinessPublicationResponseDTO } from "../../types/Business";
+import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
 import NewReviewPlace from "../reviews/NewReviewPlace";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
 import { PAGES_ROUTE } from "../../constants/Pages";
+import { getUserById } from "../../services/userService";
 //import { MapTilerMap } from '../map/MapTilerMap';
 
 type Props = {
@@ -60,8 +62,10 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
   const navigate = useNavigate();
+  const [ownerAccount, setOwnerAccount] = useState<BusinessPubAccountDataDTO | null>(null);
+  const [isFetchingOwner, setIsFetchingOwner] = useState(false);
 
   // Derivados seguros aunque publication sea null
   const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
@@ -100,39 +104,44 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
     touchDeltaX.current = 0;
   };
 
-  const goToBusinessProfile = () => {
+  const fetchOwnerAccount = useCallback(async () => {
+    if (!publication?.ownerId || !accessToken) return null;
+    setIsFetchingOwner(true);
+    try {
+      const response = await getUserById(publication.ownerId, accessToken);
+      const account = response as BusinessPubAccountDataDTO;
+      setOwnerAccount(account);
+      return account;
+    } catch (error) {
+      console.error("No se pudo obtener la información del dueño", error);
+      return null;
+    } finally {
+      setIsFetchingOwner(false);
+    }
+  }, [accessToken, publication?.ownerId]);
+
+  useEffect(() => {
+    if (!open || !publication?.ownerId || !accessToken) {
+      setOwnerAccount(null);
+      return;
+    }
+    fetchOwnerAccount();
+  }, [open, publication?.ownerId, accessToken, fetchOwnerAccount]);
+
+  const goToBusinessProfile = useCallback(async () => {
     if (!publication?.businessType) return;
 
-    const route =
-      publication.businessType === "HOTEL"
-        ? `${PAGES_ROUTE.hotelPublic}/${publication.ownerId}`
-        : `${PAGES_ROUTE.restaurantPublic}/${publication.ownerId}`;
+    const account = ownerAccount ?? (isFetchingOwner ? null : await fetchOwnerAccount());
+    const businessType = account?.businessType ?? publication.businessType;
+    const ownerId = account?.id ?? publication.ownerId;
 
-    navigate(route, {
-      state: {
-        account: {
-          id: publication.ownerId,
-          name: publication.ownerUsername,
-          avatarURL: publication.ownerAvatarUrl,
-          email: publication.email,
-          role: "BUSINESS",
-          description: publication.description,
-          location: publication.location,
-          phoneNumber: publication.phoneNumber,
-          publicEmail: publication.email,
-          profileImageUrls: publication.imageUrls,
-          businessType: publication.businessType,
-          averagePrice: "$$",
-          restaurantType: null,
-          attentionSchedule: publication.attentionSchedule,
-          openingDays: publication.openingDays,
-          menu: null,
-          hotelType: null,
-          roomPacks: null,
-        },
-      },
-    });
-  };
+    const route =
+      businessType === "HOTEL"
+        ? `${PAGES_ROUTE.hotelPublic}/${ownerId}`
+        : `${PAGES_ROUTE.restaurantPublic}/${ownerId}`;
+
+    navigate(route, account ? { state: { account } } : undefined);
+  }, [fetchOwnerAccount, isFetchingOwner, navigate, ownerAccount, publication?.businessType, publication?.ownerId]);
 
   // Ahora sí, si no hay publication, render “vacío” estable (sin cortar hooks)
   if (!publication) {
