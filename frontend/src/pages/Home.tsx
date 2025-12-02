@@ -80,7 +80,7 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
               component={RouterLink}
               to={PAGES_ROUTE.search}
             >
-              Explorar destinos y planes
+              Explorar destinos
             </Button>
             <Button
               variant="contained"
