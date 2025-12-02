@@ -8,6 +8,8 @@ import {
   Divider,
   useTheme,
 } from "@mui/material";
+import ProfileSocialMediaLinks from "../ProfileSocialMediaLinks";
+
 
 interface Props {
   account: any;
@@ -134,6 +136,9 @@ const TravelerHeader: React.FC<Props> = ({
                 "Este viajero aún no añadió una descripción."}
             </Typography>
           </Box>
+          
+          <ProfileSocialMediaLinks email={account.email} />
+
 
           <Stack
             direction="row"

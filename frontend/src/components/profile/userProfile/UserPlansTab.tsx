@@ -152,13 +152,26 @@ export default function UserPlansTab() {
     }
   }, [fetchPlans, user?.id]);
 
-  const filteredFollowers = useMemo(() => {
+  //Usuarios que cumplen: me siguen Y yo los sigo
+  const inviteCandidates = useMemo(() => {
+    const followers = followersList.items;
+    const followings = followingsList.items;
+    const followingSet = new Set(followings.map((u) => u.id));
+
+    // Intersección
+    return followers.filter((f) => followingSet.has(f.id));
+  }, [followersList.items, followingsList.items]);
+
+  // Buscador aplicado sobre la intersección
+  const filteredInviteCandidates = useMemo(() => {
     const term = inviteSearch.trim().toLowerCase();
-    if (!term) return followersList.items;
-    return followersList.items.filter((follower) =>
-      follower.name.toLowerCase().includes(term) || follower.email.toLowerCase().includes(term)
+    if (!term) return inviteCandidates;
+
+    return inviteCandidates.filter((u) =>
+      u.name.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term)
     );
-  }, [followersList.items, inviteSearch]);
+  }, [inviteCandidates, inviteSearch]);
 
   const togglePlanExpansion = (planIndex: number) => {
     setExpandedPlans((prev) => {
@@ -506,7 +519,7 @@ export default function UserPlansTab() {
             </Stack>
           ) : (
             <Stack spacing={1.5} sx={{ mt: 2 }}>
-              {filteredFollowers.map((follower) => {
+              {filteredInviteCandidates.map((follower) => {
                 const isOwner = planToInvite?.ownerId === follower.id;
                 const alreadyCollaborator = planToInvite?.collaboratorsIds?.includes(follower.id);
                 const alreadyInvited = invitedUserIds.has(follower.id);
@@ -560,7 +573,7 @@ export default function UserPlansTab() {
                 );
               })}
 
-              {!followersList.loading && filteredFollowers.length === 0 && (
+              {!followersList.loading && filteredInviteCandidates.length === 0 && (
                 <Box sx={{ textAlign: 'center', py: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     No encontramos seguidores que coincidan con tu búsqueda.

@@ -40,7 +40,7 @@ export const ENDPOINTS = {
     BUSSINESS_PUBLICATION_RECOMMENDATIONS: '/users/recommendations/publications/',
     USER_RECOMMENDATIONS: '/users/recommendations/user/',
     BUSINESS_ACCOUNT_RECOMMENDATIONS: '/users/recommendations/business/',
-  
+
     METRICS_REVIEWS: '/metrics/reviews',
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
@@ -51,4 +51,18 @@ export const ENDPOINTS = {
     INVITE_USER_TO_PLAN: (planId: string, userId: string) => `/community/${planId}/${userId}/invite-user`,
     DECLINE_INVITATION: (planId: string) => `/community/${planId}/decline-invitation`,
     ACCEPT_INVITATION: (planId: string) => `/community/${planId}/accept-invitation`,
+
+    // historial
+    GET_HISTORY_LIKED: '/users/history/likes/',
+
+    BUSINESS_BENCHMARKS: '/benchmarks/mine',
+    GET_PUBLIC_BENCHMARKS: '/benchmarks/user/',
+
+    // social media
+    USER_MEDIA: (email: string) => `/users/${email}/media`,
+    MY_MEDIA: '/users/me/media',
+
+
+    // business
+    TOP_TRENDING_BUSINESSES: "/metrics/n-most-likeds-accounts",
 };

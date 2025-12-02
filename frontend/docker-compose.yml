@@ -6,8 +6,8 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - .:/app
-      - /app/node_modules
+      - ./src:/app/src
+      - ./public:/app/public
     environment:
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true

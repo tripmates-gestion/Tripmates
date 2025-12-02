@@ -1,3 +1,6 @@
+import { validateLocation, type LocationFieldError } from '../components/publications/utils/validators'
+import type { LocationDTO } from '../types/Location'
+
 // src/features/business/edit/common/validators.ts
 export function isValidPhone(input: string): boolean {
   const clean = input.trim();
@@ -6,7 +9,6 @@ export function isValidPhone(input: string): boolean {
     /^\+?\d{1,3}(\s?9)?[\s(.-]*\d{1,4}[\s).-\s]*\d{2,4}[\s.-]?\d{3,4}$/;
   return regex.test(clean);
 }
-
 
 export function isValidEmail(input: string): boolean {
   const clean = input.trim()
@@ -20,21 +22,14 @@ export function isValidSchedule(input: string): boolean {
   return /^([01]?\d|2[0-3]):[0-5]\d\s*[–-]\s*([01]?\d|2[0-3]):[0-5]\d$/.test(clean)
 }
 
-export function isValidLocation(input: string): boolean {
-  const clean = input.trim()
-  if (clean === '') return true
-  return clean.length >= 4 && /[a-zA-Záéíóúñ\s,.-]+/.test(clean)
-}
-
 export function isNonNegativeNumber(v: unknown): boolean {
   return typeof v === 'number' && Number.isFinite(v) && v >= 0
 }
 
-
 export type RestaurantErrors = Partial<{
   name: string
   description: string
-  location: string
+  location: LocationFieldError
   phoneNumber: string
   publicEmail: string
   openingDays: string
@@ -50,7 +45,7 @@ type RestaurantTypes = string
 export function validateRestaurant(form: {
   name: string
   description: string
-  location: string
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
   openingDays: string[]
@@ -63,7 +58,10 @@ export function validateRestaurant(form: {
   const e: RestaurantErrors = {}
   if (!form.name.trim()) e.name = 'Requerido. Ej: “Parrilla Don Julio”'
   if (!form.description.trim()) e.description = 'Requerido. Breve descripción'
-  if (!form.location.trim() || !isValidLocation(form.location)) e.location = 'Ubicación inválida. Ej: “Buenos Aires, Palermo”'
+
+  const locationErrors = validateLocation(form.location, { required: true })
+  if (locationErrors) e.location = locationErrors
+
   if (form.phoneNumber && !isValidPhone(form.phoneNumber)) e.phoneNumber = 'Teléfono inválido. Ej: “+54 9 11 5555-5555”'
   if (form.publicEmail && !isValidEmail(form.publicEmail)) e.publicEmail = 'Email inválido. Ej: “contacto@mail.com”'
   if (!form.restaurantType) e.restaurantType = 'Seleccioná un tipo'
@@ -76,13 +74,11 @@ export function validateRestaurant(form: {
   return e
 }
 
-
-
 // src/features/business/edit/common/validateHotel.ts
 export type HotelErrors = Partial<{
   name: string
   description: string
-  location: string
+  location: LocationFieldError
   phoneNumber: string
   publicEmail: string
   hotelType: string
@@ -92,7 +88,7 @@ export type HotelErrors = Partial<{
 export function validateHotel(form: {
   name: string
   description: string
-  location: string
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
   hotelType?: string
@@ -102,7 +98,10 @@ export function validateHotel(form: {
   const e: HotelErrors = {}
   if (!form.name.trim()) e.name = 'Requerido. Ej: “Hotel Miramar”'
   if (!form.description.trim()) e.description = 'Requerido. Breve descripción'
-  if (!form.location.trim() || !isValidLocation(form.location)) e.location = 'Ubicación inválida. Ej: “CABA, Recoleta”'
+
+  const locationErrors = validateLocation(form.location, { required: true })
+  if (locationErrors) e.location = locationErrors
+
   if (form.phoneNumber && !isValidPhone(form.phoneNumber)) e.phoneNumber = 'Teléfono inválido. Ej: “+54 9 11 5555-5555”'
   if (form.publicEmail && !isValidEmail(form.publicEmail)) e.publicEmail = 'Email inválido. Ej: “reservas@mail.com”'
   if (!form.hotelType) e.hotelType = 'Seleccioná un tipo'

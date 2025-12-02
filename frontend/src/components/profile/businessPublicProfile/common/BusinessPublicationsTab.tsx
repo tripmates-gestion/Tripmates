@@ -167,7 +167,11 @@ export default function BusinessPublicationsTab({ id }: { id: string }) {
       console.log("Nombre:", trimmed);
       const plan = fetchedPlans.find((p) => p.name === trimmed);
       console.log("Plan creado:", plan);
-      await addPublicationToPlan(accessToken, plan.id, id);
+      if (plan) {
+        await addPublicationToPlan(accessToken, plan.id, id);
+      } else {
+        console.error("Plan not found for the given name.");
+      }
       // opcional: actualizar la lista local de planes para que aparezca en el menú
       setShowSuccessMsg(true);
     } catch (error) {
