@@ -13,6 +13,9 @@ export function useBusinessRatingAverage(businessId?: string | null) {
     let canceled = false;
     setLoading(true);
 
+
+    console.log('Obteniendo promedio de calificaciones para el negocio ID:', businessId);
+
     getBusinessRatingAverage(businessId, accessToken)
       .then((avg) => {
         if (canceled) return;
