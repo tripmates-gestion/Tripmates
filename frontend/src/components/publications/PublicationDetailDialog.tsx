@@ -130,17 +130,19 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   }, [open, publication?.ownerId, accessToken, fetchOwnerAccount]);
 
   const goToBusinessProfile = useCallback(async () => {
-    if (!publication?.businessType) return;
-
+    console.log("Navegando a perfil de negocio desde PublicationDetailDialog", publication);
+ 
     const account = ownerAccount ?? (isFetchingOwner ? null : await fetchOwnerAccount());
-    const businessType = account?.businessType ?? publication.businessType;
-    const ownerId = account?.id ?? publication.ownerId;
-
+    const businessType = account?.businessType;
+    const ownerId = account?.id;
+    
     const route =
-      businessType === "HOTEL"
-        ? `${PAGES_ROUTE.hotelPublic}/${ownerId}`
-        : `${PAGES_ROUTE.restaurantPublic}/${ownerId}`;
-
+    businessType === "HOTEL"
+    ? `${PAGES_ROUTE.hotelPublic}/${ownerId}`
+    : `${PAGES_ROUTE.restaurantPublic}/${ownerId}`;
+    
+    
+    console.log("Navegando a perfil de negocio:", route, "con account:", account);
     navigate(route, account ? { state: { account } } : undefined);
   }, [fetchOwnerAccount, isFetchingOwner, navigate, ownerAccount, publication?.businessType, publication?.ownerId]);
 
