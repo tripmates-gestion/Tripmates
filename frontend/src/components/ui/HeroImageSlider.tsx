@@ -74,21 +74,18 @@ export default function HeroImageSlider({
 
     return () => clearInterval(id);
   }, [interval]);
+  
 
-  // Cuando termina la transición y estamos en el clon del último (extended[last])
   const handleTransitionEnd = () => {
-    // índice del clon de la primera imagen real
     const lastCloneIndex = total - 1;
-
-    if (index === lastCloneIndex) {
-      // apagamos transición y saltamos "silenciosamente" a la primera real (1)
+  
+    // Si llegamos o NOS PASAMOS del último clon, reseteamos
+    if (index >= lastCloneIndex) {
       setIsTransitioning(false);
       setIndex(1);
     }
-
-    // (Opcionalmente podrías hacer lo mismo si quisieras un loop hacia el otro lado:
-    //  si index === 0 → saltar a total - 2, pero acá nunca vamos para atrás)
   };
+  
 
   // Reencendemos la transición después de teletransportar
   React.useEffect(() => {

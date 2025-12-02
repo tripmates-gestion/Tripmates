@@ -299,6 +299,7 @@ export default function BusinessPublicationsRecomendationFeed() {
   }
 
   if (!publications || publications.length === 0) {
+    console.log("No hay publicaciones recomendadas disponibles.", publications);
     return (
       <Container sx={{ py: 8 }}>
         <Typography variant="overline" color="primary">Para ti</Typography>
