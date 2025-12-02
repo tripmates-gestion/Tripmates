@@ -134,8 +134,12 @@ export default function NewReviewPlace({
   React.useEffect(() => {
     let result = text;
     
-    suggestedUsers.forEach(user => {
-      const emailRegex = new RegExp(`@${user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+    // Ordenar usuarios por longitud de email (más largo primero) para evitar reemplazos parciales
+    const sortedUsers = [...suggestedUsers].sort((a, b) => b.email.length - a.email.length);
+    
+    sortedUsers.forEach(user => {
+      const escapedEmail = user.email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const emailRegex = new RegExp(`@${escapedEmail}(?=\\s|$)`, 'g');
       result = result.replace(emailRegex, `@${user.name}`);
     });
     
@@ -186,9 +190,14 @@ export default function NewReviewPlace({
     const cursorPos = e.target.selectionStart ?? newDisplayText.length;
 
     // Convertir nombres a emails en el texto interno
+    // Ordenar usuarios por longitud de nombre (más largo primero) para evitar reemplazos parciales
     let newText = newDisplayText;
-    suggestedUsers.forEach(user => {
-      const nameRegex = new RegExp(`@${user.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+    const sortedUsers = [...suggestedUsers].sort((a, b) => b.name.length - a.name.length);
+    
+    sortedUsers.forEach(user => {
+      // Usar word boundary (\b) o lookahead para evitar coincidencias parciales
+      const escapedName = user.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const nameRegex = new RegExp(`@${escapedName}(?=\\s|$)`, 'g');
       newText = newText.replace(nameRegex, `@${user.email}`);
     });
 
@@ -232,14 +241,26 @@ export default function NewReviewPlace({
   };
 
   const insertMention = (userName: string, userEmail: string) => {
-    const textBeforeCursor = text.substring(0, cursorPosition);
-    const textAfterCursor = text.substring(cursorPosition);
-    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+    // Usar displayText para obtener la posición correcta del cursor
+    const displayTextBeforeCursor = displayText.substring(0, cursorPosition);
+    const displayTextAfterCursor = displayText.substring(cursorPosition);
+    const lastAtIndex = displayTextBeforeCursor.lastIndexOf("@");
 
     if (lastAtIndex !== -1) {
-      // Insertar el EMAIL en el texto (no el nombre)
-      const newText =
-        text.substring(0, lastAtIndex) + "@" + userEmail + " " + textAfterCursor;
+      // Construir el nuevo displayText con el nombre
+      const newDisplayText =
+        displayText.substring(0, lastAtIndex) + "@" + userName + " " + displayTextAfterCursor;
+
+      // Convertir el displayText a text (reemplazar nombres por emails)
+      // Ordenar usuarios por longitud de nombre (más largo primero) para evitar reemplazos parciales
+      let newText = newDisplayText;
+      const sortedUsers = [...suggestedUsers].sort((a, b) => b.name.length - a.name.length);
+      
+      sortedUsers.forEach(user => {
+        const escapedName = user.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const nameRegex = new RegExp(`@${escapedName}(?=\\s|$)`, 'g');
+        newText = newText.replace(nameRegex, `@${user.email}`);
+      });
 
       setText(newText);
       setShowMentions(false);
@@ -247,7 +268,7 @@ export default function NewReviewPlace({
 
       setTimeout(() => {
         if (textFieldRef.current) {
-          // El cursor debe estar después del NOMBRE (no del email) en el displayText
+          // El cursor debe estar después del NOMBRE en el displayText
           const newCursorPos = lastAtIndex + userName.length + 2; // +2 por @ y espacio
           textFieldRef.current.focus();
           textFieldRef.current.setSelectionRange(newCursorPos, newCursorPos);
