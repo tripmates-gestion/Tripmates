@@ -5,10 +5,12 @@ import {
 } from "@mui/material";
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { BusinessPublicationResponseDTO } from "../../types/Business";
 import NewReviewPlace from "../reviews/NewReviewPlace";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
+import { PAGES_ROUTE } from "../../constants/Pages";
 //import { MapTilerMap } from '../map/MapTilerMap';
 
 type Props = {
@@ -59,6 +61,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Derivados seguros aunque publication sea null
   const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
@@ -95,6 +98,40 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
     else if (touchDeltaX.current < -threshold) next();
     isDragging.current = false;
     touchDeltaX.current = 0;
+  };
+
+  const goToBusinessProfile = () => {
+    if (!publication?.businessType) return;
+
+    const route =
+      publication.businessType === "HOTEL"
+        ? `${PAGES_ROUTE.hotelPublic}/${publication.ownerId}`
+        : `${PAGES_ROUTE.restaurantPublic}/${publication.ownerId}`;
+
+    navigate(route, {
+      state: {
+        account: {
+          id: publication.ownerId,
+          name: publication.ownerUsername,
+          avatarURL: publication.ownerAvatarUrl,
+          email: publication.email,
+          role: "BUSINESS",
+          description: publication.description,
+          location: publication.location,
+          phoneNumber: publication.phoneNumber,
+          publicEmail: publication.email,
+          profileImageUrls: publication.imageUrls,
+          businessType: publication.businessType,
+          averagePrice: "$$",
+          restaurantType: null,
+          attentionSchedule: publication.attentionSchedule,
+          openingDays: publication.openingDays,
+          menu: null,
+          hotelType: null,
+          roomPacks: null,
+        },
+      },
+    });
   };
 
   // Ahora sí, si no hay publication, render “vacío” estable (sin cortar hooks)
@@ -251,14 +288,23 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
       </Stack>
     )}
 
-        <Stack direction="row" alignItems="center" spacing={1} mt={1}>
-          <Tooltip title={`Publicado el ${formatCreatedAt(publication.createdAt)}`}>
-            <Avatar src={publication.ownerAvatarUrl} alt={publication.ownerUsername} sx={{ width: 40, height: 40 }}>
-              {initials(publication.ownerUsername)}
-            </Avatar>
-          </Tooltip>
-          <Typography variant="body2" color="text.secondary">Dueño: {publication.ownerUsername}</Typography>
-        </Stack>
+        <ButtonBase onClick={goToBusinessProfile} disableRipple sx={{ textAlign: "left", alignSelf: "flex-start" }}>
+          <Stack direction="row" alignItems="center" spacing={1} mt={1}>
+            <Tooltip title={`Publicado el ${formatCreatedAt(publication.createdAt)}`}>
+              <Avatar src={publication.ownerAvatarUrl} alt={publication.ownerUsername} sx={{ width: 40, height: 40 }}>
+                {initials(publication.ownerUsername)}
+              </Avatar>
+            </Tooltip>
+            <Stack spacing={0}>
+              <Typography variant="body2" color="text.secondary">Dueño: {publication.ownerUsername}</Typography>
+              {publication.businessType && (
+                <Typography variant="caption" color="primary.main" sx={{ textDecoration: "underline" }}>
+                  Ver perfil del negocio
+                </Typography>
+              )}
+            </Stack>
+          </Stack>
+        </ButtonBase>
 
         <Typography variant="body1" sx={{ mt: 1.5, whiteSpace: 'break-spaces' }}>
           {publication.description}
