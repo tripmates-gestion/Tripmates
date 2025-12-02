@@ -7,6 +7,7 @@ import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.SocialMediaUpdateRequestDTO;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.publications.dto.PublicationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
@@ -78,6 +79,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 			seedReviews();
 			seedLikes();
 			seedFollows();
+			seedSocialMedia();
 			updateUserAvatars();
 			updateBusinessImages();
 			System.out.println("=== DatabaseSeeder finalizado OK ===");
@@ -159,27 +161,27 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedPublications() {
 		System.out.println("--- Creando publicaciones de negocios (con imágenes) ---");
 
-		// Restaurante La Buena Mesa
-		createPublication("afu@fi.uba.ar", "Menú Especial de Otoño",
-				"Disfrutá de nuestro menú de temporada con ingredientes frescos y locales en La Buena Mesa.",
+		// Restaurante Guerrin
+		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
+				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
 				"+54 11 1234-5678", "reservas@labuenamesa.com",
-				new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+				new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("12:00"), LocalTime.parse("23:00")), List.of(),
-				List.of("restaurante", "comida", "menú", "especial"),
+				List.of("pizza", "muzzarella", "pizzeria", "clasica"),
 				List.of("sample_images/publications/restaurant/cena1.jpg"));
 
 		createPublication("afu@fi.uba.ar", "Noche de Vinos",
-				"Degustación de vinos de bodegas locales con maridaje exclusivo en La Buena Mesa.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
 		createPublication("afu@fi.uba.ar", "Brunch de Domingos",
-				"Disfrutá de nuestro exclusivo brunch los domingos en La Buena Mesa.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+				"Disfrutá de nuestro exclusivo brunch los domingos en Guerrin.", "+54 11 1234-5678",
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
 				List.of(), List.of("brunch", "desayuno", "domingo"),
 				List.of("sample_images/publications/restaurant/postre1.jpg"));
@@ -339,7 +341,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedMenuItems() {
 		System.out.println("--- Creando ítems de menú para restaurantes ---");
 
-		// La Buena Mesa
 		addMenuItem("afu@fi.uba.ar", "Milanesa Napolitana", 3500.0f,
 				"Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas.",
 				"sample_images/menu_items/milanesa.jpeg");
@@ -432,7 +433,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void updateBusinessProfiles() {
 		System.out.println("--- Actualizando perfiles de negocios ---");
 
-		updateLaBuenaMesa();
+		updateGuerrin();
 		updateHotelPlayaDorada();
 		updateCafeDelCentro();
 		updateHostelMontania();
@@ -441,19 +442,19 @@ public class DatabaseSeeder implements CommandLineRunner {
 		updateElEncuentroHostel();
 	}
 
-	private void updateLaBuenaMesa() {
-		Location location = new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816);
+	private void updateGuerrin() {
+		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("23:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
-		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("La Buena Mesa",
+		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Guerrin",
 				"Un restaurante familiar con los mejores platos de la cocina tradicional", location, "+54 11 1234-5678",
-				"contacto@labuenamesa.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
+				"contacto@guerrin.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
 		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
-		System.out.println("[PROFILE] Actualizado perfil de La Buena Mesa");
+		System.out.println("[PROFILE] Actualizado perfil de Guerrin");
 	}
 
 	private void updateHotelPlayaDorada() {
@@ -670,7 +671,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 					String email = likers[i];
 					try {
 						publicationService.addLike(pubId, email);
-						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (La Buena Mesa)");
+						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (Guerrin)");
 					}
 					catch (Exception e) {
 						System.err.println(
@@ -806,6 +807,63 @@ public class DatabaseSeeder implements CommandLineRunner {
 			Files.write(dest.toPath(), content);
 		}
 
+	}
+
+	private void seedSocialMedia() {
+		System.out.println("--- Agregando redes sociales a usuarios de negocio ---");
+
+		// Guerrin
+		addSocialMedia("afu@fi.uba.ar", 
+			"https://www.instagram.com/pizzeriaguerrin/", 
+			"https://x.com/PizzeriaGuerrin", 
+			"https://www.facebook.com/pizzeriaguerrin/");
+
+		// Hotel Playa Dorada
+		addSocialMedia("reservas@playadorada.com", 
+			"https://instagram.com/hotelplayadorada", 
+			"https://twitter.com/playadorada", 
+			"https://facebook.com/hotelplayadorada");
+
+		// Café del Centro
+		addSocialMedia("contacto@cafedelcentro.com", 
+			"https://instagram.com/cafedelcentro", 
+			"https://twitter.com/cafedelcentro", 
+			"https://facebook.com/cafedelcentro");
+
+		// Hostel Montaña Mágica
+		addSocialMedia("info@hostelmontana.com", 
+			"https://instagram.com/hostelmontana", 
+			"https://twitter.com/montaniamagica", 
+			"https://facebook.com/hostelmontana");
+
+		// Brisa Marina
+		addSocialMedia("isabel@brisamarina.com", 
+			"https://instagram.com/brisamarina", 
+			"https://twitter.com/brisamarina", 
+			"https://facebook.com/brisamarina");
+
+		// Sabores Peruanos
+		addSocialMedia("gaston@saboresperuanos.com", 
+			"https://instagram.com/saboresperuanos", 
+			"https://twitter.com/saboresperuanos", 
+			"https://facebook.com/saboresperuanos");
+
+		// El Encuentro Hostel
+		addSocialMedia("diego@elencuentrohostel.com", 
+			"https://instagram.com/elencuentrohostel", 
+			"https://twitter.com/elencuentro", 
+			"https://facebook.com/elencuentrohostel");
+	}
+
+	private void addSocialMedia(String email, String instagramURL, String xURL, String facebookURL) {
+		try {
+			SocialMediaUpdateRequestDTO dto = new SocialMediaUpdateRequestDTO(instagramURL, xURL, facebookURL);
+			userService.addSocialMedia(email, dto);
+			System.out.println("[SOCIAL_MEDIA] Agregadas redes sociales para " + email);
+		}
+		catch (Exception e) {
+			System.err.println("[SOCIAL_MEDIA] Error agregando redes sociales para " + email + ": " + e.getMessage());
+		}
 	}
 
 }
