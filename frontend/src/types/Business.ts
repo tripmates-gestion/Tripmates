@@ -1,4 +1,4 @@
-import type { AccountType } from "./AccountTypes"
+import type { AccountType, BusinessType as AccountBusinessType } from "./AccountTypes"
 import type { LocationDTO } from "./Location"
 
 // ---------------------- Tipos locales ----------------------
@@ -80,6 +80,7 @@ export type BusinessPublicationResponseDTO = {
   ownerId: string
   ownerUsername: string
   ownerAvatarUrl: string
+  businessType?: AccountBusinessType
   createdAt: string
   tags: string[]
 }
