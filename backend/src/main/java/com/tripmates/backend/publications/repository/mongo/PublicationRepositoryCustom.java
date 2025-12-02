@@ -50,10 +50,11 @@ public interface PublicationRepositoryCustom {
 	 */
 	void removeFromLikes(String publicationId, String userId);
 
-  /**
-   * Returns the n most liked publications.
-   * @param n number of publications to return.
-   * @return list of {@link PublicationResumeResponseDTO}.
-   */
-  List<Publication> findNMostLikedsPublications(int n);
+	/**
+	 * Returns the n most liked publications.
+	 * @param n number of publications to return.
+	 * @return list of {@link PublicationResumeResponseDTO}.
+	 */
+	List<Publication> findNMostLikedsPublications(int n);
+
 }

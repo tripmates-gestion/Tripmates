@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -96,39 +95,24 @@ public class MetricsService {
 		Account account = validateBusinessAccount(email);
 		return publicationRepository.countLikesFromAccountId(account.getId());
 	}
-  
+
 	public List<AccountResumeResponseDTO> getMostLikedBusinessAccounts(Integer n) {
-		return accountRepository.findTopNBusinessAccountsByTotalLikes(n).stream().map(AccountResumeResponseDTO::fromAccount).toList();
+		return accountRepository.findTopNBusinessAccountsByTotalLikes(n)
+			.stream()
+			.map(AccountResumeResponseDTO::fromAccount)
+			.toList();
 	}
 
-	/**
-	 * Obtiene el promedio de calificaciones de todas las reseñas que tengan una calificación asignada.
-	 * @param email Email del negocio autenticado
-	 * @return Promedio de calificaciones (número entre 1.0 y 5.0) o null si no hay reseñas con calificación
-	 */
-	public Double getReviewRatingsAvg(String email) {
-		Account account = validateBusinessAccount(email);
-		
-		List<Publication> publications = publicationRepository.findByOwnerId(account.getId());
-		
-		DoubleSummaryStatistics stats = publications.stream()
-			.flatMap(pub -> pub.getReviews().stream())
-			.filter(review -> review.getRating() != null && review.getRating() >= 0)
-			.mapToDouble(Review::getRating)
-			.summaryStatistics();
-		
-		return stats.getCount() > 0 ? stats.getAverage() : null;
-	}
-	
 	public Double getReviewRatingsAvgByAccountId(String accountId) {
 		List<Publication> publications = publicationRepository.findByOwnerId(accountId);
-		
+
 		DoubleSummaryStatistics stats = publications.stream()
 			.flatMap(pub -> pub.getReviews().stream())
 			.filter(review -> review.getRating() != null && review.getRating() >= 0)
 			.mapToDouble(Review::getRating)
 			.summaryStatistics();
-		
+
 		return stats.getCount() > 0 ? stats.getAverage() : null;
 	}
+
 }

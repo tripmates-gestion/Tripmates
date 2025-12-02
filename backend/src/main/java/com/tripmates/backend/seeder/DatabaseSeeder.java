@@ -650,13 +650,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com",
-				"ricardo@example.com", "astrid@example.com", "aizen@example.com", "lucia@example.com",
-				"pedro@example.com" };
+		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
+				"astrid@example.com", "aizen@example.com", "lucia@example.com", "pedro@example.com" };
 
 		String buenaMesaBusiness = "info@labuenamesa.com";
 		List<String> buenaMesaPubs = businessPublicationIds.get(buenaMesaBusiness);
-		
+
 		String noLikesBusiness = "gaston@saboresperuanos.com";
 		List<String> noLikesPubs = businessPublicationIds.get(noLikesBusiness);
 
@@ -682,7 +681,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 			}
 
 			int likesForThisPub = random.nextInt(4);
-			
+
 			if (likesForThisPub == 0) {
 				continue;
 			}
