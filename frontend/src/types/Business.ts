@@ -35,9 +35,9 @@ export function parseHours(scheduleString: string): AttentionSchedule {
   return { openingTime: opening, closingTime: closing }
 }
 
-export type AttentionSchedule = { 
+export type AttentionSchedule = {
   openingTime: string
-  closingTime: string 
+  closingTime: string
 }
 
 export type BusinessPublicationRequestDTO = {
@@ -85,7 +85,7 @@ export type BusinessPublicationResponseDTO = {
   tags: string[]
 }
 
-{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
+{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */ }
 export type BusinessUpdateResponseDTO = {
   name: string;
   email: string;
@@ -123,16 +123,15 @@ export const initialFormState: FormState = {
   photos: [],
   tags: [],
   openingDays: [], // si queda vacío, en el submit usás DEFAULT_OPENING_DAYS
-  // type: '',
 };
 
 
 export type UserStats = { aportes: number; seguidores: number; siguiendo: number };
 
 export const DEFAULT_OPENING_DAYS: DayOfWeek[] = [
-  'MONDAY', 
-  'TUESDAY', 
-  'WEDNESDAY', 
-  'THURSDAY', 
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
   'FRIDAY'
 ] as const;

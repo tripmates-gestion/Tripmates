@@ -55,7 +55,10 @@ export const ENDPOINTS = {
 
     // historial
     GET_HISTORY_LIKED: '/users/history/likes/',
+    REGISTER_RECENTLY_SEEN: '/users/view/business/',
+    MY_RECENTLY_SEEN: '/users/history/view/business',
 
+    // benchmarks
     BUSINESS_BENCHMARKS: '/benchmarks/mine',
     GET_PUBLIC_BENCHMARKS: '/benchmarks/user/',
 
