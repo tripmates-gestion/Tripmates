@@ -177,7 +177,7 @@ public class SearchAccountTest {
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", """
 						{
-						    "location": "Buenos Aires, Martinez Unicenter"
+						    "location": "Martinez Unicenter"
 						}
 						""", new ParameterizedTypeReference<>() {
 				});
