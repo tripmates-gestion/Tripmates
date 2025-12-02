@@ -16,7 +16,8 @@ export function mapReviewDTOToReview(dto: ReviewDTO): Review {
     publicationTitle: dto.publicationReviewed.title,
     authorId: dto.reviewerId,
     authorName: dto.reviewerUsername,
-    avatarUrl: dto.reviewerAvatarUrl // Descomentar si se agrega este campo al tipo Review
+    avatarUrl: dto.reviewerAvatarUrl, // Descomentar si se agrega este campo al tipo Review
+    mentions: dto.mentions
   };
 }
 

@@ -1,18 +1,48 @@
 import { Typography, Card, CardContent, CardMedia, Grid, Stack, Avatar, Chip } from "@mui/material";
 import type { Review } from "../../types/Review";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { getUserByEmail, getUserFollowers } from "../../services/userService";
+import { getUserByEmail } from "../../services/userService";
 import { renderTextWithMentions } from "./NewReviewPlace";
 
+// Componente para renderizar el texto con menciones de forma async
+function ReviewTextWithMentions({ 
+  text, 
+  accessToken, 
+  onMentionClick 
+}: { 
+  text: string; 
+  accessToken: string; 
+  onMentionClick: (email: string) => void;
+}) {
+  const [renderedContent, setRenderedContent] = useState<React.ReactNode>(text);
 
+  useEffect(() => {
+    const loadMentions = async () => {
+      try {
+        const content = await renderTextWithMentions(
+          text,
+          accessToken,
+          (mention) => onMentionClick(mention.email)
+        );
+        setRenderedContent(content);
+      } catch (error) {
+        console.error('Error rendering mentions:', error);
+        setRenderedContent(text);
+      }
+    };
+
+    loadMentions();
+  }, [text, accessToken, onMentionClick]);
+
+  return <>{renderedContent}</>;
+}
 
 export function ReviewGrid({ items }: { items: Review[] }) {
 
     const accessToken = useAuth().accessToken;
     const navigate = useNavigate();
-    const user = useAuth().user!;
 
     const handleUserClick = useCallback(async (authorName: string, authorId: string) => {
         console.log("Haciendo click en usuario:", authorName);
@@ -27,12 +57,9 @@ export function ReviewGrid({ items }: { items: Review[] }) {
         }
     }, [navigate, accessToken]);
 
-    const handleTaggedUserClick = useCallback(async (mention: { name: string }) => {
-        console.log("Usuario mencionado:", mention.name);
+    const handleTaggedUserClick = useCallback(async (email: string) => {
+        console.log("Usuario mencionado (email):", email);
         try {
-            const followers = await getUserFollowers(user.id, accessToken!);
-            const email = followers.find((follower) => follower.name === mention.name)?.email;
-            // Buscar el usuario por nombre (asumiendo que el nombre es el email o username)
             const mentionedUser = await getUserByEmail(email, accessToken!);
             console.log("Usuario obtenido:", mentionedUser);
             navigate(`/userProfile/${mentionedUser.id}`, {
@@ -84,7 +111,11 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             {/* Título + texto */}
             <Typography variant="subtitle1" fontWeight={700}>{r.title}</Typography>
             <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-              {renderTextWithMentions(r.text, handleTaggedUserClick)}
+              <ReviewTextWithMentions
+                text={r.text}
+                accessToken={accessToken!}
+                onMentionClick={handleTaggedUserClick}
+              />
             </Typography>
   
             {/* Galería */}
