@@ -12,7 +12,6 @@ import { SearchBarHotel } from "../components/search/SearchBarHotel";
 import { SearchBarRestaurant } from "../components/search/SearchBarRestaurant";
 import PlaceGrid from "../components/search/ResultsPlaceGrid";
 import { BusinessRecommendationsSection } from "../components/recommendations/BusinessRecommendationsSection";
-import { MOCK_BUSINESS_SEARCH_RESULTS } from "../components/mocks/businessMocks";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
 // ---------------------------------------------------------
@@ -32,9 +31,9 @@ function SearchBoxContainer({
       <Typography
         variant="h3"
         sx={{
-          fontStyle: "oblique",
+          // fontStyle: "oblique",
           fontWeight: 800,
-          color: theme.palette.text.secondary,
+          color: theme.palette.text.primary,
           textAlign: "center",
           letterSpacing: "0.05em",
           mb: 2,
@@ -112,12 +111,7 @@ export default function Search() {
     }
   
     // Si no hay búsqueda activa, mostrar los mocks filtrados
-    return MOCK_BUSINESS_SEARCH_RESULTS.filter((p) =>
-      !q
-        ? true
-        : p.name.toLowerCase().includes(q.toLowerCase()) ||
-          p.location.toLowerCase().includes(q.toLowerCase())
-    );
+    return [];
   }, [q, searchResults, isSearching]);
   
 
@@ -129,45 +123,78 @@ export default function Search() {
       <SearchBoxContainer onResults={handleSearchResults} />
 
       {/* Título dinámico */}
+
       <Typography
-        variant="h6"
-        textAlign="center"
+        variant="h5"
+        textAlign="left"
         sx={{
           color: theme.palette.text.secondary,
-          fontStyle: "italic",
+          fontWeight: 700,
           mt: 4,
+          mb: 1,
         }}
       >
         {isSearching
-          ? `Resultados de búsqueda (${searchResults.length} encontrados)`
+          ? `🔎 Resultados (${searchResults.length})`
           : q
           ? `Resultados para “${q}”`
-          : "Explora nuestras opciones"}
+          : ""}
       </Typography>
 
+      {/* Resultados de búsqueda */}
+      {isSearching && (
+        <>
+          {items.length > 0 ? (
+            <PlaceGrid businessAccounts={items} />
+          ) : (
+            <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
+              <Typography variant="h6" color="text.secondary" fontStyle="italic">
+                No se encontraron resultados
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Intenta con otros términos o una ubicación distinta.
+              </Typography>
+              <Button variant="outlined" onClick={resetSearch} sx={{ mt: 2 }}>
+                Ver todas las opciones
+              </Button>
+            </Stack>
+          )}
+
+          {/* Separador visual antes de recomendaciones */}
+          <Box
+            sx={{
+              width: "100%",
+              height: "2px",
+              bgcolor: theme.palette.divider,
+              my: 4,
+            }}
+          />
+        </>
+      )}
+
+      {/* Título recomendaciones (solo si hubo búsqueda) */}
+      {isSearching && (
+        <Typography
+          variant="h6"
+          textAlign="left"
+          sx={{
+            color: theme.palette.text.secondary,
+            fontWeight: 700,
+            mb: 2,
+          }}
+        >
+          ✨ Recomendados para vos
+        </Typography>
+      )}
+
+      {/* Recomendaciones */}
       <BusinessRecommendationsSection />
       
       
       {/* Resultados */}
-      {isSearching ? (
-        items.length > 0 ? (
-          <PlaceGrid businessAccounts={items} />
-        ) : (
-          <Stack alignItems="center" spacing={2} sx={{ py: 8 }}>
-            <Typography variant="h6" color="text.secondary" fontStyle="italic">
-              No se encontraron resultados
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Intenta con otros términos o una ubicación distinta.
-            </Typography>
-            <Button variant="outlined" onClick={resetSearch} sx={{ mt: 2 }}>
-              Ver todas las opciones
-            </Button>
-          </Stack>
-        )
-      ) : (
+      {items.length > 0 ? (
         <PlaceGrid businessAccounts={items} />
-      )}
+      ) : null}
 
     </Stack>
   );

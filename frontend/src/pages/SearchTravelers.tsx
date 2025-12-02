@@ -33,12 +33,13 @@ const TravelersSearchPage: React.FC = () => {
     try {
       setLoadingDefault(true);
       // getTravelersRecommendations ya devuelve el array directamente
-      const users = await getTravelersRecommendations(authContext.user?.id, authContext.accessToken);
+      if (authContext.user?.id) {
+        const users = await getTravelersRecommendations(authContext.user.id, authContext.accessToken);
       console.log("Usuarios por defecto:", users);
-
-      // Cambiar de response?.content a users directamente
-      if (Array.isArray(users)) {
-        setDefaultUsers(users.slice(0, 5)); // Tomar solo 5
+        // Cambiar de response?.content a users directamente
+        if (Array.isArray(users)) {
+          setDefaultUsers(users.slice(0, 5)); // Tomar solo 5
+        }
       }
     } catch (error) {
       console.error('Error fetching default users:', error);

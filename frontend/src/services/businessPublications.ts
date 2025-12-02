@@ -1,6 +1,7 @@
 import type {
   BusinessPublicationRequestDTO,
   BusinessPublicationResponseDTO,
+  PublicationUpdateRequestDTO,
 } from '../types/Business'
 import { apiFetch } from "../api/client"; // ruta a tu apiFetch
 import { ENDPOINTS } from "../api/endpoints";
@@ -35,6 +36,34 @@ export async function createBusinessPublication(
     headers: { Authorization: `Bearer ${accessToken}` }, // SIN Content-Type
     body: fd,
     signal,
+  }) as Promise<BusinessPublicationResponseDTO>;
+}
+
+/**
+ * Actualiza una publicación de negocio existente
+ * @param publicationId - ID de la publicación a actualizar
+ * @param data - Datos actualizados de la publicación (campos opcionales)
+ * @param files - Nuevos archivos de imágenes a agregar
+ * @param accessToken - Token de autenticación
+ * @returns Datos de la publicación actualizada
+ * @throws Error si falla la actualización o si no hay token
+ */
+export async function updateBusinessPublication(
+  publicationId: string,
+  data: PublicationUpdateRequestDTO,
+  files: File[],
+  accessToken: string | null
+): Promise<BusinessPublicationResponseDTO> {
+  if (!accessToken) throw new Error("No estás autenticado.");
+
+  const fd = new FormData();
+  fd.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }), "data.json");
+  files.forEach((f) => fd.append("files", f, f.name));
+
+  return apiFetch(`${ENDPOINTS.PATCH_BUSINESS_PUBLICATION}${publicationId}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: fd,
   }) as Promise<BusinessPublicationResponseDTO>;
 }
 

@@ -8,7 +8,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import com.tripmates.backend.config.TestCloudinaryConfig;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
+import com.tripmates.backend.publications.dto.ReviewResponseDTO;
 import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.users.repository.mongo.AccountRepository;
 import com.tripmates.backend.common.types.BusinessType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,9 @@ public class MetricsTest {
 	@Autowired
 	private MongoTemplate mongoTemplate;
 
+	@Autowired
+	private AccountRepository accountRepository;
+
 	@MockBean
 	private EmailService emailService;
 
@@ -76,6 +81,24 @@ public class MetricsTest {
 		mockMvc.perform(post("/publications/" + publicationId + "/like").header("Authorization", "Bearer " + jwt))
 			.andExpect(status().isNoContent())
 			.andDo(print());
+	}
+
+	private ReviewResponseDTO createReview(String publicationId, String userAccountTestingJwt, String reviewJson)
+			throws Exception {
+		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
+				reviewJson.getBytes(StandardCharsets.UTF_8));
+
+		String body = mockMvc
+			.perform(multipart("/publications/" + publicationId + "/review").file(dataPart).with(request -> {
+				request.setMethod("POST");
+				return request;
+			}).header("Authorization", "Bearer " + userAccountTestingJwt))
+			.andExpect(status().isCreated())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		return objectMapper.readValue(body, ReviewResponseDTO.class);
 	}
 
 	private PublicationResumeResponseDTO createPublication(String jwt, String title) throws Exception {
@@ -251,7 +274,7 @@ public class MetricsTest {
 		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
 		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
 
-        createPublication(jwt1, "Publication 1");
+		createPublication(jwt1, "Publication 1");
 		createPublication(jwt2, "Publication 2");
 
 		String response = mockMvc.perform(get("/metrics/n-most-likeds-accounts"))
@@ -303,14 +326,13 @@ public class MetricsTest {
 	}
 
 	@Test
-	void testGivenDifferentBusinessTypes_WhenGetMostLikedAccounts_ThenReturnAccountsFromAllTypes()
-			throws Exception {
+	void testGivenDifferentBusinessTypes_WhenGetMostLikedAccounts_ThenReturnAccountsFromAllTypes() throws Exception {
 		String jwt1 = testHelper.getBusinessTestingJwt("business1@example.com", BusinessType.HOTEL);
 		String jwt2 = testHelper.getBusinessTestingJwt("business2@example.com", BusinessType.RESTAURANT);
 		PublicationResumeResponseDTO pub1 = createPublication(jwt1, "Hotel Publication");
 		PublicationResumeResponseDTO pub2 = createPublication(jwt2, "Restaurant Publication");
 		List<String> allLikers = testHelper.getNUserTestingJwt(7);
-		
+
 		for (int i = 0; i < 5; i++) {
 			likePublication(allLikers.get(i), pub2.id());
 		}
@@ -330,8 +352,51 @@ public class MetricsTest {
 				});
 
 		assertEquals(2, accounts.size(), "Should return business accounts from both types");
-		assertEquals("business2@example.com", accounts.get(0).email(), "Restaurant account should be first (more likes)");
+		assertEquals("business2@example.com", accounts.get(0).email(),
+				"Restaurant account should be first (more likes)");
 		assertEquals("business1@example.com", accounts.get(1).email(), "Hotel account should be second");
+	}
+
+	@Test
+	void getReviewRatingsAvg_WithTwoReviews_ShouldReturnCorrectAverage() throws Exception {
+		String businessJwt = testHelper.getBusinessTestingJwt("contact@hostel.com", BusinessType.HOTEL);
+		PublicationResumeResponseDTO publication = createPublication(businessJwt, "SO BEATUTIFUL.");
+
+		String user1Jwt = testHelper.getUserTestingJwt("fran.infanti@gmail.com.ar");
+		String user2Jwt = testHelper.getUserTestingJwt("lewis.hamilton44@gmail.com.gb");
+
+		String review1Json = """
+				{
+					"title": "Great place!",
+					"content": "Had a wonderful time here.",
+					"rating": 4.0
+				}
+				""";
+
+		String review2Json = """
+				{
+					"title": "Excellent!",
+					"content": "Best experience ever!",
+					"rating": 5.0
+				}
+				""";
+
+		createReview(publication.id(), user1Jwt, review1Json);
+		createReview(publication.id(), user2Jwt, review2Json);
+
+		String businessId = accountRepository.findByEmail("contact@hostel.com").get().getId();
+
+		String response = mockMvc
+			.perform(get("/metrics/reviews/rating-avg/" + businessId).header("Authorization", "Bearer " + businessJwt))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		double expectedAverage = 4.5;
+		double actualAverage = Double.parseDouble(response);
+
+		assertEquals(expectedAverage, actualAverage, 0.01, "Calculated average is not correct");
 	}
 
 }

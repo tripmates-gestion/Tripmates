@@ -23,7 +23,7 @@ import type { Location } from '../common/types';
 type HotelForm = {
   name: string;
   description: string;
-  location: Location | string;
+  location: Location;
   phoneNumber: string;
   publicEmail: string;
   hotelType?: HotelType;
@@ -46,8 +46,8 @@ export default function HotelEditDialog({ open, onClose }: Props) {
   const initial: HotelForm = {
     name: business?.name ?? '',
     description: business?.description ?? '',
-    location: typeof business?.location === 'string' 
-      ? { address: business.location, latitude: 0, longitude: 0 }
+    location: typeof business?.location === 'string'
+      ? { address: business.location, latitude: (business as any)?.latitude ?? 0, longitude: (business as any)?.longitude ?? 0 }
       : business?.location ?? { address: '', latitude: 0, longitude: 0 },
     phoneNumber: business?.phoneNumber ?? '',
     publicEmail: business?.publicEmail ?? '',
@@ -80,11 +80,11 @@ export default function HotelEditDialog({ open, onClose }: Props) {
     // Special handling for location to ensure it's always an object
     if (k === 'location' && typeof v === 'string') {
       setForm(prev => ({
-        ...prev, 
-        location: { 
-          address: v, 
-          latitude: 0, 
-          longitude: 0 
+        ...prev,
+        location: {
+          address: v,
+          latitude: prev.location.latitude ?? 0,
+          longitude: prev.location.longitude ?? 0
         }
       }));
     } else {
@@ -95,14 +95,10 @@ export default function HotelEditDialog({ open, onClose }: Props) {
 
   const onSave = async () => {
     if (!accessToken || saving) return
-    const location = typeof form.location === 'string' 
-      ? form.location.trim()
-      : form.location?.address?.trim() || '';
-    
     const preDto = {
       name: form.name.trim(),
       description: form.description,
-      location: location,
+      location: form.location,
       phoneNumber: form.phoneNumber.trim(),
       publicEmail: form.publicEmail.trim(),
       hotelType: form.hotelType,
