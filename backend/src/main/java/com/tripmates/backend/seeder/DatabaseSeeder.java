@@ -449,8 +449,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
 		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Guerrin",
-				"Un restaurante familiar con los mejores platos de la cocina tradicional", location, "+54 11 1234-5678",
-				"contacto@guerrin.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
+				"Un restaurante con las mejores pizzas de Argentina!", location, "+54 11 1234-5678",
+				"contacto@.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
 		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
