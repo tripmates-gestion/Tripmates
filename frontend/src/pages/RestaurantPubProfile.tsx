@@ -45,8 +45,6 @@ export default function RestaurantPubProfile() {
   }
 
   const restaurant = account as BusinessPubAccountDataDTO;
-  console.log("Redirección a restaurant recibió estado: ",restaurant)
-
 
   const menuTab = <RestaurantItemMenuCard menu={restaurant.menu as MenuItem[]} />;
 
