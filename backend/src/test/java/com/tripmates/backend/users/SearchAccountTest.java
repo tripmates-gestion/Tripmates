@@ -177,9 +177,7 @@ public class SearchAccountTest {
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchBusiness(
 				baseUrl() + "/users/search/business", """
 						{
-						"location": {
-							"address": "Buenos Aires, Martinez Unicenter"
-						}
+						    "location": "Buenos Aires, Martinez Unicenter"
 						}
 						""", new ParameterizedTypeReference<>() {
 				});
@@ -445,7 +443,7 @@ public class SearchAccountTest {
 
 		String searchAddress = "Panamericana";
 		ResponseEntity<PageResponse<AccountResumeResponseDTO>> response = searchUser(
-				baseUrl() + "/users/search/user?address=" + URLEncoder.encode(searchAddress, StandardCharsets.UTF_8),
+				baseUrl() + "/users/search/user?location=" + URLEncoder.encode(searchAddress, StandardCharsets.UTF_8),
 				new ParameterizedTypeReference<>() {
 				});
 
