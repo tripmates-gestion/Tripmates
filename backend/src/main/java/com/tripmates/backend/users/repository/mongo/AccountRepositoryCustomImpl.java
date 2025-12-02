@@ -116,8 +116,10 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (businessSearchRequestDTO.averagePrice() != null)
 			criteria.add(Criteria.where("averagePrice").is(businessSearchRequestDTO.averagePrice()));
 
-		if (businessSearchRequestDTO.location() != null)
-			criteria.add(Criteria.where("location.address").regex(businessSearchRequestDTO.location(), "i"));
+		if (businessSearchRequestDTO.location() != null) {
+			String searchPattern = ".*" + Pattern.quote(businessSearchRequestDTO.location().trim()) + ".*";
+			criteria.add(Criteria.where("location.address").regex(searchPattern, "i"));
+		}
 
 		if (businessSearchRequestDTO.username() != null)
 			criteria.add(Criteria.where("name").regex(businessSearchRequestDTO.username(), "i"));
