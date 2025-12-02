@@ -1,6 +1,7 @@
 // src/pages/HotelPubProfile.tsx
 import * as React from "react";
-import { useEffect, useLocation, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation, useParams } from "react-router-dom";
 import BusinessPubProfileLayout from "../components/profile/businessPublicProfile/common/BusinessPubProfileLayout";
 import { HotelRoomsCard } from "../components/profile/businessPublicProfile/hotel/HotelUserRoomsCard";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";

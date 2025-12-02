@@ -189,12 +189,6 @@ export default function Search() {
 
       {/* Recomendaciones */}
       <BusinessRecommendationsSection />
-      
-      
-      {/* Resultados */}
-      {items.length > 0 ? (
-        <PlaceGrid businessAccounts={items} />
-      ) : null}
 
     </Stack>
   );

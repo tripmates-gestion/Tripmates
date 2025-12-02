@@ -76,6 +76,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const next = () => setIndex(i => nextIndex(i));
   const prev = () => setIndex(i => prevIndex(i));
   const [showMap, setShowMap] = useState(false);
+  
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
