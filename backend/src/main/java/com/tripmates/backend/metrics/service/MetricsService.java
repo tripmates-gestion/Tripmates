@@ -118,5 +118,17 @@ public class MetricsService {
 			.summaryStatistics();
 		
 		return stats.getCount() > 0 ? stats.getAverage() : null;
-}
+	}
+	
+	public Double getReviewRatingsAvgByAccountId(String accountId) {
+		List<Publication> publications = publicationRepository.findByOwnerId(accountId);
+		
+		DoubleSummaryStatistics stats = publications.stream()
+			.flatMap(pub -> pub.getReviews().stream())
+			.filter(review -> review.getRating() != null && review.getRating() >= 0)
+			.mapToDouble(Review::getRating)
+			.summaryStatistics();
+		
+		return stats.getCount() > 0 ? stats.getAverage() : null;
+	}
 }
