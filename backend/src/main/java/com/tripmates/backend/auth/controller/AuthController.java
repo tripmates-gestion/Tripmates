@@ -88,8 +88,7 @@ public class AuthController {
 					content = { @Content() }),
 			@ApiResponse(responseCode = "400", description = "User not found", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDTO.class)) }) })
-	public ResponseEntity<?> requestPasswordReset(
-			@RequestBody @Valid RequestPasswordResetDTO requestPasswordResetDTO) {
+	public ResponseEntity<?> requestPasswordReset(@RequestBody @Valid RequestPasswordResetDTO requestPasswordResetDTO) {
 		authService.requestPasswordReset(requestPasswordResetDTO);
 		return ResponseEntity.noContent().build();
 	}
