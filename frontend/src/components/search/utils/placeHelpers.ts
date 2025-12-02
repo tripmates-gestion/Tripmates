@@ -2,12 +2,12 @@
 // utils/placeHelpers.ts
 // ──────────────────────────────────────────────────────────────────────────────
 import type { DayOfWeek } from "../../../types/Business";
-import type {BusinessPubAccountDataDTO} from "../../../types/AccountData";
-import {COMMING_SOON_IMG} from "../../../constants/DefaultImages";
+import type { BusinessPubAccountDataDTO } from "../../../types/AccountData";
+import { COMMING_SOON_IMG } from "../../../constants/DefaultImages";
 
 
 const DAYS_ORDER: DayOfWeek[] = [
-  "MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"
+  "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"
 ];
 
 const DAY_LABEL: Record<DayOfWeek, string> = {
@@ -21,13 +21,13 @@ export function sanitizeImages(place: BusinessPubAccountDataDTO): string[] {
   return unique.length ? unique : [COMMING_SOON_IMG]; // fallback seguro
 }
 
-function toMinutes(t: string) {
+export function toMinutes(t: string) {
   const [h, m] = t.split(":").map(Number);
   return h * 60 + (m || 0);
 }
 
 function todayKey(d: Date): DayOfWeek {
-  return ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"][d.getDay()] as DayOfWeek;
+  return ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"][d.getDay()] as DayOfWeek;
 }
 
 export function computeOpenNow(place: BusinessPubAccountDataDTO, now: Date): boolean | null {
