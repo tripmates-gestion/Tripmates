@@ -116,8 +116,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (businessSearchRequestDTO.averagePrice() != null)
 			criteria.add(Criteria.where("averagePrice").is(businessSearchRequestDTO.averagePrice()));
 
-		if (businessSearchRequestDTO.location() != null && businessSearchRequestDTO.location().address() != null) {
-			criteria.add(Criteria.where("location.address").regex(businessSearchRequestDTO.location().address(), "i"));
+		if (businessSearchRequestDTO.location() != null) {
+			String searchPattern = ".*" + Pattern.quote(businessSearchRequestDTO.location().trim()) + ".*";
+			criteria.add(Criteria.where("location.address").regex(searchPattern, "i"));
 		}
 
 		if (businessSearchRequestDTO.username() != null)
@@ -196,16 +197,14 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (userSearchRequestDTO.followers() != null)
 			criteria.add(Criteria.where("followers." + (userSearchRequestDTO.followers() - 1)).exists(true));
 
-		if (userSearchRequestDTO.address() != null) {
+		if (userSearchRequestDTO.location() != null) {
 			List<String> userIdsWithMatchingReviews = userIDsWithReviewInPublicationWithLocationAddress(
-					userSearchRequestDTO.address());
-			if (!userIdsWithMatchingReviews.isEmpty()) {
+					userSearchRequestDTO.location());
+			if (!userIdsWithMatchingReviews.isEmpty())
 				criteria.add(Criteria.where("id").in(userIdsWithMatchingReviews));
-			}
-			else {
+			else
 				// If no users found with matching reviews, ensure no results are returned
 				criteria.add(Criteria.where("id").is("non-existent-id"));
-			}
 		}
 
 		return criteria;
@@ -220,8 +219,8 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	private List<String> userIDsWithReviewInPublicationWithLocationAddress(String address) {
 		Set<String> userIds = new HashSet<>();
 
-		// Search for publications with address containing the search term (case
-		// insensitive)
+		// Search for publications with address containing the search term
+		// (case-insensitive)
 		String searchPattern = ".*" + Pattern.quote(address.trim()) + ".*";
 		Query query = new Query();
 		query.addCriteria(Criteria.where("location.address").regex(searchPattern, "i"));
@@ -382,10 +381,10 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	}
 
 	@Override
-	public Plan updateExistingPlan(Plan updatedPlan) {
+	public void updateExistingPlan(Plan updatedPlan) {
 		if (updatedPlan.getId() == null || !ObjectId.isValid(updatedPlan.getId())) {
 			System.err.println("Error: El ID del plan a actualizar no es válido.");
-			return null;
+			return;
 		}
 		ObjectId targetPlanId = new ObjectId(updatedPlan.getId());
 		String ownerId = updatedPlan.getOwnerId();
@@ -399,10 +398,9 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		UpdateResult result = mongoTemplate.updateFirst(query, update, "account");
 
 		if (result.getModifiedCount() > 0) {
-			return getPlanByPlanId(updatedPlan.getId());
+			getPlanByPlanId(updatedPlan.getId());
 		}
 
-		return null;
 	}
 
 	@Override

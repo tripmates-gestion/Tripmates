@@ -54,7 +54,7 @@ public interface AccountRepositoryCustom {
 
 	Plan getPlanByPlanId(String planId);
 
-	Plan updateExistingPlan(Plan updatedPlan);
+	void updateExistingPlan(Plan updatedPlan);
 
 	/**
 	 * Returns the top N business accounts with the most total likes.

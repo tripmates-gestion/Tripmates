@@ -6,11 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record Location(@Schema(description = "Physical address") @JsonProperty("address") String address,
+public record Location(@Schema(description = "Location's physical address") @JsonProperty("address") String address,
+		@Schema(description = "Location's latitude coordinate") @JsonProperty("latitude") Double latitude,
+		@Schema(description = "Location's longitude coordinate") @JsonProperty("longitude") Double longitude) {
 
-		@Schema(description = "Latitude coordinate") @JsonProperty("latitude") Double latitude,
-
-		@Schema(description = "Longitude coordinate") @JsonProperty("longitude") Double longitude) {
 	@JsonCreator
 	public Location(@JsonProperty("address") String address, @JsonProperty("latitude") Double latitude,
 			@JsonProperty("longitude") Double longitude) {
@@ -18,4 +17,5 @@ public record Location(@Schema(description = "Physical address") @JsonProperty("
 		this.latitude = latitude;
 		this.longitude = longitude;
 	}
+
 }
