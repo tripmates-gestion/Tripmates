@@ -42,6 +42,7 @@ export const ENDPOINTS = {
     BUSINESS_ACCOUNT_RECOMMENDATIONS: '/users/recommendations/business/',
 
     METRICS_REVIEWS: '/metrics/reviews',
+    METRICS_REVIEWS_RATING_AVG: (businessId: string) => `/metrics/reviews/rating-avg/${businessId}`,
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
     METRICS_VIEW_PROFILE: '/metrics/view-profile',

@@ -17,6 +17,7 @@ interface NavBarProps {
 // mi intención es que ya no reciba user porque este se guarda en el contexto
 export default function NavBar({ mode, setMode }: NavBarProps) {
   const { user } = useAuth()
+  const isLoggedIn = !!user
   const isBusiness = user?.role === ACCOUNT_TYPES.business
   
   return (
@@ -27,7 +28,7 @@ export default function NavBar({ mode, setMode }: NavBarProps) {
           <Box sx={{ ml: "auto" }} />
 
           <Stack direction="row" spacing={1} alignItems="center">
-            <MainLinks />
+            <MainLinks isLoggedIn={isLoggedIn}/>
 
             <PublishButtonWithDialog visible={isBusiness}/>
 

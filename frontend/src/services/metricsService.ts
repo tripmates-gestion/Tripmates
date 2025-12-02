@@ -47,6 +47,17 @@ export async function getLikesMetrics(
 }
 
 
+export async function getBusinessRatingAverage(
+  businessId: string,
+  accessToken: string | null,
+): Promise<number> {
+  const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+  return apiFetch(ENDPOINTS.METRICS_REVIEWS_RATING_AVG(businessId), {
+    headers,
+  });
+}
+
+
 export async function registerProfileView(
   profileSeenEmail: string,
   accessToken: string | null
