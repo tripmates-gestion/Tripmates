@@ -307,7 +307,7 @@ export default function BusinessPublicationsRecomendationFeed() {
         maxWidth: { md: '100%' }
       }}>
         <Typography variant="overline" color="primary">Para ti</Typography>
-        <Typography variant="h4" fontWeight={800} gutterBottom> Experiencias Recomendadas ✨</Typography>
+        <Typography variant="h4" fontWeight={800} gutterBottom> Experiencias para ti</Typography>
         <Typography color="text.secondary" mb={3}>
           Descubre los mejores negocios y experiencias que otros viajeros han disfrutado.
         </Typography>
@@ -322,11 +322,11 @@ export default function BusinessPublicationsRecomendationFeed() {
     <>
       <Box sx={{ py: { width: '100%' }, bgcolor: 'background.paper' }}>
         <Container sx={{
-          pt: { xs: 2, md: 2 },
+          pt: { xs: 4, md: 5 },
           px: { xs: 0, md: 0 },
           maxWidth: { md: '100%' }
         }}>
-          <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti ✨</Typography>
+          <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti</Typography>
           {/* Carrusel Keen */}
           <Box
             sx={{ position: 'relative' }}
