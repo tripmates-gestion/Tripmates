@@ -7,6 +7,7 @@ import {
   Tab,
   Typography,
   Button,
+  Snackbar,
   Alert,
 } from '@mui/material';
 import type { AuthTab } from '../../types/Auth';
@@ -17,6 +18,8 @@ import RegisterForm from './RegisterForm';
 import { registerUserApi } from '../../services/authService';
 import { useAuth } from '../../hooks/useAuth';
 import type { BusinessType } from '../../types/AccountTypes';
+import PasswordResetDialog from './PasswordResetDialog';
+
 
 type AuthDialogProps = {
   open: boolean;
@@ -45,6 +48,8 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
   });
 
   const [termsOpen, setTermsOpen] = React.useState(false);
+  const [passwordResetOpen, setPasswordResetOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState<string | null>(null);
 
   const formRef = React.useRef<HTMLFormElement>(null);
 
@@ -121,6 +126,13 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
   const closeDialog = () => {
     onClose();
     setError(null);
+    setPasswordResetOpen(false);
+  };
+
+  const handlePasswordResetSuccess = () => {
+    setPasswordResetOpen(false);
+    setTab('LOGIN');
+    setSnackbarMessage('Contraseña actualizada. Ahora puedes iniciar sesión.');
   };
 
   const glowColor =
@@ -180,6 +192,7 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
               setEmail={setLoginEmail}
               password={loginPassword}
               setPassword={setLoginPassword}
+              onForgotPassword={() => setPasswordResetOpen(true)}
             />
           ) : (
             <RegisterForm
@@ -226,6 +239,25 @@ export default function AuthDialog({ open, onClose, onRegisterSuccess }: AuthDia
           )}
         </DialogActions>
       </Dialog>
+
+      <PasswordResetDialog
+        open={passwordResetOpen}
+        onClose={() => setPasswordResetOpen(false)}
+        onSuccess={handlePasswordResetSuccess}
+        initialEmail={loginEmail}
+      />
+
+      <Snackbar
+        open={Boolean(snackbarMessage)}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarMessage(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSnackbarMessage(null)} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
 
       {/* Modal de Términos y Condiciones */}
       <Dialog
