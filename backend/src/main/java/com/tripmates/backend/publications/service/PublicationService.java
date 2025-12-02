@@ -36,7 +36,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
-@Component
 @Transactional
 @Service
 public class PublicationService {
@@ -251,7 +250,7 @@ public class PublicationService {
 		registerReviewBenchmarkOnOwner(publication.getOwnerId());
 
 		sendNotificationEmail(publication, review, account);
-
+        
 		return ReviewResponseDTO.fromEntities(review, publication, account);
 	}
 
@@ -539,20 +538,23 @@ public class PublicationService {
 	 * @param review review that was made.
 	 * @param reviewAccountOwner user account that made the review.
 	 */
-	private void sendNotificationEmail(Publication publication, Review review, Account reviewAccountOwner) {
+    private void sendNotificationEmail(Publication publication, Review review, Account reviewAccountOwner) {
+        System.out.println("Enviando emails de notificación por menciones en la review...");
 		for (String email : review.getMentions()) {
-			accountRepository.findByEmail(email).ifPresent(account -> {
-				Dictionary<String, String> vars = new Hashtable<>();
-				vars.put("toUsername", account.getName());
-				vars.put("ownerUsername", reviewAccountOwner.getName());
-				vars.put("publicationTitle", review.getTitle());
-				vars.put("reviewSnippet", snippet(review.getContent()));
-				vars.put("publicationId", publication.getId());
+			System.out.println("Procesando mención para el email: " + email);
+            accountRepository.findByEmail(email).ifPresent(account -> {
+				System.out.println("Encontrada cuenta de usuario para el email: " + email);
+                Dictionary<String, String> vars = new Hashtable<>();
+                vars.put("toUsername", account.getName());
+                vars.put("ownerUsername", reviewAccountOwner.getName());
+                vars.put("publicationTitle", review.getTitle());
+                vars.put("reviewSnippet", snippet(parseContent(review))); // <-- CORREGIDO
+                vars.put("publicationId", publication.getId());
 
-				emailService.sendHtmlReviewMentionEmail(email, "¡Fuiste mencionado en una review!", vars);
-			});
-		}
-	}
+                emailService.sendHtmlReviewMentionEmail(email, "¡Fuiste mencionado en una review!", vars);
+            });
+        }
+    }
 
 	private String snippet(String text) {
 		if (text == null)
@@ -566,6 +568,22 @@ public class PublicationService {
 			truncated = truncated.substring(0, lastSpace);
 		}
 		return truncated + "...";
+	}
+
+	private String parseContent(Review review) {
+		String content = review.getContent();
+		
+		for (String email : review.getMentions()) {
+			if (content.contains("@" + email)) {
+				Optional<Account> accountOpt = accountRepository.findByEmail(email);
+				if (accountOpt.isPresent()) {
+					Account account = accountOpt.get();
+					content = content.replace("@" + email, "@" + account.getName());
+				}
+			}
+		}
+		
+		return content;
 	}
 
 }

@@ -130,30 +130,63 @@ public class EmailService {
 		}
 	}
 
-	public void sendHtmlReviewMentionEmail(String to, String subject, Dictionary<String, String> variables) {
+    public void sendHtmlReviewMentionEmail(String to, String subject, Dictionary<String, String> variables) {
 
+        try {
+            ClassPathResource resource = new ClassPathResource("review_mention.html");
+            String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+            String toUsername = variables.get("toUsername");
+            String ownerUsername = variables.get("ownerUsername");
+            String publicationTitle = variables.get("publicationTitle");
+            String reviewSnippet = variables.get("reviewSnippet"); // <-- CORREGIDO
+            String publicationId = variables.get("publicationId");
+
+            // URL final correcta
+            String publicationUrl = frontendRedirectionBaseUrl + "/publication/" + publicationId;
+
+            Map<String, String> substitutionMap = new HashMap<>();
+            substitutionMap.put("toUsername", toUsername);
+            substitutionMap.put("ownerUsername", ownerUsername);
+            substitutionMap.put("publicationTitle", publicationTitle);
+            substitutionMap.put("reviewSnippet", reviewSnippet); // <-- CORREGIDO
+            substitutionMap.put("publicationUrl", publicationUrl); // <-- CORREGIDO
+
+            String htmlContent = htmlTemplate;
+
+            for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+                String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+                htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+            }
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+        } catch (IOException e) {
+            System.out.println("Error: No se pudo leer el archivo review_mention.html. " + e.getMessage());
+        } catch (MessagingException e) {
+            System.out.println("Error al enviar el email: " + e.getMessage());
+        }
+    }
+
+
+	public void sendHtmlPasswordResetEmail(String to, String subject, String resetCode) {
 		try {
-			ClassPathResource resource = new ClassPathResource("review_mention.html");
+			ClassPathResource resource = new ClassPathResource("password_reset.html");
 			String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
 
-			String toUsername = variables.get("toUsername");
-			String ownerUsername = variables.get("ownerUsername");
-			String publicationTitle = variables.get("publicationTitle");
-			String reviewContent = variables.get("reviewContent");
-			String publicationId = variables.get("publicationId");
-
-			// URL donde se redirige al usuario cuando abre la notificación
-			String publicationUrl = frontendRedirectionBaseUrl + "/publication/" + publicationId;
-
 			Map<String, String> substitutionMap = new HashMap<>();
-			substitutionMap.put("toUsername", toUsername);
-			substitutionMap.put("ownerUsername", ownerUsername);
-			substitutionMap.put("publicationTitle", publicationTitle);
-			substitutionMap.put("reviewContent", reviewContent);
-			substitutionMap.put("publicationUrl", publicationUrl);
+			substitutionMap.put("resetCode", resetCode);
+			substitutionMap.put("userEmail", to);
 
 			String htmlContent = htmlTemplate;
-
 			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
 				String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
 				htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
@@ -171,7 +204,9 @@ public class EmailService {
 
 		}
 		catch (IOException e) {
-			System.out.println("Error: No se pudo leer el archivo review_mention.html. " + e.getMessage());
+			System.out.println(
+					"Error: No se pudo leer el archivo de plantilla HTML (password_reset.html). Asegúrate de que existe en src/main/resources. "
+							+ e.getMessage());
 		}
 		catch (MessagingException e) {
 			System.out.println("Error al enviar el email: " + e.getMessage());
