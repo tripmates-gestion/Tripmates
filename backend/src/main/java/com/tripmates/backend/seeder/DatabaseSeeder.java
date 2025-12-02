@@ -160,7 +160,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Creando publicaciones de negocios (con imágenes) ---");
 
 		// Restaurante La Buena Mesa
-		createPublication("info@labuenamesa.com", "Menú Especial de Otoño",
+		createPublication("afu@fi.uba.ar", "Menú Especial de Otoño",
 				"Disfrutá de nuestro menú de temporada con ingredientes frescos y locales en La Buena Mesa.",
 				"+54 11 1234-5678", "reservas@labuenamesa.com",
 				new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
@@ -170,14 +170,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 				List.of("restaurante", "comida", "menú", "especial"),
 				List.of("sample_images/publications/restaurant/cena1.jpg"));
 
-		createPublication("info@labuenamesa.com", "Noche de Vinos",
+		createPublication("afu@fi.uba.ar", "Noche de Vinos",
 				"Degustación de vinos de bodegas locales con maridaje exclusivo en La Buena Mesa.", "+54 11 1234-5678",
 				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
-		createPublication("info@labuenamesa.com", "Brunch de Domingos",
+		createPublication("afu@fi.uba.ar", "Brunch de Domingos",
 				"Disfrutá de nuestro exclusivo brunch los domingos en La Buena Mesa.", "+54 11 1234-5678",
 				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
@@ -340,11 +340,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Creando ítems de menú para restaurantes ---");
 
 		// La Buena Mesa
-		addMenuItem("info@labuenamesa.com", "Milanesa Napolitana", 3500.0f,
+		addMenuItem("afu@fi.uba.ar", "Milanesa Napolitana", 3500.0f,
 				"Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas.",
 				"sample_images/menu_items/milanesa.jpeg");
 
-		addMenuItem("info@labuenamesa.com", "Jugo de Naranja", 700.0f,
+		addMenuItem("afu@fi.uba.ar", "Jugo de Naranja", 700.0f,
 				"Jugo de Naranja de primera calidad para acompañar la comida.", "sample_images/menu_items/bebida.jpg");
 
 		// Café del Centro
@@ -408,7 +408,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Actualizando avatares de usuarios ---");
 
 		updateUserAvatar("camila@example.com", "sample_images/profile_pictures/user1.png");
-		updateUserAvatar("luisito@example.com", "sample_images/profile_pictures/user2.png");
+		updateUserAvatar("anibalfu2005@gmail.com", "sample_images/profile_pictures/user2.png");
 		updateUserAvatar("julian@example.com", "sample_images/profile_pictures/user3.png");
 		updateUserAvatar("joseluis@example.com", "sample_images/profile_pictures/user4.png");
 		updateUserAvatar("ricardo@example.com", "sample_images/profile_pictures/user5.png");
@@ -452,7 +452,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 				"contacto@labuenamesa.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
-		userService.updateUserAccount("info@labuenamesa.com", dto, null, null);
+		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
 		System.out.println("[PROFILE] Actualizado perfil de La Buena Mesa");
 	}
 
@@ -534,7 +534,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void updateBusinessImages() {
 		System.out.println("--- Actualizando imágenes de negocios ---");
 
-		updateBusinessImagesForEmail("info@labuenamesa.com", "sample_images/profile_pictures/restaurant.jpg",
+		updateBusinessImagesForEmail("afu@fi.uba.ar", "sample_images/profile_pictures/restaurant.jpg",
 				List.of("sample_images/business_picture/restaurant2.jpg", "sample_images/business_picture/resto5.jpg"));
 
 		updateBusinessImagesForEmail("reservas@playadorada.com", "sample_images/profile_pictures/hotel.jpg",
@@ -582,7 +582,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		String noReviewBusiness = "gaston@saboresperuanos.com";
 		List<String> noReviewPubs = businessPublicationIds.get(noReviewBusiness);
 
-		String[] allReviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
+		String[] allReviewers = { "camila@example.com", "anibalfu2005@gmail.com", "julian@example.com",
 				"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
 				"lucia@example.com", "pedro@example.com" };
 
@@ -650,10 +650,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
+		String[] likers = { "anibalfu2005@gmail.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
 				"astrid@example.com", "aizen@example.com", "lucia@example.com", "pedro@example.com" };
 
-		String buenaMesaBusiness = "info@labuenamesa.com";
+		String buenaMesaBusiness = "afu@fi.uba.ar";
 		List<String> buenaMesaPubs = businessPublicationIds.get(buenaMesaBusiness);
 
 		String noLikesBusiness = "gaston@saboresperuanos.com";
@@ -706,21 +706,21 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedFollows() {
 		try {
 			String camilaId = getUserId("camila@example.com");
-			String luisitoId = getUserId("luisito@example.com");
+			String luisitoId = getUserId("anibalfu2005@gmail.com");
 			String julianId = getUserId("julian@example.com");
 			String joseluisId = getUserId("joseluis@example.com");
 
 			follow("camila@example.com", luisitoId, "Camila -> Luisito");
 			follow("camila@example.com", julianId, "Camila -> Julián");
 
-			follow("luisito@example.com", camilaId, "Luisito -> Camila");
-			follow("luisito@example.com", joseluisId, "Luisito -> José Luis");
+			follow("anibalfu2005@gmail.com", camilaId, "Luisito -> Camila");
+			follow("anibalfu2005@gmail.com", joseluisId, "Luisito -> José Luis");
 
 			follow("julian@example.com", camilaId, "Julián -> Camila");
 			follow("julian@example.com", luisitoId, "Julián -> Luisito");
 			follow("julian@example.com", joseluisId, "Julián -> José Luis");
 
-			follow("joseluis@example.com", camilaId, "José Luis -> Camila");
+
 			follow("joseluis@example.com", julianId, "José Luis -> Julián");
 		}
 		catch (Exception e) {
