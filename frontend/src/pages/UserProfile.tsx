@@ -23,6 +23,7 @@ import { DEFAULT_STATS } from '../constants/DefaultStats';
 import UserReviewsTab from '../components/profile/userProfile/UserReviewsTab';
 import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
 import LikedPublicationsTab from '../components/profile/userProfile/LikedPublicationsTab';
+import RecentlySeenBusiness from '../components/profile/userProfile/RecentlySeenBusiness';
 import { Stat } from '../components/profile/stats';
 
 import type {
@@ -91,6 +92,7 @@ export default function UserProfile() {
     { key: 'planes', label: 'Planes' },
     { key: 'experiencias', label: 'Experiencias' },
     { key: 'liked', label: 'Liked' },
+    { key: 'history', label: 'Historial' },
   ];
   const currentTabKey = tabs[tab]?.key;
 
@@ -269,6 +271,9 @@ export default function UserProfile() {
             {/* TODO: AGREGAR TAB DE LIKED => HECHO AL FINAL */}
             {currentTabKey === 'liked' && currentUser?.id && accessToken && (
               <LikedPublicationsTab userId={currentUser.id} accessToken={accessToken} />
+            )}
+            {currentTabKey === 'history' && currentUser?.id && accessToken && (
+              <RecentlySeenBusiness userId={currentUser.id} accessToken={accessToken} />
             )}
           </Box>
         </Card>

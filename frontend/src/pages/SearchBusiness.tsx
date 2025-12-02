@@ -39,7 +39,7 @@ function SearchBoxContainer({
           mb: 2,
           textShadow: "7px 7px 5px rgba(55, 82, 106, 0.1)",
         }}
-        
+
       >
         ¿Buscando una nueva experiencia?
       </Typography>
@@ -75,16 +75,16 @@ function SearchBoxContainer({
       </Stack>
 
       {/* Barra de búsqueda dinámica */}
-        <Box width="100%" maxWidth="900px">
-          {mode === "hotel" ? (
-            <SearchBarHotel onSearchResults={onResults} />
-          ) : (
-            <SearchBarRestaurant onSearchResults={onResults} />
-          )}
-        </Box>
-      </Stack>
-    );
-  }
+      <Box width="100%" maxWidth="900px">
+        {mode === "hotel" ? (
+          <SearchBarHotel onSearchResults={onResults} />
+        ) : (
+          <SearchBarRestaurant onSearchResults={onResults} />
+        )}
+      </Box>
+    </Stack>
+  );
+}
 
 
 // ---------------------------------------------------------
@@ -109,11 +109,8 @@ export default function Search() {
     if (isSearching) {
       return searchResults;
     }
-  
-    // Si no hay búsqueda activa, mostrar los mocks filtrados
     return [];
   }, [q, searchResults, isSearching]);
-  
 
   const theme = useTheme();
 
@@ -137,8 +134,8 @@ export default function Search() {
         {isSearching
           ? `🔎 Resultados (${searchResults.length})`
           : q
-          ? `Resultados para “${q}”`
-          : ""}
+            ? `Resultados para “${q}”`
+            : ""}
       </Typography>
 
       {/* Resultados de búsqueda */}
@@ -189,8 +186,8 @@ export default function Search() {
 
       {/* Recomendaciones */}
       <BusinessRecommendationsSection />
-      
-      
+
+
       {/* Resultados */}
       {items.length > 0 ? (
         <PlaceGrid businessAccounts={items} />
