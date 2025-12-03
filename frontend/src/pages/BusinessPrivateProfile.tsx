@@ -365,11 +365,11 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
           Aún no publicaste nada. Tus publicaciones aparecerán aquí.
         </Typography>
       ) : (
-        <PublicationGrid 
-          publications={items} 
+        <PublicationGrid
+          publications={items}
           onEdit={handleEditRequest}
-          onDelete={handleDeleteRequest} 
-          letReview={false} 
+          onDelete={handleDeleteRequest}
+          letReview
         />
       )}
 

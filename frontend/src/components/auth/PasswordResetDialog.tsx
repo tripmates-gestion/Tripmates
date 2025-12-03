@@ -26,7 +26,7 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-import penguinBanner from '../../assets/6-pinguinos.png';
+
 import {
     requestPasswordReset,
     resetPassword,
@@ -274,7 +274,7 @@ export default function PasswordResetDialog({
         <DialogContent>
           <Box
             component="img"
-            src={penguinBanner}
+            src={"6-pinguinos.png"}
             alt="Ilustración de pingüinos exploradores"
             sx={{ width: '100%', mb: 2 }}
           />
