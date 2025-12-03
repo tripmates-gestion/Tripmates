@@ -164,7 +164,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		// Restaurante Guerrin
 		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
 				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
-				"+54 11 1234-5678", "reservas@labuenamesa.com",
+				"+54 11 1234-5678", "reservas@guerrin.com",
 				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
@@ -174,14 +174,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 		createPublication("afu@fi.uba.ar", "Noche de Vinos",
 				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
+				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
 		createPublication("afu@fi.uba.ar", "Flan de Domingos",
 				"Disfrutá de nuestro exclusivo flan los domingos en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
+				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
 				List.of(), List.of("flan", "desayuno", "domingo"),
 				List.of("sample_images/publications/restaurant/postre1.jpg"));
@@ -450,7 +450,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Guerrin",
 				"Un restaurante con las mejores pizzas de Argentina!", location, "+54 11 1234-5678",
-				"contacto@.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
+				"contacto@guerrin.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
 		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
