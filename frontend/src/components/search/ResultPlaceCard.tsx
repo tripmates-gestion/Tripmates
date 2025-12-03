@@ -3,7 +3,7 @@
 // ──────────────────────────────────────────────────────────────────────────────
 import * as React from "react";
 import {
-  Card, CardMedia, CardContent, Typography, Stack, Box, Chip,
+  Card, CardMedia, CardContent, Typography, Stack, Box, Chip, Rating,
 } from "@mui/material";
 import { sanitizeImages, computeOpenNow, DAYS_ORDER, DAY_LABEL } from "./utils/placeHelpers";
 import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
@@ -11,6 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { registerProfileView } from '../../services/metricsService'
 import { useAuth } from "../../hooks/useAuth";
 import { useSnackbar } from 'notistack';
+import { registerRecentlySeen } from "../../services/history";
+import { useBusinessRatingAverage } from "../../hooks/useBusinessRatingAverage";
 
 
 type Props = {
@@ -18,7 +20,7 @@ type Props = {
 };
 
 export default function PlaceCard({ businessAccountData }: Props) {
-  const { enqueueSnackbar } = useSnackbar();  
+  const { enqueueSnackbar } = useSnackbar();
   const imgs = sanitizeImages(businessAccountData);
   const navigate = useNavigate();
   const open = React.useMemo(
@@ -26,6 +28,7 @@ export default function PlaceCard({ businessAccountData }: Props) {
     [businessAccountData]
   );
   const { accessToken } = useAuth();
+  const { ratingAverage } = useBusinessRatingAverage(businessAccountData.id);
 
   const handleSeeDetails = () => {
     if (!accessToken) {
@@ -34,20 +37,22 @@ export default function PlaceCard({ businessAccountData }: Props) {
       });
       return;
     }
-  
+
     const route =
       businessAccountData.businessType === "HOTEL"
         ? `/hotel/${businessAccountData.id}`
         : `/restaurant/${businessAccountData.id}`;
-  
+
     navigate(route, { state: { account: businessAccountData } });
-  
+
     registerProfileView(businessAccountData.email, accessToken).catch((err) => {
       console.error("No se pudo registrar la vista de perfil", err);
     });
-  };
-  
 
+    registerRecentlySeen(businessAccountData.id, accessToken).catch((err) => {
+      console.error("No se pudo registrar la vista de perfil", err);
+    });
+  };
 
   return (
     <Card
@@ -59,10 +64,10 @@ export default function PlaceCard({ businessAccountData }: Props) {
         transition: "0.25s",
         "&:hover": { boxShadow: 6, transform: "translateY(-2px)" },
         height: "100%",
-        width: "100%",      
+        width: "100%",
         display: "flex",
         flexDirection: "column",
-        flex: 1,           
+        flex: 1,
       }}
     >
       <Box sx={{ position: "relative" }}>
@@ -101,6 +106,12 @@ export default function PlaceCard({ businessAccountData }: Props) {
 
       <CardContent sx={{ p: 2, flexGrow: 1 }}>
         <Typography variant="h6" fontWeight={800} noWrap>{businessAccountData.name}</Typography>
+        <Stack direction="row" spacing={0.75} alignItems="center" mt={0.25}>
+          <Rating value={ratingAverage ?? 0} precision={0.1} size="small" readOnly />
+          <Typography variant="caption" color="text.secondary">
+            {ratingAverage !== null ? `${ratingAverage.toFixed(1)} / 5` : 'Sin calificaciones'}
+          </Typography>
+        </Stack>
         {businessAccountData.description ? (
           <Typography
             variant="body2"

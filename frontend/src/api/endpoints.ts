@@ -2,6 +2,10 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
+    REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
+    VERIFY_RESET_CODE: '/auth/verify-reset-code',
+    RESET_PASSWORD: '/auth/reset-password',
+
     USER_ME: '/users/me',
 
     MY_FOLLOWERS: '/users/me/followers',
@@ -42,6 +46,7 @@ export const ENDPOINTS = {
     BUSINESS_ACCOUNT_RECOMMENDATIONS: '/users/recommendations/business/',
 
     METRICS_REVIEWS: '/metrics/reviews',
+    METRICS_REVIEWS_RATING_AVG: (businessId: string) => `/metrics/reviews/rating-avg/${businessId}`,
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
     METRICS_VIEW_PROFILE: '/metrics/view-profile',
@@ -54,7 +59,10 @@ export const ENDPOINTS = {
 
     // historial
     GET_HISTORY_LIKED: '/users/history/likes/',
+    REGISTER_RECENTLY_SEEN: '/users/view/business/',
+    MY_RECENTLY_SEEN: '/users/history/view/business',
 
+    // benchmarks
     BUSINESS_BENCHMARKS: '/benchmarks/mine',
     GET_PUBLIC_BENCHMARKS: '/benchmarks/user/',
 

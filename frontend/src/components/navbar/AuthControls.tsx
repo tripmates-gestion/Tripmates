@@ -36,7 +36,7 @@ export function AuthControls() {
           >
             <Avatar
               src={user.avatarURL}
-              alt={user.username}
+              alt={user.name}
               sx={{
                 width: 42,
                 height: 42,

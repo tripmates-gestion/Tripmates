@@ -3,7 +3,7 @@ import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import NavBar from './components/navbar/NavBar';
 import Home from './pages/Home';
-import Search from './pages/Search';
+import Search from './pages/SearchBusiness';
 import UserProfile from './pages/UserProfile';
 import BusinessProfile from './pages/BusinessPrivateProfile';
 import type { AppProps } from './types/theme';
@@ -27,54 +27,54 @@ function DefaultLayout() {
   );
 }
 
-export default function App({ mode, setMode }: AppProps) {  
+export default function App({ mode, setMode }: AppProps) {
 
   return (
     <SnackbarProvider
-    maxSnack={3}
-    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-    autoHideDuration={1000}
-    preventDuplicate
-  >
-    <Box>
-      <NavBar
-        mode={mode}
-        setMode={setMode}
-      />
-      
-      <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
+      maxSnack={3}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      autoHideDuration={1000}
+      preventDuplicate
+    >
+      <Box>
+        <NavBar
+          mode={mode}
+          setMode={setMode}
+        />
 
-      <Routes>
-        {/* Public routes */}
-        <Route element={<DefaultLayout />}>
-          <Route path={PAGES_ROUTE.root} element={<Home />} />
-          <Route path={PAGES_ROUTE.search} element={<Search />} />
-          <Route path={`${PAGES_ROUTE.restaurantPublic}/:id`} element={<RestaurantPubProfile />} />
-          <Route path={`${PAGES_ROUTE.hotelPublic}/:id`} element={<HotelPubProfile />} />
-          <Route path={PAGES_ROUTE.searchTravelers} element={<SearchTravelers />} />
-          <Route path={`${PAGES_ROUTE.userPublicProfile}/:id`} element={<TravelerProfilePage />} />
-          <Route path={`${PAGES_ROUTE.acceptInvitation}/:planId`} element={<PlanInvitation />} />
-        </Route>
+        <Toolbar disableGutters sx={{ px: { xs: 2, md: 2 } }} />
 
-        {/* Profile route with role-based rendering */}
-        <Route element={<RoleBasedRoute allowedRoles={[ACCOUNT_TYPES.user, ACCOUNT_TYPES.business]} />}>
-          <Route 
-            path={PAGES_ROUTE.profile} 
-            element={
-              <RoleBasedRoute 
-                allowedRoles={[ACCOUNT_TYPES.user, ACCOUNT_TYPES.business]}
-                render={({ user }) => {
-                  if (user?.role === ACCOUNT_TYPES.business) {
-                    return <BusinessProfile />;
-                  }
-                  return <UserProfile />;
-                }}
-              />
-            } 
-          />
-        </Route>
-      </Routes>
-    </Box>
+        <Routes>
+          {/* Public routes */}
+          <Route element={<DefaultLayout />}>
+            <Route path={PAGES_ROUTE.root} element={<Home />} />
+            <Route path={PAGES_ROUTE.search} element={<Search />} />
+            <Route path={`${PAGES_ROUTE.restaurantPublic}/:id`} element={<RestaurantPubProfile />} />
+            <Route path={`${PAGES_ROUTE.hotelPublic}/:id`} element={<HotelPubProfile />} />
+            <Route path={PAGES_ROUTE.searchTravelers} element={<SearchTravelers />} />
+            <Route path={`${PAGES_ROUTE.userPublicProfile}/:id`} element={<TravelerProfilePage />} />
+            <Route path={`${PAGES_ROUTE.acceptInvitation}/:planId`} element={<PlanInvitation />} />
+          </Route>
+
+          {/* Profile route with role-based rendering */}
+          <Route element={<RoleBasedRoute allowedRoles={[ACCOUNT_TYPES.user, ACCOUNT_TYPES.business]} />}>
+            <Route
+              path={PAGES_ROUTE.profile}
+              element={
+                <RoleBasedRoute
+                  allowedRoles={[ACCOUNT_TYPES.user, ACCOUNT_TYPES.business]}
+                  render={({ user }) => {
+                    if (user?.role === ACCOUNT_TYPES.business) {
+                      return <BusinessProfile />;
+                    }
+                    return <UserProfile />;
+                  }}
+                />
+              }
+            />
+          </Route>
+        </Routes>
+      </Box>
     </SnackbarProvider>
   );
 }

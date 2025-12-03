@@ -43,7 +43,7 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
         display: 'flex',
         flexDirection: 'column',
         pt: { xs: 2, md: 0 },
-        px: { xs: 2, md: 6 },
+        px: { xs: 0, md: 3 },
         position: 'relative',
       }}
     >
@@ -54,10 +54,11 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 2,
+          maxWidth: { md: '100%' }
         }}
       >
         {/* Texto */}
-        <Box sx={{ flex: 1, maxWidth: { md: '50%' } }}>
+        <Box sx={{ flex: 1, maxWidth: { md: '100%' } }}>
           <Typography variant="overline" color="primary" gutterBottom>
             Destinos alrededor del mundo
           </Typography>
@@ -79,7 +80,7 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
               component={RouterLink}
               to={PAGES_ROUTE.search}
             >
-              Explorar destinos y planes
+              Explorar destinos
             </Button>
             <Button
               variant="contained"
@@ -97,7 +98,7 @@ export function Hero({ isTraveler }: { isTraveler: boolean }) {
         <Box
           sx={{
             flex: 1,
-            maxWidth: { md: '50%' },
+            maxWidth: { md: '100%' },
             mt: { xs: 3, md: 0 },
           }}
         >
@@ -137,7 +138,7 @@ function TopDestinations() {
       })
       .catch((err: Error) => setError(err.message || 'No se pudieron cargar los lugares.'))
       .finally(() => setIsLoading(false));
-  
+
     console.log('TopDestinations mounted, fetching top businesses...');
     console.log(topBusinesses);
   }, []);
@@ -150,7 +151,7 @@ function TopDestinations() {
     <Box sx={{ py: { xs: 10, md: 14 }, bgcolor: 'background.default' }}>
       <Container>
         <Typography variant="overline" color="primary">Populares en la comunidad</Typography>
-        <Typography variant="h4" fontWeight={800}>Destinos que tus TripMates están mirando</Typography>
+        <Typography variant="h4" fontWeight={800}>Destinos que generaron más interés</Typography>
         <Typography variant="body1" color="text.secondary" mb={5}>
           Lugares mas gustados.
         </Typography>

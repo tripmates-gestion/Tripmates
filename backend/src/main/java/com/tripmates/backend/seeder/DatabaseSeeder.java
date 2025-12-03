@@ -7,6 +7,7 @@ import com.tripmates.backend.auth.dto.AuthRegisterRequestDTO;
 import com.tripmates.backend.auth.service.AuthService;
 import com.tripmates.backend.common.types.*;
 import com.tripmates.backend.users.dto.account.AccountUpdateRequestDTO;
+import com.tripmates.backend.users.dto.account.SocialMediaUpdateRequestDTO;
 import com.tripmates.backend.users.service.UserService;
 import com.tripmates.backend.publications.dto.PublicationRequestDTO;
 import com.tripmates.backend.publications.dto.PublicationResumeResponseDTO;
@@ -78,6 +79,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 			seedReviews();
 			seedLikes();
 			seedFollows();
+			seedSocialMedia();
 			updateUserAvatars();
 			updateBusinessImages();
 			System.out.println("=== DatabaseSeeder finalizado OK ===");
@@ -159,36 +161,36 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedPublications() {
 		System.out.println("--- Creando publicaciones de negocios (con imágenes) ---");
 
-		// Restaurante La Buena Mesa
-		createPublication("info@labuenamesa.com", "Menú Especial de Otoño",
-				"Disfrutá de nuestro menú de temporada con ingredientes frescos y locales en La Buena Mesa.",
-				"+54 11 1234-5678", "reservas@labuenamesa.com",
-				new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+		// Restaurante Guerrin
+		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
+				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
+				"+54 11 1234-5678", "reservas@guerrin.com",
+				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("12:00"), LocalTime.parse("23:00")), List.of(),
-				List.of("restaurante", "comida", "menú", "especial"),
+				List.of("pizza", "muzzarella", "pizzeria", "clasica"),
 				List.of("sample_images/publications/restaurant/cena1.jpg"));
 
-		createPublication("info@labuenamesa.com", "Noche de Vinos",
-				"Degustación de vinos de bodegas locales con maridaje exclusivo en La Buena Mesa.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+		createPublication("afu@fi.uba.ar", "Noche de Vinos",
+				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
+				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
-		createPublication("info@labuenamesa.com", "Brunch de Domingos",
-				"Disfrutá de nuestro exclusivo brunch los domingos en La Buena Mesa.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816),
+		createPublication("afu@fi.uba.ar", "Flan de Domingos",
+				"Disfrutá de nuestro exclusivo flan los domingos en Guerrin.", "+54 11 1234-5678",
+				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
-				List.of(), List.of("brunch", "desayuno", "domingo"),
+				List.of(), List.of("flan", "desayuno", "domingo"),
 				List.of("sample_images/publications/restaurant/postre1.jpg"));
 
 		// Café del Centro
 		createPublication("contacto@cafedelcentro.com", "Café de Especialidad",
 				"Disfrutá de nuestros cafés de especialidad tostados artesanalmente en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00")), List.of(),
@@ -198,7 +200,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("contacto@cafedelcentro.com", "Tardes de Té",
 				"Relajate con nuestra selección de tés e infusiones con pastelería casera en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("15:00"), LocalTime.parse("19:00")), List.of(),
@@ -214,7 +216,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("00:00"), LocalTime.parse("23:59")), List.of(),
 				List.of("aventura", "montaña", "naturaleza"),
-				List.of("sample_images/publications/hotel/habitacion1.jpg"));
+				List.of("sample_images/publications/hotel/aventura1.jpg"));
 
 		createPublication("info@hostelmontana.com", "Escape de Fin de Semana",
 				"Escapada relajante con desayuno incluido y actividades al aire libre en Hostel Montaña.",
@@ -223,30 +225,30 @@ public class DatabaseSeeder implements CommandLineRunner {
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("14:00"), LocalTime.parse("12:00")), List.of(),
 				List.of("fin de semana", "relax", "naturaleza"),
-				List.of("sample_images/publications/hotel/aventura1.jpg"));
+				List.of("sample_images/publications/hotel/aventura2.jpg"));
 
-		// Hotel Playa Dorada
-		createPublication("reservas@playadorada.com", "Escape a la Playa - Oferta Especial",
-				"Disfrutá de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Playa Dorada.",
-				"+54 223 123-4567", "reservas@playadorada.com",
-				new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		// Hotel Sheraton
+		createPublication("sheraton@example.com", "Experiencia Presidential Suite",
+				"Viví el máximo lujo y exclusividad en nuestra suite presidencial con servicio butler 24/7, spa privado y vistas panorámicas de Buenos Aires.",
+				"+54 223 123-4567", "sheraton@example.com",
+				new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("00:00"), LocalTime.parse("23:59")), List.of(),
-				List.of("hotel", "playa", "vacaciones", "todo incluido"),
-				List.of("sample_images/publications/hotel/playa1.jpeg"));
+				List.of("lujo", "suite presidencial", "servicio butler", "spa privado", "exclusividad"),
+				List.of("sample_images/publications/hotel/presi1.jpeg"));
 
-		createPublication("reservas@playadorada.com", "Paquete Romántico",
-				"Escapada romántica con cena gourmet y masajes para dos en Hotel Playa Dorada.", "+54 223 123-4567",
-				"reservas@playadorada.com", new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		createPublication("sheraton@example.com", "Paquete Romántico",
+				"Escapada romántica con cena gourmet y masajes para dos en Hotel Sheraton.", "+54 223 123-4567",
+				"sheraton@example.com", new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("14:00"), LocalTime.parse("23:00")), List.of(),
 				List.of("romántico", "parejas", "especial"), List.of("sample_images/publications/hotel/deluxe1.jpeg"));
 
-		createPublication("reservas@playadorada.com", "Paquete Familiar",
-				"Diversión para toda la familia con actividades para niños y adultos en Hotel Playa Dorada.",
-				"+54 223 123-4567", "reservas@playadorada.com",
-				new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		createPublication("sheraton@example.com", "Paquete Familiar",
+				"Diversión para toda la familia con actividades para niños y adultos en Hotel Sheraton.",
+				"+54 223 123-4567", "sheraton@example.com",
+				new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("20:00")), List.of(),
 				List.of("familiar", "niños", "actividades"), List.of("sample_images/publications/hotel/suite1.jpg"));
@@ -255,7 +257,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Menú Degustación de Mariscos",
 				"Disfrutá de una experiencia gastronómica única con los mejores frutos del mar en Brisa Marina.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -38.0055, -57.5426),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("12:30"), LocalTime.parse("23:00")), List.of(),
@@ -265,7 +267,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Cena con Vista al Atardecer",
 				"Vive una experiencia inolvidable con nuestra cena de 5 pasos mientras el sol se pone en el mar.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -38.0055, -57.5426),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("19:00"), LocalTime.parse("23:30")), List.of(),
@@ -306,19 +308,19 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedRoomPacks() {
 		System.out.println("--- Creando room packs para hosting ---");
 
-		// Hotel Playa Dorada - 3 packs
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		// Hotel Sheraton - 3 packs
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2, List.of("desayuno", "wifi", "piscina", "estacionamiento"), 25000.0f,
 				"Habitación Estándar con Vista al Mar - Habitación doble con vista al mar. Incluye desayuno buffet y acceso a todas las instalaciones del hotel.",
 				List.of()), List.of("sample_images/publications/hotel/habitacion1.jpg"));
 
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2, List.of("desayuno", "wifi", "piscina", "estacionamiento", "minibar"),
 				38000.0f,
 				"Suite Familiar - Amplia suite con sala de estar y cama king size. Ideal para familias o grupos pequeños.",
 				List.of()), List.of("sample_images/publications/hotel/suite1.jpg"));
 
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2,
 				List.of("desayuno", "wifi", "piscina", "estacionamiento", "spa", "minibar"), 45000.0f,
 				"Habitación Deluxe - Lujosa habitación con jacuzzi y vista panorámica. Incluye acceso al spa y desayuno a la habitación.",
@@ -339,12 +341,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedMenuItems() {
 		System.out.println("--- Creando ítems de menú para restaurantes ---");
 
-		// La Buena Mesa
-		addMenuItem("info@labuenamesa.com", "Milanesa Napolitana", 3500.0f,
+		addMenuItem("afu@fi.uba.ar", "Milanesa Napolitana", 3500.0f,
 				"Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas.",
 				"sample_images/menu_items/milanesa.jpeg");
 
-		addMenuItem("info@labuenamesa.com", "Jugo de Naranja", 700.0f,
+		addMenuItem("afu@fi.uba.ar", "Jugo de Naranja", 700.0f,
 				"Jugo de Naranja de primera calidad para acompañar la comida.", "sample_images/menu_items/bebida.jpg");
 
 		// Café del Centro
@@ -408,7 +409,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Actualizando avatares de usuarios ---");
 
 		updateUserAvatar("camila@example.com", "sample_images/profile_pictures/user1.png");
-		updateUserAvatar("luisito@example.com", "sample_images/profile_pictures/user2.png");
+		updateUserAvatar("anibalfu2005@gmail.com", "sample_images/profile_pictures/user2.png");
 		updateUserAvatar("julian@example.com", "sample_images/profile_pictures/user3.png");
 		updateUserAvatar("joseluis@example.com", "sample_images/profile_pictures/user4.png");
 		updateUserAvatar("ricardo@example.com", "sample_images/profile_pictures/user5.png");
@@ -432,8 +433,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void updateBusinessProfiles() {
 		System.out.println("--- Actualizando perfiles de negocios ---");
 
-		updateLaBuenaMesa();
-		updateHotelPlayaDorada();
+		updateGuerrin();
+		updateHotelSheraton();
 		updateCafeDelCentro();
 		updateHostelMontania();
 		updateBrisaMarina();
@@ -441,33 +442,33 @@ public class DatabaseSeeder implements CommandLineRunner {
 		updateElEncuentroHostel();
 	}
 
-	private void updateLaBuenaMesa() {
-		Location location = new Location("Av. Corrientes 1234, Buenos Aires", -34.6037, -58.3816);
+	private void updateGuerrin() {
+		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("23:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
 
-		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("La Buena Mesa",
-				"Un restaurante familiar con los mejores platos de la cocina tradicional", location, "+54 11 1234-5678",
-				"contacto@labuenamesa.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
+		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Guerrin",
+				"Un restaurante con las mejores pizzas de Argentina!", location, "+54 11 1234-5678",
+				"contacto@guerrin.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
-		userService.updateUserAccount("info@labuenamesa.com", dto, null, null);
-		System.out.println("[PROFILE] Actualizado perfil de La Buena Mesa");
+		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
+		System.out.println("[PROFILE] Actualizado perfil de Guerrin");
 	}
 
-	private void updateHotelPlayaDorada() {
-		Location location = new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426);
-		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Hotel Playa Dorada",
+	private void updateHotelSheraton() {
+		Location location = new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522);
+		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Hotel Sheraton",
 				"Un hotel de lujo frente al mar con todas las comodidades", location, "+54 223 123-4567",
-				"reservas@playadorada.com", AveragePrice.$$$, null, null, null, null, HotelType.Hotel, null);
+				"sheraton@example.com", AveragePrice.$$$, null, null, null, null, HotelType.Hotel, null);
 
-		userService.updateUserAccount("reservas@playadorada.com", dto, null, null);
-		System.out.println("[PROFILE] Actualizado perfil de Hotel Playa Dorada");
+		userService.updateUserAccount("sheraton@example.com", dto, null, null);
+		System.out.println("[PROFILE] Actualizado perfil de Hotel Sheraton");
 	}
 
 	private void updateCafeDelCentro() {
-		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816);
+		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
@@ -534,10 +535,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void updateBusinessImages() {
 		System.out.println("--- Actualizando imágenes de negocios ---");
 
-		updateBusinessImagesForEmail("info@labuenamesa.com", "sample_images/profile_pictures/restaurant.jpg",
+		updateBusinessImagesForEmail("afu@fi.uba.ar", "sample_images/profile_pictures/restaurant.jpg",
 				List.of("sample_images/business_picture/restaurant2.jpg", "sample_images/business_picture/resto5.jpg"));
 
-		updateBusinessImagesForEmail("reservas@playadorada.com", "sample_images/profile_pictures/hotel.jpg",
+		updateBusinessImagesForEmail("sheraton@example.com", "sample_images/profile_pictures/hotel.jpg",
 				List.of("sample_images/business_picture/playa1.jpeg", "sample_images/business_picture/hostel1.jpg",
 						"sample_images/business_picture/hostel2.jpg"));
 
@@ -582,7 +583,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		String noReviewBusiness = "gaston@saboresperuanos.com";
 		List<String> noReviewPubs = businessPublicationIds.get(noReviewBusiness);
 
-		String[] allReviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
+		String[] allReviewers = { "camila@example.com", "anibalfu2005@gmail.com", "julian@example.com",
 				"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
 				"lucia@example.com", "pedro@example.com" };
 
@@ -650,10 +651,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
+		String[] likers = { "anibalfu2005@gmail.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
 				"astrid@example.com", "aizen@example.com", "lucia@example.com", "pedro@example.com" };
 
-		String buenaMesaBusiness = "info@labuenamesa.com";
+		String buenaMesaBusiness = "afu@fi.uba.ar";
 		List<String> buenaMesaPubs = businessPublicationIds.get(buenaMesaBusiness);
 
 		String noLikesBusiness = "gaston@saboresperuanos.com";
@@ -670,7 +671,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 					String email = likers[i];
 					try {
 						publicationService.addLike(pubId, email);
-						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (La Buena Mesa)");
+						System.out.println("[LIKE] " + email + " dio like a publicación " + pubId + " (Guerrin)");
 					}
 					catch (Exception e) {
 						System.err.println(
@@ -706,21 +707,21 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedFollows() {
 		try {
 			String camilaId = getUserId("camila@example.com");
-			String luisitoId = getUserId("luisito@example.com");
+			String luisitoId = getUserId("anibalfu2005@gmail.com");
 			String julianId = getUserId("julian@example.com");
 			String joseluisId = getUserId("joseluis@example.com");
 
 			follow("camila@example.com", luisitoId, "Camila -> Luisito");
 			follow("camila@example.com", julianId, "Camila -> Julián");
 
-			follow("luisito@example.com", camilaId, "Luisito -> Camila");
-			follow("luisito@example.com", joseluisId, "Luisito -> José Luis");
+			follow("anibalfu2005@gmail.com", camilaId, "Luisito -> Camila");
+			follow("anibalfu2005@gmail.com", joseluisId, "Luisito -> José Luis");
 
 			follow("julian@example.com", camilaId, "Julián -> Camila");
 			follow("julian@example.com", luisitoId, "Julián -> Luisito");
 			follow("julian@example.com", joseluisId, "Julián -> José Luis");
 
-			follow("joseluis@example.com", camilaId, "José Luis -> Camila");
+
 			follow("joseluis@example.com", julianId, "José Luis -> Julián");
 		}
 		catch (Exception e) {
@@ -806,6 +807,63 @@ public class DatabaseSeeder implements CommandLineRunner {
 			Files.write(dest.toPath(), content);
 		}
 
+	}
+
+	private void seedSocialMedia() {
+		System.out.println("--- Agregando redes sociales a usuarios de negocio ---");
+
+		// Guerrin
+		addSocialMedia("afu@fi.uba.ar", 
+			"https://www.instagram.com/pizzeriaguerrin/", 
+			"https://x.com/PizzeriaGuerrin", 
+			"https://www.facebook.com/pizzeriaguerrin/");
+
+		// Hotel Sheraton
+		addSocialMedia("sheraton@example.com", 
+			"https://www.instagram.com/sheratonbuenosaires/?hl=es", 
+			"https://x.com/SheratonHotels", 
+			"https://www.facebook.com/SheratonBuenosAires/");
+
+		// Café del Centro
+		addSocialMedia("contacto@cafedelcentro.com", 
+			"https://instagram.com/cafedelcentro", 
+			"https://twitter.com/cafedelcentro", 
+			"https://facebook.com/cafedelcentro");
+
+		// Hostel Montaña Mágica
+		addSocialMedia("info@hostelmontana.com", 
+			"https://instagram.com/hostelmontana", 
+			"https://twitter.com/montaniamagica", 
+			"https://facebook.com/hostelmontana");
+
+		// Brisa Marina
+		addSocialMedia("isabel@brisamarina.com", 
+			"https://instagram.com/brisamarina", 
+			"https://twitter.com/brisamarina", 
+			"https://facebook.com/brisamarina");
+
+		// Sabores Peruanos
+		addSocialMedia("gaston@saboresperuanos.com", 
+			"https://instagram.com/saboresperuanos", 
+			"https://twitter.com/saboresperuanos", 
+			"https://facebook.com/saboresperuanos");
+
+		// El Encuentro Hostel
+		addSocialMedia("diego@elencuentrohostel.com", 
+			"https://instagram.com/elencuentrohostel", 
+			"https://twitter.com/elencuentro", 
+			"https://facebook.com/elencuentrohostel");
+	}
+
+	private void addSocialMedia(String email, String instagramURL, String xURL, String facebookURL) {
+		try {
+			SocialMediaUpdateRequestDTO dto = new SocialMediaUpdateRequestDTO(instagramURL, xURL, facebookURL);
+			userService.addSocialMedia(email, dto);
+			System.out.println("[SOCIAL_MEDIA] Agregadas redes sociales para " + email);
+		}
+		catch (Exception e) {
+			System.err.println("[SOCIAL_MEDIA] Error agregando redes sociales para " + email + ": " + e.getMessage());
+		}
 	}
 
 }

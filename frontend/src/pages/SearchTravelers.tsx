@@ -19,9 +19,31 @@ const TravelersSearchPage: React.FC = () => {
 
   const theme = useTheme();
   const [bgIndex, setBgIndex] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchType, setSearchType] = useState<"name" | "location">("name");
-  const [results, setResults] = useState<any[]>([]);
+
+  // Initialize state from sessionStorage if available
+  const [searchTerm, setSearchTerm] = useState(() => {
+    return sessionStorage.getItem("travelersSearchTerm") || "";
+  });
+  const [searchType, setSearchType] = useState<"name" | "location">(() => {
+    return (sessionStorage.getItem("travelersSearchType") as "name" | "location") || "name";
+  });
+  const [results, setResults] = useState<any[]>(() => {
+    const savedResults = sessionStorage.getItem("travelersSearchResults");
+    return savedResults ? JSON.parse(savedResults) : [];
+  });
+
+  // Persist state changes
+  useEffect(() => {
+    sessionStorage.setItem("travelersSearchTerm", searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    sessionStorage.setItem("travelersSearchType", searchType);
+  }, [searchType]);
+
+  useEffect(() => {
+    sessionStorage.setItem("travelersSearchResults", JSON.stringify(results));
+  }, [results]);
   const navigate = useNavigate();
 
   const [defaultUsers, setDefaultUsers] = useState<any[]>([]);
@@ -35,7 +57,7 @@ const TravelersSearchPage: React.FC = () => {
       // getTravelersRecommendations ya devuelve el array directamente
       if (authContext.user?.id) {
         const users = await getTravelersRecommendations(authContext.user.id, authContext.accessToken);
-      console.log("Usuarios por defecto:", users);
+        console.log("Usuarios por defecto:", users);
         // Cambiar de response?.content a users directamente
         if (Array.isArray(users)) {
           setDefaultUsers(users.slice(0, 5)); // Tomar solo 5
@@ -82,15 +104,11 @@ const TravelersSearchPage: React.FC = () => {
 
     if (searchType === "name") {
       const response = await searchTravelers(authContext.accessToken, searchTerm, null);
-      console.log("Respuesta de la busqueda de viajeros", response);
-
       if (response != null) {
         resultsSearch.push(...response.content);
       }
     } else {
       const response = await searchTravelers(authContext.accessToken, null, searchTerm);
-      console.log("Respuesta de la busqueda de viajeros", response);
-
       if (response != null) {
         resultsSearch.push(...response.content);
       }
@@ -132,17 +150,17 @@ const TravelersSearchPage: React.FC = () => {
           onSearch={handleSearch}
         />
         {/* Mostrar usuarios por defecto solo si no hay resultados de búsqueda */}
-        {results.length === 0 && (
-          <DefaultTravelersSection
-            loadingDefault={loadingDefault}
-            defaultUsers={defaultUsers}
-            bgColor={bgColor}
-            handleUserClick={handleUserClick}
-          />
-        )}
 
         {/* Mostrar resultados de búsqueda */}
         <SearchResults results={results} onUserClick={handleUserClick} />
+
+        {/* Mostrar siempre viajeros sugeridos, incluso si hay resultados guardados */}
+        <DefaultTravelersSection
+          loadingDefault={loadingDefault}
+          defaultUsers={defaultUsers}
+          bgColor={bgColor}
+          handleUserClick={handleUserClick}
+        />
       </Box>
     </Box>
   );

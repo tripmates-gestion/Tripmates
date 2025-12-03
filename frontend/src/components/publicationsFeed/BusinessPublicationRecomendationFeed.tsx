@@ -301,14 +301,18 @@ export default function BusinessPublicationsRecomendationFeed() {
   if (!publications || publications.length === 0) {
     console.log("No hay publicaciones recomendadas disponibles.", publications);
     return (
-      <Container sx={{ py: 8 }}>
+      <Container sx={{
+        pt: { xs: 2, md: 2 },
+        px: { xs: 0, md: 0 },
+        maxWidth: { md: '100%' }
+      }}>
         <Typography variant="overline" color="primary">Para ti</Typography>
-        <Typography variant="h4" fontWeight={800} gutterBottom>Publicaciones Recomendadas</Typography>
+        <Typography variant="h4" fontWeight={800} gutterBottom> Experiencias para ti</Typography>
         <Typography color="text.secondary" mb={3}>
           Descubre los mejores negocios y experiencias que otros viajeros han disfrutado.
         </Typography>
         <Alert severity="info">
-          Aún no hay publicaciones recomendadas. Interactúa con más usuarios y publicaciones.
+          Aún no hay publicaciones recomendadas. Conectá con más TripMates para ver más publicaciones.
         </Alert>
       </Container>
     );
@@ -317,7 +321,11 @@ export default function BusinessPublicationsRecomendationFeed() {
   return (
     <>
       <Box sx={{ py: { width: '100%' }, bgcolor: 'background.paper' }}>
-        <Container>
+        <Container sx={{
+          pt: { xs: 4, md: 5 },
+          px: { xs: 0, md: 0 },
+          maxWidth: { md: '100%' }
+        }}>
           <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti</Typography>
           {/* Carrusel Keen */}
           <Box

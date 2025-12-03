@@ -1,12 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Stack,
   Typography,
   useTheme,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useLocation } from "react-router-dom";
 import { SearchBarHotel } from "../components/search/SearchBarHotel";
 import { SearchBarRestaurant } from "../components/search/SearchBarRestaurant";
@@ -14,9 +18,6 @@ import PlaceGrid from "../components/search/ResultsPlaceGrid";
 import { BusinessRecommendationsSection } from "../components/recommendations/BusinessRecommendationsSection";
 import type { BusinessPubAccountDataDTO } from "../types/AccountData";
 
-// ---------------------------------------------------------
-// Componente: Selector y barra de búsqueda (Hotel / Restaurante)
-// ---------------------------------------------------------
 function SearchBoxContainer({
   onResults,
 }: {
@@ -27,22 +28,22 @@ function SearchBoxContainer({
 
   return (
     <Stack spacing={4} alignItems="center">
-      {/* Título */}
-      <Typography
-        variant="h3"
-        sx={{
-          // fontStyle: "oblique",
-          fontWeight: 800,
-          color: theme.palette.text.primary,
-          textAlign: "center",
-          letterSpacing: "0.05em",
-          mb: 2,
-          textShadow: "7px 7px 5px rgba(55, 82, 106, 0.1)",
-        }}
-        
-      >
-        ¿Buscando una nueva experiencia?
-      </Typography>
+      {/* Título con pingüinos */}
+      <Stack direction="row" alignItems="center" spacing={2} justifyContent="center">
+
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: 800,
+            color: theme.palette.text.primary,
+            textAlign: "center",
+            letterSpacing: "0.05em",
+            textShadow: "7px 7px 5px rgba(55, 82, 106, 0.1)",
+          }}
+        >
+          ¿Buscando una nueva experiencia?🐧
+        </Typography>
+      </Stack>
 
       {/* Botones de modo */}
       <Stack direction="row" spacing={2}>
@@ -75,16 +76,16 @@ function SearchBoxContainer({
       </Stack>
 
       {/* Barra de búsqueda dinámica */}
-        <Box width="100%" maxWidth="900px">
-          {mode === "hotel" ? (
-            <SearchBarHotel onSearchResults={onResults} />
-          ) : (
-            <SearchBarRestaurant onSearchResults={onResults} />
-          )}
-        </Box>
-      </Stack>
-    );
-  }
+      <Box width="100%" maxWidth="900px">
+        {mode === "hotel" ? (
+          <SearchBarHotel onSearchResults={onResults} />
+        ) : (
+          <SearchBarRestaurant onSearchResults={onResults} />
+        )}
+      </Box>
+    </Stack>
+  );
+}
 
 
 // ---------------------------------------------------------
@@ -95,25 +96,46 @@ export default function Search() {
   const [searchResults, setSearchResults] = useState<BusinessPubAccountDataDTO[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Load saved search results from sessionStorage on mount
+  useEffect(() => {
+    const savedResults = sessionStorage.getItem("searchBusiness_results");
+    const savedIsSearching = sessionStorage.getItem("searchBusiness_isSearching");
+
+    if (savedResults && savedIsSearching === "true") {
+      try {
+        const parsedResults = JSON.parse(savedResults);
+        setSearchResults(parsedResults);
+        setIsSearching(true);
+      } catch (error) {
+        console.error("Error parsing saved search results:", error);
+        sessionStorage.removeItem("searchBusiness_results");
+        sessionStorage.removeItem("searchBusiness_isSearching");
+      }
+    }
+  }, []);
+
   const handleSearchResults = (results: BusinessPubAccountDataDTO[]) => {
     setSearchResults(results);
     setIsSearching(true);
+    // Save to sessionStorage
+    sessionStorage.setItem("searchBusiness_results", JSON.stringify(results));
+    sessionStorage.setItem("searchBusiness_isSearching", "true");
   };
 
   const resetSearch = () => {
     setSearchResults([]);
     setIsSearching(false);
+    // Clear sessionStorage
+    sessionStorage.removeItem("searchBusiness_results");
+    sessionStorage.removeItem("searchBusiness_isSearching");
   };
 
   const items = useMemo(() => {
     if (isSearching) {
       return searchResults;
     }
-  
-    // Si no hay búsqueda activa, mostrar los mocks filtrados
     return [];
   }, [q, searchResults, isSearching]);
-  
 
   const theme = useTheme();
 
@@ -137,8 +159,8 @@ export default function Search() {
         {isSearching
           ? `🔎 Resultados (${searchResults.length})`
           : q
-          ? `Resultados para “${q}”`
-          : ""}
+            ? `Resultados para “${q}”`
+            : ""}
       </Typography>
 
       {/* Resultados de búsqueda */}
@@ -172,29 +194,54 @@ export default function Search() {
         </>
       )}
 
-      {/* Título recomendaciones (solo si hubo búsqueda) */}
-      {isSearching && (
-        <Typography
-          variant="h6"
-          textAlign="left"
+      {/* Recomendaciones en acordeón con efecto glassmorphism */}
+      <Accordion
+        defaultExpanded
+        sx={{
+          background: theme.palette.mode === "dark"
+            ? "rgba(255, 255, 255, 0.05)"
+            : "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(12px)",
+          borderRadius: "20px !important",
+          border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.08)"}`,
+          boxShadow: theme.palette.mode === "dark"
+            ? "0 8px 32px 0 rgba(0, 0, 0, 0.37)"
+            : "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+          overflow: "hidden",
+          "&:before": {
+            display: "none",
+          },
+          "&.Mui-expanded": {
+            margin: 0,
+          },
+        }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
           sx={{
-            color: theme.palette.text.secondary,
-            fontWeight: 700,
-            mb: 2,
+            "& .MuiAccordionSummary-content": {
+              margin: "16px 0",
+            },
           }}
         >
-          ✨ Recomendados para vos
-        </Typography>
-      )}
-
-      {/* Recomendaciones */}
-      <BusinessRecommendationsSection />
-      
-      
-      {/* Resultados */}
-      {items.length > 0 ? (
-        <PlaceGrid businessAccounts={items} />
-      ) : null}
+          <Typography
+            variant="h6"
+            sx={{
+              color: theme.palette.text.primary,
+              fontWeight: 700,
+            }}
+          >
+            ✨ Recomendados para vos
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails
+          sx={{
+            pt: 0,
+          }}
+        >
+          <BusinessRecommendationsSection />
+        </AccordionDetails>
+      </Accordion>
 
     </Stack>
   );

@@ -49,3 +49,23 @@ export async function registerUserApi(name: string, email: string, password: str
   });
 }
 
+export async function requestPasswordReset(email: string) {
+  return apiFetch(ENDPOINTS.REQUEST_PASSWORD_RESET, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyResetCode(email: string, code: string) {
+  return apiFetch(ENDPOINTS.VERIFY_RESET_CODE, {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function resetPassword(email: string, newPassword: string, code: string) {
+  return apiFetch(ENDPOINTS.RESET_PASSWORD, {
+    method: 'POST',
+    body: JSON.stringify({ email, newPassword, code }),
+  });
+}

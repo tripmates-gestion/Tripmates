@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Box, Card, CardContent, Stack, Typography, Avatar, Chip, Divider,
-  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
+  Tabs, Tab, Button, Grid, CardMedia, Alert, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Rating,
 } from '@mui/material';
 import { Edit, Room, Phone, Email } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
@@ -23,6 +23,7 @@ import { BusinessMetricsButton } from '../components/metrics/BottonMetrics';
 import { ShareProfileButton } from '../components/profile/ShareProfileButton';
 import ProfileEditDialog from '../components/profile/ProfileEditDialog';
 import { getUserSocialMedia, type SocialMediaLinks } from '../services/socialMedia';
+import { useBusinessRatingAverage } from '../hooks/useBusinessRatingAverage';
 
 
 const BASE_TABS = [
@@ -46,6 +47,7 @@ export default function BusinessProfile() {
   const [tab, setTab] = React.useState(0);
   const [editOpen, setEditOpen] = React.useState(false);
   const [socialLinks, setSocialLinks] = React.useState<SocialMediaLinks | null>(null);
+  const { ratingAverage } = useBusinessRatingAverage(business?.id);
 
   const tabs =
     business?.businessType === BUSINESS_TYPES.restaurant
@@ -140,6 +142,13 @@ export default function BusinessProfile() {
                     color="success"
                     sx={{ ml: 0.5 }}
                   />
+                </Stack>
+
+                <Stack direction="row" spacing={1} alignItems="center" mt={0.75}>
+                  <Rating value={ratingAverage ?? 0} precision={0.1} readOnly size="small" />
+                  <Typography variant="body2" color="text.secondary">
+                    {ratingAverage !== null ? `${ratingAverage.toFixed(1)} / 5` : 'Sin calificaciones'}
+                  </Typography>
                 </Stack>
 
                 <Stack direction="row" spacing={2} sx={{ mt: 1.25 }} flexWrap="wrap">
@@ -356,11 +365,11 @@ export function BusinessPublicationsTab({ accessToken }: { accessToken: string |
           Aún no publicaste nada. Tus publicaciones aparecerán aquí.
         </Typography>
       ) : (
-        <PublicationGrid 
-          publications={items} 
+        <PublicationGrid
+          publications={items}
           onEdit={handleEditRequest}
-          onDelete={handleDeleteRequest} 
-          letReview={false} 
+          onDelete={handleDeleteRequest}
+          letReview
         />
       )}
 

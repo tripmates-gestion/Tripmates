@@ -11,7 +11,6 @@ export async function saveReview(review: Review, accessToken: string, photos: st
     const files: File[] = photos.map((photo, i) =>
         dataURLtoFile(photo, `photo_${i + 1}.jpg`)
     )
-  
     // Validar tamaño/tipo de archivos
     files.forEach(validateFile)
   
@@ -23,9 +22,12 @@ export async function saveReview(review: Review, accessToken: string, photos: st
             title: review.title,
             content: review.text,
             rating: review.rating,
+            mentions: review.mentions
         })
     );
+    
     files.forEach((f) => reviewBody.append("files", f, f.name));
+    review.mentions.forEach((mention) => reviewBody.append("mentions", mention));
     const response = await apiFetch(ENDPOINTS.POST_REVIEW.replace("{id}", review.publicationId), {
         method: "POST",
         headers: {
