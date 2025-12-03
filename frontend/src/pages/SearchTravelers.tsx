@@ -150,17 +150,17 @@ const TravelersSearchPage: React.FC = () => {
           onSearch={handleSearch}
         />
         {/* Mostrar usuarios por defecto solo si no hay resultados de búsqueda */}
-        {results.length === 0 && (
-          <DefaultTravelersSection
-            loadingDefault={loadingDefault}
-            defaultUsers={defaultUsers}
-            bgColor={bgColor}
-            handleUserClick={handleUserClick}
-          />
-        )}
 
         {/* Mostrar resultados de búsqueda */}
         <SearchResults results={results} onUserClick={handleUserClick} />
+
+        {/* Mostrar siempre viajeros sugeridos, incluso si hay resultados guardados */}
+        <DefaultTravelersSection
+          loadingDefault={loadingDefault}
+          defaultUsers={defaultUsers}
+          bgColor={bgColor}
+          handleUserClick={handleUserClick}
+        />
       </Box>
     </Box>
   );
