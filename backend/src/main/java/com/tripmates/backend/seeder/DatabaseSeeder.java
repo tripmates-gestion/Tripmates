@@ -165,7 +165,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
 				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
 				"+54 11 1234-5678", "reservas@labuenamesa.com",
-				new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
+				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("12:00"), LocalTime.parse("23:00")), List.of(),
@@ -174,23 +174,23 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 		createPublication("afu@fi.uba.ar", "Noche de Vinos",
 				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
-		createPublication("afu@fi.uba.ar", "Brunch de Domingos",
-				"Disfrutá de nuestro exclusivo brunch los domingos en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816),
+		createPublication("afu@fi.uba.ar", "Flan de Domingos",
+				"Disfrutá de nuestro exclusivo flan los domingos en Guerrin.", "+54 11 1234-5678",
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
-				List.of(), List.of("brunch", "desayuno", "domingo"),
+				List.of(), List.of("flan", "desayuno", "domingo"),
 				List.of("sample_images/publications/restaurant/postre1.jpg"));
 
 		// Café del Centro
 		createPublication("contacto@cafedelcentro.com", "Café de Especialidad",
 				"Disfrutá de nuestros cafés de especialidad tostados artesanalmente en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00")), List.of(),
@@ -200,7 +200,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("contacto@cafedelcentro.com", "Tardes de Té",
 				"Relajate con nuestra selección de tés e infusiones con pastelería casera en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("15:00"), LocalTime.parse("19:00")), List.of(),
@@ -227,28 +227,28 @@ public class DatabaseSeeder implements CommandLineRunner {
 				List.of("fin de semana", "relax", "naturaleza"),
 				List.of("sample_images/publications/hotel/aventura1.jpg"));
 
-		// Hotel Playa Dorada
-		createPublication("reservas@playadorada.com", "Escape a la Playa - Oferta Especial",
-				"Disfrutá de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Playa Dorada.",
-				"+54 223 123-4567", "reservas@playadorada.com",
-				new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		// Hotel Sheraton
+		createPublication("sheraton@example.com", "Escape a la Playa - Oferta Especial",
+				"Disfrutá de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Sheraton.",
+				"+54 223 123-4567", "sheraton@example.com",
+				new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("00:00"), LocalTime.parse("23:59")), List.of(),
 				List.of("hotel", "playa", "vacaciones", "todo incluido"),
 				List.of("sample_images/publications/hotel/playa1.jpeg"));
 
-		createPublication("reservas@playadorada.com", "Paquete Romántico",
-				"Escapada romántica con cena gourmet y masajes para dos en Hotel Playa Dorada.", "+54 223 123-4567",
-				"reservas@playadorada.com", new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		createPublication("sheraton@example.com", "Paquete Romántico",
+				"Escapada romántica con cena gourmet y masajes para dos en Hotel Sheraton.", "+54 223 123-4567",
+				"sheraton@example.com", new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("14:00"), LocalTime.parse("23:00")), List.of(),
 				List.of("romántico", "parejas", "especial"), List.of("sample_images/publications/hotel/deluxe1.jpeg"));
 
-		createPublication("reservas@playadorada.com", "Paquete Familiar",
-				"Diversión para toda la familia con actividades para niños y adultos en Hotel Playa Dorada.",
-				"+54 223 123-4567", "reservas@playadorada.com",
-				new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426),
+		createPublication("sheraton@example.com", "Paquete Familiar",
+				"Diversión para toda la familia con actividades para niños y adultos en Hotel Sheraton.",
+				"+54 223 123-4567", "sheraton@example.com",
+				new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
 				List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("20:00")), List.of(),
 				List.of("familiar", "niños", "actividades"), List.of("sample_images/publications/hotel/suite1.jpg"));
@@ -257,7 +257,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Menú Degustación de Mariscos",
 				"Disfrutá de una experiencia gastronómica única con los mejores frutos del mar en Brisa Marina.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -38.0055, -57.5426),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5934799, -58.3753622),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("12:30"), LocalTime.parse("23:00")), List.of(),
@@ -267,7 +267,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Cena con Vista al Atardecer",
 				"Vive una experiencia inolvidable con nuestra cena de 5 pasos mientras el sol se pone en el mar.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -38.0055, -57.5426),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5934799, -58.3753622),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("19:00"), LocalTime.parse("23:30")), List.of(),
@@ -308,19 +308,19 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedRoomPacks() {
 		System.out.println("--- Creando room packs para hosting ---");
 
-		// Hotel Playa Dorada - 3 packs
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		// Hotel Sheraton - 3 packs
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2, List.of("desayuno", "wifi", "piscina", "estacionamiento"), 25000.0f,
 				"Habitación Estándar con Vista al Mar - Habitación doble con vista al mar. Incluye desayuno buffet y acceso a todas las instalaciones del hotel.",
 				List.of()), List.of("sample_images/publications/hotel/habitacion1.jpg"));
 
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2, List.of("desayuno", "wifi", "piscina", "estacionamiento", "minibar"),
 				38000.0f,
 				"Suite Familiar - Amplia suite con sala de estar y cama king size. Ideal para familias o grupos pequeños.",
 				List.of()), List.of("sample_images/publications/hotel/suite1.jpg"));
 
-		addRoomPack("reservas@playadorada.com", new RoomPack(LocalDate.parse("2025-12-20"),
+		addRoomPack("sheraton@example.com", new RoomPack(LocalDate.parse("2025-12-20"),
 				LocalDate.parse("2025-12-27"), 2,
 				List.of("desayuno", "wifi", "piscina", "estacionamiento", "spa", "minibar"), 45000.0f,
 				"Habitación Deluxe - Lujosa habitación con jacuzzi y vista panorámica. Incluye acceso al spa y desayuno a la habitación.",
@@ -434,7 +434,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Actualizando perfiles de negocios ---");
 
 		updateGuerrin();
-		updateHotelPlayaDorada();
+		updateHotelSheraton();
 		updateCafeDelCentro();
 		updateHostelMontania();
 		updateBrisaMarina();
@@ -443,7 +443,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void updateGuerrin() {
-		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6037, -58.3816);
+		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("23:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
@@ -457,18 +457,18 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("[PROFILE] Actualizado perfil de Guerrin");
 	}
 
-	private void updateHotelPlayaDorada() {
-		Location location = new Location("Av. Costanera 2345, Mar del Plata", -38.0055, -57.5426);
-		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Hotel Playa Dorada",
+	private void updateHotelSheraton() {
+		Location location = new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622);
+		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Hotel Sheraton",
 				"Un hotel de lujo frente al mar con todas las comodidades", location, "+54 223 123-4567",
-				"reservas@playadorada.com", AveragePrice.$$$, null, null, null, null, HotelType.Hotel, null);
+				"sheraton@example.com", AveragePrice.$$$, null, null, null, null, HotelType.Hotel, null);
 
-		userService.updateUserAccount("reservas@playadorada.com", dto, null, null);
-		System.out.println("[PROFILE] Actualizado perfil de Hotel Playa Dorada");
+		userService.updateUserAccount("sheraton@example.com", dto, null, null);
+		System.out.println("[PROFILE] Actualizado perfil de Hotel Sheraton");
 	}
 
 	private void updateCafeDelCentro() {
-		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3816);
+		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
@@ -538,7 +538,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		updateBusinessImagesForEmail("afu@fi.uba.ar", "sample_images/profile_pictures/restaurant.jpg",
 				List.of("sample_images/business_picture/restaurant2.jpg", "sample_images/business_picture/resto5.jpg"));
 
-		updateBusinessImagesForEmail("reservas@playadorada.com", "sample_images/profile_pictures/hotel.jpg",
+		updateBusinessImagesForEmail("sheraton@example.com", "sample_images/profile_pictures/hotel.jpg",
 				List.of("sample_images/business_picture/playa1.jpeg", "sample_images/business_picture/hostel1.jpg",
 						"sample_images/business_picture/hostel2.jpg"));
 
@@ -818,11 +818,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 			"https://x.com/PizzeriaGuerrin", 
 			"https://www.facebook.com/pizzeriaguerrin/");
 
-		// Hotel Playa Dorada
-		addSocialMedia("reservas@playadorada.com", 
-			"https://instagram.com/hotelplayadorada", 
-			"https://twitter.com/playadorada", 
-			"https://facebook.com/hotelplayadorada");
+		// Hotel Sheraton
+		addSocialMedia("sheraton@example.com", 
+			"https://www.instagram.com/sheratonbuenosaires/?hl=es", 
+			"https://x.com/SheratonHotels", 
+			"https://www.facebook.com/SheratonBuenosAires/");
 
 		// Café del Centro
 		addSocialMedia("contacto@cafedelcentro.com", 
