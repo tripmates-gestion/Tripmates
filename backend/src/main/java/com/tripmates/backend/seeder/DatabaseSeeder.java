@@ -165,7 +165,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
 				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
 				"+54 11 1234-5678", "reservas@labuenamesa.com",
-				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
+				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("12:00"), LocalTime.parse("23:00")), List.of(),
@@ -174,14 +174,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 
 		createPublication("afu@fi.uba.ar", "Noche de Vinos",
 				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
 		createPublication("afu@fi.uba.ar", "Flan de Domingos",
 				"Disfrutá de nuestro exclusivo flan los domingos en Guerrin.", "+54 11 1234-5678",
-				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623),
+				"reservas@labuenamesa.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
 				List.of(), List.of("flan", "desayuno", "domingo"),
 				List.of("sample_images/publications/restaurant/postre1.jpg"));
@@ -190,7 +190,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("contacto@cafedelcentro.com", "Café de Especialidad",
 				"Disfrutá de nuestros cafés de especialidad tostados artesanalmente en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00")), List.of(),
@@ -200,7 +200,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("contacto@cafedelcentro.com", "Tardes de Té",
 				"Relajate con nuestra selección de tés e infusiones con pastelería casera en Café del Centro.",
 				"+54 11 9876-5432", "contacto@cafedelcentro.com",
-				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623),
+				new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("15:00"), LocalTime.parse("19:00")), List.of(),
@@ -216,7 +216,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("00:00"), LocalTime.parse("23:59")), List.of(),
 				List.of("aventura", "montaña", "naturaleza"),
-				List.of("sample_images/publications/hotel/habitacion1.jpg"));
+				List.of("sample_images/publications/hotel/aventura1.jpg"));
 
 		createPublication("info@hostelmontana.com", "Escape de Fin de Semana",
 				"Escapada relajante con desayuno incluido y actividades al aire libre en Hostel Montaña.",
@@ -225,22 +225,22 @@ public class DatabaseSeeder implements CommandLineRunner {
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("14:00"), LocalTime.parse("12:00")), List.of(),
 				List.of("fin de semana", "relax", "naturaleza"),
-				List.of("sample_images/publications/hotel/aventura1.jpg"));
+				List.of("sample_images/publications/hotel/aventura2.jpg"));
 
 		// Hotel Sheraton
-		createPublication("sheraton@example.com", "Escape a la Playa - Oferta Especial",
-				"Disfrutá de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Sheraton.",
+		createPublication("sheraton@example.com", "Experiencia Presidential Suite",
+				"Viví el máximo lujo y exclusividad en nuestra suite presidencial con servicio butler 24/7, spa privado y vistas panorámicas de Buenos Aires.",
 				"+54 223 123-4567", "sheraton@example.com",
-				new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
+				new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("00:00"), LocalTime.parse("23:59")), List.of(),
-				List.of("hotel", "playa", "vacaciones", "todo incluido"),
-				List.of("sample_images/publications/hotel/playa1.jpeg"));
+				List.of("lujo", "suite presidencial", "servicio butler", "spa privado", "exclusividad"),
+				List.of("sample_images/publications/hotel/presi1.jpeg"));
 
 		createPublication("sheraton@example.com", "Paquete Romántico",
 				"Escapada romántica con cena gourmet y masajes para dos en Hotel Sheraton.", "+54 223 123-4567",
-				"sheraton@example.com", new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
+				"sheraton@example.com", new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("14:00"), LocalTime.parse("23:00")), List.of(),
 				List.of("romántico", "parejas", "especial"), List.of("sample_images/publications/hotel/deluxe1.jpeg"));
@@ -248,7 +248,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("sheraton@example.com", "Paquete Familiar",
 				"Diversión para toda la familia con actividades para niños y adultos en Hotel Sheraton.",
 				"+54 223 123-4567", "sheraton@example.com",
-				new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622),
+				new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("20:00")), List.of(),
 				List.of("familiar", "niños", "actividades"), List.of("sample_images/publications/hotel/suite1.jpg"));
@@ -257,7 +257,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Menú Degustación de Mariscos",
 				"Disfrutá de una experiencia gastronómica única con los mejores frutos del mar en Brisa Marina.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -34.5934799, -58.3753622),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("12:30"), LocalTime.parse("23:00")), List.of(),
@@ -267,7 +267,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		createPublication("isabel@brisamarina.com", "Cena con Vista al Atardecer",
 				"Vive una experiencia inolvidable con nuestra cena de 5 pasos mientras el sol se pone en el mar.",
 				"+54 223 456-7890", "reservas@brisamarina.com",
-				new Location("Av. Costanera 1234, Mar del Plata", -34.5934799, -58.3753622),
+				new Location("Av. Costanera 1234, Mar del Plata", -34.5932888, -58.3727522),
 				List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY,
 						DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
 				new AttentionSchedule(LocalTime.parse("19:00"), LocalTime.parse("23:30")), List.of(),
@@ -443,7 +443,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void updateGuerrin() {
-		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6041209, -58.3885623);
+		Location location = new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("09:00"), LocalTime.parse("23:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
@@ -458,7 +458,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void updateHotelSheraton() {
-		Location location = new Location("San Martin 1225, Buenos Aires", -34.5934799, -58.3753622);
+		Location location = new Location("San Martin 1225, Buenos Aires", -34.5932888, -58.3727522);
 		AccountUpdateRequestDTO dto = new AccountUpdateRequestDTO("Hotel Sheraton",
 				"Un hotel de lujo frente al mar con todas las comodidades", location, "+54 223 123-4567",
 				"sheraton@example.com", AveragePrice.$$$, null, null, null, null, HotelType.Hotel, null);
@@ -468,7 +468,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	}
 
 	private void updateCafeDelCentro() {
-		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3885623);
+		Location location = new Location("Av. Santa Fe 1234, Buenos Aires", -34.5895, -58.3908476);
 		AttentionSchedule schedule = new AttentionSchedule(LocalTime.parse("07:00"), LocalTime.parse("20:00"));
 		List<DayOfWeek> openingDays = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
 				DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY);
