@@ -6,29 +6,28 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import com.tripmates.backend.config.TestCloudinaryConfig;
-
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeAll;
+
+import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.common.types.BusinessType;
+import com.tripmates.backend.TestHelper;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.tripmates.backend.common.constants.ValidationErrorMessage;
-import com.tripmates.backend.common.types.BusinessType;
-
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -69,7 +68,11 @@ public class PatchMeTest {
 				  "name": "Beautiful place with amazing views and full amenities.",
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
-				  "location": "contact@hostel.com",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "phoneNumber": "+541112345678",
 				  "publicEmail": "contact@hostel.com",
 				  "averagePrice": "$$",
@@ -198,8 +201,6 @@ public class PatchMeTest {
 			.andExpect(jsonPath("$.instance").value("/users/me"))
 			.andDo(print());
 	}
-
-	/* *************AHORA PARA USUARIO************************* */
 
 	@Test
 	void testGivenUserAccount_WhenPatchMeWithHotelType_ThenShouldFailAndReturnError400BadRequest() throws Exception {
@@ -387,7 +388,11 @@ public class PatchMeTest {
 		String jwt = testHelper.getUserTestingJwt("test@example.com");
 		String requestJson = """
 				{
-				"location": "New Location"
+				"location": {
+						"address": "New Location",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					}
 				}
 				""";
 

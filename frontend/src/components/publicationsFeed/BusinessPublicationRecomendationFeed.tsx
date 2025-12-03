@@ -1,122 +1,205 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/components/recommendations/BusinessRecommendationFeed.tsx (Crear nuevo archivo)
-import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Container, 
-  CircularProgress, 
+// frontend/src/components/publicationsFeed/BusinessPublicationsRecomendationFeed.tsx
+
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Box,
+  Typography,
+  Container,
+  CircularProgress,
   Alert,
-  Menu, // 👈 Nuevo
-  MenuItem, // 👈 Nuevo
-  Divider, // 👈 Nuevo
-  Dialog, // 👈 Nuevo
-  DialogTitle, // 👈 Nuevo
-  DialogContent, // 👈 Nuevo
-  DialogActions, // 👈 Nuevo
-  TextField, // 👈 Nuevo
-  Button, // 👈 Nuevo
-  Snackbar // 👈 Nuevo
+  Menu,
+  MenuItem,
+  Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Snackbar,
+  useTheme,
+  IconButton
 } from '@mui/material';
+import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
 
 import BusinessPublicationCard from '../publications/PublicationCard';
-import type { BusinessPublicationResponseDTO } from '../../types/Business';
-
-import { useSnackbar } from 'notistack';
-import { useAuth } from '../../hooks/useAuth'; // 👈 Importamos useAuth
-// 💡 Asegúrate de que las rutas a los servicios son correctas
-import { getPlans, createPlan, addPublicationToPlan } from '../../services/plansService'; 
-import { getBusinessPublicationsPublicRecommendations } from '../../services/recommendations';
 import PublicationDetailDialog from '../publications/PublicationDetailDialog';
-import { useTheme } from '@emotion/react';
-// ──────────────────────────────────────────────────────────
-// TIPOS Y FUNCIONES COPIADAS DEL BusinessPublicationsTab.tsx
-// ──────────────────────────────────────────────────────────
 
+import { useAuth } from '../../hooks/useAuth';
+import { useSnackbar } from 'notistack';
+
+import { getPlans, createPlan, addPublicationToPlan } from '../../services/plansService';
+import { getBusinessPublicationsPublicRecommendations } from '../../services/recommendations';
+
+// -------------------------------------------------------------------
+// TIPOS
+// -------------------------------------------------------------------
 type PlanInfo = {
   name: string;
-  id: string
-}
+  id: string;
+};
 
-// Nota: Asumiendo que 'any' en el mapeo proviene de la estructura de tu backend real.
-async function fetchPlans(accessToken: string) : Promise<PlanInfo[]>
-{ 
+async function fetchPlans(accessToken: string): Promise<PlanInfo[]> {
   const response = await getPlans(accessToken);
   const fetchedPlans: PlanInfo[] = Array.isArray(response)
-    ? response.map((p: any) => ({
-    name: typeof p === "string" ? p : p.name,
-    id: typeof p === "string" ? p : p.id
-    })) : [];
+    ? response.map((p: any) => ({ name: p.name ?? p, id: p.id ?? p }))
+    : [];
   return fetchedPlans;
 }
 
-// ──────────────────────────────────────────────────────────
+// -------------------------------------------------------------------
 // COMPONENTE PRINCIPAL
-// ──────────────────────────────────────────────────────────
-
-export default function BusinessRecommendationFeed() {
-  const [publications, setPublications] = useState<BusinessPublicationResponseDTO[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+// -------------------------------------------------------------------
+export default function BusinessPublicationsRecomendationFeed() {
+  const [publications, setPublications] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 🆕 Estados para la gestión de planes
   const [showLoginMsg, setShowLoginMsg] = useState(false);
   const [showSuccessMsg, setShowSuccessMsg] = useState(false);
   const [plans, setPlans] = useState<PlanInfo[]>([]);
   const [plansLoaded, setPlansLoaded] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [targetPublication, setTargetPublication] =
-    useState<BusinessPublicationResponseDTO | null>(null);
+  const [targetPublication, setTargetPublication] = useState<any | null>(null);
 
-  // 🆕 Estados para el diálogo de creación de plan
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
-  const [newPlanName, setNewPlanName] = useState("");
+  const [newPlanName, setNewPlanName] = useState('');
+
+  const [selected, setSelected] = useState<any | null>(null);
 
   const { enqueueSnackbar } = useSnackbar();
-  const context  = useAuth();
-
-  // 🆕 Estados para el diálogo de detalle de publicación
-  const [selected, setSelected] = React.useState<BusinessPublicationResponseDTO | null>(null);
-
+  const context = useAuth();
   const theme = useTheme();
-  
-  // ───────────────────────────────
-  // Lógica de Fetch inicial
-  // ───────────────────────────────
+
+  // -------------------------------------------------------------------
+  // Fetch inicial
+  // -------------------------------------------------------------------
   useEffect(() => {
+    let mounted = true;
+
     const fetchRecommendations = async () => {
-      if (context.user ==null || !context.accessToken) {
-        setIsLoading(false);
+      if (!context?.user || !context?.accessToken) {
+        if (mounted) {
+          setIsLoading(false);
+          setPublications([]);
+        }
         return;
       }
+
       try {
         setIsLoading(true);
         setError(null);
         const pubs = await getBusinessPublicationsPublicRecommendations(context.user.id, context.accessToken);
-        setPublications(pubs);
+        if (mounted) {
+          setPublications(Array.isArray(pubs) ? pubs : []);
+        }
       } catch (err) {
         console.error(err);
-        setError('Error al cargar las publicaciones recomendadas.');
+        if (mounted) setError('Error al cargar las publicaciones recomendadas.');
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
     fetchRecommendations();
-  }, []);
+    return () => { mounted = false; };
+  }, [context?.user?.id, context?.accessToken]);
 
+  // -------------------------------------------------------------------
+  // Keen Slider (Continuous Loop)
+  // -------------------------------------------------------------------
+  const animationRef = useRef<number | null>(null);
+  const isHoveringRef = useRef(false);
+  const isInteractingRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
+  const [visibleSlides, setVisibleSlides] = useState(3); // Default to 3
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
 
-  // ───────────────────────────────
-  // Lógica de "Agregar a plan" (Copiado de BusinessPublicationsTab)
-  // ───────────────────────────────
+  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+    loop: true,
+    renderMode: "performance",
+    drag: true,
+    created: (_s) => {
+      setIsReady(true);
+      // Determine initial visible slides based on window width
+      const width = window.innerWidth;
+      if (width >= 960) {
+        setVisibleSlides(3);
+      } else if (width >= 600) {
+        setVisibleSlides(2);
+      } else {
+        setVisibleSlides(1);
+      }
+    },
+    destroyed: () => setIsReady(false),
+    slideChanged: (_s) => {
+      // Update visible slides count when breakpoint changes
+      const width = window.innerWidth;
+      if (width >= 960) {
+        setVisibleSlides(3);
+      } else if (width >= 600) {
+        setVisibleSlides(2);
+      } else {
+        setVisibleSlides(1);
+      }
+    },
+    slides: {
+      perView: 1,
+      spacing: 15,
+    },
+    breakpoints: {
+      "(min-width: 600px)": {
+        slides: { perView: 2, spacing: 15 },
+      },
+      "(min-width: 960px)": {
+        slides: { perView: 3, spacing: 15 },
+      },
+    },
+  });
+
+  // Determine if auto-scroll should be enabled
+  useEffect(() => {
+    setShouldAutoScroll(publications.length > visibleSlides);
+  }, [publications.length, visibleSlides]);
+
+  // Animation loop
+  const animation = (_timestamp: number) => {
+    if (!slider.current) return;
+
+    if (!isHoveringRef.current && !isInteractingRef.current && shouldAutoScroll) {
+      const SCROLL_SPEED = 0.001; // Reduced speed for smoother carousel
+      slider.current.track.add(SCROLL_SPEED);
+    }
+    animationRef.current = requestAnimationFrame(animation);
+  };
+
+  useEffect(() => {
+    if (!isReady || !slider.current || !shouldAutoScroll) return;
+    animationRef.current = requestAnimationFrame(animation);
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [slider, isReady, shouldAutoScroll]);
+
+  // Sync interaction state
+  useEffect(() => {
+    isInteractingRef.current = !!selected || !!menuAnchor || !!openCreateDialog;
+  }, [selected, menuAnchor, openCreateDialog]);
+
+  // -------------------------------------------------------------------
+  // Lógica de Boards
+  // -------------------------------------------------------------------
   const handleAddToBoard = async (
     event: React.MouseEvent<HTMLElement>,
-    publication: BusinessPublicationResponseDTO,
-    _token: string // token viene del card, pero usamos el del hook
+    publication: any
   ) => {
     event.stopPropagation();
 
-    if (!context.accessToken) {
+    if (!context?.accessToken) {
       setShowLoginMsg(true);
       return;
     }
@@ -124,14 +207,13 @@ export default function BusinessRecommendationFeed() {
     setTargetPublication(publication);
     setMenuAnchor(event.currentTarget);
 
-    // Sólo fetchear si no se cargaron antes
-    if (!plansLoaded) {
+    if (!plansLoaded && context?.accessToken) {
       try {
         const fetchedPlans = await fetchPlans(context.accessToken);
         setPlans(fetchedPlans);
         setPlansLoaded(true);
-      } catch (error) {
-        console.error("Error fetching plans:", error);
+      } catch (e) {
+        console.error('Error fetching plans:', e);
         setPlans([]);
       }
     }
@@ -141,181 +223,241 @@ export default function BusinessRecommendationFeed() {
     setMenuAnchor(null);
     setTargetPublication(null);
   };
-  
-  // ───────────────────────────────
-  // Manejo de selección de plan (Copiado de BusinessPublicationsTab)
-  // ───────────────────────────────
-  const handleSelectBoard = async (boardName: string, planId: string, publicationId: string) => {
-    if (boardName === "➕ Crear nuevo plan") {
+
+  const handleSelectBoard = async (
+    boardName: string,
+    planId: string | undefined,
+    publicationId: string | undefined
+  ) => {
+    if (boardName === '➕ Crear nuevo plan') {
       setOpenCreateDialog(true);
       return;
     }
 
-    if (planId && publicationId && context.accessToken) {
+    if (planId && publicationId && context?.accessToken) {
       try {
-          await addPublicationToPlan(context.accessToken, planId, publicationId);
-          console.log(
-            `📌 Agregando publicación "${targetPublication?.title}" al plan "${boardName}"`
-          );
-          setShowSuccessMsg(true);
-      } catch(e) {
-          console.error("Error al agregar a plan:", e);
-          enqueueSnackbar('Error al agregar publicación al plan.', { variant: 'error' });
+        await addPublicationToPlan(context.accessToken, planId, publicationId);
+        setShowSuccessMsg(true);
+      } catch (e) {
+        console.error('Error al agregar a plan:', e);
+        enqueueSnackbar('Error al agregar publicación al plan.', { variant: 'error' });
       }
-    } else {
-      console.error("Plan ID or Publication ID is null.");
     }
-    
+
     handleCloseBoardsMenu();
   };
-  
-  // ───────────────────────────────
-  // Crear nuevo plan (Copiado de BusinessPublicationsTab)
-  // ───────────────────────────────
-  const handleCreatePlan = async (id: string) => {
+
+  const handleCreatePlan = async (publicationId: string | undefined) => {
     const trimmed = newPlanName.trim();
+    if (!trimmed) return;
 
-    if (!trimmed) {
-      return;
-    }
-
-    if (!context.accessToken) {
+    if (!context?.accessToken) {
       setShowLoginMsg(true);
       return;
     }
 
     try {
-      // 1. Crear el plan
-      await createPlan(context.accessToken, trimmed, "");
-      
-      // 2. Refrescar la lista de planes para incluir el nuevo
-      const fetchedPlans = await fetchPlans(context.accessToken);
-      const plan = fetchedPlans.find((p) => p.name === trimmed);
-      setPlans(fetchedPlans); // Actualiza el estado de planes para el menú
+      await createPlan(context.accessToken, trimmed, '');
 
-      // 3. Agregar la publicación al nuevo plan
-      await addPublicationToPlan(context.accessToken, plan.id, id);
-      
-      setShowSuccessMsg(true);
-    } catch (error) {
-      console.error("Error creating plan:", error);
+      const fetchedPlans = await fetchPlans(context.accessToken);
+      setPlans(fetchedPlans);
+
+      const created = fetchedPlans.find((p) => p.name === trimmed);
+
+      if (created && publicationId) {
+        await addPublicationToPlan(context.accessToken, created.id, publicationId);
+        setShowSuccessMsg(true);
+      }
+    } catch (e) {
+      console.error('Error creating plan:', e);
       enqueueSnackbar('Error al crear y guardar el plan.', { variant: 'error' });
     } finally {
       setOpenCreateDialog(false);
-      setNewPlanName("");
+      setNewPlanName('');
       handleCloseBoardsMenu();
     }
   };
 
-
+  // -------------------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------------------
   if (isLoading) {
     return (
       <Container sx={{ textAlign: 'center', py: 8 }}>
         <CircularProgress color="primary" />
-        <Typography variant="body1" mt={2}>Cargando recomendaciones...</Typography>
+        <Typography mt={2}>Cargando recomendaciones...</Typography>
       </Container>
     );
   }
 
   if (error) {
-    return <Container sx={{ py: 8 }}><Alert severity="error">{error}</Alert></Container>;
-  }
-
-  if (publications.length === 0) {
     return (
       <Container sx={{ py: 8 }}>
-        <Typography variant="overline" color="primary">Para ti</Typography>
-        <Typography variant="h4" fontWeight={800} gutterBottom>Publicaciones Recomendadas</Typography>
-        <Typography variant="body1" color="text.secondary" mb={5}>
-          Descubre los mejores negocios y experiencias que otros viajeros han disfrutado.
-        </Typography>
-        <Alert severity="info">Aún no hay publicaciones recomendadas para ti. Para una experiencia completa interactúa con más usuarios y publicaciones!</Alert>
+        <Alert severity="error">{error}</Alert>
       </Container>
     );
   }
-  
-  const glowColor = theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(80, 84, 88, 0.6)'
-  return (
-    // 💡 El contenedor principal
-    <>
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
-      <Container>
+
+  if (!publications || publications.length === 0) {
+    console.log("No hay publicaciones recomendadas disponibles.", publications);
+    return (
+      <Container sx={{
+        pt: { xs: 2, md: 2 },
+        px: { xs: 0, md: 0 },
+        maxWidth: { md: '100%' }
+      }}>
         <Typography variant="overline" color="primary">Para ti</Typography>
-        <Typography variant="h4" fontWeight={800} gutterBottom>Publicaciones Recomendadas</Typography>
-        <Typography variant="body1" color="text.secondary" mb={5}>
+        <Typography variant="h4" fontWeight={800} gutterBottom> Experiencias para ti</Typography>
+        <Typography color="text.secondary" mb={3}>
           Descubre los mejores negocios y experiencias que otros viajeros han disfrutado.
         </Typography>
-
-        {publications.map((p, index) => (
-            <Box key={p.id} sx={{ 
-                mb: index < publications.length - 1 ? 6 : 0, 
-                maxWidth: 800, 
-                mx: 'auto',
-            }}>
-                <BusinessPublicationCard
-                    publication={p}
-                    onView={setSelected}
-                    onAddToBoard={handleAddToBoard} // 👈 Usamos la función handleAddToBoard copiada
-                    sx={{
-                        "& img": { height: '450px !important' }, 
-                        borderRadius: 3, 
-                        boxShadow: '0 0 35px 8px ' + glowColor,
-                    }}
-                />
-            </Box>
-        ))}
+        <Alert severity="info">
+          Aún no hay publicaciones recomendadas. Conectá con más TripMates para ver más publicaciones.
+        </Alert>
       </Container>
-    </Box>
-    
-    {/* ────────────────────────────────────────────────────────── */}
-    {/* 🆕 UI DE SOPORTE PARA PLANES (Copiada de BusinessPublicationsTab) */}
-    {/* ────────────────────────────────────────────────────────── */}
-    
-    {/* Snackbar: login requerido */}
-    <Snackbar
+    );
+  }
+
+  return (
+    <>
+      <Box sx={{ py: { width: '100%' }, bgcolor: 'background.paper' }}>
+        <Container sx={{
+          pt: { xs: 4, md: 5 },
+          px: { xs: 0, md: 0 },
+          maxWidth: { md: '100%' }
+        }}>
+          <Typography variant="h4" fontWeight={800} gutterBottom>Experiencias para ti</Typography>
+          {/* Carrusel Keen */}
+          <Box
+            sx={{ position: 'relative' }}
+            onMouseEnter={() => {
+              isHoveringRef.current = true;
+              setIsHovering(true);
+            }}
+            onMouseLeave={() => {
+              isHoveringRef.current = false;
+              setIsHovering(false);
+            }}
+          >
+            <Box
+              ref={sliderRef}
+              className="keen-slider"
+              sx={{
+                mt: 3,
+                borderRadius: 1,
+                py: 1,
+              }}
+            >
+              {publications.map((p: any) => (
+                <Box
+                  key={p.id}
+                  className="keen-slider__slide"
+                  sx={{ px: { xs: 1, md: 1, paddingBottom: 1 }, display: 'flex' }}
+                >
+                  <BusinessPublicationCard
+                    publication={p}
+                    onView={(pub: any) => setSelected(pub)}
+                    onAddToBoard={(e: React.MouseEvent<HTMLElement>) => handleAddToBoard(e, p)}
+                    sx={{ width: '100%' }}
+                  />
+                </Box>
+              ))}
+            </Box>
+
+            {/* Navigation Arrows - Only show when hovering and there are more publications than visible */}
+            {shouldAutoScroll && isHovering && (
+              <>
+                <IconButton
+                  onClick={() => slider.current?.prev()}
+                  sx={{
+                    position: 'absolute',
+                    left: -20,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                    },
+                    zIndex: 10,
+                    boxShadow: 2,
+                  }}
+                >
+                  <ChevronLeft />
+                </IconButton>
+                <IconButton
+                  onClick={() => slider.current?.next()}
+                  sx={{
+                    position: 'absolute',
+                    right: -20,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                    },
+                    zIndex: 10,
+                    boxShadow: 2,
+                  }}
+                >
+                  <ChevronRight />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Snackbars */}
+      <Snackbar
         open={showLoginMsg}
         autoHideDuration={4000}
         onClose={() => setShowLoginMsg(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="info" onClose={() => setShowLoginMsg(false)}>
           Debes iniciar sesión para agregar una publicación a un plan.
         </Alert>
       </Snackbar>
 
-      {/* Snackbar: éxito */}
       <Snackbar
         open={showSuccessMsg}
         autoHideDuration={4000}
         onClose={() => setShowSuccessMsg(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert severity="success" onClose={() => setShowSuccessMsg(false)}>
           Publicación agregada correctamente al plan.
         </Alert>
       </Snackbar>
 
-      {/* Menú contextual con planes */}
+      {/* Menú contextual */}
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
         onClose={handleCloseBoardsMenu}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <MenuItem onClick={() => handleSelectBoard("➕ Crear nuevo plan", undefined!, targetPublication?.id!)}>
+        <MenuItem onClick={() => handleSelectBoard('➕ Crear nuevo plan', undefined!, targetPublication?.id)}>
           ➕ Crear nuevo plan
         </MenuItem>
+
         <Divider />
+
         {plans.map((plan: PlanInfo) => (
-          <MenuItem key={plan.id} onClick={() => handleSelectBoard(plan.name, plan.id, targetPublication?.id!)}>
+          <MenuItem
+            key={plan.id}
+            onClick={() => handleSelectBoard(plan.name, plan.id, targetPublication?.id)}
+          >
             {plan.name}
           </MenuItem>
         ))}
       </Menu>
 
-      {/* Diálogo para crear nuevo plan */}
-      <Dialog open={openCreateDialog}>
+      {/* Diálogo crear plan */}
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
         <DialogTitle>Crear nuevo plan</DialogTitle>
         <DialogContent>
           <TextField
@@ -327,23 +469,17 @@ export default function BusinessRecommendationFeed() {
             value={newPlanName}
             onChange={(e) => setNewPlanName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Enter' && newPlanName.trim() && targetPublication?.id) {
                 e.preventDefault();
-                if (newPlanName.trim() && targetPublication?.id) {
-                  handleCreatePlan(targetPublication.id);
-                }
+                handleCreatePlan(targetPublication.id);
               }
             }}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreateDialog(false)}>Cancelar</Button>
-          <Button 
-            onClick={() => {
-              if (targetPublication?.id) {
-                handleCreatePlan(targetPublication.id);
-              }
-            }} 
+          <Button
+            onClick={() => targetPublication?.id && handleCreatePlan(targetPublication.id)}
             variant="contained"
             disabled={!newPlanName.trim()}
           >
@@ -351,12 +487,14 @@ export default function BusinessRecommendationFeed() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog detalle */}
       <PublicationDetailDialog
         open={!!selected}
         onClose={() => setSelected(null)}
         publication={selected}
         letReview={true}
       />
-      </>
+    </>
   );
 }

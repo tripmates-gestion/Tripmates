@@ -6,28 +6,28 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import com.tripmates.backend.config.TestCloudinaryConfig;
-
-import java.nio.charset.StandardCharsets;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.tripmates.backend.config.TestCloudinaryConfig;
+import com.tripmates.backend.common.constants.ValidationErrorMessage;
+import com.tripmates.backend.TestHelper;
+
+import java.nio.charset.StandardCharsets;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.*;
-import com.tripmates.backend.common.constants.ValidationErrorMessage;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInstance;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
-import com.tripmates.backend.TestHelper;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -70,7 +70,11 @@ public class PostPublicationTest {
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -103,7 +107,11 @@ public class PostPublicationTest {
 				  "title": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "Ruta 234, San Carlos de Bariloche",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -171,7 +179,11 @@ public class PostPublicationTest {
 				  "description": "Beautiful place with amazing views and full amenities.",
 				  "phoneNumber": "+541112345678",
 				  "email": "contact@hostel.com",
-				  "location": "San Carlos de Bariloche, Argentina",
+				  "location": {
+						"address": "San Carlos de Bariloche, Argentina",
+						"latitude": -41.1335,
+						"longitude": -71.3103
+					},
 				  "openingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
 				  "attentionSchedule": {
 				      "openingTime": "09:00",
@@ -184,6 +196,7 @@ public class PostPublicationTest {
 
 		MockMultipartFile dataPart = new MockMultipartFile("data", "", "application/json",
 				requestJson.getBytes(StandardCharsets.UTF_8));
+
 		mockMvc.perform(multipart("/publications/business").file(dataPart).header("Authorization", "Bearer " + jwt))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").isNotEmpty())
@@ -195,7 +208,9 @@ public class PostPublicationTest {
 			.andExpect(jsonPath("$.attentionSchedule.closingTime").value("18:00"))
 			.andExpect(jsonPath("$.phoneNumber").value("+541112345678"))
 			.andExpect(jsonPath("$.email").value("contact@hostel.com"))
-			.andExpect(jsonPath("$.location").value("San Carlos de Bariloche, Argentina"))
+			.andExpect(jsonPath("$.location.address").value("San Carlos de Bariloche, Argentina"))
+			.andExpect(jsonPath("$.location.latitude").value(-41.1335))
+			.andExpect(jsonPath("$.location.longitude").value(-71.3103))
 			.andExpect(jsonPath("$.imageUrls").isArray())
 			.andExpect(jsonPath("$.imageUrls").isEmpty())
 			.andExpect(jsonPath("$.tags").isArray())

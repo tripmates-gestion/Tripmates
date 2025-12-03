@@ -3,6 +3,7 @@ package com.tripmates.backend.publications.dto;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.tripmates.backend.common.types.AttentionSchedule;
+import com.tripmates.backend.common.types.Location;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.DayOfWeek;
@@ -14,7 +15,7 @@ public record PublicationUpdateRequestDTO(
 		@Schema(description = "Business publication description text (optional for update)") String description,
 		@Schema(description = "Business publication phone number") String phoneNumber,
 		@Schema(description = "Business publication email") String email,
-		@Schema(description = "Business publication location") String location,
+		@Schema(description = "Business publication location") Location location,
 		@Schema(description = "Business opening days") @JsonSetter(nulls = Nulls.AS_EMPTY) List<DayOfWeek> openingDays,
 		@Schema(description = "Business opening hours") AttentionSchedule attentionSchedule,
 		@Schema(description = "Business exceptional closing days") @JsonSetter(

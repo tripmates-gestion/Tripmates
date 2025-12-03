@@ -2,6 +2,10 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
+    REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
+    VERIFY_RESET_CODE: '/auth/verify-reset-code',
+    RESET_PASSWORD: '/auth/reset-password',
+
     USER_ME: '/users/me',
 
     MY_FOLLOWERS: '/users/me/followers',
@@ -40,8 +44,9 @@ export const ENDPOINTS = {
     BUSSINESS_PUBLICATION_RECOMMENDATIONS: '/users/recommendations/publications/',
     USER_RECOMMENDATIONS: '/users/recommendations/user/',
     BUSINESS_ACCOUNT_RECOMMENDATIONS: '/users/recommendations/business/',
-  
+
     METRICS_REVIEWS: '/metrics/reviews',
+    METRICS_REVIEWS_RATING_AVG: (businessId: string) => `/metrics/reviews/rating-avg/${businessId}`,
     METRICS_PROFILE_VIEWS: '/metrics/profile-views',
     METRICS_LIKES: '/metrics/likes',
     METRICS_VIEW_PROFILE: '/metrics/view-profile',
@@ -51,4 +56,21 @@ export const ENDPOINTS = {
     INVITE_USER_TO_PLAN: (planId: string, userId: string) => `/community/${planId}/${userId}/invite-user`,
     DECLINE_INVITATION: (planId: string) => `/community/${planId}/decline-invitation`,
     ACCEPT_INVITATION: (planId: string) => `/community/${planId}/accept-invitation`,
+
+    // historial
+    GET_HISTORY_LIKED: '/users/history/likes/',
+    REGISTER_RECENTLY_SEEN: '/users/view/business/',
+    MY_RECENTLY_SEEN: '/users/history/view/business',
+
+    // benchmarks
+    BUSINESS_BENCHMARKS: '/benchmarks/mine',
+    GET_PUBLIC_BENCHMARKS: '/benchmarks/user/',
+
+    // social media
+    USER_MEDIA: (email: string) => `/users/${email}/media`,
+    MY_MEDIA: '/users/me/media',
+
+
+    // business
+    TOP_TRENDING_BUSINESSES: "/metrics/n-most-likeds-accounts",
 };

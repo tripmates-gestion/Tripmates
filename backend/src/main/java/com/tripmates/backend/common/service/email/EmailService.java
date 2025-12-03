@@ -44,7 +44,7 @@ public class EmailService {
 		mailSender.send(message);
 	}
 
-	public void sendHtmlEmail(String to, String subject, String htmlContentFileName,
+	public void sendHtmlInvitationEmail(String to, String subject, String htmlContentFileName,
 			Dictionary<String, String> variables) {
 		try {
 			ClassPathResource resource = new ClassPathResource(htmlContentFileName);
@@ -61,8 +61,7 @@ public class EmailService {
 			substitutionMap.put("toUsername", toUsername);
 			substitutionMap.put("planName", planName);
 			substitutionMap.put("ownerUsername", ownerUsername);
-			substitutionMap.put("invitationPlanUrl", invitationPlanUrl); // Usamos la URL
-																			// calculada
+			substitutionMap.put("invitationPlanUrl", invitationPlanUrl);
 
 			String htmlContent = htmlTemplate;
 			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
@@ -84,6 +83,129 @@ public class EmailService {
 		catch (IOException e) {
 			System.out.println("Error: No se pudo leer el archivo de plantilla HTML (" + htmlContentFileName
 					+ "). Asegúrate de que existe en src/main/resources. " + e.getMessage());
+		}
+		catch (MessagingException e) {
+			System.out.println("Error al enviar el email: " + e.getMessage());
+		}
+	}
+
+	public void sendHtmlAchievementEmail(String to, String subject, String achievementName, String toUsername) {
+		try {
+			ClassPathResource resource = new ClassPathResource("achievement_unlocked.html");
+			String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+			// cambiar esto
+			String achievementUrl = frontendRedirectionBaseUrl + "/achievements/"
+					+ achievementName.replaceAll(" ", "-").toLowerCase();
+
+			Map<String, String> substitutionMap = new HashMap<>();
+			substitutionMap.put("toUsername", toUsername);
+			substitutionMap.put("achievementName", achievementName);
+			substitutionMap.put("achievementUrl", achievementUrl);
+
+			String htmlContent = htmlTemplate;
+			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+				String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+				htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+			}
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+			helper.setFrom(fromEmail);
+			helper.setTo(to);
+			helper.setSubject(subject);
+			helper.setText(htmlContent, true);
+
+			mailSender.send(message);
+
+		}
+		catch (IOException e) {
+			System.out.println(
+					"Error: No se pudo leer el archivo de plantilla HTML (achievement_unlocked.html). Asegúrate de que existe en src/main/resources. "
+							+ e.getMessage());
+		}
+		catch (MessagingException e) {
+			System.out.println("Error al enviar el email: " + e.getMessage());
+		}
+	}
+
+    public void sendHtmlReviewMentionEmail(String to, String subject, Dictionary<String, String> variables) {
+
+        try {
+            ClassPathResource resource = new ClassPathResource("review_mention.html");
+            String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+            String toUsername = variables.get("toUsername");
+            String ownerUsername = variables.get("ownerUsername");
+            String publicationTitle = variables.get("publicationTitle");
+            String reviewSnippet = variables.get("reviewSnippet"); // <-- CORREGIDO
+            String publicationId = variables.get("publicationId");
+
+            // URL final correcta
+            String publicationUrl = frontendRedirectionBaseUrl + "/publication/" + publicationId;
+
+            Map<String, String> substitutionMap = new HashMap<>();
+            substitutionMap.put("toUsername", toUsername);
+            substitutionMap.put("ownerUsername", ownerUsername);
+            substitutionMap.put("publicationTitle", publicationTitle);
+            substitutionMap.put("reviewSnippet", reviewSnippet); // <-- CORREGIDO
+            substitutionMap.put("publicationUrl", publicationUrl); // <-- CORREGIDO
+
+            String htmlContent = htmlTemplate;
+
+            for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+                String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+                htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+            }
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+        } catch (IOException e) {
+            System.out.println("Error: No se pudo leer el archivo review_mention.html. " + e.getMessage());
+        } catch (MessagingException e) {
+            System.out.println("Error al enviar el email: " + e.getMessage());
+        }
+    }
+
+	public void sendHtmlPasswordResetEmail(String to, String subject, String resetCode) {
+		try {
+			ClassPathResource resource = new ClassPathResource("password_reset.html");
+			String htmlTemplate = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+
+			Map<String, String> substitutionMap = new HashMap<>();
+			substitutionMap.put("resetCode", resetCode);
+			substitutionMap.put("userEmail", to);
+
+			String htmlContent = htmlTemplate;
+			for (Map.Entry<String, String> entry : substitutionMap.entrySet()) {
+				String placeholderRegex = "\\{\\{\\s*" + Pattern.quote(entry.getKey()) + "\\s*}}";
+				htmlContent = htmlContent.replaceAll(placeholderRegex, Matcher.quoteReplacement(entry.getValue()));
+			}
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+			helper.setFrom(fromEmail);
+			helper.setTo(to);
+			helper.setSubject(subject);
+			helper.setText(htmlContent, true);
+
+			mailSender.send(message);
+
+		}
+		catch (IOException e) {
+			System.out.println(
+					"Error: No se pudo leer el archivo de plantilla HTML (password_reset.html). Asegúrate de que existe en src/main/resources. "
+							+ e.getMessage());
 		}
 		catch (MessagingException e) {
 			System.out.println("Error al enviar el email: " + e.getMessage());

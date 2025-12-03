@@ -66,3 +66,25 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+/* Tamaño de texto de la attribution (abajo a la derecha) */
+.leaflet-container .leaflet-control-attribution {
+  font-size: 0.8rem;      /* subilo o bajalo a gusto */
+  line-height: 1.4;
+}
+
+/* Botones de zoom (+ y -) */
+.leaflet-container .leaflet-control-zoom a {
+  font-size: 1.2rem;      /* agranda el símbolo + y - */
+}
+
+/* Tooltips (si usás L.tooltip) */
+.leaflet-tooltip {
+  font-size: 0.9rem;
+}
+
+/* Popups (L.popup) */
+.leaflet-popup-content {
+  font-size: 0.95rem;
+}

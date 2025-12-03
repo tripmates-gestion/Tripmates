@@ -1,5 +1,6 @@
 package com.tripmates.backend.publications.entity.mongo;
 
+import com.tripmates.backend.common.types.Like;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.tripmates.backend.common.types.AttentionSchedule;
 import com.tripmates.backend.common.types.Review;
-
+import com.tripmates.backend.common.types.Location;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class Publication {
 	/**
 	 * Publication's location.
 	 */
-	private String location;
+	private Location location;
 
 	/**
 	 * Publication's images URLs.
@@ -89,7 +90,7 @@ public class Publication {
 	/**
 	 * Publication's likes (user IDs who liked this publication).
 	 */
-	private List<String> likes = new ArrayList<>();
+	private List<Like> likes = new ArrayList<>();
 
 	/**
 	 * Publication's owner ID.
@@ -111,7 +112,7 @@ public class Publication {
 
 	public Publication(String title, String description, List<DayOfWeek> openingDays,
 			AttentionSchedule attentionSchedule, List<LocalDate> exceptionalClosingDays, String phoneNumber,
-			String email, String location, List<String> tags, List<String> imageUrls, String ownerId,
+			String email, Location location, List<String> tags, List<String> imageUrls, String ownerId,
 			String ownerUsername, String ownerAvatarUrl, Date createdAt) {
 		this.title = title;
 		this.description = description;

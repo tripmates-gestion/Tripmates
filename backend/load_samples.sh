@@ -16,19 +16,6 @@ print_error() {
     echo -e "\033[0;31m$1\033[0m"
 }
 
-# Function to setup required directories for business images
-setup_business_directories() {
-    echo "=== Setting up business directories ==="
-    
-    # Base directories
-    local base_dir="sample_images"
-    local account_dir="$base_dir/business_picture"
-    local profile_dir="$base_dir/profile_pictures"
-    
-    echo "Profile directory: $profile_dir"
-    echo "Account directory: $account_dir"
-}
-
 # Function to make a request with file upload support
 make_request() {
     local endpoint=$1
@@ -190,7 +177,7 @@ update_business_picture() {
         "La Buena Mesa")
             name="La Buena Mesa"
             description="Un restaurante familiar con los mejores platos de la cocina tradicional"
-            location="Av. Corrientes 1234, Buenos Aires"
+            location='{"address": "Av. Corrientes 1234, Buenos Aires", "latitude": -34.6037, "longitude": -58.3816}'
             phoneNumber="+54 11 1234-5678"
             publicEmail="contacto@labuenamesa.com"
             businessType="RESTAURANT"
@@ -200,10 +187,48 @@ update_business_picture() {
             openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
             profile_image="sample_images/profile_pictures/restaurant.jpg"
             ;;
+        "Brisa Marina")
+            name="Brisa Marina"
+            description="Experiencia gastronómica gourmet frente al mar donde cada plato cuenta una historia"
+            location='{"address": "Av. Costanera 1234, Mar del Plata", "latitude": -38.0176, "longitude": -57.5367}'
+            phoneNumber="+54 223 412-3456"
+            publicEmail="contacto@brisamarina.com"
+            businessType="RESTAURANT"
+            averagePrice='$$$'
+            restaurantType="Argentino"
+            attentionSchedule='{"openingTime":"12:00","closingTime":"23:00"}'
+            openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
+            profile_image="sample_images/profile_pictures/seafood.jpg"
+            ;;
+        "Sabores Peruanos")
+            name="Sabores Peruanos"
+            description="Auténtica cocina peruana con ingredientes frescos y sabores tradicionales"
+            location='{"address": "Av. Cabildo 2345, CABA", "latitude": -34.5607, "longitude": -58.4566}'
+            phoneNumber="+54 11 4783-2198"
+            publicEmail="reservas@saboresperuanos.com"
+            businessType="RESTAURANT"
+            averagePrice='$$'
+            restaurantType="Peruano"
+            attentionSchedule='{"openingTime":"11:30","closingTime":"23:30"}'
+            openingDays='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
+            profile_image="sample_images/profile_pictures/peru1.png"
+            ;;
+        "El Encuentro Hostel")
+            name="El Encuentro Hostel"
+            description="Espacio para viajeros jóvenes que buscan conectar con otros aventureros"
+            location='{"address": "Av. San Martín 876, Bariloche", "latitude": -41.1335, "longitude": -71.3103}'
+            phoneNumber="+54 294 415-6789"
+            publicEmail="info@elencuentrohostel.com"
+            businessType="HOTEL"
+            averagePrice='$'
+            hotelType="Hostel"
+            attentionSchedule='{"checkInTime":"14:00","checkOutTime":"10:00"}'
+            profile_image="sample_images/profile_pictures/encuentro1.png"
+            ;;
         "Hotel Playa Dorada")
             name="Hotel Playa Dorada"
             description="Un hotel de lujo frente al mar con todas las comodidades"
-            location="Av. Costanera 2345, Mar del Plata"
+            location='{"address": "Av. Costanera 2345, Mar del Plata", "latitude": -38.0055, "longitude": -57.5426}'
             phoneNumber="+54 223 123-4567"
             publicEmail="reservas@hotelplayadorada.com"
             businessType="HOSTING"
@@ -214,7 +239,7 @@ update_business_picture() {
         "Café del Centro")
             name="Café del Centro"
             description="Un acogedor café en el corazón de la ciudad con especialidades artesanales"
-            location="Av. Santa Fe 1234, Buenos Aires"
+            location='{"address": "Av. Santa Fe 1234, Buenos Aires", "latitude": -34.5895, "longitude": -58.3816}'
             phoneNumber="+54 11 9876-5432"
             publicEmail="contacto@cafedelcentro.com"
             businessType="RESTAURANT"
@@ -227,7 +252,7 @@ update_business_picture() {
         "Hostel Montaña")
             name="Hostel Montaña Mágica"
             description="Un hostel ecológico en las montañas con vistas panorámicas"
-            location="Ruta 234, San Carlos de Bariloche"
+            location='{"address": "Ruta 234, San Carlos de Bariloche", "latitude": -41.1335, "longitude": -71.3103}'
             phoneNumber="+54 294 123-4567"
             publicEmail="info@hostelmontana.com"
             businessType="HOSTING"
@@ -244,13 +269,13 @@ update_business_picture() {
     # Create a temporary file for the update data
     local temp_file=$(mktemp)
     
-    # Create the JSON data for the update with properly escaped dollar signs
+    # Create the JSON data for the update
     if [ "$business_type" = "restaurant" ] || [ "$business_type" = "cafe" ]; then
         cat > "$temp_file" << EOF
 {
-    "name": "$name",
-    "description": "$description",
-    "location": "$location",
+    "name": "$(echo "$name" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
+    "location": $location,
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
     "averagePrice": "$averagePrice",
@@ -262,9 +287,9 @@ EOF
     else
         cat > "$temp_file" << EOF
 {
-    "name": "$name",
-    "description": "$description",
-    "location": "$location",
+    "name": "$(echo "$name" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
+    "location": $location,
     "phoneNumber": "$phoneNumber",
     "publicEmail": "$publicEmail",
     "averagePrice": "$averagePrice",
@@ -398,9 +423,6 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Setup required directories and check for images
-setup_business_directories
-
 # 1. Clean up existing data (optional)
 echo -e "\n=== Cleaning up existing data (if any) ==="
 # Add cleanup logic if needed
@@ -410,27 +432,56 @@ echo -e "\n=== Registering Users ==="
 
 # Register Regular Users
 make_request "/auth/register" '{
-    "name": "Juan Pérez",
-    "email": "juan@example.com",
+    "name": "Camila",
+    "email": "camila@example.com",
     "password": "password123",
     "role": "USER"
-}' "Registering Juan Pérez"
+}' "Registering Camila"
 
 make_request "/auth/register" '{
-    "name": "María García",
-    "email": "maria@example.com",
+    "name": "Luisito Villar",
+    "email": "luisito@example.com",
     "password": "password123",
     "role": "USER"
-}' "Registering María García"
+}' "Registering Luisito Villar"
 
 make_request "/auth/register" '{
-    "name": "Carlos López",
-    "email": "carlos@example.com",
+    "name": "Julián Álvarez",
+    "email": "julian@example.com",
     "password": "password123",
     "role": "USER"
-}' "Registering Carlos López"
+}' "Registering Julián Álvarez"
+
+make_request "/auth/register" '{
+    "name": "José Luis García",
+    "email": "joseluis@example.com",
+    "password": "password123",
+    "role": "USER"
+}' "Registering José Luis García"
+
+make_request "/auth/register" '{
+    "name": "Ricardo Mendoza",
+    "email": "ricardo@example.com",
+    "password": "password123",
+    "role": "USER"
+}' "Registering Ricardo Mendoza"
+
+make_request "/auth/register" '{
+    "name": "Astrid Cornejo",
+    "email": "astrid@example.com",
+    "password": "password123",
+    "role": "USER"
+}' "Registering Astrid Cornejo"
+
+make_request "/auth/register" '{
+    "name": "Aizen Martínez",
+    "email": "aizen@example.com",
+    "password": "password123",
+    "role": "USER"
+}' "Registering Aizen Martínez"
 
 # Register Business Accounts
+# Original businesses
 make_request "/auth/register" '{
     "name": "Restaurante La Buena Mesa",
     "email": "info@labuenamesa.com",
@@ -441,7 +492,7 @@ make_request "/auth/register" '{
 
 make_request "/auth/register" '{
     "name": "Hotel Playa Dorada",
-    "email": "reservas@playadorada.com",
+    "email": "anibalfu2005@gmail.com",
     "password": "business123",
     "role": "BUSINESS",
     "businessType": "HOTEL"
@@ -463,6 +514,33 @@ make_request "/auth/register" '{
     "businessType": "HOTEL"
 }' "Registering Hostel Montaña Mágica"
 
+# New Business Accounts
+# 1. Isabel Montenegro - Brisa Marina (Gourmet restaurant by the sea)
+make_request "/auth/register" '{
+    "name": "Brisa Marina",
+    "email": "isabel@brisamarina.com",
+    "password": "business123",
+    "role": "BUSINESS",
+    "businessType": "RESTAURANT"
+}' "Registering Brisa Marina Restaurant"
+
+# 2. Gastón Acurio - Peruvian Cuisine Restaurant
+make_request "/auth/register" '{
+    "name": "Sabores Peruanos",
+    "email": "afu@fi.uba.ar",
+    "password": "business123",
+    "role": "BUSINESS",
+    "businessType": "RESTAURANT"
+}' "Registering Sabores Peruanos Restaurant"
+
+# 3. Diego Morales - Youth Hostel
+make_request "/auth/register" '{
+    "name": "El Encuentro Hostel",
+    "email": "diego@elencuentrohostel.com",
+    "password": "business123",
+    "role": "BUSINESS",
+    "businessType": "HOTEL"
+}' "Registering El Encuentro Hostel"
 
 # 2. Login and get tokens
 echo -e "\n=== Logging in users to get tokens ==="
@@ -497,25 +575,55 @@ login_user() {
 }
 
 # Login users
-login_user "juan@example.com" "password123" "USER1_TOKEN"
-login_user "maria@example.com" "password123" "USER2_TOKEN"
-login_user "carlos@example.com" "password123" "USER3_TOKEN"
+# Regular users
+login_user "camila@example.com" "password123" "USER1_TOKEN"
+login_user "luisito@example.com" "password123" "USER2_TOKEN"
+login_user "julian@example.com" "password123" "USER3_TOKEN"
+login_user "joseluis@example.com" "password123" "USER4_TOKEN"
+login_user "ricardo@example.com" "password123" "USER5_TOKEN"
+login_user "astrid@example.com" "password123" "USER6_TOKEN"
+login_user "aizen@example.com" "password123" "USER7_TOKEN"
+
+# Original business accounts
 login_user "info@labuenamesa.com" "business123" "RESTAURANT_TOKEN"
-login_user "reservas@playadorada.com" "business123" "HOTEL_TOKEN"
+login_user "anibalfu2005@gmail.com" "business123" "HOTEL_TOKEN"
 login_user "contacto@cafedelcentro.com" "business123" "CAFE_TOKEN"
 login_user "info@hostelmontana.com" "business123" "HOSTEL_TOKEN"
+
+# New business accounts
+login_user "isabel@brisamarina.com" "business123" "BRISAMARINA_TOKEN"
+login_user "afu@fi.uba.ar" "business123" "SABORESPERU_TOKEN"
+login_user "diego@elencuentrohostel.com" "business123" "ELENCUENTRO_TOKEN"
 
 # 3. Update profile pictures
 echo -e "\n=== Updating Profile Pictures ==="
 
-if [ -f "sample_images/profile_pictures/user1.jpg" ]; then
-    update_profile_picture "$USER1_TOKEN" "sample_images/profile_pictures/user1.jpg"
+if [ -f "sample_images/profile_pictures/user1.png" ]; then
+    update_profile_picture "$USER1_TOKEN" "sample_images/profile_pictures/user1.png"
 fi
 
-if [ -f "sample_images/profile_pictures/user2.jpg" ]; then
-    update_profile_picture "$USER2_TOKEN" "sample_images/profile_pictures/user2.jpg"
+if [ -f "sample_images/profile_pictures/user2.png" ]; then
+    update_profile_picture "$USER2_TOKEN" "sample_images/profile_pictures/user2.png"
+fi
+if [ -f "sample_images/profile_pictures/user3.png" ]; then
+    update_profile_picture "$USER3_TOKEN" "sample_images/profile_pictures/user3.png"
 fi
 
+if [ -f "sample_images/profile_pictures/user4.png" ]; then
+    update_profile_picture "$USER4_TOKEN" "sample_images/profile_pictures/user4.png"
+fi
+
+if [ -f "sample_images/profile_pictures/user5.png" ]; then
+    update_profile_picture "$USER5_TOKEN" "sample_images/profile_pictures/user5.png"
+fi
+
+if [ -f "sample_images/profile_pictures/user6.png" ]; then
+    update_profile_picture "$USER6_TOKEN" "sample_images/profile_pictures/user6.png"
+fi
+
+if [ -f "sample_images/profile_pictures/user7.png" ]; then
+    update_profile_picture "$USER7_TOKEN" "sample_images/profile_pictures/user7.png"
+fi
 # Update business profiles with all fields and images
 if [ -n "$RESTAURANT_TOKEN" ]; then
     update_business_picture "$RESTAURANT_TOKEN" "restaurant" "La Buena Mesa" "sample_images/business_picture/restaurant2.jpg,sample_images/business_picture/resto5.jpg"
@@ -533,6 +641,19 @@ if [ -n "$HOSTEL_TOKEN" ]; then
     update_business_picture "$HOSTEL_TOKEN" "hostel" "Hostel Montaña" "sample_images/business_picture/hotel1.jpg"
 fi
 
+# Update new business profiles with all fields and images
+if [ -n "$BRISAMARINA_TOKEN" ]; then
+    update_business_picture "$BRISAMARINA_TOKEN" "restaurant" "Brisa Marina" "sample_images/business_picture/brisa1.jpeg,sample_images/business_picture/brisa2.jpg"
+fi
+
+if [ -n "$SABORESPERU_TOKEN" ]; then
+    update_business_picture "$SABORESPERU_TOKEN" "restaurant" "Sabores Peruanos" "sample_images/business_picture/peru1.jpg"
+fi
+
+if [ -n "$ELENCUENTRO_TOKEN" ]; then
+    update_business_picture "$ELENCUENTRO_TOKEN" "hotel" "El Encuentro Hostel" "sample_images/business_picture/encuentro1.jpg"
+fi
+
 
 # 4. Create publications (only for businesses)
 echo -e "\n=== Creating Publications ==="
@@ -541,16 +662,16 @@ create_publication() {
     local token=$1
     local business_type=$2
     local index=$3
-    local business_name=${4:-""}  # Optional business name parameter
+    local business_name=${4:-""}  # Business name parameter is now required
     
-    echo -n "Creating $business_type publication $index... "
+    echo -n "Creating publication for $business_name - $index... "
     
     # Set default values
     local title=""
     local description=""
     local phone=""
     local email=""
-    local location=""
+    local location='null'
     local opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]'
     local opening_time="09:00"
     local closing_time="23:00"
@@ -558,151 +679,251 @@ create_publication() {
     local tags='[]'
     local image_path=""
     
-    if [ "$business_type" = "restaurant" ]; then
-        case $index in
-            1)
-                title="Menú Especial de Otoño"
-                description="Disfruta de nuestro menú de temporada con ingredientes frescos y locales."
-                phone="+54 11 1234-5678"
-                email="reservas@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
-                opening_time="12:00"
-                closing_time="23:00"
-                exceptional_days='["2025-12-25", "2026-01-01"]'
-                tags='["restaurante", "comida", "menú", "especial"]'
-                image_path="sample_images/publications/restaurant/cena1.jpg"
-                ;;
-            2)
-                title="Noche de Vinos"
-                description="Degustación de vinos de bodegas locales con maridaje incluido."
-                phone="+54 11 1234-5678"
-                email="eventos@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
-                opening_time="20:00"
-                closing_time="23:30"
-                exceptional_days='[]'
-                tags='["vinos", "degustación", "evento"]'
-                image_path="sample_images/publications/restaurant/vinos.jpeg"
-                ;;
-            3)
-                title="Brunch de Domingos"
-                description="Disfruta de nuestro brunch los domingos de 10:00 a 15:00."
-                phone="+54 11 1234-5678"
-                email="reservas@labuenamesa.com"
-                location="Av. Corrientes 1234, Buenos Aires"
-                opening_days='["SUNDAY"]'
-                opening_time="10:00"
-                closing_time="15:00"
-                exceptional_days='[]'
-                tags='["brunch", "desayuno", "domingo"]'
-                image_path="sample_images/publications/restaurant/postre1.jpg"
-                ;;
-        esac
-    elif [ "$business_type" = "hotel" ]; then
-        case $index in
-            1)
-                title="Escape a la Playa - Oferta Especial"
-                description="Disfruta de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido."
-                phone="+54 223 123-4567"
-                email="reservas@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
-                opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
-                opening_time="00:00"
-                closing_time="23:59"
-                exceptional_days='[]'
-                tags='["hotel", "playa", "vacaciones", "todo incluido"]'
-                image_path="sample_images/publications/hotel/playa1.jpeg"
-                ;;
-            2)
-                title="Paquete Romántico"
-                description="Escapada romántica con cena gourmet y masajes para dos."
-                phone="+54 223 123-4567"
-                email="romance@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
-                opening_days='["FRIDAY","SATURDAY"]'
-                opening_time="14:00"
-                closing_time="23:00"
-                exceptional_days='[]'
-                tags='["romántico", "parejas", "especial"]'
-                image_path="sample_images/publications/hotel/deluxe1.jpeg"
-                ;;
-            3)
-                title="Paquete Familiar"
-                description="Diversión para toda la familia con actividades para niños y adultos."
-                phone="+54 223 123-4567"
-                email="familias@playadorada.com"
-                location="Av. Costanera 2345, Mar del Plata"
-                opening_days='["SATURDAY","SUNDAY"]'
-                opening_time="09:00"
-                closing_time="20:00"
-                exceptional_days='[]'
-                tags='["familiar", "niños", "actividades"]'
-                image_path="sample_images/publications/hotel/suite1.jpg"
-                ;;
-        esac
-    elif [ "$business_type" = "cafe" ]; then
-        case $index in
-            1)
-                title="Café de Especialidad"
-                description="Disfruta de nuestros cafés de especialidad tostados artesanalmente."
-                phone="+54 11 9876-5432"
-                email="contacto@cafedelcentro.com"
-                location="Av. Santa Fe 1234, Buenos Aires"
-                opening_time="07:00"
-                closing_time="20:00"
-                tags='["café", "especialidad", "tostado"]'
-                image_path="sample_images/publications/restaurant/cafe/cafe1.jpg"
-                ;;
-            2)
-                title="Tardes de Té"
-                description="Relájate con nuestra selección de tés e infusiones con pastelería casera."
-                phone="+54 11 9876-5432"
-                email="contacto@cafedelcentro.com"
-                location="Av. Santa Fe 1234, Buenos Aires"
-                opening_time="15:00"
-                closing_time="19:00"
-                tags='["té", "infusiones", "pastelería"]'
-                image_path="sample_images/publications/restaurant/cafe/cafe2.jpg"
-                ;;
-        esac
-    elif [ "$business_type" = "hostel" ]; then
-        case $index in
-            1)
-                title="Aventura en la Montaña"
-                description="Paquete de aventura con caminatas guiadas y alojamiento en la naturaleza."
-                phone="+54 294 123-4567"
-                email="info@hostelmontana.com"
-                location="Ruta 234, San Carlos de Bariloche"
-                opening_days='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]'
-                opening_time="00:00"
-                closing_time="23:59"
-                tags='["aventura", "montaña", "naturaleza"]'
-                image_path="sample_images/publications/hotel/habitacion1.jpg"
-                ;;
-            2)
-                title="Escape de Fin de Semana"
-                description="Escapada relajante con desayuno incluido y actividades al aire libre."
-                phone="+54 294 123-4567"
-                email="reservas@hostelmontana.com"
-                location="Ruta 234, San Carlos de Bariloche"
-                opening_days='["FRIDAY","SATURDAY","SUNDAY"]'
-                opening_time="14:00"
-                closing_time="12:00"
-                tags='["fin de semana", "relax", "naturaleza"]'
-                image_path="sample_images/publications/hotel/aventura1.jpg"
-                ;;
-        esac
-    fi
+    # Set business-specific details based on business name
+    case $business_name in
+        "La Buena Mesa")
+            case $index in
+                1)
+                    title="Menú Especial de Otoño"
+                    description="Disfruta de nuestro menú de temporada con ingredientes frescos y locales en La Buena Mesa."
+                    phone="+54 11 1234-5678"
+                    email="reservas@labuenamesa.com"
+                    location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
+                    opening_time="12:00"
+                    closing_time="23:00"
+                    tags='["restaurante", "comida", "menú", "especial"]'
+                    image_path="sample_images/publications/restaurant/cena1.jpg"
+                    ;;
+                2)
+                    title="Noche de Vinos"
+                    description="Degustación de vinos de bodegas locales con maridaje exclusivo en La Buena Mesa."
+                    phone="+54 11 1234-5678"
+                    email="reservas@labuenamesa.com"
+                    location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
+                    opening_time="20:00"
+                    closing_time="23:30"
+                    tags='["vinos", "degustación", "evento"]'
+                    image_path="sample_images/publications/restaurant/vinos.jpeg"
+                    ;;
+                3)
+                    title="Brunch de Domingos"
+                    description="Disfruta de nuestro exclusivo brunch los domingos en La Buena Mesa."
+                    opening_days='["SUNDAY"]'
+                    phone="+54 11 1234-5678"
+                    email="reservas@labuenamesa.com"
+                    location='{"address":"Av. Corrientes 1234, Buenos Aires","latitude":-34.6037,"longitude":-58.3816}'
+                    opening_time="10:00"
+                    closing_time="15:00"
+                    tags='["brunch", "desayuno", "domingo"]'
+                    image_path="sample_images/publications/restaurant/postre1.jpg"
+                    ;;
+            esac
+            ;;
+            
+        "Café del Centro")
+            case $index in
+                1)
+                    title="Café de Especialidad"
+                    description="Disfruta de nuestros cafés de especialidad tostados artesanalmente en Café del Centro."
+                    phone="+54 11 9876-5432"
+                    email="contacto@cafedelcentro.com"
+                    location='{"address":"Av. Santa Fe 1234, Buenos Aires","latitude":-34.5895,"longitude":-58.3816}'
+                    opening_time="07:00"
+                    closing_time="20:00"
+                    tags='["café", "especialidad", "tostado"]'
+                    image_path="sample_images/publications/restaurant/cafe/cafe1.jpg"
+                    ;;
+                2)
+                    title="Tardes de Té"
+                    description="Relájate con nuestra selección de tés e infusiones con pastelería casera en Café del Centro."
+                    phone="+54 11 9876-5432"
+                    email="contacto@cafedelcentro.com"
+                    location='{"address":"Av. Santa Fe 1234, Buenos Aires","latitude":-34.5895,"longitude":-58.3816}'
+                    opening_time="15:00"
+                    closing_time="19:00"
+                    tags='["té", "infusiones", "pastelería"]'
+                    image_path="sample_images/publications/restaurant/cafe/cafe2.jpg"
+                    ;;
+            esac
+            ;;
+            
+        "Hostel Montaña")
+            case $index in
+                1)
+                    title="Aventura en la Montaña"
+                    description="Paquete de aventura con caminatas guiadas y alojamiento en la naturaleza en Hostel Montaña."
+                    phone="+54 294 123-4567"
+                    email="info@hostelmontana.com"
+                    location='{"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
+                    tags='["aventura", "montaña", "naturaleza"]'
+                    image_path="sample_images/publications/hotel/habitacion1.jpg"
+                    ;;
+                2)
+                    title="Escape de Fin de Semana"
+                    description="Escapada relajante con desayuno incluido y actividades al aire libre en Hostel Montaña."
+                    phone="+54 294 123-4567"
+                    email="info@hostelmontana.com"
+                    location='{"address":"Ruta 234, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
+                    opening_days='["FRIDAY","SATURDAY","SUNDAY"]'
+                    opening_time="14:00"
+                    closing_time="12:00"
+                    tags='["fin de semana", "relax", "naturaleza"]'
+                    image_path="sample_images/publications/hotel/aventura1.jpg"
+                    ;;
+            esac
+            ;;
+            
+        "Hotel Playa Dorada")
+            case $index in
+                1)
+                    title="Escape a la Playa - Oferta Especial"
+                    description="Disfruta de unas vacaciones inolvidables frente al mar con nuestro paquete todo incluido en Hotel Playa Dorada."
+                    phone="+54 223 123-4567"
+                    email="anibalfu2005@gmail.com"
+                    location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
+                    tags='["hotel", "playa", "vacaciones", "todo incluido"]'
+                    image_path="sample_images/publications/hotel/playa1.jpeg"
+                    ;;
+                2)
+                    title="Paquete Romántico"
+                    description="Escapada romántica con cena gourmet y masajes para dos en Hotel Playa Dorada."
+                    phone="+54 223 123-4567"
+                    email="anibalfu2005@gmail.com"
+                    location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
+                    opening_days='["FRIDAY","SATURDAY"]'
+                    opening_time="14:00"
+                    closing_time="23:00"
+                    tags='["romántico", "parejas", "especial"]'
+                    image_path="sample_images/publications/hotel/deluxe1.jpeg"
+                    ;;
+                3)
+                    title="Paquete Familiar"
+                    description="Diversión para toda la familia con actividades para niños y adultos en Hotel Playa Dorada."
+                    phone="+54 223 123-4567"
+                    email="anibalfu2005@gmail.com"
+                    location='{"address":"Av. Costanera 2345, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
+                    opening_days='["SATURDAY","SUNDAY"]'
+                    opening_time="09:00"
+                    closing_time="20:00"
+                    tags='["familiar", "niños", "actividades"]'
+                    image_path="sample_images/publications/hotel/suite1.jpg"
+                    ;;
+            esac
+            ;;
+            
+        "Brisa Marina")
+            case $index in
+                1)
+                    title="Menú Degustación de Mariscos"
+                    description="Disfruta de una experiencia gastronómica única con los mejores frutos del mar en Brisa Marina."
+                    phone="+54 223 456-7890"
+                    email="reservas@brisamarina.com"
+                    location='{"address":"Av. Costanera 1234, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
+                    opening_time="12:30"
+                    closing_time="23:00"
+                    tags='["mariscos", "gourmet", "vista al mar"]'
+                    image_path="sample_images/publications/restaurant/mariscos1.jpeg"
+                    ;;
+                2)
+                    title="Cena con Vista al Atardecer"
+                    description="Vive una experiencia inolvidable con nuestra cena de 5 pasos mientras el sol se pone en el mar."
+                    phone="+54 223 456-7890"
+                    email="reservas@brisamarina.com"
+                    location='{"address":"Av. Costanera 1234, Mar del Plata","latitude":-38.0055,"longitude":-57.5426}'
+                    opening_time="19:00"
+                    closing_time="23:30"
+                    tags='["romántico", "vista al mar", "cena gourmet"]'
+                    image_path="sample_images/publications/restaurant/atardecer1.jpeg"
+                    ;;
+            esac
+            ;;
+            
+        "Sabores Peruanos")
+            case $index in
+                1)
+                    title="Especialidad: Ceviche Tradicional"
+                    description="Prueba nuestro auténtico ceviche peruano preparado con pescado fresco y los mejores ingredientes."
+                    phone="+54 11 4567-8901"
+                    email="contacto@saboresperuanos.com"
+                    location='{"address":"Av. Cabildo 2345, CABA","latitude":-34.5607,"longitude":-58.4566}'
+                    opening_time="12:00"
+                    closing_time="23:30"
+                    tags='["ceviche", "comida peruana", "especialidad"]'
+                    image_path="sample_images/publications/restaurant/ceviche1.jpg"
+                    ;;
+                2)
+                    title="Noche de Pisco Sour"
+                    description="Disfruta de una noche de cócteles peruanos con música en vivo y tapas andinas."
+                    phone="+54 11 4567-8901"
+                    email="contacto@saboresperuanos.com"
+                    location='{"address":"Av. Cabildo 2345, CABA","latitude":-34.5607,"longitude":-58.4566}'
+                    opening_days='["FRIDAY","SATURDAY"]'
+                    opening_time="20:00"
+                    closing_time="01:00"
+                    tags='["pisco", "cócteles", "música en vivo"]'
+                    image_path="sample_images/publications/restaurant/pisco1.jpg"
+                    ;;
+            esac
+            ;;
+            
+        "El Encuentro Hostel")
+            case $index in
+                1)
+                    title="Paquete Aventurero"
+                    description="Para los viajeros que buscan acción, incluye alojamiento, desayuno y actividades de aventura."
+                    phone="+54 294 567-8901"
+                    email="aventura@elencuentrohostel.com"
+                    location='{"address":"Ruta 40 km 2015, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
+                    tags='["aventura", "montañismo", "excursiones"]'
+                    image_path="sample_images/publications/hotel/aventura2.jpg"
+                    ;;
+                2)
+                    title="Noche de Viajeros"
+                    description="Conoce viajeros de todo el mundo en nuestra tradicional noche de intercambio de historias."
+                    phone="+54 294 567-8901"
+                    email="aventura@elencuentrohostel.com"
+                    location='{"address":"Ruta 40 km 2015, San Carlos de Bariloche","latitude":-41.1335,"longitude":-71.3103}'
+                    opening_days='["THURSDAY"]'
+                    opening_time="21:00"
+                    closing_time="01:00"
+                    tags='["social", "viajeros", "intercambio"]'
+                    image_path="sample_images/publications/hotel/social1.jpg"
+                    ;;
+            esac
+            ;;
+            
+        *)
+            # Default case for any business not explicitly listed
+            title="Publicación Especial $index"
+            description="Disfruta de nuestras ofertas especiales en $business_name."
+            phone="+54 11 0000-0000"
+            email="contacto@${business_name// /}.com"
+            tags='["especial"]'
+            ;;
+    esac
+    
+    # Set default values if not set by business type
+    : ${title:="Publicación $index"}
+    : ${description:="Disfruta de nuestras ofertas especiales."}
+    : ${phone:="+54 11 0000-0000"}
+    : ${email:="contacto@${business_name// /}.com"}
+    : ${location:='null'}
+    : ${opening_days:='["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"]'}
+    : ${opening_time:="09:00"}
+    : ${closing_time:="23:00"}
+    : ${exceptional_days:='[]'}
+    : ${tags:='["especial"]'}
 
     # Create a temporary file for the JSON data
     local temp_json=$(mktemp)
-    cat << EOF > "$temp_json"
+    # Create a temporary file with properly formatted JSON
+    cat > "$temp_json" << EOF
 {
-    "title": "$title",
-    "description": "$description",
+    "title": "$(echo "$title" | sed 's/"/\\"/g')",
+    "description": "$(echo "$description" | sed 's/"/\\"/g')",
     "phoneNumber": "$phone",
     "email": "$email",
-    "location": "$location",
+    "location": $location,
     "openingDays": $opening_days,
     "attentionSchedule": {
         "openingTime": "$opening_time",
@@ -733,45 +954,59 @@ EOF
     rm -f "$temp_json"
     
     if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
-        echo "✅ Success! (Status: $status_code)"
-        echo "$json_response"
-        return 0
+       echo "✅ Success - Status: $status_code"
+       echo "Response: $json_response"
+       return 0
     else
-        echo "❌ Failed! (Status: $status_code)"
-        echo "Response: $json_response"
+       echo "❌ Failed - Status: $status_code"
+       echo "Response: $json_response"
         return 1
     fi
 }
 
-# Create restaurant publications
+# Create publications for each business with unique content
 if [ -n "$RESTAURANT_TOKEN" ]; then
-    # Create 3 restaurant publications using all available restaurant images
-    create_publication "$RESTAURANT_TOKEN" "restaurant" 1
-    create_publication "$RESTAURANT_TOKEN" "restaurant" 2
-    create_publication "$RESTAURANT_TOKEN" "restaurant" 3
+    # La Buena Mesa
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 1 "La Buena Mesa"
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 2 "La Buena Mesa"
+    create_publication "$RESTAURANT_TOKEN" "restaurant" 3 "La Buena Mesa"
 fi
 
-# Create cafe publications
 if [ -n "$CAFE_TOKEN" ]; then
-    # Create 2 cafe publications using all available cafe images
-    create_publication "$CAFE_TOKEN" "cafe" 1
-    create_publication "$CAFE_TOKEN" "cafe" 2
+    # Café del Centro
+    create_publication "$CAFE_TOKEN" "cafe" 1 "Café del Centro"
+    create_publication "$CAFE_TOKEN" "cafe" 2 "Café del Centro"
 fi
 
-# Create hostel publications
 if [ -n "$HOSTEL_TOKEN" ]; then
-    # Create 2 hostel publications using available hotel images
-    create_publication "$HOSTEL_TOKEN" "hostel" 1
-    create_publication "$HOSTEL_TOKEN" "hostel" 2
+    # Hostel Montaña
+    create_publication "$HOSTEL_TOKEN" "hostel" 1 "Hostel Montaña"
+    create_publication "$HOSTEL_TOKEN" "hostel" 2 "Hostel Montaña"
 fi
 
-
-# Create hotel publications
 if [ -n "$HOTEL_TOKEN" ]; then
-    # We have hotel images, create 3 hotel publications
-    create_publication "$HOTEL_TOKEN" "hotel" 1
-    create_publication "$HOTEL_TOKEN" "hotel" 2
-    create_publication "$HOTEL_TOKEN" "hotel" 3
+    # Hotel Playa Dorada
+    create_publication "$HOTEL_TOKEN" "hotel" 1 "Hotel Playa Dorada"
+    create_publication "$HOTEL_TOKEN" "hotel" 2 "Hotel Playa Dorada"
+    create_publication "$HOTEL_TOKEN" "hotel" 3 "Hotel Playa Dorada"
+fi
+
+if [ -n "$BRISAMARINA_TOKEN" ]; then
+    # Brisa Marina
+    create_publication "$BRISAMARINA_TOKEN" "restaurant" 1 "Brisa Marina"
+    create_publication "$BRISAMARINA_TOKEN" "restaurant" 2 "Brisa Marina"
+fi
+
+if [ -n "$SABORESPERU_TOKEN" ]; then
+    # Sabores Peruanos
+    create_publication "$SABORESPERU_TOKEN" "restaurant" 1 "Sabores Peruanos"
+    create_publication "$SABORESPERU_TOKEN" "restaurant" 2 "Sabores Peruanos"
+fi
+
+if [ -n "$ELENCUENTRO_TOKEN" ]; then
+    # El Encuentro Hostel
+    create_publication "$ELENCUENTRO_TOKEN" "hostel" 1 "El Encuentro Hostel"
+    create_publication "$ELENCUENTRO_TOKEN" "hostel" 2 "El Encuentro Hostel"
 fi
 
 # Function to add a menu item with dynamic images and business-specific content
@@ -994,17 +1229,22 @@ add_review() {
     local title=""
     local content=""
     local rating=5
-    local image_path=""
     
-    # Reseñas específicas por tipo de negocio
+    # Generate a random rating between 3-5 for positive reviews, 1-2 for negative ones
+    if [ $((RANDOM % 10)) -lt 2 ]; then  # 20% chance of negative review
+        rating=$((1 + RANDOM % 2))
+    else
+        rating=$((3 + RANDOM % 3))
+    fi
+    
+    # Reviews specific to business type
     case $business_type in
         "restaurant")
             case $index in
                 1)
-            title="Excelente experiencia"
-            content="¡Excelente comida y servicio! estaba todo delicioso. Volveré seguro."
+                    title="Excelente experiencia"
+                    content="¡Excelente comida y servicio! Estaba todo delicioso. Volveré seguro."
                     rating=5
-            image_path="sample_images/reviews/review.png"
                     ;;
                 2)
                     title="Excelente relación calidad-precio"
@@ -1086,7 +1326,7 @@ add_review() {
             ;;
     esac
     
-    echo -n "Adding review: \"$title\"... "
+    echo -n "Adding review: \"$title\" (Rating: $rating/5)... "
     
     # Create a temporary file for the JSON data
     local temp_json=$(mktemp)
@@ -1103,11 +1343,6 @@ EOF
     cmd+=" -H \"Authorization: Bearer $token\""
     cmd+=" -H \"Content-Type: multipart/form-data\""
     cmd+=" -F \"data=@$temp_json;type=application/json\""
-    
-    # Add image if it exists
-    if [ -f "$image_path" ]; then
-        cmd+=" -F \"files=@$image_path\""
-    fi
 
     # Execute the command
     response=$(eval "$cmd")
@@ -1119,7 +1354,6 @@ EOF
     
     if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
         echo "✅ Success! (Status: $status_code)"
-        echo "$json_response"
         return 0
     else
         echo "❌ Failed! (Status: $status_code)"
@@ -1128,28 +1362,37 @@ EOF
     fi
 }
 
-# Generic function to add reviews for any publication
+# Function to add reviews to publications
 add_reviews_to_publication() {
-    local publication_token="$1"  # Token of the publication owner
-    local business_type="$2"      # restaurant, hotel, cafe, hostel
+    local business_token="$1"
+    local business_type="$2"
     
-    if [ -z "$publication_token" ]; then
+    if [ -z "$business_token" ]; then
+        echo "❌ No token provided for $business_type"
+        return 1
+    fi
+    
+    # Skip Sabores Peruanos
+    if [ "$business_token" = "$SABORESPERU_TOKEN" ]; then
+        echo -e "\n=== Skipping reviews for Sabores Peruanos ==="
         return 0
     fi
     
-    echo -n "Getting $business_type publications... "
+    echo -e "\n=== Adding reviews for $business_type ==="
     
-    response=$(curl -s -X GET "$BASE_URL/publications/mine?page=0&size=50" \
-        -H "Authorization: Bearer $publication_token" \
-        -H "Content-Type: application/json" \
-        -w "\n%{http_code}")
+    # Get all publications for this business
+    echo -n "Fetching $business_type publications... "
+    response=$(curl -s -w "\n%{http_code}" -X GET "$BASE_URL/publications/mine" \
+        -H "Authorization: Bearer $business_token" \
+        -H "Content-Type: application/json")
     
     status_code=$(echo "$response" | tail -n1)
-    if [[ $status_code -ge 200 && $status_code -lt 300 ]]; then
-        echo "✅ Found publications"
-        
-        # Extract publication IDs
-        publication_ids=($(echo "$response" | grep -o '"id":"[^"]*' | cut -d'"' -f4))
+    json_response=$(echo "$response" | head -n -1)
+    
+    if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 300 ]; then
+        # Extract publication IDs using grep and cut
+        publication_ids=($(echo "$json_response" | grep -o '"id":"[^"]*' | cut -d'"' -f4))
+        echo "✅ Found ${#publication_ids[@]} publications"
         
         if [ ${#publication_ids[@]} -eq 0 ]; then
             echo "❌ No publications found for $business_type"
@@ -1161,86 +1404,82 @@ add_reviews_to_publication() {
         [ -n "$USER1_TOKEN" ] && users+=("$USER1_TOKEN")
         [ -n "$USER2_TOKEN" ] && users+=("$USER2_TOKEN")
         [ -n "$USER3_TOKEN" ] && users+=("$USER3_TOKEN")
+        [ -n "$USER4_TOKEN" ] && users+=("$USER4_TOKEN")
         
         if [ ${#users[@]} -eq 0 ]; then
             echo "❌ No users available to post reviews"
             return 1
         fi
         
-        local review_count=0
-        local publication_count=0
-        
-        for publication_id in "${publication_ids[@]}"; do
-            echo "Processing publication $publication_id..."
-            
-            # 70% chance to skip adding any review to this publication
-            if [ $((RANDOM % 100)) -lt 70 ]; then
-                echo "  Skipping review for this publication"
-                continue
-            fi
-            
-            # Only add 1 review to this publication
-            echo "  Will add 1 review to this publication"
+        local total_reviews_added=0
+
+        for pub_id in "${publication_ids[@]}"; do
+            echo -e "\nProcessing publication $pub_id"
             
             # Shuffle users for this publication
             local shuffled_users=($(shuf -e "${users[@]}"))
             
-            # Only take the first user (if any)
-            if [ ${#shuffled_users[@]} -gt 0 ]; then
-                local user_token="${shuffled_users[0]}"
-                echo "  Adding review from user..."
-                
-                if add_review "$publication_id" "$user_token" "1" "$business_type"; then
-                    ((review_count++))
-                fi
+            # Número aleatorio de reseñas (1-3)
+            local num_reviews=$((1 + RANDOM % 3))
+            
+            # Asegurar que no excedamos los usuarios disponibles
+            if [ $num_reviews -gt ${#shuffled_users[@]} ]; then
+                num_reviews=${#shuffled_users[@]}
             fi
             
-            ((publication_count++))
+            # Asegurar que al menos 1 reseña
+            if [ $num_reviews -lt 1 ]; then
+                num_reviews=1
+            fi
+            
+            for ((i=0; i<num_reviews && i<${#shuffled_users[@]}; i++)); do
+                local user_token="${shuffled_users[$i]}"
+                local review_index=$((i + 1))
+                
+                echo "- Adding review $review_index/$num_reviews from user $((i + 1))"
+                if add_review "$pub_id" "$user_token" "$review_index" "$business_type"; then
+                    ((total_reviews_added++))
+                fi
+                
+                # Small delay between reviews
+                sleep 1
+            done
         done
         
-        echo "✅ Added $review_count reviews to $publication_count out of ${#publication_ids[@]} $business_type publications"
-        
+        echo -e "\n✅ Added $total_reviews_added reviews to ${#publication_ids[@]} $business_type publications"
+        return 0
     else
-        echo "❌ Failed to search $business_type publications (Status: $status_code)"
-        echo "Response: $(echo "$response" | head -n -1)"
+        echo "❌ Failed to fetch $business_type publications (Status: $status_code)"
+        echo "Response: $json_response"
         return 1
     fi
 }
+# Add reviews to all business types
+echo -e "\n=== Adding Reviews to Publications ==="
 
-# 6. Add restaurant menus and room packs
-echo -e "\n=== Adding Restaurant Menus and Room Packs ==="
-
-# Add menu items for restaurant
 if [ -n "$RESTAURANT_TOKEN" ]; then
-    add_menu_item "$RESTAURANT_TOKEN" "La Buena Mesa" 1
-    add_menu_item "$RESTAURANT_TOKEN" "La Buena Mesa" 2
+    add_reviews_to_publication "$RESTAURANT_TOKEN" "restaurant"
+else
+    print_error "Skipping restaurant reviews - no restaurant token"
 fi
 
-# Add menu items for cafe
 if [ -n "$CAFE_TOKEN" ]; then
-    add_menu_item "$CAFE_TOKEN" "Café del Centro" 1
-    add_menu_item "$CAFE_TOKEN" "Café del Centro" 2
+    add_reviews_to_publication "$CAFE_TOKEN" "cafe"
+else
+    print_error "Skipping cafe reviews - no cafe token"
 fi
 
-# Add room packs for hotel
 if [ -n "$HOTEL_TOKEN" ]; then
-    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 1
-    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 2
-    add_room_pack "$HOTEL_TOKEN" "Hotel Playa Dorada" 3
+    add_reviews_to_publication "$HOTEL_TOKEN" "hotel"
+else
+    print_error "Skipping hotel reviews - no hotel token"
 fi
 
-# Add room packs for hostel
 if [ -n "$HOSTEL_TOKEN" ]; then
-    add_room_pack "$HOSTEL_TOKEN" "Hostel Montaña" 1
-    add_room_pack "$HOSTEL_TOKEN" "Hostel Montaña" 2
+    add_reviews_to_publication "$HOSTEL_TOKEN" "hostel"
+else
+    print_error "Skipping hostel reviews - no hostel token"
 fi
-
-# 7. Add reviews to all business types - each type only once
-add_reviews_to_publication "$RESTAURANT_TOKEN" "restaurant"
-add_reviews_to_publication "$CAFE_TOKEN" "cafe"
-add_reviews_to_publication "$HOTEL_TOKEN" "hotel"
-add_reviews_to_publication "$HOSTEL_TOKEN" "hostel"
-
 # 7. Add followers between users
 echo -e "\n=== Adding Followers ==="
 
@@ -1323,37 +1562,51 @@ if [ -n "$USER3_TOKEN" ]; then
     fi
 fi
 
-# Add followers (User1 follows User2 and User3)
+# Add followers
+# Camila follows Luisito and Julián
 if [ -n "$USER1_TOKEN" ] && [ -n "$USER2_ID" ]; then
-    add_follower "$USER1_TOKEN" "$USER2_ID" "Juan" "María"
+    add_follower "$USER1_TOKEN" "$USER2_ID" "Camila" "Luisito"
 else
-    print_error "Skipping: Juan follow María - missing tokens or IDs"
+    print_error "Skipping: Camila follow Luisito - missing tokens or IDs"
 fi
 
 if [ -n "$USER1_TOKEN" ] && [ -n "$USER3_ID" ]; then
-    add_follower "$USER1_TOKEN" "$USER3_ID" "Juan" "Carlos"
+    add_follower "$USER1_TOKEN" "$USER3_ID" "Camila" "Julián"
 else
-    print_error "Skipping: Juan follow Carlos - missing tokens or IDs"
+    print_error "Skipping: Camila follow Julián - missing tokens or IDs"
 fi
 
-# Add followers (User2 follows User1)
+# Luisito follows Camila and José Luis
 if [ -n "$USER2_TOKEN" ] && [ -n "$USER1_ID" ]; then
-    add_follower "$USER2_TOKEN" "$USER1_ID" "María" "Juan"
+    add_follower "$USER2_TOKEN" "$USER1_ID" "Luisito" "Camila"
 else
-    print_error "Skipping: María follow Juan - missing tokens or IDs"
+    print_error "Skipping: Luisito follow Camila - missing tokens or IDs"
 fi
 
-# Add followers (User3 follows User1 and User2)
+# Julián follows Camila and Luisito
 if [ -n "$USER3_TOKEN" ] && [ -n "$USER1_ID" ]; then
-    add_follower "$USER3_TOKEN" "$USER1_ID" "Carlos" "Juan"
+    add_follower "$USER3_TOKEN" "$USER1_ID" "Julián" "Camila"
 else
-    print_error "Skipping: Carlos follow Juan - missing tokens or IDs"
+    print_error "Skipping: Julián follow Camila - missing tokens or IDs"
 fi
 
 if [ -n "$USER3_TOKEN" ] && [ -n "$USER2_ID" ]; then
-    add_follower "$USER3_TOKEN" "$USER2_ID" "Carlos" "María"
+    add_follower "$USER3_TOKEN" "$USER2_ID" "Julián" "Luisito"
 else
-    print_error "Skipping: Carlos follow María - missing tokens or IDs"
+    print_error "Skipping: Julián follow Luisito - missing tokens or IDs"
+fi
+
+# José Luis follows Camila and Julián
+if [ -n "$USER4_TOKEN" ] && [ -n "$USER1_ID" ]; then
+    add_follower "$USER4_TOKEN" "$USER1_ID" "José Luis" "Camila"
+else
+    print_error "Skipping: José Luis follow Camila - missing tokens or IDs"
+fi
+
+if [ -n "$USER4_TOKEN" ] && [ -n "$USER3_ID" ]; then
+    add_follower "$USER4_TOKEN" "$USER3_ID" "José Luis" "Julián"
+else
+    print_error "Skipping: José Luis follow Julián - missing tokens or IDs"
 fi
 
 # 8. Add likes to publications
@@ -1381,44 +1634,108 @@ add_like_to_publication() {
     fi
 }
 
-# Get all publications
-if [ -n "$USER1_TOKEN" ]; then
-    echo -n "Fetching publications for adding likes... "
+# Function to add likes to a business's publications
+add_likes_to_business() {
+    local token="$1"
+    local business_name="$2"
+    local likes_per_publication=$3
     
-    response=$(curl -s -X GET "$BASE_URL/publications/search" \
-        -H "Authorization: Bearer $USER1_TOKEN" \
+    echo -n "Fetching publications for $business_name... "
+    
+    # Get publications for the business
+    response=$(curl -s -X GET "$BASE_URL/publications/mine" \
+        -H "Authorization: Bearer $token" \
         -H "Content-Type: application/json")
     
-    # Extract all publication IDs
+    # Extract publication IDs
     pub_ids=($(echo "$response" | grep -o '"id":"[^"]*' | cut -d'"' -f4))
     
     if [ ${#pub_ids[@]} -gt 0 ]; then
         print_success "✅ Found ${#pub_ids[@]} publication(s)"
         
-        # Add likes from different users to each publication (max 2 likes per publication)
-        counter=0
-        for pub_id in "${pub_ids[@]}"; do   
-            # User2 likes the publication (only for some publications to vary)
-            if [ -n "$USER2_TOKEN" ] && [ $(($counter % 2)) -eq 0 ]; then
-                add_like_to_publication "$USER2_TOKEN" "$pub_id" "María"
-            fi
+        local total_likes_added=0
+        
+        # Add likes to each publication
+        for pub_id in "${pub_ids[@]}"; do
+            echo -e "\nAdding likes to publication $pub_id"
+            local likes_added=0
             
-            counter=$((counter + 1))
+            # Add likes from different users
+            for ((i=2; i<=4 && likes_added < likes_per_publication; i++)); do
+                user_token_var="USER${i}_TOKEN"
+                if [ -n "${!user_token_var}" ]; then
+                    if add_like_to_publication "${!user_token_var}" "$pub_id" "User $i"; then
+                        ((likes_added++))
+                        ((total_likes_added++))
+                    fi
+                fi
+            done
         done
+        
+        print_success "✅ Added $total_likes_added likes to $business_name's ${#pub_ids[@]} publications"
+        return 0
     else
-        print_error "❌ No publications found"
+        print_error "❌ No publications found for $business_name"
+        return 1
     fi
+}
+
+# Add 9 likes (3 per publication) to La Buena Mesa (which has 3 publications)
+if [ -n "$RESTAURANT_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a La Buena Mesa (3 por publicación) ==="
+    add_likes_to_business "$RESTAURANT_TOKEN" "La Buena Mesa" 3
+else
+    print_error "❌ No se encontró el token del restaurante"
+fi
+
+# Add 2-3 likes to Hotel Playa Dorada
+if [ -n "$HOTEL_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a Hotel Playa Dorada (3 por publicación) ==="
+    add_likes_to_business "$HOTEL_TOKEN" "Hotel Playa Dorada" 3
+fi
+
+# Add 1-2 likes to Café del Centro
+if [ -n "$CAFE_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a Café del Centro (2 por publicación) ==="
+    add_likes_to_business "$CAFE_TOKEN" "Café del Centro" 2
+fi
+
+# Add 1-2 likes to Hostel Montaña
+if [ -n "$HOSTEL_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a Hostel Montaña (1 por publicación) ==="
+    add_likes_to_business "$HOSTEL_TOKEN" "Hostel Montaña" 1
+fi
+
+# Add 2 likes to Brisa Marina (if token exists)
+if [ -n "$BRISA_MARINA_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a Brisa Marina (2 por publicación) ==="
+    add_likes_to_business "$BRISA_MARINA_TOKEN" "Brisa Marina" 2
+fi
+
+# Add 1-2 likes to El Encuentro Hostel (if token exists)
+if [ -n "$EL_ENCUENTRO_TOKEN" ]; then
+    echo -e "\n=== Añadiendo likes a El Encuentro Hostel (1 por publicación) ==="
+    add_likes_to_business "$EL_ENCUENTRO_TOKEN" "El Encuentro Hostel" 1
 fi
 
 echo -e "\n=== Sample data loading completed! ==="
 echo -e "\nYou can now log in with:"
 echo -e "\n=== Regular Users ==="
-echo "- User 1: juan@example.com / password123"
-echo "- User 2: maria@example.com / password123"
-echo "- User 3: carlos@example.com / password123"
+echo "- User 1: camila@example.com / password123"
+echo "- User 2: luisito@example.com / password123"
+echo "- User 3: julian@example.com / password123"
+echo "- User 4: joseluis@example.com / password123"
+echo "- User 5: ricardo@example.com / password123"
+echo "- User 6: astrid@example.com / password123"
+echo "- User 7: aizen@example.com / password123"
 
 echo -e "\n=== Business Accounts ==="
-echo "- Restaurant: info@labuenamesa.com / business123"
-echo "- Hotel: reservas@playadorada.com / business123"
+echo "- La Buena Mesa (Restaurante): info@labuenamesa.com / business123"
+echo "- Playa Dorada (Hotel): anibalfu2005@gmail.com / business123"
+echo "- Café del Centro: contacto@cafedelcentro.com / business123"
+echo "- Hostal Montaña: info@hostelmontana.com / business123"
+echo "- Brisa Marina: isabel@brisamarina.com / business123"
+echo "- Sabores Peruanos: afu@fi.uba.ar / business123"
+echo "- El Encuentro Hostel: diego@elencuentrohostel.com / business123"
 
 echo -e "\nNote: All users have the password 'password123' for testing purposes."

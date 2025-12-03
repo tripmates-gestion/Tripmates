@@ -24,21 +24,21 @@ Para detener el proyecto, se debe ejecutar el siguiente comando:
 docker compose down
 ```
 ## Carga datos de ejemplo
-Después de iniciar los contenedores, puedes cargar datos de ejemplo con el siguiente comando:
-```bash
-chmod +x load_samples.sh
-./load_samples.sh
-```
-Este script realizará las siguientes acciones:
+Después de iniciar los contenedores, se irán creando los datos de ejemplo:
 
 -Creará usuarios de prueba
 
 -Registrará negocios (restaurantes y hoteles)
 
+-Agregará imágenes
+
 -Agregará publicaciones, menús y paquetes de habitaciones
 
 -Incluirá reseñas de ejemplo
 
+-Agregará likes a publicaciones
+
+-Agregará seguidores
 ## Acceso a endpoints protegidos
 
 ACtualmente el proyecto no cuenta con una autenticación unificada. Para acceder a los endpoints protegidos (que por el momento son todos, exceptuando [salud](#salud)), emplear las siguientes credenciales:

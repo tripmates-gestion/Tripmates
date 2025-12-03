@@ -1,11 +1,43 @@
 import { Typography, Card, CardContent, CardMedia, Grid, Stack, Avatar, Chip } from "@mui/material";
 import type { Review } from "../../types/Review";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getUserByEmail } from "../../services/userService";
+import { renderTextWithMentions } from "./NewReviewPlace";
 
+// Componente para renderizar el texto con menciones de forma async
+function ReviewTextWithMentions({ 
+  text, 
+  accessToken, 
+  onMentionClick 
+}: { 
+  text: string; 
+  accessToken: string; 
+  onMentionClick: (email: string) => void;
+}) {
+  const [renderedContent, setRenderedContent] = useState<React.ReactNode>(text);
 
+  useEffect(() => {
+    const loadMentions = async () => {
+      try {
+        const content = await renderTextWithMentions(
+          text,
+          accessToken,
+          (mention) => onMentionClick(mention.email)
+        );
+        setRenderedContent(content);
+      } catch (error) {
+        console.error('Error rendering mentions:', error);
+        setRenderedContent(text);
+      }
+    };
+
+    loadMentions();
+  }, [text, accessToken, onMentionClick]);
+
+  return <>{renderedContent}</>;
+}
 
 export function ReviewGrid({ items }: { items: Review[] }) {
 
@@ -22,6 +54,19 @@ export function ReviewGrid({ items }: { items: Review[] }) {
             });
         } catch (error) {
             console.error('Error fetching user:', error);
+        }
+    }, [navigate, accessToken]);
+
+    const handleTaggedUserClick = useCallback(async (email: string) => {
+        console.log("Usuario mencionado (email):", email);
+        try {
+            const mentionedUser = await getUserByEmail(email, accessToken!);
+            console.log("Usuario obtenido:", mentionedUser);
+            navigate(`/userProfile/${mentionedUser.id}`, {
+                state: { account: mentionedUser }
+            });
+        } catch (error) {
+            console.error('Error fetching tagged user:', error);
         }
     }, [navigate, accessToken]);
 
@@ -65,7 +110,13 @@ export function ReviewGrid({ items }: { items: Review[] }) {
   
             {/* Título + texto */}
             <Typography variant="subtitle1" fontWeight={700}>{r.title}</Typography>
-            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>{r.text}</Typography>
+            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+              <ReviewTextWithMentions
+                text={r.text}
+                accessToken={accessToken!}
+                onMentionClick={handleTaggedUserClick}
+              />
+            </Typography>
   
             {/* Galería */}
             {r.images.length > 0 && (

@@ -42,7 +42,11 @@ export const VEGAN_RESTAURANT: BusinessPubAccountDataDTO = {
   role: BUSINESS_VEGAN_ROLE_MOCK,
   description:
     "Restaurante vegano con ingredientes orgánicos y locales. Nuestra misión es ofrecer comidas saludables sin sacrificar sabor ni creatividad.",
-  location: "Palermo, Buenos Aires, Argentina",
+  location: {
+    address: "Palermo, Buenos Aires, Argentina",
+    latitude: -34.5899,
+    longitude: -58.4317
+  },
   phoneNumber: BUSINESS_PHONENUMBER_MOCK,
   publicEmail: PUBLIC_VEGAN_MAIL_MOCK,
   profileImageUrls: [VEGAN_RESTAURANT_BANNER, ...VEGAN_MENU_IMAGES],
@@ -105,7 +109,11 @@ export const VEGAN_RESTAURANT_PUBLICATIONS: BusinessPublicationResponseDTO[] = [
     exceptionalClosingDays: [],
     phoneNumber: BUSINESS_PHONENUMBER_MOCK,
     email: PUBLIC_VEGAN_MAIL_MOCK,
-    location: "Palermo, Buenos Aires",
+    location: {
+      address: "Palermo, Buenos Aires",
+      latitude: -34.5899,
+      longitude: -58.4317
+    },
     imageUrls: [VEGAN_PUB_IMAGES[0]],
     ownerId: "1003",
     ownerUsername: "verdevida_admin",
@@ -126,7 +134,11 @@ export const VEGAN_RESTAURANT_PUBLICATIONS: BusinessPublicationResponseDTO[] = [
     exceptionalClosingDays: [],
     phoneNumber: BUSINESS_PHONENUMBER_MOCK,
     email: PUBLIC_VEGAN_MAIL_MOCK,
-    location: "Palermo, Buenos Aires",
+    location: {
+      address: "Palermo, Buenos Aires",
+      latitude: -34.5899,
+      longitude: -58.4317
+    },
     imageUrls: [VEGAN_PUB_IMAGES[1]],
     ownerId: "1003",
     ownerUsername: "verdevida_admin",

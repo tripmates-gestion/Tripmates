@@ -11,6 +11,7 @@ const SearchHeader: React.FC = () => (
         textAlign: "center",
         color: "white",
         letterSpacing: "-0.5px",
+        textShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
       }}
     >
       Conectá con otros viajeros
@@ -24,9 +25,9 @@ const SearchHeader: React.FC = () => (
         lineHeight: 1.4,
       }}
     >
-      Buscá personas que comparten tu pasión por viajar. Descubrí sus
-      experiencias, reviews y aventuras por el mundo.
+      Conoce viajeros que conozcan de tu nuevo destino. Busca y comparte la experiencia con tus amigos!
     </Typography>
+
   </>
 );
 

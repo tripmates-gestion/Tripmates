@@ -1,10 +1,17 @@
-import { Stack, TextField } from '@mui/material';
-import ImageUploader from '../../../ui/ImageUploader';
+import { Search } from '@mui/icons-material'
+import { Stack, TextField, Typography } from '@mui/material'
+import ImageUploader from '../../../ui/ImageUploader'
+import OpenStreetMapPicker from '../../../map/OpenStreetMapPicker'
+import type { LocationDTO } from '../../../../types/Location'
+import { useGeocodeAddress } from '../../../../hooks/useGeocodeAddress'
+import { useReverseGeocode } from '../../../../hooks/useReverseGeocode'
+import { useCallback, useEffect, useState } from 'react'
+import { InputAdornment, IconButton } from "@mui/material";
 
 export type BusinessCommonErrors = Partial<{
   name: string
   description: string
-  location: string
+  location: Partial<Record<keyof LocationDTO, string>>
   phoneNumber: string
   publicEmail: string
 }>
@@ -15,15 +22,59 @@ export default function BusinessCommonFields({
 }: {
   name: string
   description: string
-  location: string
+  location: LocationDTO
   phoneNumber: string
   publicEmail: string
-  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string)=>void
+  onChange: (k: 'name'|'description'|'location'|'phoneNumber'|'publicEmail', v: string | LocationDTO)=>void
   avatarUrl?: string
   onAvatarSelected: (base64:string)=>void
   disabled?: boolean
   errors?: BusinessCommonErrors
 }) {
+  const { geocodeAddress, loading: geocoding, error: geoError, setError: setGeoError } = useGeocodeAddress()
+  const { reverseGeocode, error: reverseError, setError: setReverseError } = useReverseGeocode()
+
+  const [addressInput, setAddressInput] = useState(location?.address || '')
+
+  useEffect(() => {
+    setAddressInput(location?.address || '')
+  }, [location?.address])
+
+  const handleSearchInMap = async () => {
+    const result = await geocodeAddress(addressInput || '')
+    if (result) {
+      onChange('location', {
+        ...(location || {}),
+        address: addressInput,
+        latitude: result.latitude,
+        longitude: result.longitude,
+      })
+    }
+  }
+
+  const handleMapChange = useCallback(async (value: LocationDTO) => {
+    const updatedLocation = {
+      ...(location || {}),
+      latitude: value.latitude,
+      longitude: value.longitude,
+    }
+
+    onChange('location', updatedLocation)
+
+    if (geoError) setGeoError(null)
+    if (reverseError) setReverseError(null)
+
+    const suggestedAddress = await reverseGeocode(value.latitude, value.longitude)
+
+    if (suggestedAddress) {
+      setAddressInput(suggestedAddress)
+      onChange('location', {
+        ...updatedLocation,
+        address: suggestedAddress,
+      })
+    }
+  }, [geoError, location, onChange, reverseError, reverseGeocode, setGeoError, setReverseError])
+
   return (
     <Stack spacing={3}>
       <TextField
@@ -46,15 +97,38 @@ export default function BusinessCommonFields({
         error={Boolean(errors?.description)}
         helperText={errors?.description || 'Breve descripción del negocio'}
       />
-      <TextField
-        label="Ubicación"
-        fullWidth
-        value={location}
-        onChange={e=>onChange('location', e.target.value)}
-        disabled={disabled}
-        error={Boolean(errors?.location)}
-        helperText={errors?.location || 'Ej: Buenos Aires, Palermo'}
-      />
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'flex-start' }}>
+        <TextField
+          label="Ubicación"
+          fullWidth
+          value={addressInput}
+          onChange={e => {
+            setAddressInput(e.target.value)
+            if (geoError) setGeoError(null)
+            if (reverseError) setReverseError(null)
+          }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  onClick={handleSearchInMap}
+                  disabled={disabled || geocoding}
+                >
+                  <Search />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Stack>
+
+      <OpenStreetMapPicker location={location} onChange={handleMapChange} disabled={disabled} />
+      <Typography variant="body2" color="text.secondary">
+        {Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && !(location.latitude === 0 && location.longitude === 0)
+          ? `Coordenadas seleccionadas: ${location.latitude.toFixed(5)}, ${location.longitude.toFixed(5)}`
+          : 'Hacé clic en el mapa para fijar la ubicación exacta'}
+      </Typography>
       <TextField
         label="Teléfono"
         fullWidth

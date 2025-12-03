@@ -10,9 +10,18 @@ type Props = {
   setEmail: (v: string) => void;
   password: string;
   setPassword: (v: string) => void;
+  onForgotPassword: () => void;
 };
 
-export default function LoginForm({ showPass, setShowPass, email, setEmail, password, setPassword }: Props) {
+export default function LoginForm({
+  showPass,
+  setShowPass,
+  email,
+  setEmail,
+  password,
+  setPassword,
+  onForgotPassword,
+}: Props) {
   return (
     <Stack spacing={2} sx={{ width: '100%', mt: 1 }}>
       <TextField 
@@ -39,7 +48,9 @@ export default function LoginForm({ showPass, setShowPass, email, setEmail, pass
         }}
       />
       <Box sx={{ textAlign: 'right' }}>
-        <Button size="small" variant="text">¿Olvidaste tu contraseña?</Button>
+        <Button size="small" variant="text" onClick={onForgotPassword}>
+          ¿Olvidaste tu contraseña?
+        </Button>
       </Box>
     </Stack>
   );

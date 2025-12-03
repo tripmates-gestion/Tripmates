@@ -5,18 +5,24 @@ import com.tripmates.backend.common.exception.UnauthorizedException;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.common.types.EventReport;
+import com.tripmates.backend.common.types.Review;
+import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.users.entity.mongo.Account;
 import com.tripmates.backend.users.repository.mongo.AccountRepository;
+import com.tripmates.backend.metrics.entity.mongo.ProfileView;
+import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
+import com.tripmates.backend.users.dto.account.AccountResumeResponseDTO;
+import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
+
 import java.util.Date;
+import java.util.DoubleSummaryStatistics;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.tripmates.backend.metrics.entity.mongo.ProfileView;
-import com.tripmates.backend.metrics.repository.ProfileViewsRepository;
-import com.tripmates.backend.publications.repository.mongo.PublicationRepository;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 @Transactional
@@ -88,6 +94,25 @@ public class MetricsService {
 	public Integer getAllLikes(String email) {
 		Account account = validateBusinessAccount(email);
 		return publicationRepository.countLikesFromAccountId(account.getId());
+	}
+
+	public List<AccountResumeResponseDTO> getMostLikedBusinessAccounts(Integer n) {
+		return accountRepository.findTopNBusinessAccountsByTotalLikes(n)
+			.stream()
+			.map(AccountResumeResponseDTO::fromAccount)
+			.toList();
+	}
+
+	public Double getReviewRatingsAvgByAccountId(String accountId) {
+		List<Publication> publications = publicationRepository.findByOwnerId(accountId);
+
+		DoubleSummaryStatistics stats = publications.stream()
+			.flatMap(pub -> pub.getReviews().stream())
+			.filter(review -> review.getRating() != null && review.getRating() >= 0)
+			.mapToDouble(Review::getRating)
+			.summaryStatistics();
+
+		return stats.getCount() > 0 ? stats.getAverage() : null;
 	}
 
 }

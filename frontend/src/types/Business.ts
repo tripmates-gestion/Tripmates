@@ -1,4 +1,5 @@
-import type { AccountType } from "./AccountTypes"
+import type { AccountType, BusinessType as AccountBusinessType } from "./AccountTypes"
+import type { LocationDTO } from "./Location"
 
 // ---------------------- Tipos locales ----------------------
 export type BusinessType = 'alojamiento' | 'servicio'
@@ -10,7 +11,7 @@ export type BusinessPost = {
   description: string
   hours: string
   contact: string
-  location: string
+  location: LocationDTO
   photos: string[]
   createdAt: string
   rating?: number // opcional para usar con PlaceCard
@@ -34,9 +35,9 @@ export function parseHours(scheduleString: string): AttentionSchedule {
   return { openingTime: opening, closingTime: closing }
 }
 
-export type AttentionSchedule = { 
+export type AttentionSchedule = {
   openingTime: string
-  closingTime: string 
+  closingTime: string
 }
 
 export type BusinessPublicationRequestDTO = {
@@ -44,11 +45,24 @@ export type BusinessPublicationRequestDTO = {
   description: string
   phoneNumber: string
   email: string
-  location: string
+  location: LocationDTO
   openingDays: DayOfWeek[]
   attentionSchedule: AttentionSchedule
   exceptionalClosingDays?: string[]
   tags: string[]
+}
+
+export type PublicationUpdateRequestDTO = {
+  title?: string
+  description?: string
+  phoneNumber?: string
+  email?: string
+  location?: LocationDTO
+  openingDays?: DayOfWeek[]
+  attentionSchedule?: AttentionSchedule
+  exceptionalClosingDays?: string[]
+  tags?: string[]
+  deletePhotoIndexes?: number[]
 }
 
 // ---------------------- Contrato del backend (response) ----------------------
@@ -61,16 +75,17 @@ export type BusinessPublicationResponseDTO = {
   exceptionalClosingDays: string[]
   phoneNumber: string
   email: string
-  location: string
+  location: LocationDTO;
   imageUrls: string[]
   ownerId: string
   ownerUsername: string
   ownerAvatarUrl: string
+  businessType?: AccountBusinessType
   createdAt: string
   tags: string[]
 }
 
-{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */}
+{/* Deprecado: si bien se usa, no guardo la informacion en los llamados => no uso lo que devuelve */ }
 export type BusinessUpdateResponseDTO = {
   name: string;
   email: string;
@@ -92,7 +107,7 @@ export type FormState = {
   description: string;
   hours: string;          // opcional
   contact: string;        // opcional
-  location: string;       // opcional
+  location: LocationDTO;  // opcional
   photos: string[];       // base64 previews
   tags: string[];         // << nuevo
   openingDays: DayOfWeek[]; // << nuevo
@@ -104,20 +119,19 @@ export const initialFormState: FormState = {
   description: '',
   hours: '',
   contact: '',
-  location: '',
+  location: { address: '', latitude: 0, longitude: 0 },
   photos: [],
   tags: [],
   openingDays: [], // si queda vacío, en el submit usás DEFAULT_OPENING_DAYS
-  // type: '',
 };
 
 
 export type UserStats = { aportes: number; seguidores: number; siguiendo: number };
 
 export const DEFAULT_OPENING_DAYS: DayOfWeek[] = [
-  'MONDAY', 
-  'TUESDAY', 
-  'WEDNESDAY', 
-  'THURSDAY', 
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
   'FRIDAY'
 ] as const;

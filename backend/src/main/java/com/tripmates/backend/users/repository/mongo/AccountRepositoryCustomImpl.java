@@ -2,6 +2,7 @@ package com.tripmates.backend.users.repository.mongo;
 
 import com.mongodb.client.result.UpdateResult;
 import com.tripmates.backend.common.types.AttentionSchedule;
+import java.util.regex.Pattern;
 import com.tripmates.backend.common.types.Plan;
 import com.tripmates.backend.common.types.PlanMetadata;
 import com.tripmates.backend.common.types.PlanMetadataWithContent;
@@ -15,11 +16,15 @@ import com.tripmates.backend.users.entity.mongo.Account;
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -111,8 +116,10 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (businessSearchRequestDTO.averagePrice() != null)
 			criteria.add(Criteria.where("averagePrice").is(businessSearchRequestDTO.averagePrice()));
 
-		if (businessSearchRequestDTO.location() != null)
-			criteria.add(Criteria.where("location").is(businessSearchRequestDTO.location()));
+		if (businessSearchRequestDTO.location() != null) {
+			String searchPattern = ".*" + Pattern.quote(businessSearchRequestDTO.location().trim()) + ".*";
+			criteria.add(Criteria.where("location.address").regex(searchPattern, "i"));
+		}
 
 		if (businessSearchRequestDTO.username() != null)
 			criteria.add(Criteria.where("name").regex(businessSearchRequestDTO.username(), "i"));
@@ -190,34 +197,48 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		if (userSearchRequestDTO.followers() != null)
 			criteria.add(Criteria.where("followers." + (userSearchRequestDTO.followers() - 1)).exists(true));
 
-		if (userSearchRequestDTO.location() != null)
-			criteria.add(Criteria.where("_id")
-				.in(userIDsWithReviewInPublicationWithLocation(userSearchRequestDTO.location())));
+		if (userSearchRequestDTO.location() != null) {
+			List<String> userIdsWithMatchingReviews = userIDsWithReviewInPublicationWithLocationAddress(
+					userSearchRequestDTO.location());
+			if (!userIdsWithMatchingReviews.isEmpty())
+				criteria.add(Criteria.where("id").in(userIdsWithMatchingReviews));
+			else
+				// If no users found with matching reviews, ensure no results are returned
+				criteria.add(Criteria.where("id").is("non-existent-id"));
+		}
 
 		return criteria;
 	}
 
 	/**
-	 * Returns all users ID which have made a review in a publication with location.
-	 * @param location location where the publication was made.
-	 * @return list of {@link String} IDs.
+	 * Returns all users ID which have made a review in a publication with a matching
+	 * address.
+	 * @param address partial address to search for in publication locations
+	 * @return list of unique {@link String} user IDs.
 	 */
-	private List<String> userIDsWithReviewInPublicationWithLocation(String location) {
-		List<String> userIDsList = new ArrayList<>();
+	private List<String> userIDsWithReviewInPublicationWithLocationAddress(String address) {
+		Set<String> userIds = new HashSet<>();
 
-		Query query = new Query(Criteria.where("location").regex(location, "i"));
+		// Search for publications with address containing the search term
+		// (case-insensitive)
+		String searchPattern = ".*" + Pattern.quote(address.trim()) + ".*";
+		Query query = new Query();
+		query.addCriteria(Criteria.where("location.address").regex(searchPattern, "i"));
 		query.fields().include("reviews.ownerId");
 
 		List<Publication> publicationList = mongoTemplate.find(query, Publication.class);
-		for (Publication publication : publicationList) {
-			if (publication.getReviews() == null)
-				continue;
 
-			for (Review review : publication.getReviews())
-				userIDsList.add(review.getOwnerId());
+		for (Publication publication : publicationList) {
+			if (publication.getReviews() != null) {
+				publication.getReviews()
+					.stream()
+					.map(Review::getOwnerId)
+					.filter(Objects::nonNull)
+					.forEach(userIds::add);
+			}
 		}
 
-		return userIDsList;
+		return new ArrayList<>(userIds);
 	}
 
 	@Override
@@ -360,10 +381,10 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 	}
 
 	@Override
-	public Plan updateExistingPlan(Plan updatedPlan) {
+	public void updateExistingPlan(Plan updatedPlan) {
 		if (updatedPlan.getId() == null || !ObjectId.isValid(updatedPlan.getId())) {
 			System.err.println("Error: El ID del plan a actualizar no es válido.");
-			return null;
+			return;
 		}
 		ObjectId targetPlanId = new ObjectId(updatedPlan.getId());
 		String ownerId = updatedPlan.getOwnerId();
@@ -377,10 +398,17 @@ public class AccountRepositoryCustomImpl implements AccountRepositoryCustom {
 		UpdateResult result = mongoTemplate.updateFirst(query, update, "account");
 
 		if (result.getModifiedCount() > 0) {
-			return getPlanByPlanId(updatedPlan.getId());
+			getPlanByPlanId(updatedPlan.getId());
 		}
 
-		return null;
+	}
+
+	@Override
+	public List<Account> findTopNBusinessAccountsByTotalLikes(int n) {
+		Query query = new Query(Criteria.where("role").is(Role.BUSINESS));
+		query.with(Sort.by(Sort.Direction.DESC, "numberTotalLikes"));
+		query.limit(n);
+		return mongoTemplate.find(query, Account.class);
 	}
 
 	private static class PublicationIdsProjection {

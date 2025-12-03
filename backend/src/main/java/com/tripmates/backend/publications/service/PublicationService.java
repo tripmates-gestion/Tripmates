@@ -1,7 +1,11 @@
 package com.tripmates.backend.publications.service;
 
 import com.tripmates.backend.common.exception.UnauthorizedException;
+import com.tripmates.backend.common.service.email.EmailService;
 import com.tripmates.backend.common.service.storage.StorageService;
+import com.tripmates.backend.common.types.BenchmarkId;
+import com.tripmates.backend.common.types.BenchmarkId.BenchmarkType;
+import com.tripmates.backend.common.types.Like;
 import com.tripmates.backend.common.types.Review;
 import com.tripmates.backend.publications.dto.*;
 import com.tripmates.backend.publications.entity.neo4j.PublicationNode;
@@ -15,6 +19,8 @@ import com.tripmates.backend.common.types.Role;
 import com.tripmates.backend.publications.entity.mongo.Publication;
 import com.tripmates.backend.common.exception.BadRequestException;
 import com.tripmates.backend.common.exception.NotFoundException;
+import com.tripmates.backend.benchmarks.entity.BenchmarkProgress;
+import com.tripmates.backend.benchmarks.repository.BenchmarkRepository;
 import com.tripmates.backend.common.constants.ValidationErrorMessage;
 import com.tripmates.backend.users.repository.neo4j.AccountNodeRepository;
 import com.tripmates.backend.utils.BusinessPublicationBuilder;
@@ -28,10 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
-@Component
 @Transactional
 @Service
 public class PublicationService {
@@ -53,6 +57,12 @@ public class PublicationService {
 
 	@Autowired
 	private StorageService storageService;
+
+	@Autowired
+	private BenchmarkRepository benchmarkRepository;
+
+	@Autowired
+	private EmailService emailService;
 
 	/**
 	 * Creates a new publication for a business.
@@ -117,13 +127,13 @@ public class PublicationService {
 		if (publicationRequestDTO.location() != null)
 			publication.setLocation(publicationRequestDTO.location());
 
-		if (publicationRequestDTO.openingDays() != null)
+		if (!publicationRequestDTO.openingDays().isEmpty())
 			publication.setOpeningDays(publicationRequestDTO.openingDays());
 
 		if (publicationRequestDTO.attentionSchedule() != null)
 			publication.setAttentionSchedule(publicationRequestDTO.attentionSchedule());
 
-		if (publicationRequestDTO.exceptionalClosingDays() != null)
+		if (!publicationRequestDTO.exceptionalClosingDays().isEmpty())
 			publication.setExceptionalClosingDays(publicationRequestDTO.exceptionalClosingDays());
 
 		publication.setImageUrls(updateImages(publication.getImageUrls(), publicationRequestDTO.deletePhotoIndexes(),
@@ -216,6 +226,9 @@ public class PublicationService {
 		if (account.getRole() != Role.USER)
 			throw new BadRequestException(ValidationErrorMessage.UNAUTHORIZED);
 
+		if (!checkUserAccountMentions(reviewCreationRequestDTO.mentions()))
+			throw new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND);
+
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.REVIEW_PUBLICAITON_ID_NOT_FOUND));
 
@@ -230,10 +243,46 @@ public class PublicationService {
 		publication.addReview(review);
 
 		publicationRepository.save(publication);
+
 		accountNodeRepository.createReviewed(account.getId(), publication.getId(), review.getReviewId(),
 				review.getRating());
 
+		registerReviewBenchmarkOnOwner(publication.getOwnerId());
+
+		sendNotificationEmail(publication, review, account);
+        
 		return ReviewResponseDTO.fromEntities(review, publication, account);
+	}
+
+	/**
+	 * Registers review benchmark progress on publication owner. Also send a email if a
+	 * new benchmark is reached.
+	 * @param ownerId publication owner's ID.
+	 */
+	private void registerReviewBenchmarkOnOwner(String ownerId) {
+		accountRepository.incrementNumberTotalReviews(ownerId);
+		Account updatedAccount = accountRepository.findById(ownerId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		int numberTotalReviews = updatedAccount.getNumberTotalReviews() != null ? updatedAccount.getNumberTotalReviews()
+				: 0;
+		int historicMax = updatedAccount.getHistoricMaxNumberTotalReviews() != null
+				? updatedAccount.getHistoricMaxNumberTotalReviews() : 0;
+		if (numberTotalReviews > historicMax) {
+			accountRepository.updateHistoricMaxNumberTotalReviews(ownerId, numberTotalReviews);
+			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.REVIEWS, numberTotalReviews);
+			if (benchmarkId != null) {
+				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+				if (maybeBenchmarkProgress.isEmpty()) {
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+					benchmarkRepository.save(benchmarkProgress);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo logro desbloqueado: " + numberTotalReviews + " reseñas!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
+				}
+			}
+		}
 	}
 
 	/**
@@ -335,6 +384,33 @@ public class PublicationService {
 		checkLikeInteraction(publication, account);
 
 		addLikeInfoOnPublication(publicationId, account.getId());
+		addLikeOnOwnerInfoAndRegisteBenchmark(publication.getOwnerId());
+
+	}
+
+	private void addLikeOnOwnerInfoAndRegisteBenchmark(String ownerId) {
+		accountRepository.incrementNumberTotalLikes(ownerId);
+		Account updatedAccount = accountRepository.findById(ownerId)
+			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.USER_NOT_FOUND));
+		int numberTotalLikes = updatedAccount.getNumberTotalLikes() != null ? updatedAccount.getNumberTotalLikes() : 0;
+		int historicMax = updatedAccount.getHistoricMaxNumberTotalLikes() != null
+				? updatedAccount.getHistoricMaxNumberTotalLikes() : 0;
+		if (numberTotalLikes > historicMax) {
+			accountRepository.updateHistoricMaxNumberTotalLikes(ownerId, numberTotalLikes);
+			BenchmarkId benchmarkId = BenchmarkId.fromThresholdAndType(BenchmarkType.LIKES, numberTotalLikes);
+			if (benchmarkId != null) {
+				Optional<BenchmarkProgress> maybeBenchmarkProgress = benchmarkRepository
+					.findByUserIdAndBenchmarkId(ownerId, benchmarkId);
+				if (maybeBenchmarkProgress.isEmpty()) {
+					BenchmarkProgress benchmarkProgress = new BenchmarkProgress(benchmarkId, ownerId);
+					benchmarkRepository.save(benchmarkProgress);
+					emailService.sendHtmlAchievementEmail(updatedAccount.getEmail(),
+							"¡Nuevo progreso de benchmark alcanzado!",
+							"Has alcanzado un nuevo progreso de benchmark con tus reseñas.",
+							updatedAccount.getUsername());
+				}
+			}
+		}
 	}
 
 	/**
@@ -352,6 +428,11 @@ public class PublicationService {
 		checkUnlikeInteraction(publication, account);
 
 		removeLikeInfoOnPublication(publicationId, account.getId());
+		removeLikeOnOwnerInfo(publication.getOwnerId());
+	}
+
+	private void removeLikeOnOwnerInfo(String ownerId) {
+		accountRepository.decrementNumberTotalLikes(ownerId);
 	}
 
 	/**
@@ -364,7 +445,11 @@ public class PublicationService {
 		Publication publication = publicationRepository.findById(publicationId)
 			.orElseThrow(() -> new NotFoundException(ValidationErrorMessage.PUBLICATION_NOT_FOUND));
 
-		return new LikesListDTO(formatAccountIdList(publication.getLikes()));
+		List<String> userIdLikes = new ArrayList<>();
+		for (Like like : publication.getLikes())
+			userIdLikes.add(like.getUserId());
+
+		return new LikesListDTO(formatAccountIdList(userIdLikes));
 	}
 
 	/**
@@ -373,8 +458,10 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkLikeInteraction(Publication publication, Account account) {
-		if (publication.getLikes().contains(account.getId()))
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
+		for (Like like : publication.getLikes()) {
+			if (like.getUserId().equals(account.getId()))
+				throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
+		}
 	}
 
 	/**
@@ -383,7 +470,8 @@ public class PublicationService {
 	 * @param account user's account.
 	 */
 	private void checkUnlikeInteraction(Publication publication, Account account) {
-		if (!publication.getLikes().contains(account.getId()))
+		boolean hasLike = publication.getLikes().stream().anyMatch(like -> like.getUserId().equals(account.getId()));
+		if (!hasLike)
 			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 	}
 
@@ -393,11 +481,6 @@ public class PublicationService {
 	 * @param userId user's ID.
 	 */
 	private void addLikeInfoOnPublication(String publicationId, String userId) {
-		long isLiked = publicationRepository.existsLike(publicationId, userId);
-
-		if (isLiked > 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_LIKE_PUBLICATION_TWICE);
-
 		publicationRepository.addToLikes(publicationId, userId);
 		accountNodeRepository.createLiked(userId, publicationId);
 	}
@@ -411,7 +494,7 @@ public class PublicationService {
 		long isLiked = publicationRepository.existsLike(publicationId, userId);
 
 		if (isLiked == 0)
-			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNFOLLOW_SOMEONE_YOU_ARE_NOT_FOLLOWING);
+			throw new BadRequestException(ValidationErrorMessage.CANNOT_UNLIKE_PUBLICATION_NOT_LIKED);
 
 		publicationRepository.removeFromLikes(publicationId, userId);
 		accountNodeRepository.removeLiked(userId, publicationId);
@@ -428,14 +511,79 @@ public class PublicationService {
 		if (idList == null || idList.isEmpty())
 			return accounts;
 
-		for (String id : idList) {
-			Account account = accountRepository.findById(id).orElse(null);
-
-			if (account != null)
-				accounts.add(AccountResumeResponseDTO.fromAccount(account));
-		}
+		for (String id : idList)
+			accountRepository.findById(id)
+				.ifPresent(account -> accounts.add(AccountResumeResponseDTO.fromAccount(account)));
 
 		return accounts;
+	}
+
+	/**
+	 * Checks if the emails provided belong to a real user account.
+	 * @param userAccountEmailList user account emails.
+	 * @return true if all emails are valid, false otherwise.
+	 */
+	private boolean checkUserAccountMentions(List<String> userAccountEmailList) {
+		for (String email : userAccountEmailList) {
+			if (accountRepository.findByEmail(email).isEmpty())
+				return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Sends a notification email to the user account that was mentioned.
+	 * @param publication publication where the review was made.
+	 * @param review review that was made.
+	 * @param reviewAccountOwner user account that made the review.
+	 */
+    private void sendNotificationEmail(Publication publication, Review review, Account reviewAccountOwner) {
+        System.out.println("Enviando emails de notificación por menciones en la review...");
+		for (String email : review.getMentions()) {
+			System.out.println("Procesando mención para el email: " + email);
+            accountRepository.findByEmail(email).ifPresent(account -> {
+				System.out.println("Encontrada cuenta de usuario para el email: " + email);
+                Dictionary<String, String> vars = new Hashtable<>();
+                vars.put("toUsername", account.getName());
+                vars.put("ownerUsername", reviewAccountOwner.getName());
+                vars.put("publicationTitle", review.getTitle());
+                vars.put("reviewSnippet", snippet(parseContent(review))); // <-- CORREGIDO
+                vars.put("publicationId", publication.getId());
+
+                emailService.sendHtmlReviewMentionEmail(email, "¡Fuiste mencionado en una review!", vars);
+            });
+        }
+    }
+
+	private String snippet(String text) {
+		if (text == null)
+			return "";
+		if (text.length() <= 120)
+			return text;
+
+		String truncated = text.substring(0, 120);
+		int lastSpace = truncated.lastIndexOf(' ');
+		if (lastSpace > 0) {
+			truncated = truncated.substring(0, lastSpace);
+		}
+		return truncated + "...";
+	}
+
+	private String parseContent(Review review) {
+		String content = review.getContent();
+		
+		for (String email : review.getMentions()) {
+			if (content.contains("@" + email)) {
+				Optional<Account> accountOpt = accountRepository.findByEmail(email);
+				if (accountOpt.isPresent()) {
+					Account account = accountOpt.get();
+					content = content.replace("@" + email, "@" + account.getName());
+				}
+			}
+		}
+		
+		return content;
 	}
 
 }

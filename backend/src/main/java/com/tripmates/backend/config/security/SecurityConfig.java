@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 	public static final String[] PUBLIC_ENDPOINTS = { "/auth/**", "/actuator/health", "/api-docs/**", "/swagger-ui/**",
-			"/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/error" };
+			"/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/error", "/metrics/n-most-likeds-accounts" };
 
 	@Autowired
 	private JwtAuthenticationFilter authFilter;

@@ -11,6 +11,7 @@ export type Review = {
     authorId: string;           // (referencia al autor)
     authorName: string;         // (referencia al autor)
     avatarUrl?: string;        // (opcional, URL del avatar del autor)
+    mentions: string[];        // lista de emails de usuarios mencionados
   };
 
 
@@ -30,5 +31,7 @@ export type ReviewDTO = {
   imageUrls: string[],
   reviewerId: string,
   reviewerUsername: string,
-  reviewerAvatarUrl: string
+  reviewerAvatarUrl: string,
+  createdAt: string,
+  mentions: string[]
 }

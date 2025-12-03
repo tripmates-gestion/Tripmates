@@ -12,7 +12,7 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre AS deploy
 
 WORKDIR /home/app
-
+COPY sample_images ./sample_images
 COPY --from=build /home/app/target/*.jar app.jar
 
 EXPOSE ${BACKEND_PORT}

@@ -4,11 +4,16 @@ import {
   IconButton, Stack, Chip, Avatar, Divider, Tooltip, ButtonBase
 } from "@mui/material";
 import { Close, ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { BusinessPublicationResponseDTO } from "../../types/Business";
-import NewReviewPlace from "../reviews/ReviewPlaceholder";
+import type { BusinessPubAccountDataDTO } from "../../types/AccountData";
+import NewReviewPlace from "../reviews/NewReviewPlace";
 import { useAuth } from "../../hooks/useAuth";
 import { COMMING_SOON_IMG } from "../../constants/DefaultImages";
+import { PAGES_ROUTE } from "../../constants/Pages";
+import { getUserById } from "../../services/userService";
+//import { MapTilerMap } from '../map/MapTilerMap';
 
 type Props = {
   open: boolean;
@@ -57,7 +62,10 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
   const isDragging = useRef(false);
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
+  const navigate = useNavigate();
+  const [ownerAccount, setOwnerAccount] = useState<BusinessPubAccountDataDTO | null>(null);
+  const [isFetchingOwner, setIsFetchingOwner] = useState(false);
 
   // Derivados seguros aunque publication sea null
   const images = publication?.imageUrls?.length ? publication.imageUrls : [COMMING_SOON_IMG];
@@ -67,7 +75,8 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
   const prevIndex = (i: number) => ((i - 1 + max) % max);
   const next = () => setIndex(i => nextIndex(i));
   const prev = () => setIndex(i => prevIndex(i));
-
+  const [showMap, setShowMap] = useState(false);
+  
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -95,6 +104,47 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
     isDragging.current = false;
     touchDeltaX.current = 0;
   };
+
+  const fetchOwnerAccount = useCallback(async () => {
+    if (!publication?.ownerId || !accessToken) return null;
+    setIsFetchingOwner(true);
+    try {
+      const response = await getUserById(publication.ownerId, accessToken);
+      const account = response as BusinessPubAccountDataDTO;
+      setOwnerAccount(account);
+      return account;
+    } catch (error) {
+      console.error("No se pudo obtener la información del dueño", error);
+      return null;
+    } finally {
+      setIsFetchingOwner(false);
+    }
+  }, [accessToken, publication?.ownerId]);
+
+  useEffect(() => {
+    if (!open || !publication?.ownerId || !accessToken) {
+      setOwnerAccount(null);
+      return;
+    }
+    fetchOwnerAccount();
+  }, [open, publication?.ownerId, accessToken, fetchOwnerAccount]);
+
+  const goToBusinessProfile = useCallback(async () => {
+    console.log("Navegando a perfil de negocio desde PublicationDetailDialog", publication);
+ 
+    const account = ownerAccount ?? (isFetchingOwner ? null : await fetchOwnerAccount());
+    const businessType = account?.businessType;
+    const ownerId = account?.id;
+    
+    const route =
+    businessType === "HOTEL"
+    ? `${PAGES_ROUTE.hotelPublic}/${ownerId}`
+    : `${PAGES_ROUTE.restaurantPublic}/${ownerId}`;
+    
+    
+    console.log("Navegando a perfil de negocio:", route, "con account:", account);
+    navigate(route, account ? { state: { account } } : undefined);
+  }, [fetchOwnerAccount, isFetchingOwner, navigate, ownerAccount, publication?.businessType, publication?.ownerId]);
 
   // Ahora sí, si no hay publication, render “vacío” estable (sin cortar hooks)
   if (!publication) {
@@ -250,14 +300,23 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
       </Stack>
     )}
 
-        <Stack direction="row" alignItems="center" spacing={1} mt={1}>
-          <Tooltip title={`Publicado el ${formatCreatedAt(publication.createdAt)}`}>
-            <Avatar src={publication.ownerAvatarUrl} alt={publication.ownerUsername} sx={{ width: 40, height: 40 }}>
-              {initials(publication.ownerUsername)}
-            </Avatar>
-          </Tooltip>
-          <Typography variant="body2" color="text.secondary">Dueño: {publication.ownerUsername}</Typography>
-        </Stack>
+        <ButtonBase onClick={goToBusinessProfile} disableRipple sx={{ textAlign: "left", alignSelf: "flex-start" }}>
+          <Stack direction="row" alignItems="center" spacing={1} mt={1}>
+            <Tooltip title={`Publicado el ${formatCreatedAt(publication.createdAt)}`}>
+              <Avatar src={publication.ownerAvatarUrl} alt={publication.ownerUsername} sx={{ width: 40, height: 40 }}>
+                {initials(publication.ownerUsername)}
+              </Avatar>
+            </Tooltip>
+            <Stack spacing={0}>
+              <Typography variant="body2" color="text.secondary">Dueño: {publication.ownerUsername}</Typography>
+              {publication.businessType && (
+                <Typography variant="caption" color="primary.main" sx={{ textDecoration: "underline" }}>
+                  Ver perfil del negocio
+                </Typography>
+              )}
+            </Stack>
+          </Stack>
+        </ButtonBase>
 
         <Typography variant="body1" sx={{ mt: 1.5, whiteSpace: 'break-spaces' }}>
           {publication.description}
@@ -266,7 +325,7 @@ export default function PublicationDetailDialog({ open, onClose, publication, le
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mt={2}>
           <Stack spacing={0.5} flex={1}>
             <Typography variant="subtitle2" fontWeight={700}>Información</Typography>
-            <Typography variant="body2" color="text.secondary">📍 {publication.location}</Typography>
+            <Typography variant="body2" color="text.secondary">📍 {publication.location.address}</Typography>
             <Typography variant="body2" color="text.secondary">☎ {publication.phoneNumber || publication.email}</Typography>
             <Typography variant="body2" color="text.secondary">
               🕘 {publication.attentionSchedule.openingTime}–{publication.attentionSchedule.closingTime}
