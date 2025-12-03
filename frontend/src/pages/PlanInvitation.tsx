@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Avatar,
   AvatarGroup,
+  Box,
   Button,
   Card,
   CardContent,
@@ -240,13 +241,15 @@ export default function PlanInvitation() {
               <>
                 <Divider />
                 <Typography variant="subtitle1" fontWeight={700}>Publicaciones del plan</Typography>
-                <Grid container spacing={2}>
-                  {plan.publications.map((publication) => (
-                    <Grid item xs={12} sm={6} md={6} key={publication.id}>
-                      <PublicationCard publication={publication} onView={() => undefined} />
-                    </Grid>
-                  ))}
-                </Grid>
+                <Box sx={{ px: 1 }}>   {/* padding simétrico fuera del Grid */}
+                  <Grid container spacing={2}>
+                    {plan.publications.map((publication) => (
+                      <Grid item xs={12} sm={6} md={6} key={publication.id}>
+                        <PublicationCard publication={publication} onView={() => undefined} />
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
               </>
             )}
           </Stack>
