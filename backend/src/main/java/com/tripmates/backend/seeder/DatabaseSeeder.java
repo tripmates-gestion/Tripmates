@@ -69,6 +69,17 @@ public class DatabaseSeeder implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 		System.out.println("=== DatabaseSeeder (dev) iniciado ===");
+
+		// Verificar si ya existen datos (por ejemplo, si existe el usuario 'camila@example.com')
+		try {
+			userService.getUserAccount("camila@example.com");
+			System.out.println("=== Datos encontrados. Omitiendo la carga de datos de prueba. ===");
+			return;
+		}
+		catch (Exception e) {
+			// Si falla (no existe el usuario), continuamos con el seeding
+		}
+
 		try {
 			registerAllUsers();
 			loginAllUsers();
@@ -162,7 +173,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Creando publicaciones de negocios (con imágenes) ---");
 
 		// Restaurante Guerrin
-		createPublication("afu@fi.uba.ar", "Pizza de Muzzarella Libre",
+		createPublication("guerrin@pizzeria.com", "Pizza de Muzzarella Libre",
 				"Disfrutá de nuestra clásica pizza de muzzarella con la mejor calidad en Pizzería Guerrin.",
 				"+54 11 1234-5678", "reservas@guerrin.com",
 				new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
@@ -172,14 +183,14 @@ public class DatabaseSeeder implements CommandLineRunner {
 				List.of("pizza", "muzzarella", "pizzeria", "clasica"),
 				List.of("sample_images/publications/restaurant/cena1.jpg"));
 
-		createPublication("afu@fi.uba.ar", "Noche de Vinos",
+		createPublication("guerrin@pizzeria.com", "Noche de Vinos",
 				"Degustación de vinos de bodegas locales con maridaje exclusivo en Guerrin.", "+54 11 1234-5678",
 				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
 				new AttentionSchedule(LocalTime.parse("20:00"), LocalTime.parse("23:30")), List.of(),
 				List.of("vinos", "degustación", "evento"), List.of("sample_images/publications/restaurant/vinos.jpeg"));
 
-		createPublication("afu@fi.uba.ar", "Flan de Domingos",
+		createPublication("guerrin@pizzeria.com", "Flan de Domingos",
 				"Disfrutá de nuestro exclusivo flan los domingos en Guerrin.", "+54 11 1234-5678",
 				"reservas@guerrin.com", new Location("Av. Corrientes 1368, Buenos Aires", -34.6041208, -58.3908476),
 				List.of(DayOfWeek.SUNDAY), new AttentionSchedule(LocalTime.parse("10:00"), LocalTime.parse("15:00")),
@@ -341,11 +352,11 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedMenuItems() {
 		System.out.println("--- Creando ítems de menú para restaurantes ---");
 
-		addMenuItem("afu@fi.uba.ar", "Milanesa Napolitana", 3500.0f,
+		addMenuItem("guerrin@pizzeria.com", "Milanesa Napolitana", 3500.0f,
 				"Milanesa de carne con salsa de tomate, jamón y queso gratinado. Acompañada con papas fritas.",
 				"sample_images/menu_items/milanesa.jpeg");
 
-		addMenuItem("afu@fi.uba.ar", "Jugo de Naranja", 700.0f,
+		addMenuItem("guerrin@pizzeria.com", "Jugo de Naranja", 700.0f,
 				"Jugo de Naranja de primera calidad para acompañar la comida.", "sample_images/menu_items/bebida.jpg");
 
 		// Café del Centro
@@ -409,7 +420,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Actualizando avatares de usuarios ---");
 
 		updateUserAvatar("camila@example.com", "sample_images/profile_pictures/user1.png");
-		updateUserAvatar("anibalfu2005@gmail.com", "sample_images/profile_pictures/user2.png");
+		updateUserAvatar("luisito@example.com", "sample_images/profile_pictures/user2.png");
 		updateUserAvatar("julian@example.com", "sample_images/profile_pictures/user3.png");
 		updateUserAvatar("joseluis@example.com", "sample_images/profile_pictures/user4.png");
 		updateUserAvatar("ricardo@example.com", "sample_images/profile_pictures/user5.png");
@@ -453,7 +464,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 				"contacto@guerrin.com", AveragePrice.$$, RestaurantType.Argentino, schedule, openingDays, null,
 				null, null);
 
-		userService.updateUserAccount("afu@fi.uba.ar", dto, null, null);
+		userService.updateUserAccount("guerrin@pizzeria.com", dto, null, null);
 		System.out.println("[PROFILE] Actualizado perfil de Guerrin");
 	}
 
@@ -535,7 +546,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void updateBusinessImages() {
 		System.out.println("--- Actualizando imágenes de negocios ---");
 
-		updateBusinessImagesForEmail("afu@fi.uba.ar", "sample_images/profile_pictures/restaurant.jpg",
+		updateBusinessImagesForEmail("guerrin@pizzeria.com", "sample_images/profile_pictures/restaurant.jpg",
 				List.of("sample_images/business_picture/restaurant2.jpg", "sample_images/business_picture/resto5.jpg"));
 
 		updateBusinessImagesForEmail("sheraton@example.com", "sample_images/profile_pictures/hotel.jpg",
@@ -583,7 +594,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		String noReviewBusiness = "gaston@saboresperuanos.com";
 		List<String> noReviewPubs = businessPublicationIds.get(noReviewBusiness);
 
-		String[] allReviewers = { "camila@example.com", "anibalfu2005@gmail.com", "julian@example.com",
+		String[] allReviewers = { "camila@example.com", "luisito@example.com", "julian@example.com",
 				"joseluis@example.com", "ricardo@example.com", "astrid@example.com", "aizen@example.com",
 				"lucia@example.com", "pedro@example.com" };
 
@@ -651,10 +662,10 @@ public class DatabaseSeeder implements CommandLineRunner {
 			return;
 		}
 
-		String[] likers = { "anibalfu2005@gmail.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
+		String[] likers = { "luisito@example.com", "julian@example.com", "joseluis@example.com", "ricardo@example.com",
 				"astrid@example.com", "aizen@example.com", "lucia@example.com", "pedro@example.com" };
 
-		String buenaMesaBusiness = "afu@fi.uba.ar";
+		String buenaMesaBusiness = "guerrin@pizzeria.com";
 		List<String> buenaMesaPubs = businessPublicationIds.get(buenaMesaBusiness);
 
 		String noLikesBusiness = "gaston@saboresperuanos.com";
@@ -707,15 +718,15 @@ public class DatabaseSeeder implements CommandLineRunner {
 	private void seedFollows() {
 		try {
 			String camilaId = getUserId("camila@example.com");
-			String luisitoId = getUserId("anibalfu2005@gmail.com");
+			String luisitoId = getUserId("luisito@example.com");
 			String julianId = getUserId("julian@example.com");
 			String joseluisId = getUserId("joseluis@example.com");
 
 			follow("camila@example.com", luisitoId, "Camila -> Luisito");
 			follow("camila@example.com", julianId, "Camila -> Julián");
 
-			follow("anibalfu2005@gmail.com", camilaId, "Luisito -> Camila");
-			follow("anibalfu2005@gmail.com", joseluisId, "Luisito -> José Luis");
+			follow("luisito@example.com", camilaId, "Luisito -> Camila");
+			follow("luisito@example.com", joseluisId, "Luisito -> José Luis");
 
 			follow("julian@example.com", camilaId, "Julián -> Camila");
 			follow("julian@example.com", luisitoId, "Julián -> Luisito");
@@ -813,7 +824,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 		System.out.println("--- Agregando redes sociales a usuarios de negocio ---");
 
 		// Guerrin
-		addSocialMedia("afu@fi.uba.ar", 
+		addSocialMedia("guerrin@pizzeria.com", 
 			"https://www.instagram.com/pizzeriaguerrin/", 
 			"https://x.com/PizzeriaGuerrin", 
 			"https://www.facebook.com/pizzeriaguerrin/");
