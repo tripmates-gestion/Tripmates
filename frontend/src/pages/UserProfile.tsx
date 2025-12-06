@@ -25,6 +25,8 @@ import UserPlansTab from '../components/profile/userProfile/UserPlansTab';
 import LikedPublicationsTab from '../components/profile/userProfile/LikedPublicationsTab';
 import RecentlySeenBusiness from '../components/profile/userProfile/RecentlySeenBusiness';
 import { Stat } from '../components/profile/stats';
+import { getReviewsForUser } from '../services/reviewService';
+import { mapReviewListDTOToReviews } from '../services/mappers/reviewsMapper';
 
 import type {
   CommonUser,
@@ -46,6 +48,7 @@ export default function UserProfile() {
   const [editOpen, setEditOpen] = React.useState(false);
   const [activeList, setActiveList] = React.useState<'followers' | 'followings' | null>(null);
   const [socialLinks, setSocialLinks] = React.useState<SocialMediaLinks | null>(null);
+  const [reviewCount, setReviewCount] = React.useState(0);
 
   const { user, accessToken, refreshUser } = useAuth();
 
@@ -96,6 +99,32 @@ export default function UserProfile() {
   ];
   const currentTabKey = tabs[tab]?.key;
 
+  React.useEffect(() => {
+    if (!currentUser?.id || !accessToken) return;
+
+    let mounted = true;
+    const fetchReviews = async () => {
+      try {
+        const reviewsDTO = await getReviewsForUser(accessToken, currentUser.id);
+        const reviews = mapReviewListDTOToReviews(reviewsDTO);
+        if (mounted) {
+          setReviewCount(reviews.length);
+        }
+      } catch (error) {
+        if (mounted) {
+          console.error('Error fetching review count:', error);
+          setReviewCount(0);
+        }
+      }
+    };
+
+    void fetchReviews();
+
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken, currentUser?.id]);
+
   const handleProfileUpdated = React.useCallback(
     (_profile: CommonUser, social: SocialMediaLinks) => {
       setSocialLinks(social);
@@ -107,11 +136,11 @@ export default function UserProfile() {
 
   const stats = React.useMemo(
     () => ({
-      aportes: DEFAULT_STATS.aportes,
+      aportes: reviewCount,
       seguidores: followersList.items.length,
       siguiendo: followingsList.items.length,
     }),
-    [followersList.items.length, followingsList.items.length]
+    [followersList.items.length, followingsList.items.length, reviewCount]
   );
 
   const openFollowers = () => {
