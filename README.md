@@ -63,7 +63,6 @@ Esta sección está dedicada a entender la arquitectura, el despliegue y la estr
 > **Nota para el desarrollador:** A continuación se detallan los pasos necesarios para levantar el entorno de desarrollo y comprender las decisiones de diseño.
 
 ### 1. Stack Tecnológico
-*(Completa aquí con las tecnologías reales que usaron)*
 * **Frontend:** React + TypeScript + MUI
 * **Backend:** Spring Boot + Java
 * **Base de Datos:** Neo4j + MongoDB
