@@ -11,16 +11,4 @@ export type CommonUser = {
   email: string;
   role: AccountType;
   description?: string | null;
-  // businessType?: AccountBusinessType | null;
-  // location?: string | null;
-  // phoneNumber?: string | null;
-  // publicEmail?: string | null;
-  // profileImageUrls?: string[] | null;
-  // averagePrice?: AveragePrice | null;
-  // restaurantType?: string | null;
-  // attentionSchedule?: AttentionSchedule | null;
-  // openingDays?: DayOfWeek[] | null;
-  // menu?: MenuItem[] | null;
-  // hotelType?: HotelType | null;
-  // roomPacks?: RoomPack[] | null;
 };
