@@ -19,7 +19,7 @@ export type BusinessCommon = {
   email: string;
   avatarURL?: string;
   role: AccountType;
-  businessType: BusinessType; // viene en /me
+  businessType: BusinessType;
   description?: string;
   location?: {
     address: string;
