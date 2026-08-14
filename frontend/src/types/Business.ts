@@ -14,9 +14,9 @@ export type BusinessPost = {
   location: LocationDTO
   photos: string[]
   createdAt: string
-  rating?: number // opcional para usar con PlaceCard
-  tags: string[]  // << nuevo
-  openingDays: DayOfWeek[] // << nuevo
+  rating?: number
+  tags: string[]
+  openingDays: DayOfWeek[]
 }
 
 // ---------------------- Contrato del backend (request) ----------------------
@@ -109,9 +109,9 @@ export type FormState = {
   contact: string;        // opcional
   location: LocationDTO;  // opcional
   photos: string[];       // base64 previews
-  tags: string[];         // << nuevo
-  openingDays: DayOfWeek[]; // << nuevo
-  // type: BusinessType | ''  // si ya no usás “tipo”, podés removerlo
+  tags: string[];
+  openingDays: DayOfWeek[];
+  // type: BusinessType | ''
 };
 
 export const initialFormState: FormState = {
@@ -122,7 +122,7 @@ export const initialFormState: FormState = {
   location: { address: '', latitude: 0, longitude: 0 },
   photos: [],
   tags: [],
-  openingDays: [], // si queda vacío, en el submit usás DEFAULT_OPENING_DAYS
+  openingDays: [],
 };
 
 
