@@ -4,8 +4,7 @@ import type { AttentionSchedule, AveragePrice } from "./Business";
 import type { RestaurantType, MenuItem } from "./Restaurant";
 import type { HotelType, RoomPack } from "./Hotel";
 
-/*CONTRATO DE LO QUE DEBERÍA DEVOLVER EL BACK EN UNA BÚSQUEDA DE ALGÚN BUSINESS*/
-// tiene algunos campos opcionales porque dependen de si es un restaurant o si es un hotel
+
 export type BusinessPubAccountDataDTO = {
   id: string;
   avatarURL: string;
