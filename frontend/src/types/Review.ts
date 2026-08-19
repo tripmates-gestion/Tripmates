@@ -1,17 +1,17 @@
 export type Review = {
     id: string;
     author: string;
-    title: string;               // nuevo campo obligatorio
+    title: string;
     rating?: number;
     text: string;                // obligatorio
     images: string[];            // opcional (máx. 6)
     createdAt: string;
-    publicationId?: string;      // opcional (referencia)
-    publicationTitle?: string;   // opcional (referencia visual)
-    authorId: string;           // (referencia al autor)
-    authorName: string;         // (referencia al autor)
-    avatarUrl?: string;        // (opcional, URL del avatar del autor)
-    mentions: string[];        // lista de emails de usuarios mencionados
+    publicationId?: string;
+    publicationTitle?: string;
+    authorId: string;
+    authorName: string;
+    avatarUrl?: string;
+    mentions: string[];        // lista de emails
   };
 
 
