@@ -1,4 +1,3 @@
-// src/pages/HotelPubProfile.tsx
 import * as React from "react";
 import { useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
