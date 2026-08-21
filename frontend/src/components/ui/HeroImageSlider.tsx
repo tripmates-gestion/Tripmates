@@ -21,7 +21,6 @@ export default function HeroImageSlider({
 }: HeroImageSliderProps) {
   const hasLoop = images.length > 1;
 
-  // Si solo hay una imagen, no hacemos nada raro
   if (!hasLoop) {
     return (
       <Box
@@ -54,7 +53,7 @@ export default function HeroImageSlider({
     );
   }
 
-  // Tenemos más de una imagen: armamos [last, ...images, first]
+ [last, ...images, first]
   const extended = React.useMemo(
     () => [images[images.length - 1], ...images, images[0]],
     [images]
@@ -78,7 +77,6 @@ export default function HeroImageSlider({
   const handleTransitionEnd = () => {
     const lastCloneIndex = total - 1;
   
-    // Si llegamos o NOS PASAMOS del último clon, reseteamos
     if (index >= lastCloneIndex) {
       setIsTransitioning(false);
       setIndex(1);
@@ -86,7 +84,6 @@ export default function HeroImageSlider({
   };
   
 
-  // Reencendemos la transición después de teletransportar
   React.useEffect(() => {
     if (!isTransitioning && index === 1) {
       const id = setTimeout(() => {
