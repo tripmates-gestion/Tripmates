@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// api/core.ts
 const API_BASE_URL = "http://localhost:8080";
 const CODE_403 = 403;
 
@@ -20,7 +19,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   });
 
 
-  // leer respuesta como texto (puede ser vacío)
   const raw = await response.text().catch(() => "");
   let payload: any = null;
   try { payload = raw ? JSON.parse(raw) : null; } catch { /* texto plano */ }
@@ -37,6 +35,5 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     throw new Error("[Api Fetch]: Falla por autenticación, token expiró.");
   }
 
-  // devolver JSON si hay, si no null o texto
   return payload ?? (raw || null);
 }
