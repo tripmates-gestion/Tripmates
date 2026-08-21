@@ -1,4 +1,3 @@
-// src/components/ui/HeroImageSlider.tsx
 import * as React from 'react';
 import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
@@ -7,8 +6,8 @@ export interface HeroImageSliderProps {
   images: string[];
   alt?: string;
   interval?: number;
-  aspectRatio?: number;        // por defecto 4/3
-  rounded?: number;            // borderRadius MUI (default 4)
+  aspectRatio?: number;
+  rounded?: number;
   fit?: 'cover' | 'contain' | 'scale-down';
 }
 
