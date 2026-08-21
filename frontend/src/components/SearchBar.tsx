@@ -1,4 +1,3 @@
-// src/components/SearchBar.tsx
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import IconButton from '@mui/material/IconButton';
@@ -6,14 +5,13 @@ import SearchIcon from '@mui/icons-material/Search';
 
 // Barra de búsqueda reutilizable (formulario con input y botón)
 export default function SearchBar({
-    placeholder = 'Buscar destinos, lugares…', // texto por defecto del input
-    onSubmit,                                  // función que se ejecuta al enviar
+    placeholder = 'Buscar destinos, lugares…',
+    onSubmit,
   }: {
     placeholder?: string;
     onSubmit?: (q: string) => void;
   }) {
     return (
-      // Paper = contenedor con estilo de tarjeta
       <Paper
         component="form"
         onSubmit={(e) => {
