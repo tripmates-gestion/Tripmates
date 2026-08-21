@@ -5,12 +5,9 @@ export const ENDPOINTS = {
     REQUEST_PASSWORD_RESET: '/auth/request-password-reset',
     VERIFY_RESET_CODE: '/auth/verify-reset-code',
     RESET_PASSWORD: '/auth/reset-password',
-
     USER_ME: '/users/me',
-
     MY_FOLLOWERS: '/users/me/followers',
     MY_FOLLOWINGS: '/users/me/followings',
-
     USER_FOLLOWERS: (userId: string) => `/users/${userId}/followers`,
     USER_FOLLOWINGS: (userId: string) => `/users/${userId}/followings`,
     FOLLOW_USER: (userId: string) => `/users/${userId}/follow`,
@@ -32,7 +29,7 @@ export const ENDPOINTS = {
     GET_PUBLICATION_REVIEWS: "/publications/{id}/review",
     GET_USER_REVIEWS: "/publications/users/{id}/reviews",
     DELETE_PLAN: "/users/plans/{id}",
-    PATCH_PLAN: "/community/plans/{id}", // Se cambia users a community
+    PATCH_PLAN: "/community/plans/{id}",
     GET_USER_BY_EMAIL: "/users/{email}",
     GET_USER_BY_ID: "/users/view/{id}",
 
